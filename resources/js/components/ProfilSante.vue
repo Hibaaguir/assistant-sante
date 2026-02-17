@@ -92,6 +92,7 @@ const form = reactive({
   poids: "",
   groupe_sanguin: "",
   objectif: "",
+  objectifs: [],
   allergies: [],
   maladies_chroniques: [],
   traitements: [],
@@ -110,8 +111,23 @@ onMounted(async () => {
 
   try {
     const response = await axios.get("/api/profil-sante");
-    if (response.data.data) {
-      Object.assign(form, response.data.data);
+    const profil = response.data.data;
+    const user = response.data.user;
+
+    if (profil) {
+      Object.assign(form, profil);
+      // ensure objectifs is array
+      if (!Array.isArray(form.objectifs)) form.objectifs = profil.objectifs ?? [];
+    }
+
+    // if no profil or age missing, compute age from user.date_of_birth
+    if ((!profil || !profil.age) && user && user.date_of_birth) {
+      const dob = new Date(user.date_of_birth);
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+      form.age = age;
     }
   } catch (error) {
     if (error.response?.status === 401) {

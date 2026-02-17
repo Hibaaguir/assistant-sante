@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProfilSante;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -17,12 +18,13 @@ class ProfilSanteController extends Controller
         }
 
         $validated = $request->validate([
-            'age' => ['required', 'integer', 'min:1', 'max:120'],
             'sexe' => ['required', Rule::in(['homme', 'femme'])],
             'taille' => ['required', 'numeric', 'min:30', 'max:250'],
             'poids' => ['required', 'numeric', 'min:1', 'max:300'],
             'groupe_sanguin' => ['required', 'string', 'max:5'],
-            'objectif' => ['required', 'string', 'max:255'],
+            'objectif' => ['nullable', 'string', 'max:255'],
+            'objectifs' => ['nullable', 'array'],
+            'objectifs.*' => ['string', 'max:120'],
 
             'allergies' => ['nullable', 'array'],
             'allergies.*' => ['string', 'max:100'],
@@ -31,15 +33,31 @@ class ProfilSanteController extends Controller
             'maladies_chroniques.*' => ['string', 'max:120'],
 
             'traitements' => ['nullable', 'array'],
-            'traitements.*' => ['string', 'max:120'],
+            'traitements.*.type' => ['required_with:traitements', 'string', 'max:120'],
+            'traitements.*.name' => ['nullable', 'string', 'max:255'],
+            'traitements.*.dose' => ['nullable', 'string', 'max:120'],
+            'traitements.*.frequency_unit' => ['nullable', Rule::in(['jour', 'semaine', 'mois'])],
+            'traitements.*.frequency_count' => ['nullable', 'integer', 'min:1', 'max:4'],
 
             'prend_medicament' => ['required', 'boolean'],
             'nom_medicament' => ['nullable', 'string', 'max:255', 'required_if:prend_medicament,1'],
+            'consulte_medecin' => ['required', 'boolean'],
+            'medecin_peut_consulter' => ['required', 'boolean'],
+            'medecin_email' => ['nullable', 'email', 'required_if:medecin_peut_consulter,1'],
 
             'fumeur' => ['required', 'boolean'],
             'alcool' => ['required', 'boolean'],
         ]);
 
+        // compute age from user's date_of_birth
+        $user = Auth::user();
+        $age = null;
+        if ($user && $user->date_of_birth) {
+            $dob = Carbon::parse($user->date_of_birth);
+            $age = $dob->diffInYears(Carbon::now());
+        }
+
+        $validated['age'] = $age ?? 0;
         $validated['user_id'] = Auth::id();
 
         $profil = ProfilSante::updateOrCreate(
@@ -60,7 +78,8 @@ class ProfilSanteController extends Controller
         }
 
         $profil = ProfilSante::where('user_id', Auth::id())->first();
+        $user = Auth::user();
 
-        return response()->json(['data' => $profil], 200);
+        return response()->json(['data' => $profil, 'user' => $user], 200);
     }
 }

@@ -7,6 +7,13 @@
 
     <!-- Card "Informations de base" -->
     <div class="rounded-3xl bg-white/10 border border-white/15 p-6 sm:p-8">
+      <!-- Age (calculé automatiquement) -->
+      <div class="mb-4">
+        <div class="text-white/90 font-semibold mb-2">Âge</div>
+        <div class="inline-block rounded-2xl bg-white/10 border border-white/15 px-4 py-3 text-white/90">
+          {{ form.age ? form.age + ' ans' : 'Non renseigné' }}
+        </div>
+      </div>
       <!-- Sexe -->
       <div class="mb-6">
         <div class="text-white/90 font-semibold mb-3">Sexe</div>
@@ -117,6 +124,24 @@
         </div>
       </div>
 
+      <!-- Objectifs (ajoutés: plusieurs choix possibles) -->
+      <div class="mb-8">
+        <label class="block text-white/80 text-sm font-medium mb-2">Objectifs</label>
+        <p class="text-white/60 text-xs mb-3">Choisissez vos objectifs principaux (plusieurs choix possibles).</p>
+
+        <div class="flex flex-wrap gap-2">
+          <button
+            v-for="item in OBJECTIFS"
+            :key="item"
+            type="button"
+            @click="toggleMulti('objectifs', item)"
+            :class="[chipBase, isSelected('objectifs', item) ? chipActive : chipInactive]"
+          >
+            {{ item }}
+          </button>
+        </div>
+      </div>
+
       <!-- Actions -->
       <div class="flex items-center justify-end">
         <button
@@ -149,7 +174,9 @@
 </template>
 
 <script setup>
-defineProps(["form"]);
+const { form } = defineProps({
+  form: { type: Object, required: true },
+});
 
 const baseSexBtn =
   "w-full rounded-2xl px-5 py-4 border transition-all flex items-center justify-center gap-3";
@@ -159,4 +186,40 @@ const inactiveSexBtn =
 
 const activeSexBtn =
   "bg-[#1B78D6] border-cyan-200/40 text-white shadow-[0_10px_30px_rgba(0,0,0,0.25)]";
+
+// chips & objectifs
+const chipBase = "px-3 py-2 rounded-md text-[11px] font-semibold border transition select-none";
+const chipInactive = "bg-white/10 border-white/15 text-white/80 hover:bg-white/15";
+const chipActive = "bg-[#1B78D6] border-cyan-200/40 text-white shadow-[0_10px_30px_rgba(0,0,0,0.25)]";
+
+const OBJECTIFS = [
+  "Maintenir mon poids",
+  "Perdre du poids",
+  "Améliorer mon alimentation",
+  "Mieux dormir",
+  "Réduire mon stress",
+  "Avoir plus d’énergie",
+  "Suivre ma santé régulièrement",
+  "Suivre une maladie chronique",
+  "Recevoir des conseils personnalisés",
+];
+
+function isSelected(key, value) {
+  return Array.isArray(form[key]) ? form[key].includes(value) : false;
+}
+
+function toggleMulti(key, value) {
+  if (!Array.isArray(form[key])) form[key] = [];
+
+  if (value === "Aucune" || value === "Aucun") {
+    form[key] = [value];
+    return;
+  }
+
+  form[key] = form[key].filter((v) => v !== "Aucune" && v !== "Aucun");
+
+  const idx = form[key].indexOf(value);
+  if (idx === -1) form[key].push(value);
+  else form[key].splice(idx, 1);
+}
 </script>

@@ -80,6 +80,31 @@
               <p v-if="errors.email" class="mt-2 text-sm text-red-600">{{ errors.email }}</p>
             </div>
 
+            <!-- Date de naissance -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2B4B] mb-2">
+                Date de naissance
+              </label>
+              <div class="relative">
+                <input
+                  v-model="form.date_of_birth"
+                  type="text"
+                  placeholder="JJ/MM/AAAA"
+                  @blur="validateDateFormat"
+                  class="w-full rounded-xl bg-white border px-4 py-3 pr-12 text-[#0B2B4B] placeholder:text-slate-400
+                         outline-none focus:ring-4 focus:ring-[#0C86C6]/15 focus:border-[#0C86C6]"
+                  :class="errors.date_of_birth ? 'border-red-400' : 'border-slate-200'"
+                />
+                <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-400">
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                    <path d="M6 4h12M6 4v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4M9 6v4M15 6v4M6 12h12" 
+                          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </div>
+              <p v-if="errors.date_of_birth" class="mt-2 text-sm text-red-600">{{ errors.date_of_birth }}</p>
+            </div>
+
             <!-- Password -->
             <div>
               <label class="block text-sm font-semibold text-[#0B2B4B] mb-2">
@@ -182,6 +207,7 @@ import { reactive, ref } from "vue";
 const form = reactive({
   name: "",
   email: "",
+  date_of_birth: "",
   password: "",
   password_confirmation: "",
 });
@@ -189,6 +215,7 @@ const form = reactive({
 const errors = reactive({
   name: "",
   email: "",
+  date_of_birth: "",
   password: "",
 });
 
@@ -199,6 +226,7 @@ const messageType = ref("success");
 function clearErrors() {
   errors.name = "";
   errors.email = "";
+  errors.date_of_birth = "";
   errors.password = "";
 }
 
@@ -214,6 +242,65 @@ function validatePasswordRequirements() {
   if (form.password && !passwordError) errors.password = "";
 }
 
+function validateDateFormat() {
+  if (!form.date_of_birth) {
+    errors.date_of_birth = "";
+    return;
+  }
+
+  const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+  const match = form.date_of_birth.match(dateRegex);
+
+  if (!match) {
+    errors.date_of_birth = "Format invalide. Utilisez JJ/MM/AAAA";
+    return;
+  }
+
+  const day = parseInt(match[1]);
+  const month = parseInt(match[2]);
+  const year = parseInt(match[3]);
+
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+    errors.date_of_birth = "Date invalide";
+    return;
+  }
+
+  if (date > new Date()) {
+    errors.date_of_birth = "La date de naissance ne peut pas être dans le futur";
+    return;
+  }
+
+  const age = calculateAge(date);
+  if (age < 18) {
+    errors.date_of_birth = "Vous devez avoir au minimum 18 ans";
+    return;
+  }
+
+  errors.date_of_birth = "";
+}
+
+function calculateAge(birthDate) {
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+
+  return age;
+}
+
+function convertDateFormat(dateStr) {
+  const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+  const match = dateStr.match(dateRegex);
+  if (match) {
+    return `${match[3]}-${match[2]}-${match[1]}`;
+  }
+  return dateStr;
+}
+
 async function submit() {
   serverMessage.value = "";
   messageType.value = "success";
@@ -221,6 +308,7 @@ async function submit() {
 
   if (!form.name) errors.name = "Nom d’utilisateur obligatoire";
   if (!form.email) errors.email = "Email obligatoire";
+  if (!form.date_of_birth) errors.date_of_birth = "Date de naissance obligatoire";
   if (!form.password) errors.password = "Mot de passe obligatoire";
 
   if (form.password) {
@@ -232,12 +320,20 @@ async function submit() {
     errors.password = "Les mots de passe ne correspondent pas";
   }
 
-  if (errors.name || errors.email || errors.password) return;
+  if (errors.name || errors.email || errors.date_of_birth || errors.password) return;
 
   loading.value = true;
 
   try {
-    const res = await axios.post("/api/register", form, {
+    const submitData = {
+      name: form.name,
+      email: form.email,
+      date_of_birth: convertDateFormat(form.date_of_birth),
+      password: form.password,
+      password_confirmation: form.password_confirmation,
+    };
+
+    const res = await axios.post("/api/register", submitData, {
       headers: { "Content-Type": "application/json" },
     });
 
@@ -250,6 +346,7 @@ async function submit() {
 
     form.name = "";
     form.email = "";
+    form.date_of_birth = "";
     form.password = "";
     form.password_confirmation = "";
 
@@ -266,6 +363,7 @@ async function submit() {
     if (data?.errors) {
       errors.name = data.errors.name?.[0] ?? "";
       errors.email = data.errors.email?.[0] ?? "";
+      errors.date_of_birth = data.errors.date_of_birth?.[0] ?? "";
       errors.password = data.errors.password?.[0] ?? "";
       serverMessage.value = "Veuillez corriger les erreurs du formulaire.";
     } else if (data?.message) {
