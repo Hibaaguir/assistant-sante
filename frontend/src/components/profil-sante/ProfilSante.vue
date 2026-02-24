@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50/50 via-white to-teal-50/50">
     <div class="bg-white/80 border-b border-slate-200 backdrop-blur-sm sticky top-0 z-10">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
@@ -114,9 +114,9 @@ const saveSuccess = ref("");
 const stepError = ref("");
 const userDateOfBirth = ref("");
 const steps = [
-  { number: 1, label: "Basics" },
-  { number: 2, label: "Health Info" },
-  { number: 3, label: "Doctor" },
+  { number: 1, label: "Informations de base" },
+  { number: 2, label: "Sante" },
+  { number: 3, label: "Medecin" },
 ];
 
 const form = reactive({
@@ -353,4 +353,5 @@ function validateStep3() {
   return true;
 }
 </script>
+
 

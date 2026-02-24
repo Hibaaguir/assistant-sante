@@ -76,6 +76,29 @@
       </div>
 
       <div class="space-y-4">
+        <p class="text-base font-medium text-gray-900">Habitudes de vie</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="rounded-xl border-2 border-gray-200 bg-white px-4 py-4 flex items-center justify-between">
+            <span class="text-sm font-medium text-gray-800">Fumeur</span>
+            <label class="relative inline-flex cursor-pointer items-center">
+              <input v-model="form.fumeur" type="checkbox" class="peer sr-only" />
+              <div class="h-8 w-14 rounded-full bg-gray-300 transition-colors peer-checked:bg-teal-500" />
+              <div class="absolute left-1 h-6 w-6 rounded-full bg-white shadow transition-transform peer-checked:translate-x-6" />
+            </label>
+          </div>
+
+          <div class="rounded-xl border-2 border-gray-200 bg-white px-4 py-4 flex items-center justify-between">
+            <span class="text-sm font-medium text-gray-800">Consommation d'alcool</span>
+            <label class="relative inline-flex cursor-pointer items-center">
+              <input v-model="form.alcool" type="checkbox" class="peer sr-only" />
+              <div class="h-8 w-14 rounded-full bg-gray-300 transition-colors peer-checked:bg-teal-500" />
+              <div class="absolute left-1 h-6 w-6 rounded-full bg-white shadow transition-transform peer-checked:translate-x-6" />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-4">
         <p class="text-base font-medium text-gray-900">Objectif principal</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div
