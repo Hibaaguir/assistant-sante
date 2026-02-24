@@ -1,24 +1,52 @@
 *.log
 .DS_Store
-.env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
+Thumbs.db
+
+# IDE
 /.fleet
 /.idea
 /.nova
-/.phpunit.cache
 /.vscode
 /.zed
+
+# Env
+.env
+.env.backup
+.env.production
 /auth.json
+
+# Root monorepo
 /node_modules
+/vendor
 /public/build
 /public/hot
 /public/storage
 /storage/*.key
 /storage/pail
-/vendor
+
+# Backend (Laravel)
+/backend/.env
+/backend/vendor
+/backend/node_modules
+/backend/public/build
+/backend/public/hot
+/backend/public/storage
+/backend/storage/*.key
+/backend/storage/pail
+/backend/.phpunit.cache
+/backend/.phpunit.result.cache
+/backend/.phpactor.json
+
+# Frontend (Vue)
+/frontend/node_modules
+/frontend/dist
+
+# Archive: keep source snapshot, ignore heavy generated deps/builds
+/_archive/**/node_modules
+/_archive/**/node_modules-root-after-clean
+/_archive/**/vendor
+/_archive/**/dist
+/_archive/**/build
+
 Homestead.json
 Homestead.yaml
-Thumbs.db
