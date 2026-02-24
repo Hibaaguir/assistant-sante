@@ -50,7 +50,7 @@ class ProfilSanteController extends Controller
             'nom_medicament' => ['nullable', 'string', 'max:255', 'required_if:prend_medicament,1'],
 
             'consulte_medecin' => ['required', 'boolean'],
-            'medecin_peut_consulter' => ['required', 'boolean'],
+            'medecin_peut_consulter' => ['required_if:consulte_medecin,1', 'boolean'],
             'medecin_email' => ['nullable', 'email', 'required_if:medecin_peut_consulter,1'],
 
             'fumeur' => ['required', 'boolean'],
