@@ -449,7 +449,6 @@ const diseaseOptions = [
   "Cholesterol eleve",
   "Depression",
   "Anemie",
-  "Cancer (en suivi)",
 ];
 
 const treatmentTypes = ref([
