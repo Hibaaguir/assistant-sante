@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50/50 via-white to-teal-50/50">
     <div class="bg-white/80 border-b border-slate-200 backdrop-blur-sm sticky top-0 z-10">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
@@ -101,9 +101,12 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import api from "@/services/api";
+import { useRouter } from "vue-router";
 import Etape1 from "./ProfilSanteEtape1.vue";
 import Etape2 from "./ProfilSanteEtape2.vue";
 import Etape3 from "./ProfilSanteEtape3.vue";
+
+const router = useRouter();
 
 const currentStep = ref(1);
 const totalSteps = 3;
@@ -160,7 +163,7 @@ const computedAge = computed(() => {
 onMounted(async () => {
   const token = localStorage.getItem("auth_token");
   if (!token) {
-    window.location.href = "/register";
+    router.replace({ name: "register" });
     return;
   }
 
@@ -172,31 +175,13 @@ onMounted(async () => {
     userDateOfBirth.value = user?.date_of_birth ? String(user.date_of_birth) : "";
 
     if (profil) {
-      form.sexe = profil.sexe ?? "";
-      form.taille = profil.taille ?? "";
-      form.poids = profil.poids ?? "";
-      form.groupe_sanguin = profil.groupe_sanguin ?? "";
-      form.objectif = profil.objectif ?? "";
-      form.objectifs = Array.isArray(profil.objectifs) ? [...profil.objectifs] : [];
-      form.allergies = Array.isArray(profil.allergies) ? [...profil.allergies] : [];
-      form.maladies_chroniques = Array.isArray(profil.maladies_chroniques) ? [...profil.maladies_chroniques] : [];
-      form.traitements = Array.isArray(profil.traitements) ? [...profil.traitements] : [];
-      form.prend_medicament = Boolean(profil.prend_medicament);
-      form.nom_medicament = profil.nom_medicament ?? "";
-      form.fumeur = Boolean(profil.fumeur);
-      form.alcool = Boolean(profil.alcool);
-      form.consulte_medecin = Boolean(profil.consulte_medecin);
-      form.medecin_peut_consulter = Boolean(profil.medecin_peut_consulter);
-      form.medecin_email = profil.medecin_email ?? "";
-
-      if (!form.objectifs.length && form.objectif) {
-        form.objectifs = [form.objectif];
-      }
+      router.replace({ name: "health" });
+      return;
     }
   } catch (error) {
     if (error.response?.status === 401) {
       localStorage.removeItem("auth_token");
-      window.location.href = "/register";
+      router.replace({ name: "register" });
       return;
     }
     saveError.value = "Impossible de charger le profil sante.";
@@ -280,10 +265,11 @@ async function enregistrer() {
   try {
     await api.post("/profil-sante", buildPayload());
     saveSuccess.value = "Profil enregistre avec succes.";
+    router.push({ name: "health" });
   } catch (error) {
     if (error.response?.status === 401) {
       localStorage.removeItem("auth_token");
-      window.location.href = "/register";
+      router.replace({ name: "register" });
       return;
     }
 
@@ -353,5 +339,3 @@ function validateStep3() {
   return true;
 }
 </script>
-
-

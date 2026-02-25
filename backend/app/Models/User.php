@@ -57,4 +57,9 @@ class User extends Authenticatable
         return $this->hasOne(\App\Models\ProfilSante::class);
     }
 
+    public function journalEntries()
+    {
+        return $this->hasMany(\App\Models\JournalEntry::class);
+    }
+
 }

@@ -147,6 +147,9 @@
 <script setup>
 import api from "@/services/api";
 import { reactive, ref } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const form = reactive({
   name: "",
@@ -421,9 +424,10 @@ async function submit() {
     form.password = "";
     form.password_confirmation = "";
 
+    const destination = res?.data?.redirect_to || "/profil-sante";
     setTimeout(() => {
-      window.location.href = "/profil-sante";
-    }, 1500);
+      router.push(destination);
+    }, 500);
   } catch (err) {
     messageType.value = "error";
     const data = err?.response?.data;
@@ -473,4 +477,3 @@ async function submit() {
   }
 }
 </script>
-
