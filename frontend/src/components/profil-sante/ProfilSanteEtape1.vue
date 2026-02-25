@@ -99,14 +99,15 @@
       </div>
 
       <div class="space-y-4">
-        <p class="text-base font-medium text-gray-900">Objectif principal</p>
+        <p class="text-base font-medium text-gray-900">Objectifs</p>
+        <p class="text-xs text-gray-500">Vous pouvez sélectionner plusieurs objectifs.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div
             v-for="goal in goals"
             :key="goal.value"
             class="cursor-pointer p-6 border-2 transition-all hover:shadow-md rounded-xl"
-            :class="form.objectif === goal.value ? 'border-teal-500 bg-teal-50/50 shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'"
-            @click="selectGoal(goal.value)"
+            :class="isGoalSelected(goal.value) ? 'border-teal-500 bg-teal-50/50 shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'"
+            @click="toggleGoal(goal.value)"
           >
             <div class="flex items-center gap-4">
               <div class="h-12 w-12 rounded-2xl flex items-center justify-center border" :class="goal.color">
@@ -145,8 +146,19 @@ const goals = [
 if (!Array.isArray(form.objectifs)) form.objectifs = [];
 if (!form.objectif && form.objectifs.length) form.objectif = form.objectifs[0];
 
-function selectGoal(goal) {
-  form.objectif = goal;
-  form.objectifs = [goal];
+function isGoalSelected(goal) {
+  return Array.isArray(form.objectifs) && form.objectifs.includes(goal);
+}
+
+function toggleGoal(goal) {
+  if (!Array.isArray(form.objectifs)) form.objectifs = [];
+
+  if (form.objectifs.includes(goal)) {
+    form.objectifs = form.objectifs.filter((item) => item !== goal);
+  } else {
+    form.objectifs = [...form.objectifs, goal];
+  }
+
+  form.objectif = form.objectifs[0] || "";
 }
 </script>
