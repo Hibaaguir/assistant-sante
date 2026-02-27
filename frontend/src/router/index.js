@@ -6,6 +6,7 @@ import JournalHome from "@/pages/journal/JournalHome.vue";
 import JournalAssistant from "@/pages/journal/JournalAssistant.vue";
 import JournalHistory from "@/pages/journal/JournalHistory.vue";
 import HealthProfilePage from "@/pages/health/HealthProfilePage.vue";
+import HealthDataPage from "@/pages/health/HealthDataPage.vue";
 import Placeholder from "@/pages/Placeholder.vue";
 import api from "@/services/api";
 
@@ -21,6 +22,7 @@ const routes = [
       { path: "", name: "main", redirect: { name: "health" } },
       { path: "dashboard", name: "dashboard", component: Placeholder, props: { title: "Dashboard" } },
       { path: "journal", name: "journal-home", component: JournalHome },
+      { path: "health-data", name: "health-data", component: HealthDataPage },
       { path: "journal/new", name: "journal-wizard", component: JournalAssistant },
       { path: "journal/history", name: "journal-history", component: JournalHistory },
       { path: "health", name: "health", component: HealthProfilePage },

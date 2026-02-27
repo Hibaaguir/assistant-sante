@@ -218,6 +218,20 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value.filter((item) => typeof item === "string" && item.trim() !== "") : [];
 }
 
+function normalizeFrequencyCount(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const normalized = Number(value);
+  if (!Number.isFinite(normalized)) return null;
+  return Math.max(1, Math.trunc(normalized));
+}
+
+function extractValidationMessage(errors) {
+  if (!errors || typeof errors !== "object") return "Validation invalide.";
+  const messages = Object.values(errors).flatMap((entry) => (Array.isArray(entry) ? entry : [entry])).filter(Boolean);
+  if (!messages.length) return "Validation invalide.";
+  return messages.join(" ");
+}
+
 function buildPayload() {
   const objectifs = normalizeArray(form.objectifs);
 
@@ -237,7 +251,7 @@ function buildPayload() {
             name: item?.name ?? null,
             dose: item?.dose ?? null,
             frequency_unit: item?.frequency_unit ?? null,
-            frequency_count: item?.frequency_count ?? null,
+            frequency_count: normalizeFrequencyCount(item?.frequency_count),
             duration: item?.duration ?? null,
           }))
           .filter((item) => item.type)
@@ -262,8 +276,10 @@ async function enregistrer() {
   saveSuccess.value = "";
   saving.value = true;
 
+  const payload = buildPayload();
+
   try {
-    await api.post("/profil-sante", buildPayload());
+    await api.post("/profil-sante", payload);
     saveSuccess.value = "Profil enregistre avec succes.";
     router.push({ name: "health" });
   } catch (error) {
@@ -273,9 +289,20 @@ async function enregistrer() {
       return;
     }
 
-    if (error.response?.status === 422 && error.response?.data?.errors) {
-      const firstError = Object.values(error.response.data.errors)[0];
-      saveError.value = Array.isArray(firstError) ? firstError[0] : "Validation invalide.";
+    if (error.response?.status === 422) {
+      const responseData = error.response?.data;
+
+      if (responseData?.errors) {
+        saveError.value = extractValidationMessage(responseData.errors);
+        console.error("Validation /api/profil-sante:", responseData.errors);
+      } else if (typeof responseData?.message === "string" && responseData.message.trim()) {
+        saveError.value = responseData.message;
+        console.error("Validation /api/profil-sante message:", responseData.message);
+      } else {
+        saveError.value = "Erreur de validation (422).";
+      }
+
+      console.error("Payload /api/profil-sante:", payload);
     } else {
       saveError.value = "Erreur lors de l'enregistrement du profil.";
     }

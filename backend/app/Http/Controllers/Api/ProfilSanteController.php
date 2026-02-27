@@ -43,7 +43,7 @@ class ProfilSanteController extends Controller
             'traitements.*.name' => ['nullable', 'string', 'max:255'],
             'traitements.*.dose' => ['nullable', 'string', 'max:120'],
             'traitements.*.frequency_unit' => ['nullable', Rule::in(['jour', 'semaine', 'mois'])],
-            'traitements.*.frequency_count' => ['nullable', 'integer', 'min:1', 'max:4'],
+            'traitements.*.frequency_count' => ['nullable', 'integer', 'min:1'],
             'traitements.*.duration' => ['nullable', 'string', 'max:120'],
 
             'prend_medicament' => ['required', 'boolean'],

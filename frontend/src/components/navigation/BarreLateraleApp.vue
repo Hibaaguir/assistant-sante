@@ -1,8 +1,8 @@
-<template>
+﻿<template>
   <aside class="hidden w-[286px] shrink-0 border-r border-slate-300 bg-slate-100 lg:flex lg:flex-col">
     <div class="border-b border-slate-300 px-8 py-8">
       <h1 class="text-[40px] font-medium leading-none tracking-tight text-slate-700">HealthTrack</h1>
-      <p class="mt-2 text-[28px] text-slate-600">Votre assistant santé</p>
+      <p class="mt-2 text-[28px] text-slate-600">Votre assistant santÃ©</p>
     </div>
 
     <nav class="flex-1 space-y-2 px-5 py-8">
@@ -53,7 +53,7 @@
         <p class="mt-1">Statut: Premium actif</p>
         <div class="mt-3 flex gap-2">
           <button type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100">Modifier profil</button>
-          <button type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100">Paramètres</button>
+          <button type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100">ParamÃ¨tres</button>
         </div>
       </div>
 
@@ -63,7 +63,7 @@
           <path d="M16 17l5-5-5-5" />
           <path d="M21 12H9" />
         </svg>
-        Déconnexion
+        DÃ©connexion
       </button>
     </div>
   </aside>
@@ -91,7 +91,7 @@ const navItems = [
   },
   {
     name: 'health',
-    label: 'Profil santé',
+    label: 'Profil santÃ©',
     to: { name: 'health' },
     icon: `<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>`
   },
@@ -102,6 +102,12 @@ const navItems = [
     icon: `<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v19H6.5A2.5 2.5 0 0 1 4 18.5z"/><path d="M8 7h8"/></svg>`
   },
   {
+    name: 'health-data',
+    label: 'Données de santé',
+    to: { name: 'health-data' },
+    icon: `<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h4"/><circle cx="12" cy="12" r="9"/></svg>`
+  },
+  {
     name: 'ai',
     label: 'Recommandations IA',
     to: { name: 'ai' },
@@ -109,9 +115,11 @@ const navItems = [
   },
   {
     name: 'doctor',
-    label: 'Vue médecin',
+    label: 'Vue mÃ©decin',
     to: { name: 'doctor' },
     icon: `<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14v5a2 2 0 0 1-2 2h-2"/><path d="M5 14v5a2 2 0 0 0 2 2h2"/><path d="M12 2v7"/><path d="M9 6h6"/><path d="M8 14a4 4 0 1 1 8 0v2H8z"/></svg>`
   }
 ]
 </script>
+
+

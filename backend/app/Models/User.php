@@ -62,4 +62,19 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\JournalEntry::class);
     }
 
+    public function healthVitals()
+    {
+        return $this->hasMany(\App\Models\HealthVital::class);
+    }
+
+    public function healthLabResults()
+    {
+        return $this->hasMany(\App\Models\HealthLabResult::class);
+    }
+
+    public function healthTreatmentChecks()
+    {
+        return $this->hasMany(\App\Models\HealthTreatmentCheck::class);
+    }
+
 }

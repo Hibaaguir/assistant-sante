@@ -327,9 +327,18 @@
                 <option value="semaine">Par semaine</option>
                 <option value="mois">Par mois</option>
               </select>
-              <select v-model.number="treatment.frequency_count" class="h-12 rounded-lg w-full border border-gray-200 px-4 bg-white outline-none focus:border-teal-500">
-                <option v-for="n in [1,2,3,4]" :key="n" :value="n">{{ n }} prise{{ n > 1 ? "s" : "" }}</option>
-              </select>
+              <div class="flex h-12 w-full items-center justify-between rounded-lg border border-gray-200 bg-slate-50 px-4 text-sm text-slate-900">
+                <input
+                  v-model.number="treatment.frequency_count"
+                  type="number"
+                  min="1"
+                  class="no-spinner min-w-[4.5rem] bg-transparent text-sm outline-none"
+                  placeholder="Ex: 3"
+                />
+                <span class="whitespace-nowrap text-sm text-gray-500">
+                  {{ Number(treatment.frequency_count || 0) > 1 ? "prises" : "prise" }}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -378,7 +387,7 @@
                 <p class="text-xs text-gray-600 mt-1">
                   {{ item.type }}
                   <span v-if="item.dose"> | {{ item.dose }}</span>
-                  <span v-if="item.frequency_count && item.frequency_unit"> | {{ item.frequency_count }} / {{ item.frequency_unit }}</span>
+                  <span v-if="item.frequency_count && item.frequency_unit"> | {{ item.frequency_count }} prise{{ Number(item.frequency_count) > 1 ? "s" : "" }} / {{ item.frequency_unit }}</span>
                   <span v-if="item.start_date && item.end_date"> | {{ item.start_date }} - {{ item.end_date }}</span>
                   <span v-else-if="item.duration"> | {{ item.duration }}</span>
                 </p>
@@ -599,7 +608,7 @@ function addTreatment() {
     name: treatment.name,
     dose: treatment.dose || null,
     frequency_unit: treatment.frequency_unit,
-    frequency_count: treatment.frequency_count,
+    frequency_count: Math.max(1, Number(treatment.frequency_count || 1)),
     start_date: treatment.start_date || null,
     end_date: treatment.end_date || null,
     duration: buildTreatmentDuration(),
@@ -660,3 +669,17 @@ function removeTreatment(index) {
   form.traitements.splice(index, 1);
 }
 </script>
+
+<style scoped>
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinner[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+</style>
+

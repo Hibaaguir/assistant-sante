@@ -22,6 +22,7 @@ const activeRoute = computed(() => {
 
   if (route.name === 'dashboard') return 'dashboard'
   if (route.name === 'health') return 'health'
+  if (route.name === 'health-data') return 'health-data'
   if (route.name === 'ai') return 'ai'
   if (route.name === 'doctor') return 'doctor'
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\HealthDataController;
 use App\Http\Controllers\Api\JournalEntryController;
 use App\Http\Controllers\Api\ProfilSanteController;
 use Illuminate\Support\Facades\Route;
@@ -25,5 +26,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{journalEntry}', [JournalEntryController::class, 'show']);
         Route::put('/{journalEntry}', [JournalEntryController::class, 'update']);
         Route::delete('/{journalEntry}', [JournalEntryController::class, 'destroy']);
+    });
+
+    Route::prefix('health-data')->group(function () {
+        Route::get('/overview', [HealthDataController::class, 'overview']);
+
+        Route::get('/vitals', [HealthDataController::class, 'listVitals']);
+        Route::post('/vitals', [HealthDataController::class, 'storeVital']);
+
+        Route::get('/labs', [HealthDataController::class, 'listLabResults']);
+        Route::post('/labs', [HealthDataController::class, 'storeLabResult']);
+        Route::put('/labs/{healthLabResult}', [HealthDataController::class, 'updateLabResult']);
+        Route::delete('/labs/{healthLabResult}', [HealthDataController::class, 'destroyLabResult']);
+
+        Route::get('/treatment-checks', [HealthDataController::class, 'listTreatmentChecks']);
+        Route::post('/treatment-checks/sync', [HealthDataController::class, 'syncTreatmentChecks']);
     });
 });
