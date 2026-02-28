@@ -65,6 +65,12 @@
 </template>
 
 <script setup>
+/*
+  Page d'edition d'une entree du journal.
+  Elle charge l'entree cible puis enregistre les changements via le store.
+  Le formulaire est volontairement direct pour une modification rapide.
+*/
+
 import { computed, onMounted, reactive, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useJournalStore } from '../../stores/journal'
@@ -143,3 +149,5 @@ const enregistrer = async () => {
   router.push({ name: 'journal-history' })
 }
 </script>
+
+

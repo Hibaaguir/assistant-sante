@@ -70,6 +70,12 @@
 </template>
 
 <script setup>
+/*
+  Page historique du journal.
+  Elle affiche les entrees avec filtres et actions (editer/supprimer).
+  Les donnees sont centralisees dans le store journal.
+*/
+
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ModalFiltre from '../../components/journal/ModalFiltre.vue'
@@ -115,3 +121,5 @@ const reinitialiserFiltre = () => {
 }
 
 </script>
+
+

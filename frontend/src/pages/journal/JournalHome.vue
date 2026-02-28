@@ -61,6 +61,12 @@
 </template>
 
 <script setup>
+/*
+  Page d'accueil du module Journal.
+  Elle propose la creation d'une nouvelle entree et resume la derniere.
+  Les informations affichees proviennent du store journal.
+*/
+
 import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
@@ -93,3 +99,5 @@ const energyLabel = (value) => {
   return 'Bonne'
 }
 </script>
+
+

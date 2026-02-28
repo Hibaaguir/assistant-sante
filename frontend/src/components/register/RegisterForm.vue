@@ -145,6 +145,12 @@
 </template>
 
 <script setup>
+/*
+  Formulaire d'inscription utilisateur.
+  Cette vue gere la validation locale (email, date, mot de passe) puis l'appel API.
+  Les messages backend sont mappes vers des erreurs lisibles pour l'etudiant.
+*/
+
 import api from "@/services/api";
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
@@ -171,6 +177,7 @@ const serverMessage = ref("");
 const messageType = ref("success");
 const lastDateInputType = ref("");
 
+// Reset simple des erreurs de formulaire entre deux soumissions.
 function clearErrors() {
   errors.name = "";
   errors.email = "";
@@ -194,6 +201,7 @@ function validatePasswordRequirements() {
   if (form.password && !passwordError) errors.password = "";
 }
 
+// On accepte seulement chiffres + "/" et on garde la frappe naturelle.
 function handleDateBeforeInput(event) {
   lastDateInputType.value = event.inputType || "";
   if (event.data && /[^0-9/]/.test(event.data)) {
@@ -220,6 +228,7 @@ function handleDateInput(event) {
   }
 }
 
+// Validation stricte JJ/MM/AAAA + verification d'age minimum.
 function validateDateFormat() {
   if (!form.date_of_birth) {
     errors.date_of_birth = "";
@@ -270,6 +279,7 @@ function calculateAge(birthDate) {
   return age;
 }
 
+// Conversion UI (JJ/MM/AAAA) vers format API (YYYY-MM-DD).
 function convertDateFormat(dateStr) {
   const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
   const match = dateStr.match(dateRegex);
@@ -309,6 +319,7 @@ function setMissingFieldErrors() {
   return hasMissing;
 }
 
+// Helpers pour normaliser les messages serveur dans un langage utilisateur.
 function firstMessage(fieldErrors) {
   return Array.isArray(fieldErrors) ? fieldErrors[0] || "" : "";
 }
@@ -370,6 +381,7 @@ function mapTopLevelBackendMessage(message) {
 }
 
 async function submit() {
+  // Pipeline de soumission: reset -> validation locale -> appel API -> mapping erreurs.
   serverMessage.value = "";
   messageType.value = "success";
   clearErrors();

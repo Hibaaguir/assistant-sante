@@ -1,3 +1,9 @@
+﻿/*
+  Store Pinia du module journal.
+  Il centralise le chargement, la transformation et la sauvegarde des entrees.
+  Les pages journal consomment cet etat pour garder une logique unique.
+*/
+
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import api from "@/services/api";
@@ -191,3 +197,5 @@ export const useJournalStore = defineStore("journal", () => {
     reinitialiserFiltre,
   };
 });
+
+

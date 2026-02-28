@@ -13,6 +13,12 @@
 </template>
 
 <script setup>
+/*
+  Element unitaire de la navigation laterale.
+  Il recoit son etat (actif/inactif) et ses donnees via props.
+  Son role est uniquement visuel et reutilisable.
+*/
+
 defineProps({
   to: {
     type: Object,
@@ -32,3 +38,4 @@ defineProps({
   }
 })
 </script>
+

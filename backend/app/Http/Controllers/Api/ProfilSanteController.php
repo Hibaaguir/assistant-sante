@@ -27,8 +27,6 @@ class ProfilSanteController extends Controller
             'taille' => ['required', 'numeric', 'min:30', 'max:250'],
             'poids' => ['required', 'numeric', 'min:1', 'max:300'],
             'groupe_sanguin' => ['required', 'string', 'max:5'],
-            'objectif' => ['nullable', 'string', 'max:255'],
-
             'objectifs' => ['nullable', 'array'],
             'objectifs.*' => ['string', 'max:120'],
 

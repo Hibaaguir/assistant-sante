@@ -1,4 +1,9 @@
 <?php
+/*
+| Cette migration cree la table des analyses biologiques.
+| Chaque resultat est rattache a un utilisateur et une date d'analyse.
+| Les index facilitent l'affichage des historiques dans l'UI.
+*/
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -6,6 +11,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    // Creation de la table des analyses.
     public function up(): void
     {
         Schema::create('health_lab_results', function (Blueprint $table) {
@@ -22,6 +28,7 @@ return new class extends Migration
         });
     }
 
+    // Rollback standard.
     public function down(): void
     {
         Schema::dropIfExists('health_lab_results');

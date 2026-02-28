@@ -72,6 +72,12 @@
 </template>
 
 <script setup>
+/*
+  Carte "Autres informations" de la derniere entree.
+  Les textes affiches sont derives de l'objet `latestEntry`.
+  Le composant reste purement visuel pour etre reutilisable.
+*/
+
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -156,3 +162,4 @@ const sugarBadgeClass = computed(() => {
   return 'border-amber-300 bg-amber-100 text-amber-700'
 })
 </script>
+

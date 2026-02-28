@@ -370,6 +370,14 @@ import { computed, defineComponent, h, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/services/api";
 
+/*
+  Cette page affiche et edite le profil sante utilisateur.
+  Elle charge le profil, ouvre des sections d'edition, puis sauvegarde via l'API.
+  La logique garde un draft local pour eviter de modifier l'affichage tant que l'utilisateur ne valide pas.
+  Les helpers ci-dessous servent surtout a normaliser les listes et les traitements.
+*/
+
+// State principal de la page.
 const router = useRouter();
 const loading = ref(true);
 const error = ref("");
@@ -385,6 +393,7 @@ const editing = reactive({
   doctor: false,
 });
 
+// Draft edite dans les formulaires avant sauvegarde.
 const draft = reactive({
   sexe: "",
   taille: "",
@@ -474,6 +483,7 @@ const treatmentDraft = reactive({
   end_date: "",
 });
 
+// Age affiche dans la section "Informations de base".
 const computedAge = computed(() => {
   if (!user.date_of_birth) return "";
   const dob = new Date(user.date_of_birth);
@@ -485,6 +495,7 @@ const computedAge = computed(() => {
   return age >= 0 ? `${age} ans` : "";
 });
 
+// Helpers d'affichage simples.
 function yesNo(value) {
   return value ? "Oui" : "Non";
 }
@@ -499,6 +510,7 @@ function normalizeList(value) {
   return value.map((item) => String(item || "").trim()).filter(Boolean);
 }
 
+// Helpers de selection multiple (objectifs, allergies, maladies).
 function isSelected(key, value) {
   return Array.isArray(draft[key]) && draft[key].includes(value);
 }
@@ -530,6 +542,7 @@ function addSelectedOption(key, value, kind) {
   if (kind === "disease") selectedDiseaseOption.value = "";
 }
 
+// Resume lisible des traitements pour le mode lecture.
 function treatmentsSummary(value) {
   if (!Array.isArray(value) || value.length === 0) return "-";
   const labels = value
@@ -550,6 +563,7 @@ function handleTreatmentDateInput(event, key) {
   treatmentDraft[key] = formatDateWithSlashes(raw);
 }
 
+// Validation locale de l'email medecin avant envoi serveur.
 function validateDoctorEmail() {
   const canUseDoctorEmail = Boolean(draft.consulte_medecin && draft.medecin_peut_consulter);
   if (!canUseDoctorEmail) {
@@ -573,6 +587,7 @@ function validateDoctorEmail() {
   return true;
 }
 
+// Gestion du mini-editeur de traitements.
 function resetTreatmentDraft() {
   treatmentDraft.type = "";
   treatmentDraft.name = "";
@@ -653,6 +668,7 @@ function removeTreatment(index) {
   draft.traitements.splice(index, 1);
 }
 
+// Synchronise les donnees du profil vers le draft editable.
 function syncDraftFromProfil() {
   draft.sexe = profil.sexe || "";
   draft.taille = profil.taille ?? "";
@@ -693,6 +709,7 @@ function cancelEdit(section) {
   editing[section] = false;
 }
 
+// Construit le payload API final avec normalisation des champs.
 function buildPayload() {
   const objectifs = normalizeList(draft.objectifs);
   const allergies = normalizeList(draft.allergies);
@@ -707,7 +724,6 @@ function buildPayload() {
     taille: draft.taille === "" ? null : Number(draft.taille),
     poids: draft.poids === "" ? null : Number(draft.poids),
     groupe_sanguin: draft.groupe_sanguin || null,
-    objectif: objectifs[0] || null,
     objectifs,
     allergies,
     maladies_chroniques: maladiesChroniques,
@@ -722,6 +738,7 @@ function buildPayload() {
   };
 }
 
+// Sauvegarde d'une section avec gestion des cas d'erreur API.
 async function saveSection(section) {
   if (section === "doctor" && !validateDoctorEmail()) {
     error.value = "";
@@ -760,6 +777,7 @@ async function saveSection(section) {
   }
 }
 
+// Chargement initial du profil.
 onMounted(async () => {
   try {
     const response = await api.get("/profil-sante");
@@ -778,6 +796,7 @@ onMounted(async () => {
   }
 });
 
+// Composant interne: mapping simple des icones par nom.
 const Icon = defineComponent({
   name: "HealthIcon",
   props: { name: { type: String, required: true } },
@@ -807,6 +826,7 @@ const Icon = defineComponent({
   },
 });
 
+// Composant interne: ligne label/valeur reutilisable dans les cartes.
 const FieldRow = defineComponent({
   name: "FieldRow",
   props: {

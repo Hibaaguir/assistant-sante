@@ -1,3 +1,9 @@
+/*
+  Configuration centrale des routes de l'application.
+  Le guard global gere l'acces selon l'etat d'authentification et du profil sante.
+  Un cache court ("authCheckInFlight") evite les appels /auth/me en doublon.
+*/
+
 import { createRouter, createWebHistory } from "vue-router";
 import RegisterForm from "@/components/register/RegisterForm.vue";
 import ProfilSante from "@/components/profil-sante/ProfilSante.vue";
@@ -37,6 +43,7 @@ const router = createRouter({
   routes,
 });
 
+// Promesse partagee pour eviter plusieurs verifications auth simultanees.
 let authCheckInFlight = null;
 
 async function getAuthState() {
@@ -63,7 +70,7 @@ async function getAuthState() {
 }
 
 router.beforeEach(async (to) => {
-  // Keep register page always reachable as landing page.
+  // La page register reste toujours accessible comme point d'entree.
   if (to.name === "register") {
     return true;
   }
@@ -78,6 +85,7 @@ router.beforeEach(async (to) => {
     return { name: "health" };
   }
 
+  // Si l'utilisateur n'a pas complete son profil, on force l'etape profil-sante.
   if (to.path.startsWith("/main") && state.isAuth && !state.hasProfil) {
     return { name: "profil-sante" };
   }

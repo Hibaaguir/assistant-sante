@@ -38,7 +38,7 @@
       <button
         type="button"
         class="inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(37,99,235,0.22)]"
-        @click="openAddModal"
+        @click="ouvrirModalAjout"
       >
         <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M12 5v14M5 12h14" stroke-linecap="round" />
@@ -93,32 +93,32 @@
         <div class="mb-3 flex items-center justify-between">
           <h2 class="text-[34px] font-semibold leading-none text-slate-900">Évolution - 7 derniers jours</h2>
           <div class="flex items-center gap-2 text-[12px] font-medium">
-            <button type="button" class="rounded-xl border px-3 py-1.5 transition" :class="selectedSeries.rhythm ? 'border-rose-500 bg-white text-rose-600' : 'border-slate-200 bg-slate-100 text-slate-500'" @click="toggleSeries('rhythm')">Rythme</button>
-            <button type="button" class="rounded-xl border px-3 py-1.5 transition" :class="selectedSeries.tension ? 'border-blue-500 bg-white text-blue-600' : 'border-slate-200 bg-slate-100 text-slate-500'" @click="toggleSeries('tension')">Tension</button>
-            <button type="button" class="rounded-xl border px-3 py-1.5 transition" :class="selectedSeries.saturation ? 'border-violet-500 bg-white text-violet-600' : 'border-slate-200 bg-slate-100 text-slate-500'" @click="toggleSeries('saturation')">Saturation</button>
+            <button type="button" class="rounded-xl border px-3 py-1.5 transition" :class="selectedSeries.rhythm ? 'border-rose-500 bg-white text-rose-600' : 'border-slate-200 bg-slate-100 text-slate-500'" @click="basculerSerie('rhythm')">Rythme</button>
+            <button type="button" class="rounded-xl border px-3 py-1.5 transition" :class="selectedSeries.tension ? 'border-blue-500 bg-white text-blue-600' : 'border-slate-200 bg-slate-100 text-slate-500'" @click="basculerSerie('tension')">Tension</button>
+            <button type="button" class="rounded-xl border px-3 py-1.5 transition" :class="selectedSeries.saturation ? 'border-violet-500 bg-white text-violet-600' : 'border-slate-200 bg-slate-100 text-slate-500'" @click="basculerSerie('saturation')">Saturation</button>
           </div>
         </div>
 
-        <div ref="chartRef" class="relative overflow-x-auto" @mousemove="handleChartMove" @mouseleave="handleChartLeave">
+        <div ref="chartRef" class="relative overflow-x-auto" @mousemove="gererMouvementGraphique" @mouseleave="gererSortieGraphique">
           <svg :viewBox="`0 0 ${chart.width} ${chart.height}`" class="h-[300px] w-full min-w-[980px]">
             <g stroke="#e2e8f0" stroke-dasharray="4 4">
-              <line v-for="tick in yTicks" :key="`h-${tick}`" :x1="chart.left" :y1="yToPx(tick)" :x2="chart.width - chart.right" :y2="yToPx(tick)" />
-              <line v-for="(label, i) in labels" :key="`v-${label}-${i}`" :x1="xToPx(i)" :y1="chart.top" :x2="xToPx(i)" :y2="chart.height - chart.bottom" />
+              <line v-for="tick in yTicks" :key="`h-${tick}`" :x1="chart.left" :y1="convertirYEnPx(tick)" :x2="chart.width - chart.right" :y2="convertirYEnPx(tick)" />
+              <line v-for="(label, i) in labels" :key="`v-${label}-${i}`" :x1="convertirXEnPx(i)" :y1="chart.top" :x2="convertirXEnPx(i)" :y2="chart.height - chart.bottom" />
             </g>
 
-            <line v-if="hoverIndex !== null" :x1="xToPx(hoverIndex)" :y1="chart.top" :x2="xToPx(hoverIndex)" :y2="chart.height - chart.bottom" stroke="#cbd5e1" stroke-width="1.5" />
+            <line v-if="hoverIndex !== null" :x1="convertirXEnPx(hoverIndex)" :y1="chart.top" :x2="convertirXEnPx(hoverIndex)" :y2="chart.height - chart.bottom" stroke="#cbd5e1" stroke-width="1.5" />
             <polyline v-for="series in visibleSeries" :key="`line-${series.key}`" fill="none" :stroke="series.color" stroke-width="3" :points="series.points" />
 
             <g v-for="series in visibleSeries" :key="`dots-${series.key}`">
-              <circle v-for="(point, i) in series.values" :key="`${series.key}-${i}`" :cx="xToPx(i)" :cy="yToPx(point)" :r="hoverIndex === i ? 6 : 5" :fill="series.color" />
-              <circle v-if="hoverIndex !== null" :cx="xToPx(hoverIndex)" :cy="yToPx(series.values[hoverIndex])" r="3.2" fill="white" />
+              <circle v-for="(point, i) in series.values" :key="`${series.key}-${i}`" :cx="convertirXEnPx(i)" :cy="convertirYEnPx(point)" :r="hoverIndex === i ? 6 : 5" :fill="series.color" />
+              <circle v-if="hoverIndex !== null" :cx="convertirXEnPx(hoverIndex)" :cy="convertirYEnPx(series.values[hoverIndex])" r="3.2" fill="white" />
             </g>
 
             <g fill="#94a3b8" font-size="13">
-              <text v-for="tick in yTicks" :key="`y-${tick}`" :x="chart.left - 22" :y="yToPx(tick) + 4">{{ tick }}</text>
+              <text v-for="tick in yTicks" :key="`y-${tick}`" :x="chart.left - 22" :y="convertirYEnPx(tick) + 4">{{ tick }}</text>
             </g>
             <g fill="#94a3b8" font-size="14">
-              <text v-for="(label, i) in labels" :key="`x-${label}-${i}`" :x="xToPx(i) - 24" :y="chart.height - 8">{{ label }}</text>
+              <text v-for="(label, i) in labels" :key="`x-${label}-${i}`" :x="convertirXEnPx(i) - 24" :y="chart.height - 8">{{ label }}</text>
             </g>
           </svg>
 
@@ -159,14 +159,14 @@
               <button
                 type="button"
                 class="rounded-lg border border-slate-300 px-3 py-1.5 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"
-                @click="openEditAnalysis(item)"
+                @click="ouvrirEditionAnalyse(item)"
               >
                 Modifier
               </button>
               <button
                 type="button"
                 class="rounded-lg border border-rose-200 px-3 py-1.5 text-[12px] font-semibold text-rose-600 hover:bg-rose-50"
-                @click="deleteAnalysis(item)"
+                @click="supprimerAnalyse(item)"
               >
                 Supprimer
               </button>
@@ -187,14 +187,14 @@
             <button
               type="button"
               class="h-[92px] w-full rounded-xl border px-2 pb-2 pt-2 transition"
-              :class="isDayComplete(day.key) ? 'border-[#08a84a] bg-[#cfddd6]' : 'border-slate-300 bg-slate-50 hover:bg-slate-100'"
-              @click="openTreatmentDay(day)"
+              :class="estJourComplet(day.key) ? 'border-[#08a84a] bg-[#cfddd6]' : 'border-slate-300 bg-slate-50 hover:bg-slate-100'"
+              @click="ouvrirJourTraitement(day)"
             >
               <p class="text-[32px] font-medium leading-none text-slate-900">{{ day.day }}</p>
               <div class="mt-2 flex justify-center">
                 <span
                   class="inline-flex h-6 w-6 items-center justify-center rounded-full border"
-                  :class="isDayComplete(day.key) ? 'border-[#08a84a] bg-[#08a84a] text-white' : 'border-slate-300 bg-white text-transparent'"
+                  :class="estJourComplet(day.key) ? 'border-[#08a84a] bg-[#08a84a] text-white' : 'border-slate-300 bg-white text-transparent'"
                 >
                   <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 13 4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
                 </span>
@@ -304,7 +304,7 @@
           <input v-model="vitalForm.date" type="date" class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none" />
         </div>
 
-        <button type="button" class="mt-2 h-11 w-full rounded-2xl bg-emerald-600 text-[16px] font-semibold text-white hover:bg-emerald-700" @click="saveVital">
+        <button type="button" class="mt-2 h-11 w-full rounded-2xl bg-emerald-600 text-[16px] font-semibold text-white hover:bg-emerald-700" @click="enregistrerMesure">
           Enregistrer
         </button>
       </div>
@@ -350,7 +350,7 @@
           <textarea v-model="analysisForm.notes" rows="3" placeholder="Commentaires..." class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-[15px] outline-none focus:border-blue-500" />
         </div>
 
-        <button type="button" class="mt-2 h-11 w-full rounded-2xl bg-emerald-600 text-[20px] font-semibold leading-none text-white hover:bg-emerald-700" @click="saveAnalysis">
+        <button type="button" class="mt-2 h-11 w-full rounded-2xl bg-emerald-600 text-[20px] font-semibold leading-none text-white hover:bg-emerald-700" @click="enregistrerAnalyse">
           {{ analysisSubmitLabel }}
         </button>
       </div>
@@ -368,23 +368,23 @@
 
       <p class="text-[14px] text-slate-600">Marquez vos prises de médicaments</p>
 
-      <div class="mt-6 space-y-3.5">
+      <div v-if="treatmentMedicines.length" class="mt-6 space-y-3.5">
         <article
           v-for="med in treatmentMedicines"
           :key="med.id"
           class="min-h-[126px] rounded-2xl border px-4 pb-4 pt-4 text-left transition"
-          :class="isMedicationComplete(selectedTreatmentDay.key, med) ? 'border-2 border-[#08a84a] bg-[#cfddd6]' : 'border border-slate-300 bg-slate-50'"
+          :class="estMedicamentComplet(selectedTreatmentDay.key, med) ? 'border-2 border-[#08a84a] bg-[#cfddd6]' : 'border border-slate-300 bg-slate-50'"
         >
           <div class="flex items-start justify-between">
             <div>
               <p class="text-[24px] font-semibold leading-none text-slate-900">{{ med.name }}</p>
               <p class="mt-1 text-[13px] leading-none text-slate-600">{{ med.dose }}</p>
-              <p v-if="getDoseCount(med) > 1" class="mt-2 text-[13px] text-slate-500">
-                {{ completedDoseCount(selectedTreatmentDay.key, med) }}/{{ getDoseCount(med) }} prises effectuées
+              <p v-if="obtenirNombrePrises(med) > 1" class="mt-2 text-[13px] text-slate-500">
+                {{ compterPrisesCompletees(selectedTreatmentDay.key, med) }}/{{ obtenirNombrePrises(med) }} prises effectuées
               </p>
             </div>
             <svg
-              v-if="isMedicationComplete(selectedTreatmentDay.key, med)"
+              v-if="estMedicamentComplet(selectedTreatmentDay.key, med)"
               viewBox="0 0 24 24"
               class="h-6 w-6 text-emerald-600"
               fill="none"
@@ -395,16 +395,16 @@
 
           <div class="mt-3 flex flex-wrap gap-2">
             <button
-              v-for="doseIndex in doseIndexes(med)"
+              v-for="doseIndex in obtenirIndexPrises(med)"
               :key="`${med.id}-dose-${doseIndex}`"
               type="button"
               class="inline-flex h-10 items-center gap-2 rounded-xl border px-3.5 text-[14px] font-semibold transition"
-              :class="isDoseChecked(selectedTreatmentDay.key, med.id, doseIndex) ? 'border-[#08a84a] bg-white text-slate-700' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'"
-              @click="toggleDose(selectedTreatmentDay.key, med, doseIndex)"
+              :class="estPriseCochee(selectedTreatmentDay.key, med.id, doseIndex) ? 'border-[#08a84a] bg-white text-slate-700' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'"
+              @click="basculerPrise(selectedTreatmentDay.key, med, doseIndex)"
             >
               <span
                 class="inline-flex h-5 w-5 items-center justify-center rounded-[4px] border"
-                :class="isDoseChecked(selectedTreatmentDay.key, med.id, doseIndex) ? 'border-[#08a84a] bg-[#08a84a] text-white' : 'border-slate-400 bg-white text-transparent'"
+                :class="estPriseCochee(selectedTreatmentDay.key, med.id, doseIndex) ? 'border-[#08a84a] bg-[#08a84a] text-white' : 'border-slate-400 bg-white text-transparent'"
               >
                 <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 13 4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
               </span>
@@ -413,6 +413,9 @@
           </div>
         </article>
       </div>
+      <p v-else class="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-600">
+        Aucun traitement actif pour le moment. Ajoutez vos traitements dans la page Profil Santé.
+      </p>
 
       <button type="button" class="mt-7 h-12 w-full rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-[16px] font-semibold leading-none text-white" @click="showTreatmentModal = false">
         Fermer
@@ -490,14 +493,14 @@ const latestPressure = computed(() => {
 });
 const latestOxygen = computed(() => latestVital.value?.oxygen_saturation ?? "--");
 
-const treatmentDays = ref(buildLast7Days());
+const treatmentDays = ref(construire7DerniersJours());
 const treatmentMedicines = ref([]);
 const treatmentChecks = reactive({});
 
 const plottedSeries = computed(() => [
-  { key: "heart", color: "#ef4444", values: heartRateValues.value, points: buildPoints(heartRateValues.value) },
-  { key: "sys", color: "#3b82f6", values: systolicValues.value, points: buildPoints(systolicValues.value) },
-  { key: "sat", color: "#8b5cf6", values: saturationValues.value, points: buildPoints(saturationValues.value) },
+  { key: "heart", color: "#ef4444", values: heartRateValues.value, points: construirePoints(heartRateValues.value) },
+  { key: "sys", color: "#3b82f6", values: systolicValues.value, points: construirePoints(systolicValues.value) },
+  { key: "sat", color: "#8b5cf6", values: saturationValues.value, points: construirePoints(saturationValues.value) },
 ]);
 const visibleSeries = computed(() =>
   plottedSeries.value.filter((series) => {
@@ -516,14 +519,15 @@ const hoverIndex = computed(() => hoveredIndex.value);
 const tooltipTop = 84;
 const tooltipLeft = computed(() => {
   if (hoverIndex.value === null) return 0;
-  const x = xToPx(hoverIndex.value);
+  const x = convertirXEnPx(hoverIndex.value);
   return Math.min(Math.max(x + 10, chart.left + 8), chart.width - 360);
 });
 
-function openAddModal() {
+// Cette fonction ouvre la bonne modale selon l'onglet actif.
+function ouvrirModalAjout() {
   if (activeTab.value === "labs") {
     editingAnalysisId.value = null;
-    resetAnalysisForm();
+    reinitialiserFormulaireAnalyse();
     showAnalysisModal.value = true;
     return;
   }
@@ -532,30 +536,35 @@ function openAddModal() {
   }
 }
 
-function toNumberOrNull(value) {
+// Cette fonction convertit une valeur en nombre ou renvoie null.
+function convertirNombreOuNull(value) {
   if (value === null || value === undefined || value === "") return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
 
-function toIsoDate(dateValue) {
+// Cette fonction convertit une date en format ISO (YYYY-MM-DD).
+function convertirDateIso(dateValue) {
   if (!dateValue) return new Date().toISOString().slice(0, 10);
   return String(dateValue).slice(0, 10);
 }
 
-function formatLabel(dateIso) {
+// Cette fonction formate une date courte pour l'axe du graphique.
+function formaterLibelle(dateIso) {
   if (!dateIso) return "";
   const date = new Date(`${dateIso}T00:00:00`);
   return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
 }
 
-function formatDate(dateIso) {
+// Cette fonction formate une date en affichage francais.
+function formaterDate(dateIso) {
   if (!dateIso) return "";
   const date = new Date(`${dateIso}T00:00:00`);
   return date.toLocaleDateString("fr-FR");
 }
 
-function resetAnalysisForm() {
+// Cette fonction remet a zero les champs du formulaire d'analyse.
+function reinitialiserFormulaireAnalyse() {
   analysisForm.type = "";
   analysisForm.value = "";
   analysisForm.unit = "";
@@ -563,7 +572,8 @@ function resetAnalysisForm() {
   analysisForm.notes = "";
 }
 
-function normalizeSeries(values, fallback = 0) {
+// Cette fonction remplace les valeurs invalides par la derniere valeur valide.
+function normaliserSerie(values, fallback = 0) {
   let last = fallback;
   return (Array.isArray(values) ? values : []).map((v) => {
     const n = Number(v);
@@ -575,7 +585,8 @@ function normalizeSeries(values, fallback = 0) {
   });
 }
 
-function buildLast7Days() {
+// Cette fonction construit la liste des 7 derniers jours.
+function construire7DerniersJours() {
   return Array.from({ length: 7 }).map((_, idx) => {
     const date = new Date();
     date.setDate(date.getDate() - (6 - idx));
@@ -589,12 +600,13 @@ function buildLast7Days() {
   });
 }
 
-function ensureDayChecks(dayKey) {
+// Cette fonction initialise les cases de suivi pour un jour donne.
+function assurerSuiviJour(dayKey) {
   if (!treatmentChecks[dayKey]) treatmentChecks[dayKey] = {};
   for (const med of treatmentMedicines.value) {
-    const doses = getDoseCount(med);
+    const doses = obtenirNombrePrises(med);
     for (let i = 1; i <= doses; i += 1) {
-      const key = buildDoseKey(med.id, i);
+      const key = construireClePrise(med.id, i);
       if (typeof treatmentChecks[dayKey][key] !== "boolean") {
         treatmentChecks[dayKey][key] = false;
       }
@@ -602,7 +614,8 @@ function ensureDayChecks(dayKey) {
   }
 }
 
-async function loadHealthData() {
+// Cette fonction charge les donnees de sante depuis l'API.
+async function chargerDonneesSante() {
   const res = await api.get("/health-data/overview", { params: { days: 7 } });
   const data = res?.data?.data ?? {};
 
@@ -613,7 +626,7 @@ async function loadHealthData() {
         name: item.analysis_type,
         value: item.value,
         unit: item.unit ?? "",
-        date: formatDate(item.analysis_date),
+        date: formaterDate(item.analysis_date),
         analysisDate: item.analysis_date,
         notes: item.notes ?? "",
       }))
@@ -624,34 +637,35 @@ async function loadHealthData() {
     ? chartData.labels
     : treatmentDays.value.map((day) => day.key);
 
-  labels.value = labelSource.map(formatLabel);
-  heartRateValues.value = normalizeSeries(chartData.heart_rate, 70);
-  systolicValues.value = normalizeSeries(chartData.systolic_pressure, 120);
-  saturationValues.value = normalizeSeries(chartData.oxygen_saturation, 98);
+  labels.value = labelSource.map(formaterLibelle);
+  heartRateValues.value = normaliserSerie(chartData.heart_rate, 70);
+  systolicValues.value = normaliserSerie(chartData.systolic_pressure, 120);
+  saturationValues.value = normaliserSerie(chartData.oxygen_saturation, 98);
   treatmentMedicines.value = Array.isArray(data.treatment_medicines) ? data.treatment_medicines : [];
 
-  for (const day of treatmentDays.value) ensureDayChecks(day.key);
+  for (const day of treatmentDays.value) assurerSuiviJour(day.key);
 
   if (Array.isArray(data.treatment_checks)) {
     for (const item of data.treatment_checks) {
-      ensureDayChecks(item.check_date);
+      assurerSuiviJour(item.check_date);
       treatmentChecks[item.check_date][item.medication_key] = Boolean(item.taken);
       if (item.medication_key && !String(item.medication_key).includes("__dose_")) {
-        treatmentChecks[item.check_date][buildDoseKey(item.medication_key, 1)] = Boolean(item.taken);
+        treatmentChecks[item.check_date][construireClePrise(item.medication_key, 1)] = Boolean(item.taken);
       }
     }
   }
 }
 
-async function saveVital() {
-  const measuredAt = toIsoDate(vitalForm.date);
+// Cette fonction enregistre une mesure vitale puis recharge les donnees.
+async function enregistrerMesure() {
+  const measuredAt = convertirDateIso(vitalForm.date);
 
   await api.post("/health-data/vitals", {
     measured_at: measuredAt,
-    heart_rate: vitalForm.skipHeartRate ? null : toNumberOrNull(vitalForm.heartRate),
-    systolic_pressure: vitalForm.skipPressure ? null : toNumberOrNull(vitalForm.systolic),
-    diastolic_pressure: vitalForm.skipPressure ? null : toNumberOrNull(vitalForm.diastolic),
-    oxygen_saturation: vitalForm.skipOxygen ? null : toNumberOrNull(vitalForm.oxygen),
+    heart_rate: vitalForm.skipHeartRate ? null : convertirNombreOuNull(vitalForm.heartRate),
+    systolic_pressure: vitalForm.skipPressure ? null : convertirNombreOuNull(vitalForm.systolic),
+    diastolic_pressure: vitalForm.skipPressure ? null : convertirNombreOuNull(vitalForm.diastolic),
+    oxygen_saturation: vitalForm.skipOxygen ? null : convertirNombreOuNull(vitalForm.oxygen),
   });
   vitalForm.heartRate = "";
   vitalForm.systolic = "";
@@ -662,15 +676,16 @@ async function saveVital() {
   vitalForm.skipOxygen = false;
   vitalForm.date = new Date().toISOString().slice(0, 10);
   showVitalsModal.value = false;
-  await loadHealthData();
+  await chargerDonneesSante();
 }
 
-async function saveAnalysis() {
+// Cette fonction enregistre une analyse avec validation simple des champs.
+async function enregistrerAnalyse() {
   const payload = {
     analysis_type: analysisForm.type,
-    value: toNumberOrNull(analysisForm.value),
+    value: convertirNombreOuNull(analysisForm.value),
     unit: analysisForm.unit || null,
-    analysis_date: toIsoDate(analysisForm.date),
+    analysis_date: convertirDateIso(analysisForm.date),
     notes: analysisForm.notes || null,
   };
 
@@ -681,12 +696,13 @@ async function saveAnalysis() {
   }
 
   editingAnalysisId.value = null;
-  resetAnalysisForm();
+  reinitialiserFormulaireAnalyse();
   showAnalysisModal.value = false;
-  await loadHealthData();
+  await chargerDonneesSante();
 }
 
-function openEditAnalysis(item) {
+// Cette fonction pre-remplit le formulaire pour modifier une analyse.
+function ouvrirEditionAnalyse(item) {
   editingAnalysisId.value = item.id;
   analysisForm.type = item.name ?? "";
   analysisForm.value = String(item.value ?? "");
@@ -696,21 +712,24 @@ function openEditAnalysis(item) {
   showAnalysisModal.value = true;
 }
 
-async function deleteAnalysis(item) {
+// Cette fonction supprime une analyse apres confirmation utilisateur.
+async function supprimerAnalyse(item) {
   const ok = window.confirm(`Supprimer l'analyse "${item.name}" ?`);
   if (!ok) return;
   await api.delete(`/health-data/labs/${item.id}`);
-  await loadHealthData();
+  await chargerDonneesSante();
 }
 
-function xToPx(index) {
+// Cette fonction convertit un index de point en position X du graphique.
+function convertirXEnPx(index) {
   if (labels.value.length <= 1) return chart.left;
   const usable = chart.width - chart.left - chart.right;
   const step = usable / (labels.value.length - 1);
   return chart.left + index * step;
 }
 
-function yToPx(value) {
+// Cette fonction convertit une valeur en position Y du graphique.
+function convertirYEnPx(value) {
   const n = Number(value);
   if (!Number.isFinite(n)) return chart.height - chart.bottom;
   const usable = chart.height - chart.top - chart.bottom;
@@ -718,11 +737,13 @@ function yToPx(value) {
   return chart.height - chart.bottom - ratio * usable;
 }
 
-function buildPoints(values) {
-  return values.map((v, i) => `${xToPx(i)},${yToPx(v)}`).join(" ");
+// Cette fonction construit la chaine de points SVG pour une courbe.
+function construirePoints(values) {
+  return values.map((v, i) => `${convertirXEnPx(i)},${convertirYEnPx(v)}`).join(" ");
 }
 
-function handleChartMove(event) {
+// Cette fonction met a jour le point survole dans le graphique.
+function gererMouvementGraphique(event) {
   if (!chartRef.value || labels.value.length === 0) return;
   const rect = chartRef.value.getBoundingClientRect();
   const localX = ((event.clientX - rect.left) / rect.width) * chart.width;
@@ -732,63 +753,73 @@ function handleChartMove(event) {
   hoveredIndex.value = Math.min(Math.max(nearest, 0), labels.value.length - 1);
 }
 
-function handleChartLeave() {
+// Cette fonction retire le survol quand la souris sort du graphique.
+function gererSortieGraphique() {
   hoveredIndex.value = null;
 }
 
-function toggleSeries(key) {
+// Cette fonction active ou desactive une serie du graphique.
+function basculerSerie(key) {
   const activeCount = [selectedSeries.rhythm, selectedSeries.tension, selectedSeries.saturation].filter(Boolean).length;
   if (selectedSeries[key] && activeCount === 1) return;
   selectedSeries[key] = !selectedSeries[key];
 }
 
-function openTreatmentDay(day) {
-  ensureDayChecks(day.key);
+// Cette fonction ouvre la modale de suivi pour un jour precis.
+function ouvrirJourTraitement(day) {
+  assurerSuiviJour(day.key);
   selectedTreatmentDayKey.value = day.key;
   showTreatmentModal.value = true;
 }
 
-function getDoseCount(med) {
+// Cette fonction retourne le nombre de prises quotidien pour un medicament.
+function obtenirNombrePrises(med) {
   const count = Number(med?.doses_per_day ?? 1);
   if (!Number.isFinite(count)) return 1;
   return Math.max(1, Math.min(Math.round(count), 12));
 }
 
-function doseIndexes(med) {
-  return Array.from({ length: getDoseCount(med) }, (_, idx) => idx + 1);
+// Cette fonction genere la liste des numeros de prises.
+function obtenirIndexPrises(med) {
+  return Array.from({ length: obtenirNombrePrises(med) }, (_, idx) => idx + 1);
 }
 
-function buildDoseKey(medId, doseIndex) {
+// Cette fonction cree une cle unique pour une prise de medicament.
+function construireClePrise(medId, doseIndex) {
   return `${medId}__dose_${doseIndex}`;
 }
 
-function isDoseChecked(dayKey, medId, doseIndex) {
-  return Boolean(treatmentChecks[dayKey]?.[buildDoseKey(medId, doseIndex)]);
+// Cette fonction verifie si une prise est marquee comme effectuee.
+function estPriseCochee(dayKey, medId, doseIndex) {
+  return Boolean(treatmentChecks[dayKey]?.[construireClePrise(medId, doseIndex)]);
 }
 
-function completedDoseCount(dayKey, med) {
-  const doses = getDoseCount(med);
+// Cette fonction compte le nombre de prises cochees pour un jour.
+function compterPrisesCompletees(dayKey, med) {
+  const doses = obtenirNombrePrises(med);
   let completed = 0;
   for (let i = 1; i <= doses; i += 1) {
-    if (isDoseChecked(dayKey, med.id, i)) completed += 1;
+    if (estPriseCochee(dayKey, med.id, i)) completed += 1;
   }
   return completed;
 }
 
-function isMedicationComplete(dayKey, med) {
-  return completedDoseCount(dayKey, med) >= getDoseCount(med);
+// Cette fonction verifie si toutes les prises du medicament sont faites.
+function estMedicamentComplet(dayKey, med) {
+  return compterPrisesCompletees(dayKey, med) >= obtenirNombrePrises(med);
 }
 
-async function syncTreatmentChecks() {
+// Cette fonction envoie l'etat des prises de traitement au serveur.
+async function synchroniserSuiviTraitements() {
   if (!treatmentMedicines.value.length) return;
 
   const checks = [];
   for (const day of treatmentDays.value) {
-    ensureDayChecks(day.key);
+    assurerSuiviJour(day.key);
     for (const med of treatmentMedicines.value) {
-      const doses = getDoseCount(med);
+      const doses = obtenirNombrePrises(med);
       for (let i = 1; i <= doses; i += 1) {
-        const doseKey = buildDoseKey(med.id, i);
+        const doseKey = construireClePrise(med.id, i);
         checks.push({
           check_date: day.key,
           medication_key: doseKey,
@@ -802,21 +833,25 @@ async function syncTreatmentChecks() {
   await api.post("/health-data/treatment-checks/sync", { checks });
 }
 
-async function toggleDose(dayKey, med, doseIndex) {
-  ensureDayChecks(dayKey);
-  const key = buildDoseKey(med.id, doseIndex);
+// Cette fonction coche ou decoche une prise puis synchronise le suivi.
+async function basculerPrise(dayKey, med, doseIndex) {
+  assurerSuiviJour(dayKey);
+  const key = construireClePrise(med.id, doseIndex);
   treatmentChecks[dayKey][key] = !treatmentChecks[dayKey][key];
-  await syncTreatmentChecks();
+  await synchroniserSuiviTraitements();
 }
 
-function isDayComplete(dayKey) {
+// Cette fonction verifie si tous les medicaments du jour sont complets.
+function estJourComplet(dayKey) {
   const dayChecks = treatmentChecks[dayKey];
   if (!dayChecks) return false;
   if (!treatmentMedicines.value.length) return false;
-  return treatmentMedicines.value.every((med) => isMedicationComplete(dayKey, med));
+  return treatmentMedicines.value.every((med) => estMedicamentComplet(dayKey, med));
 }
 
 onMounted(async () => {
-  await loadHealthData();
+  await chargerDonneesSante();
 });
 </script>
+
+

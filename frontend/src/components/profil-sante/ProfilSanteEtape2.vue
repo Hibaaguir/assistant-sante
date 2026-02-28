@@ -417,6 +417,12 @@
 </template>
 
 <script setup>
+/*
+  Etape 2 du profil sante.
+  L'utilisateur renseigne groupe sanguin, allergies, maladies chroniques et traitements.
+  Le composant modifie directement l'objet "form" recu en prop pour rester simple.
+*/
+
 import { computed, reactive, ref } from "vue";
 
 const props = defineProps({
@@ -530,6 +536,7 @@ const filteredTreatmentNames = computed(() => {
   return q ? treatmentNameOptions.value.filter((item) => item.toLowerCase().includes(q)) : treatmentNameOptions.value;
 });
 
+// Helpers communs pour les listes multi-selection (allergies/maladies).
 function isSelected(key, value) {
   return Array.isArray(form[key]) ? form[key].includes(value) : false;
 }
@@ -554,6 +561,7 @@ function addCustom(key, value) {
   if (key === "maladies_chroniques") customDisease.value = "";
 }
 
+// Gestion des options de traitement (type/nom) avec ajout personnalise.
 function selectTreatmentType(value) {
   treatment.type = value;
   openTreatmentTypes.value = false;
@@ -582,6 +590,7 @@ function addCustomTreatmentName() {
   openTreatmentNames.value = false;
 }
 
+// Formatage date "JJ/MM/AAAA" au fur et a mesure de la saisie.
 function formatDateWithSlashes(value) {
   const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
   if (digits.length <= 2) return digits;
@@ -599,6 +608,7 @@ function buildTreatmentDuration() {
   return null;
 }
 
+// Ajout ou mise a jour d'un traitement dans la liste du formulaire.
 function addTreatment() {
   if (!treatment.type || !treatment.name) return;
   if (!Array.isArray(form.traitements)) form.traitements = [];
@@ -645,6 +655,7 @@ function editTreatment(index) {
   showTreatmentForm.value = true;
 }
 
+// Reinitialise le sous-formulaire de traitement.
 function cancelTreatment() {
   showTreatmentForm.value = false;
   editingTreatmentIndex.value = -1;
@@ -682,4 +693,3 @@ function removeTreatment(index) {
   appearance: textfield;
 }
 </style>
-

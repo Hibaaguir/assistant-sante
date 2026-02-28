@@ -1,4 +1,9 @@
 <?php
+/*
+| Cette migration cree la table du journal quotidien utilisateur.
+| Elle stocke sommeil, stress, energie, alimentation, activite et habitudes.
+| La contrainte unique user/date impose une seule entree par jour.
+*/
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -6,6 +11,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    // Structure principale du journal et index de recherche.
     public function up(): void
     {
         Schema::create('journal_entries', function (Blueprint $table) {
@@ -39,9 +45,9 @@ return new class extends Migration
         });
     }
 
+    // Rollback standard.
     public function down(): void
     {
         Schema::dropIfExists('journal_entries');
     }
 };
-

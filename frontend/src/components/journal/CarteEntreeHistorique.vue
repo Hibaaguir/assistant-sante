@@ -11,22 +11,22 @@
           </span>
 
           <template v-if="filterType === 'all'">
-            <span>Sommeil: <b class="text-slate-900">{{ sleepLabel(entry.sleep) }}</b></span>
-            <span>Stress: <b class="text-slate-900">{{ stressLabel(entry.stress) }}</b></span>
-            <span>Energie: <b class="text-slate-900">{{ energyLabel(entry.energy) }}</b></span>
+            <span>Sommeil: <b class="text-slate-900">{{ libellerSommeil(entry.sleep) }}</b></span>
+            <span>Stress: <b class="text-slate-900">{{ libellerStress(entry.stress) }}</b></span>
+            <span>Energie: <b class="text-slate-900">{{ libellerEnergie(entry.energy) }}</b></span>
             <span>Repas: <b class="text-slate-900">{{ entry.meals.length }} repas</b></span>
             <span>Hydratation: <b class="text-slate-900">{{ entry.hydration }}L</b></span>
             <span>Activite: <b class="text-slate-900">{{ entry.activityType }} {{ entry.activityDuration }}min</b></span>
-            <span>Tabac: <b class="text-slate-900">{{ resumeTabac(entry) }}</b></span>
+            <span>Tabac: <b class="text-slate-900">{{ resumerTabac(entry) }}</b></span>
           </template>
-          <span v-else-if="filterType === 'sleep'">Sommeil: <b class="text-slate-900">{{ sleepLabel(entry.sleep) }}</b></span>
-          <span v-else-if="filterType === 'stress'">Stress: <b class="text-slate-900">{{ stressLabel(entry.stress) }}</b></span>
-          <span v-else-if="filterType === 'energy'">Energie: <b class="text-slate-900">{{ energyLabel(entry.energy) }}</b></span>
+          <span v-else-if="filterType === 'sleep'">Sommeil: <b class="text-slate-900">{{ libellerSommeil(entry.sleep) }}</b></span>
+          <span v-else-if="filterType === 'stress'">Stress: <b class="text-slate-900">{{ libellerStress(entry.stress) }}</b></span>
+          <span v-else-if="filterType === 'energy'">Energie: <b class="text-slate-900">{{ libellerEnergie(entry.energy) }}</b></span>
           <span v-else-if="filterType === 'nutrition'">Repas: <b class="text-slate-900">{{ entry.meals.length }} repas</b></span>
           <span v-else-if="filterType === 'hydration'">Hydratation: <b class="text-slate-900">{{ entry.hydration }}L</b></span>
           <span v-else-if="filterType === 'activity'">Activite: <b class="text-slate-900">{{ entry.activityType }} {{ entry.activityDuration }}min</b></span>
           <span v-else-if="filterType === 'date'">Date: <b class="text-slate-900">{{ entry.dateIso }}</b></span>
-          <span v-else-if="filterType === 'month'">Mois: <b class="text-slate-900">{{ monthLabel(entry.dateIso) }}</b></span>
+          <span v-else-if="filterType === 'month'">Mois: <b class="text-slate-900">{{ libellerMois(entry.dateIso) }}</b></span>
         </div>
       </div>
 
@@ -50,6 +50,12 @@
 </template>
 
 <script setup>
+/*
+  Carte d'une entree dans l'historique du journal.
+  Elle adapte les informations affichees selon le filtre actif.
+  Les actions utilisateur sont remontees au parent via emits.
+*/
+
 defineProps({
   entry: {
     type: Object,
@@ -67,29 +73,34 @@ defineProps({
 
 defineEmits(['edit', 'delete', 'save', 'cancel-edit'])
 
-const sleepLabel = (hours) => {
+// Cette fonction transforme les heures de sommeil en texte simple.
+const libellerSommeil = (hours) => {
   const h = Math.floor(hours)
   const m = Math.round((hours - h) * 60)
   return m ? `${h}h ${m}min` : `${h}h`
 }
 
-const stressLabel = (value) => {
+// Cette fonction retourne un niveau de stress lisible.
+const libellerStress = (value) => {
   if (value >= 8) return 'Eleve'
   if (value <= 3) return 'Faible'
   return 'Modere'
 }
 
-const energyLabel = (value) => {
+// Cette fonction retourne un niveau d'energie lisible.
+const libellerEnergie = (value) => {
   if (value >= 8) return 'Excellente'
   if (value <= 4) return 'Faible'
   return 'Bonne'
 }
 
-const monthLabel = (iso) => {
+// Cette fonction formate la date ISO pour afficher le mois et l'annee.
+const libellerMois = (iso) => {
   return new Date(`${iso}T00:00:00`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 }
 
-const resumeTabac = (entry) => {
+// Cette fonction construit un resume simple de la consommation de tabac.
+const resumerTabac = (entry) => {
   if (!entry.tobacco) return 'Non'
   const parts = []
   if (entry.tobaccoTypes?.cigarette && typeof entry.cigarettesPerDay === 'number') {
@@ -102,3 +113,5 @@ const resumeTabac = (entry) => {
   return parts.join(', ')
 }
 </script>
+
+

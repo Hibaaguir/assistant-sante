@@ -20,6 +20,12 @@
 </template>
 
 <script setup>
+/*
+  Indicateur visuel des etapes du wizard journal.
+  Il se base sur `current` et `steps` pour afficher la progression.
+  Pas de logique metier, uniquement du rendu.
+*/
+
 defineProps({
   current: {
     type: Number,
@@ -31,3 +37,5 @@ defineProps({
   }
 })
 </script>
+
+

@@ -127,6 +127,12 @@
 </template>
 
 <script setup>
+/*
+  Etape 1 du profil sante: informations de base et objectifs.
+  Le composant met a jour directement l'objet `form` partage.
+  L'objectif est de garder une saisie simple avant validation finale.
+*/
+
 const props = defineProps({
   form: { type: Object, required: true },
   computedAge: { type: [Number, String], default: "" },
@@ -144,7 +150,6 @@ const goals = [
 ];
 
 if (!Array.isArray(form.objectifs)) form.objectifs = [];
-if (!form.objectif && form.objectifs.length) form.objectif = form.objectifs[0];
 
 function isGoalSelected(goal) {
   return Array.isArray(form.objectifs) && form.objectifs.includes(goal);
@@ -158,7 +163,5 @@ function toggleGoal(goal) {
   } else {
     form.objectifs = [...form.objectifs, goal];
   }
-
-  form.objectif = form.objectifs[0] || "";
 }
 </script>

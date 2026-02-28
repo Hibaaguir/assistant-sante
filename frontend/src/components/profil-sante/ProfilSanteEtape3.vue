@@ -74,6 +74,12 @@
 </template>
 
 <script setup>
+/*
+  Etape 3 du profil sante: lien avec le medecin.
+  Ce composant pilote un choix binaire (oui/non) et l'email du medecin.
+  Il met a jour l'objet "form" partage pour rester coherent avec l'assistant multi-etapes.
+*/
+
 import { computed } from "vue";
 
 const props = defineProps({
@@ -82,8 +88,10 @@ const props = defineProps({
 
 const form = props.form;
 
+// Etat d'affichage derive des booleens du formulaire.
 const hasDoctor = computed(() => (form.consulte_medecin ? "yes" : "no"));
 
+// Synchronise les champs lies quand l'utilisateur change de choix.
 function setDoctor(value) {
   if (value === "yes") {
     form.consulte_medecin = true;
@@ -96,4 +104,3 @@ function setDoctor(value) {
   form.medecin_email = "";
 }
 </script>
-

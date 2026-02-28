@@ -9,6 +9,12 @@
 </template>
 
 <script setup>
+/*
+  Layout principal des pages authentifiees.
+  Il affiche la barre laterale et la vue active via RouterView.
+  `activeRoute` aligne l'etat visuel de la navigation avec la route courante.
+*/
+
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import BarreLateraleApp from '../components/navigation/BarreLateraleApp.vue'
@@ -29,3 +35,5 @@ const activeRoute = computed(() => {
   return ''
 })
 </script>
+
+

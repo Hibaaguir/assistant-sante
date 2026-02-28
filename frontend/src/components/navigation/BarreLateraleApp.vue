@@ -70,6 +70,12 @@
 </template>
 
 <script setup>
+/*
+  Barre laterale principale de l'application.
+  Elle contient la navigation et les actions de compte utilisateur.
+  Le composant reste centré sur l'UI, sans logique metier.
+*/
+
 import { ref } from 'vue'
 import ElementNavLaterale from './ElementNavLaterale.vue'
 
@@ -121,5 +127,7 @@ const navItems = [
   }
 ]
 </script>
+
+
 
 

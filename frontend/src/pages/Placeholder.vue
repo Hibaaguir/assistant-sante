@@ -8,6 +8,13 @@
 </template>
 
 <script setup>
+/*
+  Composant placeholder simple pour les pages non encore implementees.
+  Il garde la navigation active avec un titre dynamique.
+  Le but est de fournir un ecran temporaire propre sans logique metier.
+*/
+
+// Props minimales: un titre obligatoire affiche dans la carte.
 defineProps({
   title: {
     type: String,

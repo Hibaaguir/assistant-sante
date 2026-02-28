@@ -1,4 +1,9 @@
 <?php
+/*
+| Cette migration cree la table de suivi des prises de traitements.
+| Chaque ligne represente une prise (ou non prise) d'un medicament pour un jour donne.
+| La cle unique evite les doublons user/date/medicament pour garder une synchro stable.
+*/
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -6,6 +11,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    // Creation de la table et des index utilises par l'ecran "Traitements".
     public function up(): void
     {
         Schema::create('health_treatment_checks', function (Blueprint $table) {
@@ -24,6 +30,7 @@ return new class extends Migration
         });
     }
 
+    // Rollback standard.
     public function down(): void
     {
         Schema::dropIfExists('health_treatment_checks');

@@ -1,4 +1,9 @@
 <?php
+/*
+| Cette migration cree la table des signes vitaux utilisateur.
+| Elle stocke les mesures principales (rythme cardiaque, tension, saturation).
+| Les index sont poses pour accelerer l'historique par utilisateur et date.
+*/
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -6,6 +11,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    // Creation de la table des signes vitaux.
     public function up(): void
     {
         Schema::create('health_vitals', function (Blueprint $table) {
@@ -23,6 +29,7 @@ return new class extends Migration
         });
     }
 
+    // Rollback standard.
     public function down(): void
     {
         Schema::dropIfExists('health_vitals');

@@ -99,6 +99,12 @@
 </template>
 
 <script setup>
+/*
+  Conteneur principal du wizard Profil Sante.
+  Il orchestre les 3 etapes, la navigation et la sauvegarde finale.
+  Les donnees sont centralisees dans `form` puis envoyees a l'API.
+*/
+
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import api from "@/services/api";
 import { useRouter } from "vue-router";
@@ -127,7 +133,6 @@ const form = reactive({
   taille: "",
   poids: "",
   groupe_sanguin: "",
-  objectif: "",
   objectifs: [],
   allergies: [],
   maladies_chroniques: [],
@@ -240,7 +245,6 @@ function buildPayload() {
     taille: form.taille,
     poids: form.poids,
     groupe_sanguin: form.groupe_sanguin,
-    objectif: objectifs[0] ?? form.objectif ?? null,
     objectifs,
     allergies: normalizeArray(form.allergies),
     maladies_chroniques: normalizeArray(form.maladies_chroniques),
@@ -335,8 +339,8 @@ function validateStep1() {
     stepError.value = "Veuillez selectionner votre sexe.";
     return false;
   }
-  if (!form.objectif && (!Array.isArray(form.objectifs) || !form.objectifs.length)) {
-    stepError.value = "Veuillez selectionner un objectif principal.";
+  if (!Array.isArray(form.objectifs) || !form.objectifs.length) {
+    stepError.value = "Veuillez selectionner au moins un objectif.";
     return false;
   }
   return true;

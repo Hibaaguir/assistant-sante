@@ -15,7 +15,7 @@
           :class="model.type === option.id ? 'border-blue-500 bg-blue-50 text-slate-900' : 'border-slate-300 bg-white text-slate-700'"
           @click="model.type = option.id"
         >
-          <span class="text-xs">{{ model.type === option.id ? '◉' : '○' }}</span>
+          <span class="text-xs">{{ model.type === option.id ? '?' : '?' }}</span>
           <span>{{ option.emoji }}</span>
           <span>{{ option.label }}</span>
         </button>
@@ -40,6 +40,12 @@
 </template>
 
 <script setup>
+/*
+  Modal de filtre pour l'historique du journal.
+  Le modele local permet de preparer le filtre avant confirmation.
+  Les actions sont renvoyees au parent via emits.
+*/
+
 import { reactive, watch } from 'vue'
 
 const props = defineProps({
@@ -70,17 +76,19 @@ watch(
 )
 
 const options = [
-  { id: 'all', label: 'Toutes les données', emoji: '🗂️' },
-  { id: 'date', label: 'Par date', emoji: '📅' },
-  { id: 'month', label: 'Par mois', emoji: '🗓️' },
-  { id: 'nutrition', label: 'Nutrition', emoji: '🥗' },
-  { id: 'hydration', label: 'Hydratation', emoji: '💧' },
-  { id: 'activity', label: 'Activités', emoji: '🏃' },
-  { id: 'sleep', label: 'Sommeil', emoji: '😴' },
-  { id: 'stress', label: 'Stress', emoji: '🔥' },
-  { id: 'energy', label: 'Énergie', emoji: '⚡' }
+  { id: 'all', label: 'Toutes les données', emoji: '???' },
+  { id: 'date', label: 'Par date', emoji: '??' },
+  { id: 'month', label: 'Par mois', emoji: '???' },
+  { id: 'nutrition', label: 'Nutrition', emoji: '??' },
+  { id: 'hydration', label: 'Hydratation', emoji: '??' },
+  { id: 'activity', label: 'Activités', emoji: '??' },
+  { id: 'sleep', label: 'Sommeil', emoji: '??' },
+  { id: 'stress', label: 'Stress', emoji: '??' },
+  { id: 'energy', label: 'Énergie', emoji: '?' }
 ]
 
 defineEmits(['close', 'apply', 'reset'])
 </script>
+
+
 

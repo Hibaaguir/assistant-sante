@@ -14,7 +14,6 @@ class ProfilSante extends Model
         'taille',
         'poids',
         'groupe_sanguin',
-        'objectif',
         'objectifs',
         'allergies',
         'maladies_chroniques',
