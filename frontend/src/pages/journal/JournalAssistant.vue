@@ -190,18 +190,40 @@
           </div>
 
           <div>
-            <label class="text-xl font-semibold" for="duration">Durée (minutes)</label>
-            <input id="duration" v-model.number="form.activityDuration" type="number" min="0" class="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm" />
-          </div>
-
-          <div>
-            <p class="text-xl font-semibold">Intensité</p>
-            <div class="mt-3 grid grid-cols-3 gap-2">
-              <button v-for="value in intensityOptions" :key="value" type="button" class="rounded-xl border py-3 text-sm font-semibold" :class="form.intensity === value ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-300 bg-white'" @click="form.intensity = value">{{ intensityLabel[value] }}</button>
-            </div>
+            <label class="text-xl font-semibold" for="duration">
+              Durée (minutes)
+              <span v-if="isDurationRequired" class="ml-1 text-red-500">*</span>
+            </label>
+            <input
+              id="duration"
+              v-model.number="form.activityDuration"
+              type="number"
+              min="0"
+              class="mt-2 w-full rounded-lg border bg-white px-3 py-3 text-sm"
+              :class="submitAttempted && activityErrors.duration ? 'border-red-400 focus:border-red-500 focus:ring-red-200' : 'border-slate-300'"
+            />
+            <p v-if="submitAttempted && activityErrors.duration" class="mt-1 text-sm text-red-500">{{ activityErrors.duration }}</p>
           </div>
 
           <div class="space-y-4">
+            <div>
+              <p class="text-xl font-semibold">Intensité</p>
+              <div class="mt-3 grid grid-cols-3 gap-2">
+                <button
+                  v-for="value in intensityOptions"
+                  :key="`intensity-${value}`"
+                  type="button"
+                  class="rounded-xl border py-3 text-sm font-semibold"
+                  :class="form.intensity === value ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-300 bg-white'"
+                  @click="form.intensity = value"
+                >
+                  {{ intensityLabel[value] }}
+                </button>
+              </div>
+            </div>
+
+            <p class="text-xl font-semibold">Habitude</p>
+
             <div class="rounded-xl bg-slate-100 p-4 ring-1 ring-slate-200">
               <button
                 type="button"
@@ -223,7 +245,9 @@
 
               <div v-if="form.tobacco" class="mt-4 space-y-3">
                 <div>
-                  <label class="text-xs font-semibold text-slate-700">Type</label>
+                  <label class="text-xs font-semibold text-slate-700">
+                    Type <span class="text-red-500">*</span>
+                  </label>
                   <div class="mt-2 flex flex-wrap gap-2">
                     <button
                       type="button"
@@ -246,23 +270,18 @@
                 </div>
 
                 <div v-if="form.tobaccoTypes.cigarette">
-                  <label class="text-xs font-semibold text-slate-700">Nombre de cigarettes par jour</label>
+                  <label class="text-xs font-semibold text-slate-700">
+                    Nombre de cigarettes par jour <span class="text-red-500">*</span>
+                  </label>
                   <input v-model.number="form.cigarettesPerDay" type="number" min="0" placeholder="Ex: 5" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
                   <p v-if="submitAttempted && tobaccoErrors.cigarettesPerDay" class="mt-1 text-sm text-red-500">{{ tobaccoErrors.cigarettesPerDay }}</p>
                 </div>
 
                 <div v-if="form.tobaccoTypes.vape" class="space-y-3">
                   <div>
-                    <label class="text-xs font-semibold text-slate-700">Fréquence</label>
-                    <select v-model="form.vapeFrequency" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200">
-                      <option :value="null">Sélectionnez</option>
-                      <option value="Par semaine">Par semaine</option>
-                      <option value="Par mois">Par mois</option>
-                    </select>
-                    <p v-if="submitAttempted && tobaccoErrors.vapeFrequency" class="mt-1 text-sm text-red-500">{{ tobaccoErrors.vapeFrequency }}</p>
-                  </div>
-                  <div>
-                    <label class="text-xs font-semibold text-slate-700">Nombre de liquide</label>
+                    <label class="text-xs font-semibold text-slate-700">
+                      Nombre de taffes prise par jour <span class="text-red-500">*</span>
+                    </label>
                     <input v-model.number="form.vapeLiquidMl" type="number" min="0" placeholder="Ex: 3" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
                     <p v-if="submitAttempted && tobaccoErrors.vapeLiquidMl" class="mt-1 text-sm text-red-500">{{ tobaccoErrors.vapeLiquidMl }}</p>
                   </div>
@@ -276,7 +295,7 @@
                 class="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
                 @click="basculerAlcool"
               >
-                <span>Alcool</span>
+                <span>Alcool <span v-if="form.alcohol" class="text-red-500">*</span></span>
                 <span
                   class="relative h-6 w-10 rounded-full transition-colors"
                   :class="form.alcohol ? 'bg-pink-600' : 'bg-slate-300'"
@@ -290,7 +309,9 @@
               </button>
 
               <div v-if="form.alcohol" class="mt-4">
-                <label class="text-xs font-semibold text-slate-700">Nombre de verres par jour</label>
+                <label class="text-xs font-semibold text-slate-700">
+                  Nombre de verres par jour <span class="text-red-500">*</span>
+                </label>
                 <input v-model.number="form.alcoholDrinks" type="number" min="0" placeholder="Ex: 2" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700" />
                 <p v-if="submitAttempted && alcoholErrors.drinks" class="mt-1 text-sm text-red-500">{{ alcoholErrors.drinks }}</p>
               </div>
@@ -301,11 +322,32 @@
     </div>
 
     <div class="mt-6 flex items-center justify-between">
-      <button type="button" class="rounded-xl border px-5 py-3 text-sm font-semibold" :class="step === 1 ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400' : 'border-slate-300 bg-white text-slate-700'" :disabled="step === 1" @click="allerPrecedent">‹ Précédent</button>
-      <button v-if="step < 3" type="button" class="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white" @click="allerSuivant">Suivant ›</button>
-      <button v-else type="button" class="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white" @click="enregistrer">
-        {{ isEditMode ? '✓ Enregistrer les modifications' : '✓ Enregistrer la journée' }}
+      <button
+        type="button"
+        class="rounded-xl border px-5 py-3 text-sm font-semibold transition-colors"
+        :class="step === 1 ? 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50' : 'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100'"
+        @click="allerPrecedent"
+      >
+        {{ step === 1 ? '‹ Retour' : '‹ Précédent' }}
       </button>
+      <button v-if="step < 3" type="button" class="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white" @click="allerSuivant">Suivant ›</button>
+      <template v-else>
+        <div v-if="isEditMode" class="flex items-center gap-2">
+          <button
+            type="button"
+            class="rounded-xl border border-amber-300 bg-amber-50 px-6 py-3 text-sm font-semibold text-amber-700 transition-colors hover:bg-amber-100"
+            @click="annulerModification"
+          >
+            Annuler les modifications
+          </button>
+          <button type="button" class="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white" @click="enregistrer">
+            ✓ Enregistrer les modifications
+          </button>
+        </div>
+        <button v-else type="button" class="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white" @click="enregistrer">
+          ✓ Enregistrer la journée
+        </button>
+      </template>
     </div>
     <p v-if="saveError" class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
       {{ saveError }}
@@ -370,7 +412,6 @@ const form = reactive({
   alcohol: false,
   tobaccoTypes: { cigarette: false, vape: false },
   cigarettesPerDay: null,
-  vapeFrequency: null,
   vapeLiquidMl: null,
   alcoholDrinks: null
 })
@@ -389,31 +430,41 @@ const tobaccoErrors = computed(() => {
   const errors = {
     types: null,
     cigarettesPerDay: null,
-    vapeFrequency: null,
     vapeLiquidMl: null
   }
   if (!form.tobacco) return errors
   const hasCigarette = form.tobaccoTypes.cigarette
   const hasVape = form.tobaccoTypes.vape
   if (!hasCigarette && !hasVape) errors.types = 'Veuillez selectionner un type.'
-  if (hasCigarette && (form.cigarettesPerDay === null || form.cigarettesPerDay < 0)) {
+  if (hasCigarette && (form.cigarettesPerDay === null || form.cigarettesPerDay <= 0)) {
     errors.cigarettesPerDay = 'Veuillez remplir le champ.'
   }
-  if (hasVape && !form.vapeFrequency) {
-    errors.vapeFrequency = 'Veuillez remplir le champ.'
-  }
-  if (hasVape && (form.vapeLiquidMl === null || form.vapeLiquidMl < 0)) {
+  if (hasVape && (form.vapeLiquidMl === null || form.vapeLiquidMl <= 0)) {
     errors.vapeLiquidMl = 'Veuillez remplir le champ.'
   }
   return errors
 })
 const hasTobaccoErrors = computed(() => Object.values(tobaccoErrors.value).some(Boolean))
+const isDurationRequired = computed(() => Boolean(form.activityType))
+const activityErrors = computed(() => {
+  const errors = {
+    duration: null
+  }
+  if (!isDurationRequired.value) return errors
+
+  const duration = Number(form.activityDuration)
+  if (!Number.isFinite(duration) || duration <= 0) {
+    errors.duration = 'Veuillez remplir la durée (minutes).'
+  }
+  return errors
+})
+const hasActivityErrors = computed(() => Object.values(activityErrors.value).some(Boolean))
 const alcoholErrors = computed(() => {
   const errors = {
     drinks: null
   }
   if (!form.alcohol) return errors
-  if (form.alcoholDrinks === null || form.alcoholDrinks < 0) {
+  if (form.alcoholDrinks === null || form.alcoholDrinks <= 0) {
     errors.drinks = 'Veuillez remplir le champ.'
   }
   return errors
@@ -440,7 +491,6 @@ onMounted(async () => {
   form.alcohol = Boolean(entry.alcohol)
   form.tobaccoTypes = entry.tobaccoTypes ?? { cigarette: false, vape: false }
   form.cigarettesPerDay = entry.cigarettesPerDay ?? null
-  form.vapeFrequency = entry.vapeFrequency ?? null
   form.vapeLiquidMl = entry.vapeLiquidMl ?? null
   form.alcoholDrinks = entry.alcoholDrinks ?? null
 
@@ -494,6 +544,10 @@ const allerSuivant = () => {
 }
 
 const allerPrecedent = () => {
+  if (step.value === 1) {
+    router.push({ name: 'journal-home' })
+    return
+  }
   step.value = Math.max(1, step.value - 1)
 }
 
@@ -528,7 +582,6 @@ const basculerTabac = () => {
     form.tobaccoTypes.cigarette = false
     form.tobaccoTypes.vape = false
     form.cigarettesPerDay = null
-    form.vapeFrequency = null
     form.vapeLiquidMl = null
     submitAttempted.value = false
   }
@@ -544,7 +597,6 @@ const basculerTypeTabac = (type) => {
   }
   form.tobaccoTypes.vape = !form.tobaccoTypes.vape
   if (!form.tobaccoTypes.vape) {
-    form.vapeFrequency = null
     form.vapeLiquidMl = null
   }
 }
@@ -556,9 +608,15 @@ const basculerAlcool = () => {
   }
 }
 
+const annulerModification = async () => {
+  if (!isEditMode.value) return
+  await store.fetchEntries()
+  router.push({ name: 'journal-history', query: { notice: 'canceled' } })
+}
+
 const enregistrer = async () => {
   submitAttempted.value = true
-  if (hasTobaccoErrors.value || hasAlcoholErrors.value) return
+  if (hasActivityErrors.value || hasTobaccoErrors.value || hasAlcoholErrors.value) return
   saveError.value = ''
   try {
     const payload = {
@@ -579,14 +637,13 @@ const enregistrer = async () => {
         vape: form.tobacco ? form.tobaccoTypes.vape : false
       },
       cigarettesPerDay: form.tobacco && form.tobaccoTypes.cigarette ? Number(form.cigarettesPerDay) : null,
-      vapeFrequency: form.tobacco && form.tobaccoTypes.vape ? form.vapeFrequency : null,
       vapeLiquidMl: form.tobacco && form.tobaccoTypes.vape ? Number(form.vapeLiquidMl) : null,
       alcoholDrinks: form.alcohol && form.alcoholDrinks !== null ? Number(form.alcoholDrinks) : 0
     }
 
     if (isEditMode.value) {
       await store.mettreAJourEntree(editEntryId.value, payload)
-      router.push({ name: 'journal-history' })
+      router.push({ name: 'journal-history', query: { notice: 'saved' } })
       return
     }
 
@@ -690,4 +747,3 @@ const enregistrer = async () => {
   background: #052e16;
 }
 </style>
-

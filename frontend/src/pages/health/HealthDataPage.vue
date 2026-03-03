@@ -89,53 +89,6 @@
         </article>
       </section>
 
-      <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div class="mb-3 flex items-center justify-between">
-          <h2 class="text-[34px] font-semibold leading-none text-slate-900">Évolution - 7 derniers jours</h2>
-          <div class="flex items-center gap-2 text-[12px] font-medium">
-            <button type="button" class="rounded-xl border px-3 py-1.5 transition" :class="selectedSeries.rhythm ? 'border-rose-500 bg-white text-rose-600' : 'border-slate-200 bg-slate-100 text-slate-500'" @click="basculerSerie('rhythm')">Rythme</button>
-            <button type="button" class="rounded-xl border px-3 py-1.5 transition" :class="selectedSeries.tension ? 'border-blue-500 bg-white text-blue-600' : 'border-slate-200 bg-slate-100 text-slate-500'" @click="basculerSerie('tension')">Tension</button>
-            <button type="button" class="rounded-xl border px-3 py-1.5 transition" :class="selectedSeries.saturation ? 'border-violet-500 bg-white text-violet-600' : 'border-slate-200 bg-slate-100 text-slate-500'" @click="basculerSerie('saturation')">Saturation</button>
-          </div>
-        </div>
-
-        <div ref="chartRef" class="relative overflow-x-auto" @mousemove="gererMouvementGraphique" @mouseleave="gererSortieGraphique">
-          <svg :viewBox="`0 0 ${chart.width} ${chart.height}`" class="h-[300px] w-full min-w-[980px]">
-            <g stroke="#e2e8f0" stroke-dasharray="4 4">
-              <line v-for="tick in yTicks" :key="`h-${tick}`" :x1="chart.left" :y1="convertirYEnPx(tick)" :x2="chart.width - chart.right" :y2="convertirYEnPx(tick)" />
-              <line v-for="(label, i) in labels" :key="`v-${label}-${i}`" :x1="convertirXEnPx(i)" :y1="chart.top" :x2="convertirXEnPx(i)" :y2="chart.height - chart.bottom" />
-            </g>
-
-            <line v-if="hoverIndex !== null" :x1="convertirXEnPx(hoverIndex)" :y1="chart.top" :x2="convertirXEnPx(hoverIndex)" :y2="chart.height - chart.bottom" stroke="#cbd5e1" stroke-width="1.5" />
-            <polyline v-for="series in visibleSeries" :key="`line-${series.key}`" fill="none" :stroke="series.color" stroke-width="3" :points="series.points" />
-
-            <g v-for="series in visibleSeries" :key="`dots-${series.key}`">
-              <circle v-for="(point, i) in series.values" :key="`${series.key}-${i}`" :cx="convertirXEnPx(i)" :cy="convertirYEnPx(point)" :r="hoverIndex === i ? 6 : 5" :fill="series.color" />
-              <circle v-if="hoverIndex !== null" :cx="convertirXEnPx(hoverIndex)" :cy="convertirYEnPx(series.values[hoverIndex])" r="3.2" fill="white" />
-            </g>
-
-            <g fill="#94a3b8" font-size="13">
-              <text v-for="tick in yTicks" :key="`y-${tick}`" :x="chart.left - 22" :y="convertirYEnPx(tick) + 4">{{ tick }}</text>
-            </g>
-            <g fill="#94a3b8" font-size="14">
-              <text v-for="(label, i) in labels" :key="`x-${label}-${i}`" :x="convertirXEnPx(i) - 24" :y="chart.height - 8">{{ label }}</text>
-            </g>
-          </svg>
-
-          <div v-if="hoverIndex !== null" class="pointer-events-none absolute rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 text-[12px] shadow-lg" :style="{ left: `${tooltipLeft}px`, top: `${tooltipTop}px` }">
-            <p class="text-slate-900">{{ labels[hoverIndex] }}</p>
-            <p v-if="selectedSeries.rhythm" class="mt-1 text-rose-500">Rythme cardiaque (bpm) : {{ heartRateValues[hoverIndex] }}</p>
-            <p v-if="selectedSeries.tension" class="mt-1 text-blue-600">Tension systolique (mmHg) : {{ systolicValues[hoverIndex] }}</p>
-            <p v-if="selectedSeries.saturation" class="mt-1 text-violet-600">Saturation O₂ (%) : {{ saturationValues[hoverIndex] }}</p>
-          </div>
-        </div>
-
-        <div class="mt-1.5 flex items-center justify-center gap-3 text-[12px] font-medium">
-          <span v-if="selectedSeries.rhythm" class="inline-flex items-center gap-1 text-rose-500"><span class="h-1.5 w-1.5 rounded-full bg-rose-500" />Rythme cardiaque (bpm)</span>
-          <span v-if="selectedSeries.tension" class="inline-flex items-center gap-1 text-blue-500"><span class="h-1.5 w-1.5 rounded-full bg-blue-500" />Tension systolique (mmHg)</span>
-          <span v-if="selectedSeries.saturation" class="inline-flex items-center gap-1 text-violet-500"><span class="h-1.5 w-1.5 rounded-full bg-violet-500" />Saturation O₂ (%)</span>
-        </div>
-      </section>
     </template>
 
     <template v-else-if="activeTab === 'labs'">
@@ -304,6 +257,10 @@
           <input v-model="vitalForm.date" type="date" class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none" />
         </div>
 
+        <p v-if="vitalError" class="text-sm font-medium text-rose-600">
+          {{ vitalError }}
+        </p>
+
         <button type="button" class="mt-2 h-11 w-full rounded-2xl bg-emerald-600 text-[16px] font-semibold text-white hover:bg-emerald-700" @click="enregistrerMesure">
           Enregistrer
         </button>
@@ -434,6 +391,7 @@ const showAnalysisModal = ref(false);
 const showTreatmentModal = ref(false);
 const selectedTreatmentDayKey = ref(null);
 const editingAnalysisId = ref(null);
+const vitalError = ref("");
 
 const showAddButton = computed(() => activeTab.value !== "treatments");
 const addButtonLabel = computed(() => (activeTab.value === "labs" ? "Ajouter une analyse" : "Ajouter une mesure"));
@@ -532,6 +490,7 @@ function ouvrirModalAjout() {
     return;
   }
   if (activeTab.value === "vitals") {
+    reinitialiserFormulaireVital();
     showVitalsModal.value = true;
   }
 }
@@ -570,6 +529,19 @@ function reinitialiserFormulaireAnalyse() {
   analysisForm.unit = "";
   analysisForm.date = new Date().toISOString().slice(0, 10);
   analysisForm.notes = "";
+}
+
+// Cette fonction initialise le formulaire des signes vitaux avec des valeurs visibles.
+function reinitialiserFormulaireVital() {
+  vitalError.value = "";
+  vitalForm.heartRate = String(latestVital.value?.heart_rate ?? 72);
+  vitalForm.systolic = String(latestVital.value?.systolic_pressure ?? 120);
+  vitalForm.diastolic = String(latestVital.value?.diastolic_pressure ?? 80);
+  vitalForm.oxygen = String(latestVital.value?.oxygen_saturation ?? 98);
+  vitalForm.skipHeartRate = false;
+  vitalForm.skipPressure = false;
+  vitalForm.skipOxygen = false;
+  vitalForm.date = new Date().toISOString().slice(0, 10);
 }
 
 // Cette fonction remplace les valeurs invalides par la derniere valeur valide.
@@ -658,23 +630,31 @@ async function chargerDonneesSante() {
 
 // Cette fonction enregistre une mesure vitale puis recharge les donnees.
 async function enregistrerMesure() {
+  vitalError.value = "";
   const measuredAt = convertirDateIso(vitalForm.date);
+  const heartRate = vitalForm.skipHeartRate ? null : convertirNombreOuNull(vitalForm.heartRate);
+  const systolic = vitalForm.skipPressure ? null : convertirNombreOuNull(vitalForm.systolic);
+  const diastolic = vitalForm.skipPressure ? null : convertirNombreOuNull(vitalForm.diastolic);
+  const oxygen = vitalForm.skipOxygen ? null : convertirNombreOuNull(vitalForm.oxygen);
+
+  if (heartRate === null && systolic === null && diastolic === null && oxygen === null) {
+    vitalError.value = "Veuillez saisir au moins une mesure ou cocher les options de non-mesure.";
+    return;
+  }
+
+  if ((systolic === null) !== (diastolic === null)) {
+    vitalError.value = "Veuillez remplir les deux champs de tension (systolique et diastolique).";
+    return;
+  }
 
   await api.post("/health-data/vitals", {
     measured_at: measuredAt,
-    heart_rate: vitalForm.skipHeartRate ? null : convertirNombreOuNull(vitalForm.heartRate),
-    systolic_pressure: vitalForm.skipPressure ? null : convertirNombreOuNull(vitalForm.systolic),
-    diastolic_pressure: vitalForm.skipPressure ? null : convertirNombreOuNull(vitalForm.diastolic),
-    oxygen_saturation: vitalForm.skipOxygen ? null : convertirNombreOuNull(vitalForm.oxygen),
+    heart_rate: heartRate,
+    systolic_pressure: systolic,
+    diastolic_pressure: diastolic,
+    oxygen_saturation: oxygen,
   });
-  vitalForm.heartRate = "";
-  vitalForm.systolic = "";
-  vitalForm.diastolic = "";
-  vitalForm.oxygen = "";
-  vitalForm.skipHeartRate = false;
-  vitalForm.skipPressure = false;
-  vitalForm.skipOxygen = false;
-  vitalForm.date = new Date().toISOString().slice(0, 10);
+  reinitialiserFormulaireVital();
   showVitalsModal.value = false;
   await chargerDonneesSante();
 }

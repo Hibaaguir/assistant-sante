@@ -32,7 +32,15 @@ class HealthDataController extends Controller
 
         $latestVitals = HealthVital::query()
             ->where('user_id', $userId)
-            ->latest('measured_at')
+            ->where(function ($query) {
+                $query
+                    ->whereNotNull('heart_rate')
+                    ->orWhereNotNull('systolic_pressure')
+                    ->orWhereNotNull('diastolic_pressure')
+                    ->orWhereNotNull('oxygen_saturation');
+            })
+            ->orderByDesc('measured_at')
+            ->orderByDesc('id')
             ->first();
 
         $labResults = HealthLabResult::query()

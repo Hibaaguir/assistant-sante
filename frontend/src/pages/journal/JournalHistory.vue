@@ -18,6 +18,14 @@
       </div>
     </div>
 
+    <p
+      v-if="noticeMessage"
+      class="mb-4 rounded-xl border px-4 py-3 text-sm font-medium"
+      :class="noticeTone === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700'"
+    >
+      {{ noticeMessage }}
+    </p>
+
     <div v-if="store.filter.type !== 'all'" class="mb-4 flex items-center gap-2 text-sm">
       <span class="text-slate-500">Filtre actif :</span>
       <span class="rounded-full bg-blue-600 px-3 py-1 font-semibold text-white">{{ activeFilterLabel }}</span>
@@ -77,11 +85,12 @@
 */
 
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import ModalFiltre from '../../components/journal/ModalFiltre.vue'
 import CarteEntreeHistorique from '../../components/journal/CarteEntreeHistorique.vue'
 import { useJournalStore } from '../../stores/journal'
 
+const route = useRoute()
 const router = useRouter()
 const store = useJournalStore()
 const showFilter = ref(false)
@@ -108,6 +117,12 @@ const activeFilterLabel = computed(() => {
 const hasEntries = computed(() => store.entries.length > 0)
 const hasFilteredEntries = computed(() => store.filteredEntries.length > 0)
 const showNoResults = computed(() => hasEntries.value && !hasFilteredEntries.value)
+const noticeTone = computed(() => (route.query.notice === 'saved' ? 'success' : route.query.notice === 'canceled' ? 'info' : ''))
+const noticeMessage = computed(() => {
+  if (route.query.notice === 'saved') return 'Modifications enregistrées avec succès.'
+  if (route.query.notice === 'canceled') return 'Modifications annulées.'
+  return ''
+})
 
 
 const appliquerFiltre = (nextFilter) => {

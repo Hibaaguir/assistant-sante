@@ -15,8 +15,14 @@
           :class="model.type === option.id ? 'border-blue-500 bg-blue-50 text-slate-900' : 'border-slate-300 bg-white text-slate-700'"
           @click="model.type = option.id"
         >
-          <span class="text-xs">{{ model.type === option.id ? '?' : '?' }}</span>
-          <span>{{ option.emoji }}</span>
+          <span
+            class="inline-flex h-4 w-4 items-center justify-center rounded-full border"
+            :class="model.type === option.id ? 'border-blue-600' : 'border-slate-400'"
+            aria-hidden="true"
+          >
+            <span v-if="model.type === option.id" class="h-2 w-2 rounded-full bg-blue-600"></span>
+          </span>
+          <span class="text-sm leading-none" aria-hidden="true">{{ option.icon }}</span>
           <span>{{ option.label }}</span>
         </button>
       </div>
@@ -76,15 +82,15 @@ watch(
 )
 
 const options = [
-  { id: 'all', label: 'Toutes les données', emoji: '???' },
-  { id: 'date', label: 'Par date', emoji: '??' },
-  { id: 'month', label: 'Par mois', emoji: '???' },
-  { id: 'nutrition', label: 'Nutrition', emoji: '??' },
-  { id: 'hydration', label: 'Hydratation', emoji: '??' },
-  { id: 'activity', label: 'Activités', emoji: '??' },
-  { id: 'sleep', label: 'Sommeil', emoji: '??' },
-  { id: 'stress', label: 'Stress', emoji: '??' },
-  { id: 'energy', label: 'Énergie', emoji: '?' }
+  { id: 'all', label: 'Toutes les données', icon: '\u{1F5C3}\uFE0F' },
+  { id: 'date', label: 'Par date', icon: '\u{1F4C5}' },
+  { id: 'month', label: 'Par mois', icon: '\u{1F5D3}\uFE0F' },
+  { id: 'nutrition', label: 'Nutrition', icon: '\u{1F957}' },
+  { id: 'hydration', label: 'Hydratation', icon: '\u{1F4A7}' },
+  { id: 'activity', label: 'Activités', icon: '\u{1F3C3}' },
+  { id: 'sleep', label: 'Sommeil', icon: '\u{1F634}' },
+  { id: 'stress', label: 'Stress', icon: '\u{1F525}' },
+  { id: 'energy', label: 'Énergie', icon: '\u26A1' }
 ]
 
 defineEmits(['close', 'apply', 'reset'])

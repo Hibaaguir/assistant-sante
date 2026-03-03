@@ -7,7 +7,7 @@
       </div>
       <button
         type="button"
-        class="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-lg font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md"
+        class="rounded-2xl border border-cyan-200 bg-cyan-50 px-6 py-3 text-lg font-semibold text-cyan-800 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-cyan-100 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
         @click="router.push({ name: 'journal-history' })"
       >
         Voir l'historique
@@ -17,10 +17,10 @@
     <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
       <button
         type="button"
-        class="rounded-[28px] border border-blue-200 bg-white p-8 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md"
+        class="rounded-[28px] border border-indigo-200 bg-gradient-to-br from-indigo-50 to-blue-50 p-8 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
         @click="router.push({ name: 'journal-wizard' })"
       >
-        <div class="mb-8 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-b from-blue-600 to-indigo-600 text-white shadow-md">
+        <div class="mb-8 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-b from-indigo-600 to-blue-600 text-white shadow-md">
           <svg viewBox="0 0 24 24" class="h-10 w-10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 5v14" />
             <path d="M5 12h14" />
