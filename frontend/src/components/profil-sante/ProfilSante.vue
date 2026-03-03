@@ -55,11 +55,11 @@
         <p v-if="saveSuccess" class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
           {{ saveSuccess }}
         </p>
-        <p v-if="stepError" class="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+        <p v-if="stepError && currentStep !== 1" class="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
           {{ stepError }}
         </p>
 
-        <Etape1 v-if="currentStep === 1" :form="form" :computed-age="computedAge" />
+        <Etape1 v-if="currentStep === 1" :form="form" :computed-age="computedAge" :errors="step1Errors" />
         <Etape2 v-else-if="currentStep === 2" :form="form" />
         <Etape3 v-else :form="form" />
       </div>
@@ -121,6 +121,12 @@ const saving = ref(false);
 const saveError = ref("");
 const saveSuccess = ref("");
 const stepError = ref("");
+const step1Errors = reactive({
+  sexe: "",
+  taille: "",
+  poids: "",
+  objectifs: "",
+});
 const userDateOfBirth = ref("");
 const steps = [
   { number: 1, label: "Informations de base" },
@@ -323,32 +329,74 @@ function stepClass(stepNumber) {
 
 function goBack() {
   stepError.value = "";
+  clearStep1Errors();
   if (currentStep.value > 1) currentStep.value -= 1;
 }
 
 function goNext() {
   saveSuccess.value = "";
   stepError.value = "";
+  clearStep1Errors();
   if (currentStep.value === 1 && !validateStep1()) return;
   if (currentStep.value === 2 && !validateStep2()) return;
   if (currentStep.value < totalSteps) currentStep.value += 1;
 }
 
+function clearStep1Errors() {
+  step1Errors.sexe = "";
+  step1Errors.taille = "";
+  step1Errors.poids = "";
+  step1Errors.objectifs = "";
+}
+
 function validateStep1() {
+  clearStep1Errors();
+
   if (!form.sexe) {
-    stepError.value = "Veuillez selectionner votre sexe.";
+    step1Errors.sexe = "Veuillez selectionner votre genre.";
     return false;
   }
+
+  if (!form.taille) {
+    step1Errors.taille = "La taille est obligatoire.";
+  }
+  if (!form.poids) {
+    step1Errors.poids = "Le poids est obligatoire.";
+  }
+  if (step1Errors.taille || step1Errors.poids) {
+    return false;
+  }
+
+  const taille = Number(form.taille);
+  const poids = Number(form.poids);
+
+  if (!Number.isFinite(taille) || taille <= 80) {
+    step1Errors.taille = "La taille doit etre une valeur entre 80 et 250 cm.";
+  }
+  if (!Number.isFinite(poids) || poids <= 35) {
+    step1Errors.poids = "Le poids doit etre une valeur entre 35 et 250 kg.";
+  }
+  if (taille > 250) {
+    step1Errors.taille = "La taille ne doit pas depasser 250 cm.";
+  }
+  if (poids > 250) {
+    step1Errors.poids = "Le poids ne doit pas depasser 250 kg.";
+  }
+  if (step1Errors.taille || step1Errors.poids) {
+    return false;
+  }
+
   if (!Array.isArray(form.objectifs) || !form.objectifs.length) {
-    stepError.value = "Veuillez selectionner au moins un objectif.";
+    step1Errors.objectifs = "Veuillez selectionner au moins un objectif.";
     return false;
   }
+
   return true;
 }
 
 function validateStep2() {
-  if (!form.taille || !form.poids || !form.groupe_sanguin) {
-    stepError.value = "Taille, poids et groupe sanguin sont obligatoires pour enregistrer.";
+  if (!form.groupe_sanguin) {
+    stepError.value = "groupe sanguin est obligatoire pour enregistrer.";
     return false;
   }
   return true;

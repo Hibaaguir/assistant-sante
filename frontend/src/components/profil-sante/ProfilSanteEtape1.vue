@@ -7,12 +7,12 @@
 
     <div class="space-y-8">
       <div class="space-y-4">
-        <p class="text-base font-medium text-gray-900">Sexe</p>
+        <p class="text-base font-medium text-gray-900">Genre<span class=" text-red-600"> *</span></p>
 
         <div class="grid grid-cols-2 gap-4 max-w-xl">
           <label
             class="relative cursor-pointer rounded-2xl border-2 p-6 transition-all hover:shadow-md"
-            :class="form.sexe === 'homme' ? 'border-teal-500 bg-teal-50/50 shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'"
+            :class="form.sexe === 'homme' ? 'border-teal-500 bg-teal-50/50 shadow-sm' : (errors.sexe ? 'border-red-300 bg-white' : 'border-gray-200 bg-white hover:border-gray-300')"
           >
             <input class="sr-only" type="radio" name="sex" :checked="form.sexe === 'homme'" @change="form.sexe = 'homme'" />
             <div class="flex flex-col items-center gap-3">
@@ -26,7 +26,7 @@
 
           <label
             class="relative cursor-pointer rounded-2xl border-2 p-6 transition-all hover:shadow-md"
-            :class="form.sexe === 'femme' ? 'border-teal-500 bg-teal-50/50 shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'"
+            :class="form.sexe === 'femme' ? 'border-teal-500 bg-teal-50/50 shadow-sm' : (errors.sexe ? 'border-red-300 bg-white' : 'border-gray-200 bg-white hover:border-gray-300')"
           >
             <input class="sr-only" type="radio" name="sex" :checked="form.sexe === 'femme'" @change="form.sexe = 'femme'" />
             <div class="flex flex-col items-center gap-3">
@@ -38,6 +38,7 @@
             </div>
           </label>
         </div>
+        <p v-if="errors.sexe" class="text-sm text-red-600">{{ errors.sexe }}</p>
       </div>
 
       <div class="space-y-4 max-w-md">
@@ -50,7 +51,7 @@
 
       <div class="space-y-4">
         <p class="text-base font-medium text-gray-900">
-          Taille et poids <span class="text-gray-400 font-normal">(obligatoire)</span>
+          Taille et poids <span class=" text-red-600">*</span>
         </p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
@@ -58,18 +59,26 @@
             <input
               v-model="form.taille"
               type="number"
+              min="80"
+              max="250"
               placeholder="Taille en cm"
-              class="h-14 w-full text-lg rounded-xl border-2 border-gray-200 px-4 outline-none focus:border-teal-500"
+              class="h-14 w-full text-lg rounded-xl border-2 px-4 outline-none focus:border-teal-500"
+              :class="errors.taille ? 'border-red-300' : 'border-gray-200'"
             />
+            <p v-if="errors.taille" class="text-sm text-red-600 px-1">{{ errors.taille }}</p>
             <p class="text-xs text-gray-500 px-1">Ex: 175</p>
           </div>
           <div class="space-y-2">
             <input
               v-model="form.poids"
               type="number"
+              min="35"
+              max="250"
               placeholder="Poids en kg"
-              class="h-14 w-full text-lg rounded-xl border-2 border-gray-200 px-4 outline-none focus:border-teal-500"
+              class="h-14 w-full text-lg rounded-xl border-2 px-4 outline-none focus:border-teal-500"
+              :class="errors.poids ? 'border-red-300' : 'border-gray-200'"
             />
+            <p v-if="errors.poids" class="text-sm text-red-600 px-1">{{ errors.poids }}</p>
             <p class="text-xs text-gray-500 px-1">Ex: 70</p>
           </div>
         </div>
@@ -99,7 +108,7 @@
       </div>
 
       <div class="space-y-4">
-        <p class="text-base font-medium text-gray-900">Objectifs</p>
+        <p class="text-base font-medium text-gray-900">Objectifs <span class=" text-red-600">*</span></p>
         <p class="text-xs text-gray-500">Vous pouvez sélectionner plusieurs objectifs.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div
@@ -121,6 +130,7 @@
             </div>
           </div>
         </div>
+        <p v-if="errors.objectifs" class="text-sm text-red-600">{{ errors.objectifs }}</p>
       </div>
     </div>
   </div>
@@ -136,9 +146,19 @@
 const props = defineProps({
   form: { type: Object, required: true },
   computedAge: { type: [Number, String], default: "" },
+  errors: {
+    type: Object,
+    default: () => ({
+      sexe: "",
+      taille: "",
+      poids: "",
+      objectifs: "",
+    }),
+  },
 });
 
 const form = props.form;
+const errors = props.errors;
 
 const goals = [
   { value: "Maintenir mon poids", label: "Bien-etre general", color: "bg-purple-50 text-purple-600 border-purple-200", icon: "M5 13a7 7 0 0 0 14 0M8 8h.01M16 8h.01" },

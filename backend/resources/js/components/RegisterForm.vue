@@ -1,9 +1,9 @@
-﻿<template>
+<template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50/50 via-white to-teal-50/50">
     <div class="bg-white/80 border-b border-slate-200 backdrop-blur-sm sticky top-0 z-10">
       <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6">
         <div class="text-center">
-          <h1 class="text-2xl font-bold text-gray-900 mb-1">Creation de ton compte</h1>
+          <h1 class="text-2xl font-bold text-gray-900 mb-1">Créez votre compte</h1>
           <p class="text-sm text-gray-500">Rejoins Assistant Sante en quelques secondes</p>
         </div>
       </div>
@@ -18,7 +18,7 @@
 
         <form @submit.prevent="submit" class="space-y-5">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Nom d'utilisateur</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Nom d'utilisateur <span class="text-red-600">*</span></label>
             <div class="relative">
               <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none">
                 <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
@@ -37,7 +37,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Email <span class="text-red-600">*</span></label>
             <div class="relative">
               <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none">
                 <path d="M4 6h16v12H4V6Z" stroke="currentColor" stroke-width="1.7" />
@@ -56,7 +56,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Date de naissance <span class="text-red-600">*</span></label>
             <div class="relative">
               <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none">
                 <path d="M6 4h12M6 4v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4M9 6v4M15 6v4M6 12h12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
@@ -78,7 +78,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe <span class="text-red-600">*</span></label>
             <div class="relative">
               <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none">
                 <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
@@ -167,6 +167,14 @@ const loading = ref(false);
 const serverMessage = ref("");
 const messageType = ref("success");
 const lastDateInputType = ref("");
+const REQUIRED_FORM_MESSAGE = "Veuillez remplir les champs obligatoires.";
+const EMAIL_ALREADY_USED_MESSAGE = "Cet email est déjà utilisé.";
+const REQUIRED_FIELD_MESSAGES = {
+  name: "Le nom d'utilisateur est obligatoire.",
+  email: "L'adresse email est obligatoire.",
+  date_of_birth: "La date de naissance est obligatoire.",
+  password: "Le mot de passe est obligatoire.",
+};
 
 function clearErrors() {
   errors.name = "";
@@ -280,27 +288,27 @@ function setMissingFieldErrors() {
   let hasMissing = false;
 
   if (!form.name) {
-    errors.name = "Veuillez remplir tous les champs requis.";
+    errors.name = REQUIRED_FIELD_MESSAGES.name;
     hasMissing = true;
   }
 
   if (!form.email) {
-    errors.email = "Veuillez remplir tous les champs requis.";
+    errors.email = REQUIRED_FIELD_MESSAGES.email;
     hasMissing = true;
   }
 
   if (!form.date_of_birth) {
-    errors.date_of_birth = "Veuillez remplir tous les champs requis.";
+    errors.date_of_birth = REQUIRED_FIELD_MESSAGES.date_of_birth;
     hasMissing = true;
   }
 
   if (!form.password) {
-    errors.password = "Veuillez remplir tous les champs requis.";
+    errors.password = REQUIRED_FIELD_MESSAGES.password;
     hasMissing = true;
   }
 
   if (hasMissing) {
-    serverMessage.value = "Veuillez remplir tous les champs requis.";
+    serverMessage.value = REQUIRED_FORM_MESSAGE;
   }
 
   return hasMissing;
@@ -313,8 +321,8 @@ function firstMessage(fieldErrors) {
 function mapEmailError(message) {
   const normalized = String(message || "").toLowerCase();
   if (!normalized) return "";
-  if (/taken|already|existe|utilis|unique|déjà|deja/.test(normalized)) return "Cet email est déjà utilisé.";
-  if (/required|obligatoire|requis/.test(normalized)) return "Veuillez remplir tous les champs requis.";
+  if (/taken|already|existe|utilis|unique|déjà|deja|duplicate|1062/.test(normalized)) return EMAIL_ALREADY_USED_MESSAGE;
+  if (/required|obligatoire|requis/.test(normalized)) return REQUIRED_FIELD_MESSAGES.email;
   if (/valid email|must be.*email|format|invalide|adresse e-mail/.test(normalized)) return "Format d’email invalide.";
   return "";
 }
@@ -322,7 +330,7 @@ function mapEmailError(message) {
 function mapPasswordError(message) {
   const normalized = String(message || "").toLowerCase();
   if (!normalized) return "";
-  if (/required|obligatoire|requis/.test(normalized)) return "Veuillez remplir tous les champs requis.";
+  if (/required|obligatoire|requis/.test(normalized)) return REQUIRED_FIELD_MESSAGES.password;
   if (/(minimum|min\.?|at least|au moins).*(8|huit)|8.*(character|caract)|too short|trop court/.test(normalized)) {
     return "Le mot de passe est trop court (min 8 caractères).";
   }
@@ -342,13 +350,13 @@ function mapFieldValidationErrors(validationErrors = {}) {
   errors.password = mappedPassword || passwordBackend || "";
 
   if (/required|obligatoire|requis/i.test(nameBackend || "")) {
-    errors.name = "Veuillez remplir tous les champs requis.";
+    errors.name = REQUIRED_FIELD_MESSAGES.name;
   } else {
     errors.name = nameBackend || "";
   }
 
   if (/required|obligatoire|requis/i.test(dobBackend || "")) {
-    errors.date_of_birth = "Veuillez remplir tous les champs requis.";
+    errors.date_of_birth = REQUIRED_FIELD_MESSAGES.date_of_birth;
   } else {
     errors.date_of_birth = dobBackend || "";
   }
@@ -357,13 +365,20 @@ function mapFieldValidationErrors(validationErrors = {}) {
 function mapTopLevelBackendMessage(message) {
   const normalized = String(message || "").toLowerCase();
   if (!normalized) return "";
-  if (/taken|already|existe|utilis|unique|déjà|deja/.test(normalized)) return "Cet email est déjà utilisé.";
-  if (/required|obligatoire|requis/.test(normalized)) return "Veuillez remplir tous les champs requis.";
+  if (/taken|already|existe|utilis|unique|déjà|deja|duplicate|1062/.test(normalized)) return EMAIL_ALREADY_USED_MESSAGE;
+  if (/required|obligatoire|requis/.test(normalized)) return REQUIRED_FORM_MESSAGE;
   if (/valid email|must be.*email|format|invalide|adresse e-mail/.test(normalized)) return "Format d’email invalide.";
   if (/(minimum|min\.?|at least|au moins).*(8|huit)|8.*(character|caract)|too short|trop court/.test(normalized)) {
     return "Le mot de passe est trop court (min 8 caractères).";
   }
   return "";
+}
+
+function isEmailAlreadyUsedError(status, data) {
+  if (status === 409) return true;
+  const emailBackend = firstMessage(data?.errors?.email);
+  const raw = `${emailBackend} ${data?.message || ""}`.toLowerCase();
+  return /taken|already|existe|utilis|unique|déjà|deja|duplicate|1062/.test(raw);
 }
 
 async function submit() {
@@ -438,9 +453,9 @@ async function submit() {
       return;
     }
 
-    if (status === 409) {
-      errors.email = "Cet email est déjà utilisé.";
-      serverMessage.value = "Cet email est déjà utilisé.";
+    if (isEmailAlreadyUsedError(status, data)) {
+      errors.email = EMAIL_ALREADY_USED_MESSAGE;
+      serverMessage.value = EMAIL_ALREADY_USED_MESSAGE;
     } else if (status === 422 && data?.errors) {
       mapFieldValidationErrors(data.errors);
       const knownFieldMessages = [errors.name, errors.email, errors.date_of_birth, errors.password].filter(Boolean);
@@ -450,7 +465,7 @@ async function submit() {
       const mappedMessage = mapTopLevelBackendMessage(data.message);
       serverMessage.value = mappedMessage || "Une erreur est survenue. Veuillez réessayer.";
 
-      if (mappedMessage === "Cet email est déjà utilisé.") {
+      if (mappedMessage === EMAIL_ALREADY_USED_MESSAGE) {
         errors.email = mappedMessage;
       }
       if (mappedMessage === "Format d’email invalide.") {
@@ -459,11 +474,11 @@ async function submit() {
       if (mappedMessage === "Le mot de passe est trop court (min 8 caractères).") {
         errors.password = mappedMessage;
       }
-      if (mappedMessage === "Veuillez remplir tous les champs requis.") {
-        if (!form.name) errors.name = mappedMessage;
-        if (!form.email) errors.email = mappedMessage;
-        if (!form.date_of_birth) errors.date_of_birth = mappedMessage;
-        if (!form.password) errors.password = mappedMessage;
+      if (mappedMessage === REQUIRED_FORM_MESSAGE) {
+        if (!form.name) errors.name = REQUIRED_FIELD_MESSAGES.name;
+        if (!form.email) errors.email = REQUIRED_FIELD_MESSAGES.email;
+        if (!form.date_of_birth) errors.date_of_birth = REQUIRED_FIELD_MESSAGES.date_of_birth;
+        if (!form.password) errors.password = REQUIRED_FIELD_MESSAGES.password;
       }
     } else if (status === 500) {
       serverMessage.value = "Erreur serveur. Veuillez reessayer plus tard.";

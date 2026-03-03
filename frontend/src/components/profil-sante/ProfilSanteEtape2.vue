@@ -13,7 +13,7 @@
           <svg class="h-5 w-5 text-red-500" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
-          Groupe sanguin <span class="text-gray-400 font-normal">(optionnel)</span>
+          Groupe sanguin <span class=" text-red-600">*</span>
         </label>
 
         <select
@@ -31,7 +31,7 @@
             <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
             <path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
-          Allergies <span class="text-gray-400 font-normal">(optionnel)</span>
+          Allergies 
         </label>
 
         <button
@@ -104,7 +104,7 @@
 
       <section class="space-y-4">
         <label class="text-base font-medium text-gray-900">
-          Maladies chroniques <span class="text-gray-400 font-normal">(optionnel)</span>
+          Maladies chroniques 
         </label>
 
         <button
@@ -184,7 +184,7 @@
           </div>
           <div class="flex-1">
             <h3 class="text-base font-medium text-gray-900 block mb-1">
-              Traitements en cours <span class="text-gray-500 font-normal">(optionnel)</span>
+              Traitements en cours 
             </h3>
             <p class="text-sm text-gray-600">Ajoute tes traitements pour creer un calendrier de rappels</p>
           </div>
@@ -201,13 +201,14 @@
         </div>
 
         <div v-else class="bg-white rounded-xl border-2 border-teal-200 p-6 space-y-4">
-          <h4 class="font-medium text-gray-900 mb-2">{{ editingTreatmentIndex > -1 ? "Modifier le traitement" : "Nouveau traitement" }}</h4>
+          <h4 class="font-medium text-gray-900 mb-2">Nouveau traitement</h4>
 
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-900">Type de traitement</label>
             <button
               type="button"
-              class="h-12 w-full rounded-lg border border-gray-200 px-4 bg-white outline-none focus:border-teal-500 text-left text-sm flex items-center justify-between"
+              class="h-12 w-full rounded-lg border px-4 bg-white outline-none focus:border-teal-500 text-left text-sm flex items-center justify-between"
+              :class="treatmentErrors.type ? 'border-red-300' : 'border-gray-200'"
               @click="openTreatmentTypes = !openTreatmentTypes"
             >
               <span>{{ treatment.type || "Selectionner un type" }}</span>
@@ -215,6 +216,7 @@
                 <path d="M8 10l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </button>
+            <p v-if="treatmentErrors.type" class="text-sm text-red-600">{{ treatmentErrors.type }}</p>
 
             <div v-if="openTreatmentTypes" class="rounded-2xl border border-gray-300 bg-white shadow-sm overflow-hidden">
               <div class="p-3 border-b">
@@ -260,7 +262,8 @@
             <label class="text-sm font-medium text-gray-900">Nom du traitement</label>
             <button
               type="button"
-              class="h-12 w-full rounded-lg border border-gray-200 px-4 bg-white outline-none focus:border-teal-500 text-left text-sm flex items-center justify-between"
+              class="h-12 w-full rounded-lg border px-4 bg-white outline-none focus:border-teal-500 text-left text-sm flex items-center justify-between"
+              :class="treatmentErrors.name ? 'border-red-300' : 'border-gray-200'"
               @click="openTreatmentNames = !openTreatmentNames"
             >
               <span>{{ treatment.name || "Selectionner ou ajouter un traitement" }}</span>
@@ -268,6 +271,7 @@
                 <path d="M8 10l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </button>
+            <p v-if="treatmentErrors.name" class="text-sm text-red-600">{{ treatmentErrors.name }}</p>
 
             <div v-if="openTreatmentNames" class="rounded-2xl border border-gray-300 bg-white shadow-sm overflow-hidden">
               <div class="p-3 border-b">
@@ -315,8 +319,11 @@
               v-model.trim="treatment.dose"
               type="text"
               placeholder="Ex: 500mg, 1 comprime..."
-              class="h-12 rounded-lg w-full border border-gray-200 bg-slate-50 px-4 outline-none focus:border-teal-500"
+              class="h-12 rounded-lg w-full border bg-slate-50 px-4 outline-none focus:border-teal-500"
+              :class="treatmentErrors.dose ? 'border-red-300' : 'border-gray-200'"
+              @input="treatmentErrors.dose = ''"
             />
+            <p v-if="treatmentErrors.dose" class="text-sm text-red-600">{{ treatmentErrors.dose }}</p>
           </div>
 
           <div class="space-y-2">
@@ -334,12 +341,14 @@
                   min="1"
                   class="no-spinner min-w-[4.5rem] bg-transparent text-sm outline-none"
                   placeholder="Ex: 3"
+                  @input="treatmentErrors.frequency_count = ''"
                 />
                 <span class="whitespace-nowrap text-sm text-gray-500">
                   {{ Number(treatment.frequency_count || 0) > 1 ? "prises" : "prise" }}
                 </span>
               </div>
             </div>
+            <p v-if="treatmentErrors.frequency_count" class="text-sm text-red-600">{{ treatmentErrors.frequency_count }}</p>
           </div>
 
           <div class="space-y-2">
@@ -349,9 +358,11 @@
               type="text"
               placeholder="Ex: 01/03/2026"
               maxlength="10"
-              class="h-12 rounded-lg w-full border border-gray-200 bg-slate-50 px-4 outline-none focus:border-teal-500"
+              class="h-12 rounded-lg w-full border bg-slate-50 px-4 outline-none focus:border-teal-500"
+              :class="treatmentErrors.start_date ? 'border-red-300' : 'border-gray-200'"
               @input="(event) => handleTreatmentDateInput(event, 'start_date')"
             />
+            <p v-if="treatmentErrors.start_date" class="text-sm text-red-600">{{ treatmentErrors.start_date }}</p>
           </div>
 
           <div class="space-y-2">
@@ -361,14 +372,16 @@
               type="text"
               placeholder="Ex: 30/03/2026"
               maxlength="10"
-              class="h-12 rounded-lg w-full border border-gray-200 bg-slate-50 px-4 outline-none focus:border-teal-500"
+              class="h-12 rounded-lg w-full border bg-slate-50 px-4 outline-none focus:border-teal-500"
+              :class="treatmentErrors.end_date ? 'border-red-300' : 'border-gray-200'"
               @input="(event) => handleTreatmentDateInput(event, 'end_date')"
             />
+            <p v-if="treatmentErrors.end_date" class="text-sm text-red-600">{{ treatmentErrors.end_date }}</p>
           </div>
 
           <div class="grid grid-cols-2 gap-3 pt-2">
             <button type="button" class="h-11 rounded-lg bg-teal-600 text-white font-semibold" @click="addTreatment">
-              {{ editingTreatmentIndex > -1 ? "Mettre a jour" : "+ Ajouter" }}
+              + Ajouter
             </button>
             <button type="button" class="h-11 rounded-lg border border-slate-300 font-semibold text-slate-900" @click="cancelTreatment">Annuler</button>
           </div>
@@ -393,13 +406,6 @@
                 </p>
               </div>
               <div class="flex items-center gap-3">
-                <button
-                  type="button"
-                  class="text-xs font-semibold text-teal-700 hover:text-teal-800"
-                  @click="editTreatment(index)"
-                >
-                  Modifier
-                </button>
                 <button
                   type="button"
                   class="text-xs font-semibold text-red-600 hover:text-red-700"
@@ -497,7 +503,6 @@ const queryDiseases = ref("");
 const customAllergy = ref("");
 const customDisease = ref("");
 const showTreatmentForm = ref(false);
-const editingTreatmentIndex = ref(-1);
 
 const openTreatmentTypes = ref(false);
 const queryTreatmentTypes = ref("");
@@ -512,6 +517,14 @@ const treatment = reactive({
   dose: "",
   frequency_unit: "jour",
   frequency_count: 1,
+  start_date: "",
+  end_date: "",
+});
+const treatmentErrors = reactive({
+  type: "",
+  name: "",
+  dose: "",
+  frequency_count: "",
   start_date: "",
   end_date: "",
 });
@@ -564,6 +577,7 @@ function addCustom(key, value) {
 // Gestion des options de traitement (type/nom) avec ajout personnalise.
 function selectTreatmentType(value) {
   treatment.type = value;
+  treatmentErrors.type = "";
   openTreatmentTypes.value = false;
 }
 
@@ -572,12 +586,14 @@ function addCustomTreatmentType() {
   if (!value) return;
   if (!treatmentTypes.value.includes(value)) treatmentTypes.value = [...treatmentTypes.value, value];
   treatment.type = value;
+  treatmentErrors.type = "";
   customTreatmentType.value = "";
   openTreatmentTypes.value = false;
 }
 
 function selectTreatmentName(value) {
   treatment.name = value;
+  treatmentErrors.name = "";
   openTreatmentNames.value = false;
 }
 
@@ -586,6 +602,7 @@ function addCustomTreatmentName() {
   if (!value) return;
   if (!treatmentNameOptions.value.includes(value)) treatmentNameOptions.value = [...treatmentNameOptions.value, value];
   treatment.name = value;
+  treatmentErrors.name = "";
   customTreatmentName.value = "";
   openTreatmentNames.value = false;
 }
@@ -601,6 +618,7 @@ function formatDateWithSlashes(value) {
 function handleTreatmentDateInput(event, key) {
   const raw = event?.target?.value ?? "";
   treatment[key] = formatDateWithSlashes(raw);
+  treatmentErrors[key] = "";
 }
 
 function buildTreatmentDuration() {
@@ -608,9 +626,86 @@ function buildTreatmentDuration() {
   return null;
 }
 
+function clearTreatmentErrors() {
+  treatmentErrors.type = "";
+  treatmentErrors.name = "";
+  treatmentErrors.dose = "";
+  treatmentErrors.frequency_count = "";
+  treatmentErrors.start_date = "";
+  treatmentErrors.end_date = "";
+}
+
+function parseFrDate(value) {
+  const match = String(value || "").match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!match) return null;
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const year = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+
+  const isValid =
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day;
+
+  return isValid ? date : null;
+}
+
+function validateTreatment() {
+  clearTreatmentErrors();
+  let isValid = true;
+
+  if (!String(treatment.type || "").trim()) {
+    treatmentErrors.type = "Le type de traitement est obligatoire.";
+    isValid = false;
+  }
+  if (!String(treatment.name || "").trim()) {
+    treatmentErrors.name = "Le nom du traitement est obligatoire.";
+    isValid = false;
+  }
+  if (!String(treatment.dose || "").trim()) {
+    treatmentErrors.dose = "La dose est obligatoire.";
+    isValid = false;
+  }
+
+  const frequencyCount = Number(treatment.frequency_count);
+  if (!Number.isFinite(frequencyCount) || frequencyCount < 1) {
+    treatmentErrors.frequency_count = "La fréquence doit être au minimum de 1 prise.";
+    isValid = false;
+  }
+
+  if (!String(treatment.start_date || "").trim()) {
+    treatmentErrors.start_date = "La date de début est obligatoire.";
+    isValid = false;
+  }
+  if (!String(treatment.end_date || "").trim()) {
+    treatmentErrors.end_date = "La date de fin est obligatoire.";
+    isValid = false;
+  }
+
+  const startDate = parseFrDate(treatment.start_date);
+  const endDate = parseFrDate(treatment.end_date);
+
+  if (treatment.start_date && !startDate) {
+    treatmentErrors.start_date = "Format invalide. Utilisez JJ/MM/AAAA.";
+    isValid = false;
+  }
+  if (treatment.end_date && !endDate) {
+    treatmentErrors.end_date = "Format invalide. Utilisez JJ/MM/AAAA.";
+    isValid = false;
+  }
+  if (startDate && endDate && endDate <= startDate) {
+    treatmentErrors.end_date = "La date de fin doit être strictement après la date de début.";
+    isValid = false;
+  }
+
+  return isValid;
+}
+
 // Ajout ou mise a jour d'un traitement dans la liste du formulaire.
 function addTreatment() {
-  if (!treatment.type || !treatment.name) return;
+  if (!validateTreatment()) return;
   if (!Array.isArray(form.traitements)) form.traitements = [];
 
   const nextItem = {
@@ -624,41 +719,15 @@ function addTreatment() {
     duration: buildTreatmentDuration(),
   };
 
-  if (editingTreatmentIndex.value > -1) {
-    form.traitements.splice(editingTreatmentIndex.value, 1, nextItem);
-  } else {
-    form.traitements.push(nextItem);
-  }
+  form.traitements.push(nextItem);
 
   cancelTreatment();
 }
 
-function editTreatment(index) {
-  const item = form.traitements[index];
-  if (!item) return;
-
-  treatment.type = item.type || "";
-  treatment.name = item.name || "";
-  treatment.dose = item.dose || "";
-  treatment.frequency_unit = item.frequency_unit || "jour";
-  treatment.frequency_count = Number(item.frequency_count || 1);
-  treatment.start_date = item.start_date || "";
-  treatment.end_date = item.end_date || "";
-
-  if (!treatment.start_date && !treatment.end_date && typeof item.duration === "string" && item.duration.includes(" - ")) {
-    const parts = item.duration.split(" - ");
-    treatment.start_date = parts[0] || "";
-    treatment.end_date = parts[1] || "";
-  }
-
-  editingTreatmentIndex.value = index;
-  showTreatmentForm.value = true;
-}
-
 // Reinitialise le sous-formulaire de traitement.
 function cancelTreatment() {
+  clearTreatmentErrors();
   showTreatmentForm.value = false;
-  editingTreatmentIndex.value = -1;
   openTreatmentTypes.value = false;
   openTreatmentNames.value = false;
   queryTreatmentTypes.value = "";
