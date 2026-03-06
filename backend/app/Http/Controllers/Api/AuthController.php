@@ -3,136 +3,142 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\DoctorInvitation;
 use App\Models\User;
+use App\Services\DoctorInvitationLinker;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function __construct(
+        private readonly DoctorInvitationLinker $doctorInvitationLinker,
+    ) {
+    }
+
+    public function register(Request $request): JsonResponse
     {
         try {
             $validated = $request->validate([
                 'name' => ['required', 'string', 'min:3', 'max:50'],
-                'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-                'date_of_birth' => [
+                'email' => [
                     'required',
-                    'date',
-                    'before:today',
-                    function ($attribute, $value, $fail) {
-                        $birthDate = Carbon::parse($value);
-                        $age = $birthDate->diffInYears(Carbon::now());
-
-                        if ($age < 18) {
-                            $fail('Vous devez avoir au minimum 18 ans pour creer un compte.');
-                        }
-                    },
+                    'email',
+                    'max:255',
+                    Rule::unique('users', 'email')->where(fn ($query) => $query->where('role', 'user')),
                 ],
-                'password' => [
-                    'required',
-                    'confirmed',
-                    Password::min(8)->letters()->numbers(),
-                ],
-            ], [
-                'name.required' => "Le nom d'utilisateur est obligatoire.",
-                'email.required' => "L'adresse email est obligatoire.",
-                'email.unique' => 'Cet email est déjà utilisé.',
-                'date_of_birth.required' => 'La date de naissance est obligatoire.',
-                'password.required' => 'Le mot de passe est obligatoire.',
-            ]);
+                'date_of_birth' => [$this->dateRule()],
+                'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+            ], $this->baseMessages());
 
             $user = User::create([
                 'name' => $validated['name'],
-                'email' => $validated['email'],
+                'email' => strtolower(trim($validated['email'])),
                 'date_of_birth' => $validated['date_of_birth'],
                 'password' => Hash::make($validated['password']),
+                'role' => 'user',
+                'specialite' => null,
             ]);
 
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            return response()->json([
-                'message' => 'Compte cree avec succes',
-                'token' => $token,
-                'has_profil_sante' => false,
-                'redirect_to' => '/profil-sante',
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'date_of_birth' => $user->date_of_birth,
-                ],
-            ], 201);
+            return $this->authenticatedResponse($user, $user->createToken('auth_token')->plainTextToken, false, '/profil-sante', false, 201, 'Compte cree avec succes');
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Veuillez corriger les erreurs du formulaire.',
                 'errors' => $e->errors(),
             ], 422);
         } catch (QueryException $e) {
-            $sqlState = $e->errorInfo[0] ?? null;
-            $driverCode = $e->errorInfo[1] ?? null;
-
-            // Duplicate key error (MySQL/MariaDB: 1062, SQLSTATE: 23000)
-            if ($sqlState === '23000' || $driverCode === 1062) {
-                return response()->json([
-                    'message' => 'Cet email est déjà utilisé.',
-                    'errors' => [
-                        'email' => ['Cet email est déjà utilisé.'],
-                    ],
-                ], 409);
-            }
-
-            Log::error('Registration database error: '.$e->getMessage());
-
-            return response()->json([
-                'message' => 'Erreur lors de la creation du compte',
-            ], 500);
+            return $this->handleRegistrationQueryException($e);
         } catch (\Throwable $e) {
             Log::error('Registration error: '.$e->getMessage());
-
-            return response()->json([
-                'message' => 'Erreur lors de la creation du compte',
-            ], 500);
+            return response()->json(['message' => 'Erreur lors de la creation du compte'], 500);
         }
     }
 
-    public function login(Request $request)
+    public function registerDoctor(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'email' => [
+                    'required',
+                    'email',
+                    'max:255',
+                    Rule::unique('users', 'email')->where(fn ($query) => $query->where('role', 'medecin')),
+                ],
+                'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+                'specialite' => ['required', 'string', 'min:2', 'max:120'],
+            ], array_merge($this->baseMessages(), [
+                'specialite.required' => 'La specialite est obligatoire.',
+            ]));
+
+            $doctorEmail = strtolower(trim($validated['email']));
+            $doctorSpecialite = trim((string) $validated['specialite']);
+            $doctorName = trim((string) ($request->input('name') ?: 'Medecin'));
+
+            $user = User::create([
+                'name' => $doctorName,
+                'email' => $doctorEmail,
+                'date_of_birth' => null,
+                'password' => Hash::make($validated['password']),
+                'role' => 'medecin',
+                'specialite' => $doctorSpecialite,
+            ]);
+
+            $hasPendingDoctorInvitations = $this->doctorInvitationLinker->linkForUser($user);
+            return $this->authenticatedResponse($user, $user->createToken('doctor_auth_token')->plainTextToken, false, '/main/dashboard', $hasPendingDoctorInvitations, 201, 'Compte medecin cree avec succes');
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Veuillez corriger les erreurs du formulaire medecin.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (QueryException $e) {
+            return $this->handleRegistrationQueryException($e);
+        } catch (\Throwable $e) {
+            Log::error('Doctor registration error: '.$e->getMessage());
+            return response()->json(['message' => 'Erreur lors de la creation du compte medecin'], 500);
+        }
+    }
+
+    public function login(Request $request): JsonResponse
     {
         try {
             $credentials = $request->validate([
                 'email' => ['required', 'email'],
                 'password' => ['required', 'string'],
+                'role' => ['nullable', Rule::in(['user', 'medecin', 'admin'])],
             ]);
 
-            if (! Auth::attempt($credentials)) {
-                return response()->json([
-                    'message' => 'Email ou mot de passe invalide.',
-                ], 401);
+            $role = $credentials['role'] ?? 'user';
+            $user = $this->findUserForLogin(
+                strtolower(trim($credentials['email'])),
+                $credentials['password'],
+                $role,
+            );
+
+            if (! $user) {
+                return response()->json(['message' => 'Email ou mot de passe invalide.'], 401);
             }
 
-            /** @var User $user */
-            $user = Auth::user();
             $user->tokens()->delete();
-            $token = $user->createToken('auth_token')->plainTextToken;
-            $hasProfil = $user->profilSante()->exists();
+            $linkedPendingInvitations = $role === 'medecin' ? $this->doctorInvitationLinker->linkForUser($user) : false;
+            $hasProfil = $role === 'user' ? $user->profilSante()->exists() : false;
+            $hasPendingDoctorInvitations = $role === 'medecin' && ($linkedPendingInvitations || $this->hasPendingDoctorInvitations($user));
 
-            return response()->json([
-                'message' => 'Connexion reussie.',
-                'token' => $token,
-                'has_profil_sante' => $hasProfil,
-                'redirect_to' => $hasProfil ? '/main' : '/profil-sante',
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'date_of_birth' => $user->date_of_birth,
-                ],
-            ]);
+            return $this->authenticatedResponse(
+                $user,
+                $user->createToken($role === 'medecin' ? 'doctor_auth_token' : 'auth_token')->plainTextToken,
+                $hasProfil,
+                $role === 'medecin' ? '/main/dashboard' : ($hasProfil ? '/main' : '/profil-sante'),
+                $hasPendingDoctorInvitations,
+                200,
+                'Connexion reussie.'
+            );
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Veuillez corriger les erreurs du formulaire.',
@@ -140,28 +146,160 @@ class AuthController extends Controller
             ], 422);
         } catch (\Throwable $e) {
             Log::error('Login error: '.$e->getMessage());
-
-            return response()->json([
-                'message' => 'Erreur lors de la connexion.',
-            ], 500);
+            return response()->json(['message' => 'Erreur lors de la connexion.'], 500);
         }
     }
 
-    public function me(Request $request)
+    public function loginDoctor(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'email' => ['required', 'email'],
+                'password' => ['required', 'string'],
+            ], [
+                'email.required' => "L'adresse email est obligatoire.",
+                'password.required' => 'Le mot de passe est obligatoire.',
+            ]);
+
+            $credentials = [
+                'email' => strtolower(trim($validated['email'])),
+                'password' => $validated['password'],
+            ];
+
+            $user = $this->findUserForLogin($credentials['email'], $credentials['password'], 'medecin');
+
+            if (! $user) {
+                return response()->json(['message' => 'Email ou mot de passe invalide.'], 401);
+            }
+
+            $user->tokens()->delete();
+            $linkedPendingInvitations = $this->doctorInvitationLinker->linkForUser($user);
+            $hasPendingDoctorInvitations = $linkedPendingInvitations || $this->hasPendingDoctorInvitations($user);
+
+            return $this->authenticatedResponse($user, $user->createToken('doctor_auth_token')->plainTextToken, false, '/main/dashboard', $hasPendingDoctorInvitations, 200, 'Connexion medecin reussie.');
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Veuillez corriger les erreurs du formulaire medecin.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+            Log::error('Doctor login error: '.$e->getMessage());
+            return response()->json(['message' => 'Erreur lors de la connexion medecin.'], 500);
+        }
+    }
+
+    public function me(Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();
-        $hasProfil = $user->profilSante()->exists();
+        $hasProfil = $user->role === 'user' ? $user->profilSante()->exists() : false;
+
+        if ($user->role === 'medecin') {
+            $this->doctorInvitationLinker->linkForUser($user);
+        }
 
         return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'date_of_birth' => $user->date_of_birth,
-            ],
+            'user' => $this->userPayload($user),
             'has_profil_sante' => $hasProfil,
-            'redirect_to' => $hasProfil ? '/main' : '/profil-sante',
+            'has_pending_doctor_invitations' => $user->role === 'medecin' ? $this->hasPendingDoctorInvitations($user) : false,
+            'redirect_to' => $user->role === 'medecin' ? '/main/dashboard' : ($hasProfil ? '/main' : '/profil-sante'),
         ]);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()?->currentAccessToken()?->delete();
+
+        return response()->json([
+            'message' => 'Deconnexion reussie.',
+        ]);
+    }
+
+    private function authenticatedResponse(User $user, string $token, bool $hasProfil, string $redirectTo, bool $hasPendingDoctorInvitations, int $status, string $message): JsonResponse
+    {
+        return response()->json([
+            'message' => $message,
+            'token' => $token,
+            'has_profil_sante' => $hasProfil,
+            'redirect_to' => $redirectTo,
+            'user' => $this->userPayload($user),
+            'has_pending_doctor_invitations' => $hasPendingDoctorInvitations,
+        ], $status);
+    }
+
+    private function userPayload(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'date_of_birth' => $user->date_of_birth,
+            'role' => $user->role,
+            'specialite' => $user->specialite,
+        ];
+    }
+
+    private function hasPendingDoctorInvitations(User $user): bool
+    {
+        return DoctorInvitation::query()
+            ->where('doctor_user_id', $user->id)
+            ->where('status', 'pending')
+            ->exists();
+    }
+
+    private function handleRegistrationQueryException(QueryException $e): JsonResponse
+    {
+        $sqlState = $e->errorInfo[0] ?? null;
+        $driverCode = $e->errorInfo[1] ?? null;
+
+        if ($sqlState === '23000' || $driverCode === 1062) {
+            return response()->json([
+                'message' => 'Cet email est deja utilise.',
+                'errors' => [
+                    'email' => ['Cet email est deja utilise.'],
+                ],
+            ], 409);
+        }
+
+        Log::error('Registration database error: '.$e->getMessage());
+        return response()->json(['message' => 'Erreur lors de la creation du compte'], 500);
+    }
+
+    private function findUserForLogin(string $email, string $password, string $role): ?User
+    {
+        $user = User::query()
+            ->where('email', $email)
+            ->where('role', $role)
+            ->latest('id')
+            ->first();
+
+        if (! $user || ! Hash::check($password, $user->password)) {
+            return null;
+        }
+
+        return $user;
+    }
+
+    private function baseMessages(): array
+    {
+        return [
+            'name.required' => "Le nom d'utilisateur est obligatoire.",
+            'email.required' => "L'adresse email est obligatoire.",
+            'email.unique' => 'Cet email est deja utilise pour ce role.',
+            'date_of_birth.required' => 'La date de naissance est obligatoire.',
+            'password.required' => 'Le mot de passe est obligatoire.',
+        ];
+    }
+
+    private function dateRule(): \Closure
+    {
+        return function ($attribute, $value, $fail) {
+            $birthDate = Carbon::parse($value);
+            $age = $birthDate->diffInYears(Carbon::now());
+
+            if ($age < 18) {
+                $fail('Vous devez avoir au minimum 18 ans pour creer un compte.');
+            }
+        };
     }
 }

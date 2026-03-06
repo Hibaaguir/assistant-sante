@@ -19,7 +19,6 @@ class StoreHealthVitalRequest extends FormRequest
             'systolic_pressure' => ['nullable', 'integer', 'min:50', 'max:300'],
             'diastolic_pressure' => ['nullable', 'integer', 'min:30', 'max:220'],
             'oxygen_saturation' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
 }

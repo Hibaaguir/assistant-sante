@@ -15,10 +15,10 @@ class StoreHealthLabResultRequest extends FormRequest
     {
         return [
             'analysis_type' => ['required', 'string', 'max:120'],
+            'analysis_result' => ['required', 'string', 'max:120'],
             'value' => ['required', 'numeric', 'min:0'],
             'unit' => ['nullable', 'string', 'max:30'],
             'analysis_date' => ['required', 'date'],
-            'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
 }

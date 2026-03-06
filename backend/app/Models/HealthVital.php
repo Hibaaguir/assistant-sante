@@ -14,7 +14,6 @@ class HealthVital extends Model
         'systolic_pressure',
         'diastolic_pressure',
         'oxygen_saturation',
-        'notes',
     ];
 
     protected $casts = [

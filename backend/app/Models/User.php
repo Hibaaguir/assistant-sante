@@ -27,6 +27,8 @@ class User extends Authenticatable
         'email',
         'password',
         'date_of_birth',
+        'role',
+        'specialite',
     ];
 
     // Les champs qui ne doivent pas apparaître quand on retourne un JSON
@@ -45,6 +47,8 @@ class User extends Authenticatable
 
             // Convertit date_of_birth en format date
             'date_of_birth' => 'date',
+            'role' => 'string',
+            'specialite' => 'string',
 
             // Hash automatique du mot de passe avant sauvegarde
             'password' => 'hashed',
@@ -75,6 +79,16 @@ class User extends Authenticatable
     public function healthTreatmentChecks()
     {
         return $this->hasMany(\App\Models\HealthTreatmentCheck::class);
+    }
+
+    public function doctorInvitationsReceived()
+    {
+        return $this->hasMany(\App\Models\DoctorInvitation::class, 'doctor_user_id');
+    }
+
+    public function doctorInvitationsSent()
+    {
+        return $this->hasMany(\App\Models\DoctorInvitation::class, 'patient_user_id');
     }
 
 }

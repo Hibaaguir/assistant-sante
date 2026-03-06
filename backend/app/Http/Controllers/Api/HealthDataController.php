@@ -92,10 +92,41 @@ class HealthDataController extends Controller
     public function storeVital(StoreHealthVitalRequest $request): JsonResponse
     {
         $payload = $request->validated();
-        $payload['user_id'] = $request->user()->id;
-        $payload['measured_at'] = $payload['measured_at'] ?? now();
+        $userId = $request->user()->id;
+        $measuredAt = isset($payload['measured_at']) ? Carbon::parse($payload['measured_at']) : now();
+        $measuredDate = $measuredAt->toDateString();
 
-        $vital = HealthVital::create($payload);
+        $existing = HealthVital::query()
+            ->where('user_id', $userId)
+            ->whereDate('measured_at', $measuredDate)
+            ->orderByDesc('measured_at')
+            ->orderByDesc('id')
+            ->first();
+
+        if ($existing) {
+            // Merge par date: on conserve les mesures deja presentes si la nouvelle saisie est null.
+            $existing->update([
+                'heart_rate' => $payload['heart_rate'] ?? $existing->heart_rate,
+                'systolic_pressure' => $payload['systolic_pressure'] ?? $existing->systolic_pressure,
+                'diastolic_pressure' => $payload['diastolic_pressure'] ?? $existing->diastolic_pressure,
+                'oxygen_saturation' => $payload['oxygen_saturation'] ?? $existing->oxygen_saturation,
+                'measured_at' => $measuredAt,
+            ]);
+
+            return response()->json([
+                'message' => 'Vital updated successfully.',
+                'data' => $existing->fresh(),
+            ]);
+        }
+
+        $vital = HealthVital::create([
+            'user_id' => $userId,
+            'heart_rate' => $payload['heart_rate'] ?? null,
+            'systolic_pressure' => $payload['systolic_pressure'] ?? null,
+            'diastolic_pressure' => $payload['diastolic_pressure'] ?? null,
+            'oxygen_saturation' => $payload['oxygen_saturation'] ?? null,
+            'measured_at' => $measuredAt,
+        ]);
 
         return response()->json([
             'message' => 'Vital saved successfully.',
@@ -215,12 +246,24 @@ class HealthDataController extends Controller
         $grouped = $vitals
             ->groupBy(fn (HealthVital $vital) => optional($vital->measured_at)->toDateString())
             ->map(function (Collection $items): array {
-                $avg = fn (string $field) => round((float) $items->avg($field), 1);
+                $sorted = $items->sortByDesc(function (HealthVital $vital): string {
+                    $timestamp = optional($vital->measured_at)?->format('Y-m-d H:i:s') ?? '0000-00-00 00:00:00';
+                    return $timestamp.'#'.str_pad((string) $vital->id, 10, '0', STR_PAD_LEFT);
+                });
+
+                $latestMeasuredValue = function (string $field) use ($sorted): ?float {
+                    $row = $sorted->first(fn (HealthVital $vital) => $vital->{$field} !== null);
+                    if (! $row) {
+                        return null;
+                    }
+                    return round((float) $row->{$field}, 1);
+                };
 
                 return [
-                    'heart_rate' => $avg('heart_rate'),
-                    'systolic_pressure' => $avg('systolic_pressure'),
-                    'oxygen_saturation' => $avg('oxygen_saturation'),
+                    'heart_rate' => $latestMeasuredValue('heart_rate'),
+                    'systolic_pressure' => $latestMeasuredValue('systolic_pressure'),
+                    'diastolic_pressure' => $latestMeasuredValue('diastolic_pressure'),
+                    'oxygen_saturation' => $latestMeasuredValue('oxygen_saturation'),
                 ];
             });
 
@@ -228,6 +271,7 @@ class HealthDataController extends Controller
             'labels' => $dates,
             'heart_rate' => $dates->map(fn (string $date) => $grouped[$date]['heart_rate'] ?? null)->all(),
             'systolic_pressure' => $dates->map(fn (string $date) => $grouped[$date]['systolic_pressure'] ?? null)->all(),
+            'diastolic_pressure' => $dates->map(fn (string $date) => $grouped[$date]['diastolic_pressure'] ?? null)->all(),
             'oxygen_saturation' => $dates->map(fn (string $date) => $grouped[$date]['oxygen_saturation'] ?? null)->all(),
         ];
     }

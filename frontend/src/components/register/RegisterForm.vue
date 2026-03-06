@@ -3,8 +3,8 @@
     <div class="bg-white/80 border-b border-slate-200 backdrop-blur-sm sticky top-0 z-10">
       <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6">
         <div class="text-center">
-          <h1 class="text-2xl font-bold text-gray-900 mb-1">Créez votre compte</h1>
-          <p class="text-sm text-gray-500">Rejoignez Assistant Santé en quelques secondes</p>
+          <h1 class="text-2xl font-bold text-gray-900 mb-1">Creez votre compte</h1>
+          <p class="text-sm text-gray-500">Rejoignez Assistant Sante en quelques secondes</p>
         </div>
       </div>
     </div>
@@ -13,7 +13,7 @@
       <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-10">
         <div class="mb-6">
           <h2 class="text-xl font-semibold text-gray-900">Informations personnelles</h2>
-          <p class="text-sm text-gray-500 mt-1">Complétez les champs pour créer votre espace santé.</p>
+          <p class="text-sm text-gray-500 mt-1">Completez les champs pour creer votre espace sante.</p>
         </div>
 
         <form @submit.prevent="submit" class="space-y-5">
@@ -87,21 +87,14 @@
               <input
                 v-model="form.password"
                 type="password"
-                placeholder="Min 8 caractères (lettres + chiffres)"
+                placeholder="Min 8 caracteres (lettres + chiffres)"
                 autocomplete="new-password"
                 @input="validatePasswordRequirements"
                 class="h-12 pl-12 pr-4 rounded-xl border-2 bg-white text-gray-900 placeholder:text-gray-400 outline-none w-full"
                 :class="errors.password ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
               />
             </div>
-
             <p v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password }}</p>
-
-            <div v-if="form.password" class="mt-3 space-y-1 text-xs">
-              <p :class="form.password.length >= 8 ? 'text-teal-600' : 'text-gray-400'">OK Au moins 8 caractères</p>
-              <p :class="/[a-zA-Z]/.test(form.password) ? 'text-teal-600' : 'text-gray-400'">OK Au moins une lettre</p>
-              <p :class="/[0-9]/.test(form.password) ? 'text-teal-600' : 'text-gray-400'">OK Au moins un chiffre</p>
-            </div>
           </div>
 
           <div>
@@ -109,7 +102,7 @@
             <input
               v-model="form.password_confirmation"
               type="password"
-              placeholder="Répétez le mot de passe"
+              placeholder="Repetez le mot de passe"
               autocomplete="new-password"
               class="h-12 px-4 rounded-xl border-2 bg-white text-gray-900 placeholder:text-gray-400 outline-none w-full"
               :class="errors.password ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
@@ -121,25 +114,25 @@
             :disabled="loading"
             class="w-full rounded-xl h-12 px-8 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span v-if="!loading">Créer un compte</span>
-            <span v-else>Création...</span>
+            <span v-if="!loading">Creer un compte</span>
+            <span v-else>Creation...</span>
           </button>
 
-          <div
-            v-if="serverMessage"
-            class="rounded-xl border px-4 py-3 text-sm"
-            :class="messageType === 'success'
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-              : 'border-red-200 bg-red-50 text-red-700'"
-          >
+          <div v-if="serverMessage" class="rounded-xl border px-4 py-3 text-sm" :class="messageType === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'">
             {{ serverMessage }}
           </div>
 
-          <p class="text-xs text-center text-gray-500">Vous pourrez compléter votre profil santé juste après.</p>
+          <p class="text-xs text-center text-gray-500">Vous pourrez completer votre profil sante juste apres.</p>
+          <p class="text-xs text-center text-gray-500">
+            Vous avez deja un compte ?
+            <RouterLink :to="{ name: 'login' }" class="text-teal-700 font-semibold hover:underline">Se connecter</RouterLink>
+          </p>
+          <p class="text-xs text-center text-gray-500">
+            Vous souhaitez creer un compte medecin ?
+            <RouterLink :to="{ name: 'register' }" class="text-sky-700 font-semibold hover:underline">Choisir un autre role</RouterLink>
+          </p>
         </form>
       </div>
-
-      <p class="text-center text-xs text-gray-400 mt-6">© {{ new Date().getFullYear() }} Assistant Santé</p>
     </div>
   </div>
 </template>
@@ -171,19 +164,6 @@ const serverMessage = ref("");
 const messageType = ref("success");
 const lastDateInputType = ref("");
 
-const REQUIRED_FORM_MESSAGE = "Veuillez remplir les champs obligatoires.";
-const EMAIL_ALREADY_USED_MESSAGE = "Cet email est déjà utilisé.";
-const INVALID_EMAIL_MESSAGE = "Format d’email invalide.";
-const PASSWORD_SHORT_MESSAGE = "Le mot de passe est trop court (min 8 caractères).";
-const GENERIC_ERROR_MESSAGE = "Une erreur est survenue. Veuillez réessayer.";
-
-const REQUIRED_FIELD_MESSAGES = {
-  name: "Le nom d'utilisateur est obligatoire.",
-  email: "L'adresse email est obligatoire.",
-  date_of_birth: "La date de naissance est obligatoire.",
-  password: "Le mot de passe est obligatoire.",
-};
-
 function clearErrors() {
   errors.name = "";
   errors.email = "";
@@ -191,20 +171,12 @@ function clearErrors() {
   errors.password = "";
 }
 
-function clearForm() {
-  form.name = "";
-  form.email = "";
-  form.date_of_birth = "";
-  form.password = "";
-  form.password_confirmation = "";
-}
-
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function validatePassword(password) {
-  if (password.length < 8) return PASSWORD_SHORT_MESSAGE;
+  if (password.length < 8) return "Le mot de passe est trop court (min 8 caracteres).";
   if (!/[a-zA-Z]/.test(password)) return "Le mot de passe doit contenir au moins une lettre.";
   if (!/[0-9]/.test(password)) return "Le mot de passe doit contenir au moins un chiffre.";
   return "";
@@ -233,24 +205,7 @@ function normalizeDateInput(value) {
 
 function handleDateInput(event) {
   const raw = event?.target?.value ?? "";
-  const formatted = normalizeDateInput(raw).slice(0, 10);
-  form.date_of_birth = formatted;
-
-  if (lastDateInputType.value !== "deleteContentBackward" && errors.date_of_birth) {
-    validateDateFormat();
-  }
-}
-
-function calculateAge(birthDate) {
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-
-  return age;
+  form.date_of_birth = normalizeDateInput(raw).slice(0, 10);
 }
 
 function validateDateFormat() {
@@ -258,34 +213,11 @@ function validateDateFormat() {
     errors.date_of_birth = "";
     return;
   }
-
   const match = form.date_of_birth.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   if (!match) {
     errors.date_of_birth = "Format invalide. Utilisez JJ/MM/AAAA.";
     return;
   }
-
-  const day = Number(match[1]);
-  const month = Number(match[2]);
-  const year = Number(match[3]);
-
-  const date = new Date(year, month - 1, day);
-  const sameDate = date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
-  if (!sameDate) {
-    errors.date_of_birth = "Date invalide.";
-    return;
-  }
-
-  if (date > new Date()) {
-    errors.date_of_birth = "La date de naissance ne peut pas être dans le futur.";
-    return;
-  }
-
-  if (calculateAge(date) < 18) {
-    errors.date_of_birth = "Vous devez avoir au minimum 18 ans.";
-    return;
-  }
-
   errors.date_of_birth = "";
 }
 
@@ -294,115 +226,40 @@ function convertDateFormat(dateStr) {
   return match ? `${match[3]}-${match[2]}-${match[1]}` : dateStr;
 }
 
-function setMissingFieldErrors() {
-  let hasMissing = false;
-
-  if (!form.name) {
-    errors.name = REQUIRED_FIELD_MESSAGES.name;
-    hasMissing = true;
-  }
-  if (!form.email) {
-    errors.email = REQUIRED_FIELD_MESSAGES.email;
-    hasMissing = true;
-  }
-  if (!form.date_of_birth) {
-    errors.date_of_birth = REQUIRED_FIELD_MESSAGES.date_of_birth;
-    hasMissing = true;
-  }
-  if (!form.password) {
-    errors.password = REQUIRED_FIELD_MESSAGES.password;
-    hasMissing = true;
-  }
-
-  if (hasMissing) serverMessage.value = REQUIRED_FORM_MESSAGE;
-  return hasMissing;
-}
-
-function firstMessage(value) {
-  if (Array.isArray(value)) return value[0] || "";
-  if (typeof value === "string") return value;
-  return "";
-}
-
-function mapEmailError(message) {
-  const normalized = String(message || "").toLowerCase();
-  if (!normalized) return "";
-  if (/(taken|already|existe|utilis|unique|déjà|deja|duplicate|1062)/.test(normalized)) return EMAIL_ALREADY_USED_MESSAGE;
-  if (/(required|obligatoire|requis)/.test(normalized)) return REQUIRED_FIELD_MESSAGES.email;
-  if (/(valid email|must be.*email|format|invalide|adresse e-mail)/.test(normalized)) return INVALID_EMAIL_MESSAGE;
-  return "";
-}
-
-function mapPasswordError(message) {
-  const normalized = String(message || "").toLowerCase();
-  if (!normalized) return "";
-  if (/(required|obligatoire|requis)/.test(normalized)) return REQUIRED_FIELD_MESSAGES.password;
-  if (/(minimum|min\.?|at least|au moins).*(8|huit)|8.*(character|caract)|too short|trop court/.test(normalized)) {
-    return PASSWORD_SHORT_MESSAGE;
-  }
-  return "";
-}
-
-function mapFieldValidationErrors(validationErrors = {}) {
-  const nameBackend = firstMessage(validationErrors.name);
-  const emailBackend = firstMessage(validationErrors.email);
-  const dobBackend = firstMessage(validationErrors.date_of_birth);
-  const passwordBackend = firstMessage(validationErrors.password);
-
-  errors.name = /(required|obligatoire|requis)/i.test(nameBackend) ? REQUIRED_FIELD_MESSAGES.name : nameBackend;
-  errors.email = mapEmailError(emailBackend) || emailBackend;
-  errors.date_of_birth = /(required|obligatoire|requis)/i.test(dobBackend) ? REQUIRED_FIELD_MESSAGES.date_of_birth : dobBackend;
-  errors.password = mapPasswordError(passwordBackend) || passwordBackend;
-}
-
-function mapTopLevelBackendMessage(message) {
-  const normalized = String(message || "").toLowerCase();
-  if (!normalized) return "";
-  if (/(taken|already|existe|utilis|unique|déjà|deja|duplicate|1062)/.test(normalized)) return EMAIL_ALREADY_USED_MESSAGE;
-  if (/(required|obligatoire|requis)/.test(normalized)) return REQUIRED_FORM_MESSAGE;
-  if (/(valid email|must be.*email|format|invalide|adresse e-mail)/.test(normalized)) return INVALID_EMAIL_MESSAGE;
-  if (/(minimum|min\.?|at least|au moins).*(8|huit)|8.*(character|caract)|too short|trop court/.test(normalized)) {
-    return PASSWORD_SHORT_MESSAGE;
-  }
-  return "";
-}
-
 async function submit() {
   serverMessage.value = "";
   messageType.value = "success";
   clearErrors();
 
-  if (setMissingFieldErrors()) return;
+  if (!form.name || !form.email || !form.date_of_birth || !form.password) {
+    if (!form.name) errors.name = "Le nom d'utilisateur est obligatoire.";
+    if (!form.email) errors.email = "L'adresse email est obligatoire.";
+    if (!form.date_of_birth) errors.date_of_birth = "La date de naissance est obligatoire.";
+    if (!form.password) errors.password = "Le mot de passe est obligatoire.";
+    serverMessage.value = "Veuillez remplir les champs obligatoires.";
+    return;
+  }
 
   if (!isValidEmail(form.email)) {
-    errors.email = INVALID_EMAIL_MESSAGE;
+    errors.email = "Format d'email invalide.";
   }
 
-  if (form.password) {
-    const passwordError = validatePassword(form.password);
-    if (passwordError) errors.password = passwordError;
-  }
-
-  if (form.password !== form.password_confirmation) {
-    errors.password = "Les mots de passe ne correspondent pas.";
-  }
-
+  const passwordError = validatePassword(form.password);
+  if (passwordError) errors.password = passwordError;
+  if (form.password !== form.password_confirmation) errors.password = "Les mots de passe ne correspondent pas.";
   validateDateFormat();
-
   if (errors.name || errors.email || errors.date_of_birth || errors.password) return;
 
   loading.value = true;
 
   try {
-    const payload = {
+    const res = await api.post("/auth/register", {
       name: form.name,
       email: form.email,
       date_of_birth: convertDateFormat(form.date_of_birth),
       password: form.password,
       password_confirmation: form.password_confirmation,
-    };
-
-    const res = await api.post("/auth/register", payload);
+    });
 
     const token = res?.data?.token;
     if (token) {
@@ -410,56 +267,12 @@ async function submit() {
       api.defaults.headers.common.Authorization = `Bearer ${token}`;
     }
 
-    serverMessage.value = res?.data?.message || "Compte créé avec succès.";
+    serverMessage.value = res?.data?.message || "Compte cree avec succes.";
     messageType.value = "success";
-
-    clearForm();
-
-    const destination = res?.data?.redirect_to || "/profil-sante";
-    setTimeout(() => router.push(destination), 500);
+    setTimeout(() => router.push(res?.data?.redirect_to || "/profil-sante"), 500);
   } catch (err) {
     messageType.value = "error";
-
-    const data = err?.response?.data;
-    const status = err?.response?.status;
-
-    if (!err?.response) {
-      serverMessage.value = "Problème réseau. Réessayez.";
-      return;
-    }
-
-    if (status === 409) {
-      errors.email = "Cet email est déjà utilisé.";
-      serverMessage.value = "Cet email est déjà utilisé.";
-    } else if (status === 422 && data?.errors) {
-      mapFieldValidationErrors(data.errors);
-      const knownFieldMessages = [errors.name, errors.email, errors.date_of_birth, errors.password].filter(Boolean);
-      const uniqueMessages = [...new Set(knownFieldMessages)];
-      serverMessage.value = uniqueMessages.length === 1 ? uniqueMessages[0] : "Veuillez corriger les erreurs du formulaire.";
-    } else if (data?.message) {
-      const mappedMessage = mapTopLevelBackendMessage(data.message);
-      serverMessage.value = mappedMessage || GENERIC_ERROR_MESSAGE;
-
-      if (mappedMessage === "Cet email est déjà utilisé.") {
-        errors.email = mappedMessage;
-      }
-      if (mappedMessage === INVALID_EMAIL_MESSAGE) {
-        errors.email = mappedMessage;
-      }
-      if (mappedMessage === PASSWORD_SHORT_MESSAGE) {
-        errors.password = mappedMessage;
-      }
-      if (mappedMessage === REQUIRED_FORM_MESSAGE) {
-        if (!form.name) errors.name = REQUIRED_FIELD_MESSAGES.name;
-        if (!form.email) errors.email = REQUIRED_FIELD_MESSAGES.email;
-        if (!form.date_of_birth) errors.date_of_birth = REQUIRED_FIELD_MESSAGES.date_of_birth;
-        if (!form.password) errors.password = REQUIRED_FIELD_MESSAGES.password;
-      }
-    } else if (status === 500) {
-      serverMessage.value = "Erreur serveur. Veuillez réessayer plus tard.";
-    } else {
-      serverMessage.value = GENERIC_ERROR_MESSAGE;
-    }
+    serverMessage.value = err?.response?.data?.message || "Une erreur est survenue. Veuillez reessayer.";
   } finally {
     loading.value = false;
   }

@@ -1,5 +1,7 @@
 <template>
-  <div class="mx-auto max-w-[1320px] p-4 sm:p-6 lg:p-8">
+  <DoctorDashboard v-if="authResolved && isDoctor" />
+
+  <div v-else-if="authResolved" class="mx-auto max-w-[1320px] p-4 sm:p-6 lg:p-8">
     <header>
       <h1 class="text-[34px] font-semibold leading-none text-slate-900">Dashboard</h1>
       <p class="mt-2 text-sm text-slate-600">Vue d'ensemble de votre santé</p>
@@ -58,6 +60,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import api from '@/services/api'
+import DoctorDashboard from '@/components/doctor/DoctorDashboard.vue'
 
 const chartRef = ref(null)
 const labels = ref([])
@@ -65,6 +68,8 @@ const heartRateValues = ref([])
 const systolicValues = ref([])
 const saturationValues = ref([])
 const hoveredIndex = ref(null)
+const isDoctor = ref(false)
+const authResolved = ref(false)
 const selectedSeries = reactive({
   rhythm: true,
   tension: true,
@@ -190,6 +195,18 @@ function basculerSerie(key) {
 }
 
 onMounted(async () => {
-  await chargerDonneesSante()
+  try {
+    const authRes = await api.get('/auth/me')
+    const role = String(authRes?.data?.user?.role || authRes?.data?.role || '').toLowerCase()
+    isDoctor.value = role === 'medecin' || role === 'doctor'
+  } catch (_) {
+    isDoctor.value = false
+  } finally {
+    authResolved.value = true
+  }
+
+  if (!isDoctor.value) {
+    await chargerDonneesSante()
+  }
 })
 </script>

@@ -9,6 +9,7 @@ class UpdateHealthLabResultRequest extends StoreHealthLabResultRequest
         $rules = parent::rules();
 
         $rules['analysis_type'][0] = 'sometimes';
+        $rules['analysis_result'][0] = 'sometimes';
         $rules['value'][0] = 'sometimes';
         $rules['analysis_date'][0] = 'sometimes';
 

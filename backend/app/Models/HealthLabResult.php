@@ -10,10 +10,10 @@ class HealthLabResult extends Model
     protected $fillable = [
         'user_id',
         'analysis_type',
+        'analysis_result',
         'value',
         'unit',
         'analysis_date',
-        'notes',
     ];
 
     protected $casts = [

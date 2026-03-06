@@ -3,16 +3,22 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\DoctorInvitationMail;
+use App\Models\DoctorInvitation;
 use App\Models\ProfilSante;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ProfilSanteController extends Controller
 {
     public function store(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['message' => 'Utilisateur non authentifie.'], 401);
         }
 
@@ -29,13 +35,10 @@ class ProfilSanteController extends Controller
             'groupe_sanguin' => ['required', 'string', 'max:5'],
             'objectifs' => ['nullable', 'array'],
             'objectifs.*' => ['string', 'max:120'],
-
             'allergies' => ['nullable', 'array'],
             'allergies.*' => ['string', 'max:100'],
-
             'maladies_chroniques' => ['nullable', 'array'],
             'maladies_chroniques.*' => ['string', 'max:120'],
-
             'traitements' => ['nullable', 'array'],
             'traitements.*.type' => ['required_with:traitements', 'string', 'max:120'],
             'traitements.*.name' => ['nullable', 'string', 'max:255'],
@@ -43,24 +46,36 @@ class ProfilSanteController extends Controller
             'traitements.*.frequency_unit' => ['nullable', Rule::in(['jour', 'semaine', 'mois'])],
             'traitements.*.frequency_count' => ['nullable', 'integer', 'min:1'],
             'traitements.*.duration' => ['nullable', 'string', 'max:120'],
-
             'prend_medicament' => ['required', 'boolean'],
             'nom_medicament' => ['nullable', 'string', 'max:255', 'required_if:prend_medicament,1'],
-
             'consulte_medecin' => ['required', 'boolean'],
             'medecin_peut_consulter' => ['required_if:consulte_medecin,1', 'boolean'],
-            'medecin_email' => ['nullable', 'email', 'required_if:medecin_peut_consulter,1'],
-
+            'medecin_email' => [
+                'nullable',
+                'email',
+                'required_if:medecin_peut_consulter,1',
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    $currentEmail = strtolower((string) Auth::user()?->email);
+                    if (strtolower((string) $value) === $currentEmail) {
+                        $fail("L'email du medecin doit etre different de votre email.");
+                    }
+                },
+            ],
             'fumeur' => ['required', 'boolean'],
             'alcool' => ['required', 'boolean'],
         ]);
 
         $validated['user_id'] = Auth::id();
+        $validated['medecin_email'] = $validated['medecin_email'] !== null
+            ? strtolower(trim((string) $validated['medecin_email']))
+            : null;
 
         $profil = ProfilSante::updateOrCreate(
             ['user_id' => Auth::id()],
             $validated
         );
+
+        $this->syncDoctorInvitation($profil);
 
         return response()->json([
             'message' => 'Profil sante enregistre avec succes.',
@@ -70,7 +85,7 @@ class ProfilSanteController extends Controller
 
     public function show()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['message' => 'Utilisateur non authentifie.'], 401);
         }
 
@@ -81,5 +96,78 @@ class ProfilSanteController extends Controller
             'data' => $profil,
             'user' => $user,
         ], 200);
+    }
+
+    private function syncDoctorInvitation(ProfilSante $profil): void
+    {
+        $patient = Auth::user();
+        if (! $patient) {
+            return;
+        }
+
+        $shouldInvite = (bool) $profil->consulte_medecin
+            && (bool) $profil->medecin_peut_consulter
+            && ! empty($profil->medecin_email);
+
+        if (! $shouldInvite) {
+            DoctorInvitation::query()
+                ->where('patient_user_id', $patient->id)
+                ->where('status', 'pending')
+                ->update([
+                    'status' => 'revoked',
+                    'revoked_at' => now(),
+                ]);
+            return;
+        }
+
+        $doctorEmail = strtolower(trim((string) $profil->medecin_email));
+        $doctor = User::query()
+            ->whereRaw('LOWER(email) = ?', [$doctorEmail])
+            ->first();
+
+        if ($doctor && $doctor->id === $patient->id) {
+            return;
+        }
+
+        $existing = DoctorInvitation::query()
+            ->where('patient_user_id', $patient->id)
+            ->where('doctor_email', $doctorEmail)
+            ->first();
+
+        $shouldSendMail = false;
+
+        if ($existing) {
+            if ($existing->status !== 'accepted') {
+                $existing->update([
+                    'doctor_user_id' => $doctor?->id,
+                    'doctor_email' => $doctorEmail,
+                    'status' => 'pending',
+                    'token' => Str::random(64),
+                    'accepted_at' => null,
+                    'rejected_at' => null,
+                    'revoked_at' => null,
+                ]);
+                $shouldSendMail = true;
+            }
+        } else {
+            DoctorInvitation::query()->create([
+                'patient_user_id' => $patient->id,
+                'doctor_user_id' => $doctor?->id,
+                'doctor_email' => $doctorEmail,
+                'status' => 'pending',
+                'token' => Str::random(64),
+            ]);
+            $shouldSendMail = true;
+        }
+
+        if (! $shouldSendMail) {
+            return;
+        }
+
+        try {
+            Mail::to($doctorEmail)->send(new DoctorInvitationMail($patient, $doctorEmail));
+        } catch (\Throwable $e) {
+            Log::warning('Doctor invitation email failed: '.$e->getMessage());
+        }
     }
 }

@@ -34,7 +34,19 @@
       </div>
     </section>
 
-    <div v-if="showAddButton" class="mt-4 flex justify-end">
+    <div v-if="showAddButton" class="mt-4 flex justify-end gap-2">
+      <button
+        v-if="activeTab === 'labs'"
+        type="button"
+        class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+        @click="showLabsFilters = !showLabsFilters"
+      >
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 5h18M7 12h10M10 19h4" stroke-linecap="round" />
+        </svg>
+        Filtrer
+      </button>
+
       <button
         type="button"
         class="inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(37,99,235,0.22)]"
@@ -48,60 +60,179 @@
     </div>
 
     <template v-if="activeTab === 'vitals'">
-      <section class="mt-4 grid gap-3 lg:grid-cols-3">
-        <article class="min-h-[118px] rounded-2xl border border-rose-200 bg-rose-50/70 p-3.5">
-          <div class="mb-2.5 flex items-start justify-between">
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
-              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <section class="mt-6 grid gap-5 xl:grid-cols-3">
+        <article class="min-h-[162px] rounded-2xl border border-[#efc4cc] bg-[#fdf2f5] px-6 py-6">
+          <div class="flex items-start justify-between">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#f9e3e9] text-[#ff2458]">
+              <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
                 <path d="M20.8 8.2a4.9 4.9 0 0 0-8.8-3.1 4.9 4.9 0 0 0-8.8 3.1c0 5 8.8 10.8 8.8 10.8s8.8-5.8 8.8-10.8z" />
               </svg>
             </div>
-            <span class="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold leading-none text-emerald-700">Normal</span>
+            <span class="rounded-full bg-[#dff6e4] px-3 py-1 text-[12px] leading-none text-[#08aa48]">Normal</span>
           </div>
-          <p class="text-[13px] font-medium text-slate-600">Rythme cardiaque</p>
-          <p class="mt-0.5 text-[30px] font-semibold leading-none text-slate-900">{{ latestHeartRate }} <span class="text-[20px] font-medium text-slate-600">bpm</span></p>
+          <p class="mt-4 text-[16px] leading-none text-slate-700">Rythme cardiaque</p>
+          <p class="mt-3 text-[40px] font-semibold leading-none text-slate-900">{{ latestHeartRate }} <span class="text-[34px] font-medium text-slate-700">bpm</span></p>
         </article>
 
-        <article class="min-h-[118px] rounded-2xl border border-sky-200 bg-sky-50/70 p-3.5">
-          <div class="mb-2.5 flex items-start justify-between">
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
-              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <article class="min-h-[162px] rounded-2xl border border-[#a8cdfb] bg-[#ebf6fe] px-6 py-6">
+          <div class="flex items-start justify-between">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#d5e7fd] text-[#2c67f6]">
+              <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
                 <path d="M3 12h4l2-6 4 12 2-6h6" />
               </svg>
             </div>
-            <span class="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold leading-none text-emerald-700">Normal</span>
+            <span class="rounded-full bg-[#dff6e4] px-3 py-1 text-[12px] leading-none text-[#08aa48]">Normal</span>
           </div>
-          <p class="text-[13px] font-medium text-slate-600">Tension artérielle</p>
-          <p class="mt-0.5 text-[30px] font-semibold leading-none text-slate-900">{{ latestPressure }} <span class="text-[20px] font-medium text-slate-600">mmHg</span></p>
+          <p class="mt-4 text-[16px] leading-none text-slate-700">Tension artérielle</p>
+          <p class="mt-3 text-[40px] font-semibold leading-none text-slate-900">{{ latestPressure }} <span class="text-[34px] font-medium text-slate-700">mmHg</span></p>
         </article>
 
-        <article class="min-h-[118px] rounded-2xl border border-violet-200 bg-violet-50/70 p-3.5">
-          <div class="mb-2.5 flex items-start justify-between">
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
-              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <article class="min-h-[162px] rounded-2xl border border-[#dbc6f7] bg-[#f6f0fc] px-6 py-6">
+          <div class="flex items-start justify-between">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#eee2fc] text-[#8a2cff]">
+              <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
                 <path d="M12 3s6 6.4 6 10a6 6 0 0 1-12 0c0-3.6 6-10 6-10z" />
               </svg>
             </div>
-            <span class="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold leading-none text-emerald-700">Normal</span>
+            <span class="rounded-full bg-[#dff6e4] px-3 py-1 text-[12px] leading-none text-[#08aa48]">Normal</span>
           </div>
-          <p class="text-[13px] font-medium text-slate-600">Saturation O₂</p>
-          <p class="mt-0.5 text-[30px] font-semibold leading-none text-slate-900">{{ latestOxygen }} <span class="text-[20px] font-medium text-slate-600">%</span></p>
+          <p class="mt-4 text-[16px] leading-none text-slate-700">Saturation O₂</p>
+          <p class="mt-3 text-[40px] font-semibold leading-none text-slate-900">{{ latestOxygen }} <span class="text-[34px] font-medium text-slate-700">%</span></p>
         </article>
+      </section>
+
+      <section class="mt-8 rounded-2xl border border-slate-200 bg-[#f8f9fb] px-8 py-8">
+        <h2 class="text-[20px] font-semibold leading-none text-slate-900">Historique des mesures</h2>
+
+        <div class="mt-8 grid gap-4 lg:grid-cols-2">
+          <div>
+            <label class="mb-3 block text-[14px] font-semibold text-slate-800">Filtrer par date</label>
+            <div class="relative">
+              <input
+                v-model="vitalFilterDate"
+                type="date"
+                class="h-12 w-full rounded-2xl border border-slate-300 bg-white pl-5 pr-12 text-[16px] text-slate-900 outline-none focus:border-blue-500"
+              />
+              <svg viewBox="0 0 24 24" class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
+              </svg>
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-3 block text-[14px] font-semibold text-slate-800">Filtrer par type</label>
+            <select
+              v-model="vitalFilterType"
+              class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-5 text-[16px] text-slate-900 outline-none focus:border-blue-500"
+            >
+              <option value="all">Tous les signes</option>
+              <option value="heart">Rythme cardiaque</option>
+              <option value="pressure">Tension artérielle</option>
+              <option value="oxygen">Saturation O₂</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-6 space-y-3.5">
+          <article
+            v-for="day in filteredVitalHistory"
+            :key="day.dateKey"
+            class="rounded-2xl border border-slate-200 bg-white px-5 py-5"
+          >
+            <div class="mb-4 flex items-center gap-3 text-slate-900">
+              <svg viewBox="0 0 24 24" class="h-6 w-6 text-slate-500" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
+              </svg>
+              <h3 class="text-[22px] font-semibold leading-none">{{ day.longDate }}</h3>
+            </div>
+
+            <div class="grid gap-3 xl:grid-cols-3">
+              <article v-if="vitalFilterType === 'all' || vitalFilterType === 'heart'" class="rounded-xl border border-[#efc4cc] bg-[#fdf2f5] px-4 py-3">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f9e3e9] text-[#ff2458]">
+                    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9">
+                      <path d="M20.8 8.2a4.9 4.9 0 0 0-8.8-3.1 4.9 4.9 0 0 0-8.8 3.1c0 5 8.8 10.8 8.8 10.8s8.8-5.8 8.8-10.8z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-[13px] leading-none text-slate-700">Rythme cardiaque</p>
+                    <p class="mt-2 text-[20px] font-semibold leading-none text-slate-900">{{ day.heartRate }} <span class="text-[18px] font-medium text-slate-700">bpm</span></p>
+                    <span class="mt-2 inline-block rounded-full bg-[#dff6e4] px-2.5 py-0.5 text-[12px] leading-none text-[#08aa48]">Normal</span>
+                  </div>
+                </div>
+              </article>
+
+              <article v-if="vitalFilterType === 'all' || vitalFilterType === 'pressure'" class="rounded-xl border border-[#a8cdfb] bg-[#ebf6fe] px-4 py-3">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#d5e7fd] text-[#2c67f6]">
+                    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9">
+                      <path d="M3 12h4l2-6 4 12 2-6h6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-[13px] leading-none text-slate-700">Tension artérielle</p>
+                    <p class="mt-2 text-[20px] font-semibold leading-none text-slate-900">{{ day.pressure }} <span class="text-[18px] font-medium text-slate-700">mmHg</span></p>
+                    <span class="mt-2 inline-block rounded-full bg-[#dff6e4] px-2.5 py-0.5 text-[12px] leading-none text-[#08aa48]">Normal</span>
+                  </div>
+                </div>
+              </article>
+
+              <article v-if="vitalFilterType === 'all' || vitalFilterType === 'oxygen'" class="rounded-xl border border-[#dbc6f7] bg-[#f6f0fc] px-4 py-3">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eee2fc] text-[#8a2cff]">
+                    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9">
+                      <path d="M12 3s6 6.4 6 10a6 6 0 0 1-12 0c0-3.6 6-10 6-10z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-[13px] leading-none text-slate-700">Saturation O₂</p>
+                    <p class="mt-2 text-[20px] font-semibold leading-none text-slate-900">{{ day.oxygen }} <span class="text-[18px] font-medium text-slate-700">%</span></p>
+                    <span class="mt-2 inline-block rounded-full bg-[#dff6e4] px-2.5 py-0.5 text-[12px] leading-none text-[#08aa48]">Normal</span>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </article>
+
+          <div v-if="!filteredVitalHistory.length" class="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-[14px] text-slate-600">
+            Aucune mesure ne correspond aux filtres selectionnes.
+          </div>
+        </div>
       </section>
 
     </template>
 
     <template v-else-if="activeTab === 'labs'">
       <section class="mt-4 space-y-3">
-        <article v-for="item in analyses" :key="item.id" class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+        <div v-if="showLabsFilters" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="grid gap-3 md:grid-cols-3">
+            <div>
+              <label class="mb-1 block text-[12px] font-semibold text-slate-600">Type</label>
+              <select v-model="labsFilterType" class="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-[13px] text-slate-800 outline-none focus:border-blue-500">
+                <option value="">Tous</option>
+                <option v-for="type in labTypeOptions" :key="type" :value="type">{{ type }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="mb-1 block text-[12px] font-semibold text-slate-600">Date</label>
+              <input v-model="labsFilterDate" type="date" class="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-[13px] text-slate-800 outline-none focus:border-blue-500" />
+            </div>
+            <div>
+              <label class="mb-1 block text-[12px] font-semibold text-slate-600">Recherche</label>
+              <input v-model.trim="labsFilterQuery" type="text" placeholder="Ex: CRP, TSH..." class="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-[13px] text-slate-800 outline-none focus:border-blue-500" />
+            </div>
+          </div>
+        </div>
+
+        <article v-for="item in filteredAnalyses" :key="item.id" class="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <div class="flex items-center gap-3">
-                <h3 class="text-[24px] font-semibold leading-none text-slate-900">{{ item.name }}</h3>
-                <span class="rounded-full bg-emerald-100 px-3 py-1 text-[13px] font-semibold leading-none text-emerald-700">Normal</span>
+                <h3 class="text-[16px] font-semibold leading-none text-slate-900">{{ item.name }}</h3>
+                <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-emerald-700">Normal</span>
               </div>
-              <div class="mt-3 flex items-center gap-5 text-slate-900">
-                <p class="text-[30px] font-semibold leading-none">{{ item.value }} {{ item.unit }}</p>
+              <div class="mt-2 flex items-center gap-4 text-slate-900">
+                <p class="text-[22px] font-semibold leading-none">{{ item.value }} {{ item.unit }}</p>
                 <div class="inline-flex items-center gap-2 text-[12px] text-slate-600">
                   <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" /></svg>
                   {{ item.date }}
@@ -111,14 +242,14 @@
             <div class="flex items-center gap-2">
               <button
                 type="button"
-                class="rounded-lg border border-slate-300 px-3 py-1.5 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"
+                class="rounded-lg border border-slate-300 px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
                 @click="ouvrirEditionAnalyse(item)"
               >
                 Modifier
               </button>
               <button
                 type="button"
-                class="rounded-lg border border-rose-200 px-3 py-1.5 text-[12px] font-semibold text-rose-600 hover:bg-rose-50"
+                class="rounded-lg border border-rose-200 px-3 py-1.5 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
                 @click="supprimerAnalyse(item)"
               >
                 Supprimer
@@ -126,50 +257,184 @@
             </div>
           </div>
         </article>
+
+        <div v-if="!filteredAnalyses.length" class="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-[13px] text-slate-600">
+          Aucune analyse ne correspond aux filtres.
+        </div>
       </section>
     </template>
 
     <template v-else>
-      <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 class="text-[20px] font-semibold leading-none text-slate-900">Calendrier des traitements</h2>
-        <p class="mt-3 text-[12px] font-normal text-slate-600">Cliquez sur une journée pour gérer vos prises</p>
+      <section class="mt-4 flex justify-end">
+        <button
+          type="button"
+          class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+          @click="showTreatmentHistory = !showTreatmentHistory"
+        >
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5" stroke-linecap="round" />
+          </svg>
+          {{ showTreatmentHistory ? "Masquer historique" : "Voir historique" }}
+        </button>
+      </section>
 
-        <div class="mt-6 grid grid-cols-7 gap-2.5">
-          <div v-for="day in treatmentDays" :key="day.key" class="text-center">
-            <p class="mb-2 text-[12px] font-normal leading-none text-slate-600">{{ day.shortLabel }}</p>
+      <section v-if="showTreatmentHistory" class="mt-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="text-[22px] font-semibold leading-none text-slate-900">Historique des prises</h2>
+
+        <div class="mt-6 grid gap-4 lg:grid-cols-3">
+          <article class="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
+            <p class="text-[13px] text-slate-700">Taux d'observance</p>
+            <p class="mt-1 text-[24px] font-semibold leading-none text-slate-900">{{ treatmentHistoryStats.observance }}%</p>
+            <p class="mt-2 text-[12px] text-slate-600">{{ treatmentHistoryStats.completeDays }}/{{ treatmentHistoryStats.totalDays }} jours complets</p>
+          </article>
+          <article class="rounded-2xl border border-blue-200 bg-blue-50/60 p-4">
+            <p class="text-[13px] text-slate-700">Prises totales</p>
+            <p class="mt-1 text-[24px] font-semibold leading-none text-slate-900">{{ treatmentHistoryStats.totalTaken }}</p>
+            <p class="mt-2 text-[12px] text-slate-600">{{ treatmentHistoryStats.periodSubtitle }}</p>
+          </article>
+          <article class="rounded-2xl border border-violet-200 bg-violet-50/60 p-4">
+            <p class="text-[13px] text-slate-700">Médicaments actifs</p>
+            <p class="mt-1 text-[24px] font-semibold leading-none text-slate-900">{{ treatmentHistoryStats.activeMedicines }}</p>
+            <p class="mt-2 text-[12px] text-slate-600">Traitements en cours</p>
+          </article>
+        </div>
+
+        <div class="mt-6">
+          <p class="text-[14px] font-semibold text-slate-800">Période</p>
+          <div class="mt-3 flex flex-wrap gap-2">
             <button
+              v-for="period in treatmentHistoryPeriods"
+              :key="period.value"
               type="button"
-              class="h-[92px] w-full rounded-xl border px-2 pb-2 pt-2 transition"
-              :class="estJourComplet(day.key) ? 'border-[#08a84a] bg-[#cfddd6]' : 'border-slate-300 bg-slate-50 hover:bg-slate-100'"
-              @click="ouvrirJourTraitement(day)"
+              class="h-9 rounded-full px-4 text-[13px] font-semibold transition"
+              :class="treatmentHistoryPeriod === period.value
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_6px_14px_rgba(59,130,246,0.32)]'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+              @click="treatmentHistoryPeriod = period.value"
             >
-              <p class="text-[32px] font-medium leading-none text-slate-900">{{ day.day }}</p>
-              <div class="mt-2 flex justify-center">
-                <span
-                  class="inline-flex h-6 w-6 items-center justify-center rounded-full border"
-                  :class="estJourComplet(day.key) ? 'border-[#08a84a] bg-[#08a84a] text-white' : 'border-slate-300 bg-white text-transparent'"
-                >
-                  <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 13 4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                </span>
-              </div>
+              {{ period.label }}
             </button>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <p class="text-[14px] font-semibold text-slate-800">Médicament</p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button
+              v-for="med in treatmentHistoryMedicineOptions"
+              :key="med.id"
+              type="button"
+              class="h-9 rounded-full px-4 text-[13px] font-semibold transition"
+              :class="selectedTreatmentHistoryMed === med.id
+                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-[0_6px_14px_rgba(99,102,241,0.32)]'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+              @click="selectedTreatmentHistoryMed = med.id"
+            >
+              {{ med.name }}
+            </button>
+          </div>
+        </div>
+
+        <div class="relative mt-6 space-y-4 pl-7">
+          <div class="absolute left-[12px] top-0 h-full w-px bg-blue-200"></div>
+          <article
+            v-for="day in treatmentHistoryRows"
+            :key="`history-${day.dateKey}`"
+            class="relative rounded-2xl border p-4 shadow-sm"
+            :class="day.isComplete ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200 bg-white'"
+          >
+            <span
+              class="absolute -left-[22px] top-6 inline-flex h-4 w-4 rounded-full ring-4 ring-white"
+              :class="day.isComplete ? 'bg-emerald-500' : 'bg-slate-300'"
+            ></span>
+
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h3 class="text-[16px] font-semibold leading-none text-slate-900">{{ formaterDateHistoriqueTraitement(day.dateKey) }}</h3>
+                <p class="mt-2 text-[14px] text-slate-700">{{ day.taken }}/{{ day.total }} prises effectuées</p>
+              </div>
+              <span
+                v-if="day.isComplete"
+                class="inline-flex h-8 items-center gap-1 rounded-full bg-emerald-600 px-4 text-[12px] font-semibold text-white"
+              >
+                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 13 4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                Complet
+              </span>
+            </div>
+
+            <div class="mt-4 grid gap-3 lg:grid-cols-2">
+              <article v-for="med in day.meds" :key="`${day.dateKey}-${med.id}`" class="rounded-xl border border-slate-200 bg-white p-3">
+                <div class="flex items-center gap-3">
+                  <span
+                    class="inline-flex h-8 min-w-[32px] items-center justify-center rounded-lg px-2 text-[12px] font-semibold"
+                    :class="med.isComplete ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'"
+                  >
+                    {{ med.isComplete ? "✓" : `${med.taken}/${med.total}` }}
+                  </span>
+                  <div>
+                    <p class="text-[16px] font-semibold leading-none text-slate-900">{{ med.name }}</p>
+                    <p class="mt-1 text-[13px] text-slate-600">{{ med.dose }}</p>
+                  </div>
+                </div>
+                <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    class="h-full rounded-full"
+                    :class="med.isComplete ? 'bg-emerald-600' : 'bg-blue-600'"
+                    :style="{ width: `${med.progress}%` }"
+                  ></div>
+                </div>
+              </article>
+            </div>
+          </article>
+
+          <div v-if="!treatmentHistoryRows.length" class="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-[13px] text-slate-600">
+            Aucun historique disponible pour ces filtres.
           </div>
         </div>
       </section>
 
-      <section class="mt-6">
-        <h3 class="text-[20px] font-semibold leading-none text-slate-900">Traitements actifs</h3>
-        <p v-if="!treatmentMedicines.length" class="mt-3 text-[13px] text-slate-500">
-          Aucun traitement actif dans votre profil santé.
-        </p>
-        <div v-else class="mt-3 space-y-4">
-          <article v-for="med in treatmentMedicines" :key="med.id" class="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
-            <p class="text-[19px] font-semibold leading-none text-slate-900">{{ med.name }}</p>
-            <p class="mt-2 text-[12px] font-normal text-slate-700">{{ med.dose }} - {{ med.freq }}</p>
-            <p class="mt-1 text-[12px] font-normal text-slate-500">{{ med.note }}</p>
-          </article>
-        </div>
-      </section>
+      <template v-else>
+        <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="text-[20px] font-semibold leading-none text-slate-900">Calendrier des traitements</h2>
+          <p class="mt-3 text-[12px] font-normal text-slate-600">Cliquez sur une journée pour gérer vos prises</p>
+
+          <div class="mt-6 grid grid-cols-7 gap-2.5">
+            <div v-for="day in treatmentDays" :key="day.key" class="text-center">
+              <p class="mb-2 text-[12px] font-normal leading-none text-slate-600">{{ day.shortLabel }}</p>
+              <button
+                type="button"
+                class="h-[92px] w-full rounded-xl border px-2 pb-2 pt-2 transition"
+                :class="estJourComplet(day.key) ? 'border-[#08a84a] bg-[#cfddd6]' : 'border-slate-300 bg-slate-50 hover:bg-slate-100'"
+                @click="ouvrirJourTraitement(day)"
+              >
+                <p class="text-[32px] font-medium leading-none text-slate-900">{{ day.day }}</p>
+                <div class="mt-2 flex justify-center">
+                  <span
+                    class="inline-flex h-6 w-6 items-center justify-center rounded-full border"
+                    :class="estJourComplet(day.key) ? 'border-[#08a84a] bg-[#08a84a] text-white' : 'border-slate-300 bg-white text-transparent'"
+                  >
+                    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 13 4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                  </span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-6">
+          <h3 class="text-[20px] font-semibold leading-none text-slate-900">Traitements actifs</h3>
+          <p v-if="!treatmentMedicines.length" class="mt-3 text-[13px] text-slate-500">
+            Aucun traitement actif dans votre profil santé.
+          </p>
+          <div v-else class="mt-3 space-y-4">
+            <article v-for="med in treatmentMedicines" :key="med.id" class="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
+              <p class="text-[19px] font-semibold leading-none text-slate-900">{{ med.name }}</p>
+              <p class="mt-2 text-[12px] font-normal text-slate-700">{{ med.dose }} - {{ med.freq }}</p>
+              <p class="mt-1 text-[12px] font-normal text-slate-500">{{ med.note }}</p>
+            </article>
+          </div>
+        </section>
+      </template>
     </template>
   </div>
 
@@ -280,21 +545,84 @@
       <div class="space-y-4">
         <div>
           <label class="mb-2 block text-[13px] font-semibold text-slate-700">Type d'analyse</label>
-          <select v-model="analysisForm.type" class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] text-slate-800 outline-none focus:border-blue-500">
+          <select
+            v-model="analysisForm.category"
+            class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] text-slate-800 outline-none focus:border-blue-500"
+            @change="handleAnalysisCategoryChange"
+          >
             <option value="">Sélectionnez</option>
-            <option v-for="item in analysisTypeOptions" :key="item" :value="item">{{ item }}</option>
+            <option v-for="item in analysisCategoryOptions" :key="item" :value="item">{{ item }}</option>
           </select>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="mb-2 block text-[13px] font-semibold text-slate-700">Valeur</label>
-            <input v-model="analysisForm.value" type="text" placeholder="5.2" class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[15px] outline-none focus:border-blue-500" />
+        <div class="space-y-3">
+          <div
+            v-for="(result, index) in analysisForm.results"
+            :key="`analysis-result-${index}`"
+            class="rounded-2xl border border-slate-200 bg-slate-50 p-3"
+          >
+            <div class="mb-2 flex items-center justify-between">
+              <div>
+                <p class="text-[13px] font-semibold text-slate-700">Résultat {{ index + 1 }}</p>
+                <p v-if="expandedAnalysisResultIndex !== index" class="mt-1 text-xs text-slate-500">
+                  {{ getAnalysisResultSummary(result) }}
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  v-if="expandedAnalysisResultIndex !== index"
+                  type="button"
+                  class="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                  @click="expandedAnalysisResultIndex = index"
+                >
+                  Modifier
+                </button>
+                <button
+                  v-if="analysisForm.results.length > 1 && !editingAnalysisId"
+                  type="button"
+                  class="text-xs font-semibold text-rose-600 hover:text-rose-700"
+                  @click="removeAnalysisResult(index)"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+
+            <div v-if="expandedAnalysisResultIndex === index">
+            <div>
+              <label class="mb-2 block text-[13px] font-semibold text-slate-700">Nom du résultat</label>
+              <select
+                v-model="result.result"
+                :disabled="!analysisForm.category"
+                class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] text-slate-800 outline-none focus:border-blue-500 disabled:opacity-60"
+                @change="handleAnalysisResultChange(index)"
+              >
+                <option value="">Sélectionnez</option>
+                <option v-for="item in analysisResultOptions" :key="item.label" :value="item.label">{{ item.label }}</option>
+              </select>
+            </div>
+
+            <div class="mt-3 grid grid-cols-2 gap-3">
+              <div>
+                <label class="mb-2 block text-[13px] font-semibold text-slate-700">Valeur</label>
+                <input v-model="result.value" type="text" placeholder="5.2" class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="mb-2 block text-[13px] font-semibold text-slate-700">Unité</label>
+                <input v-model="result.unit" type="text" placeholder="mmol/L" class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] outline-none focus:border-blue-500" />
+              </div>
+            </div>
+            </div>
           </div>
-          <div>
-            <label class="mb-2 block text-[13px] font-semibold text-slate-700">Unité</label>
-            <input v-model="analysisForm.unit" type="text" placeholder="mmol/L" class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[15px] outline-none focus:border-blue-500" />
-          </div>
+
+          <button
+            v-if="!editingAnalysisId"
+            type="button"
+            class="h-10 rounded-xl border border-slate-300 px-4 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
+            @click="addAnalysisResult"
+          >
+            + Ajouter un autre résultat
+          </button>
         </div>
 
         <div>
@@ -302,10 +630,9 @@
           <input v-model="analysisForm.date" type="date" class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[15px] outline-none focus:border-blue-500" />
         </div>
 
-        <div>
-          <label class="mb-2 block text-[13px] font-semibold text-slate-700">Notes (optionnel)</label>
-          <textarea v-model="analysisForm.notes" rows="3" placeholder="Commentaires..." class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-[15px] outline-none focus:border-blue-500" />
-        </div>
+        <p v-if="analysisError" class="text-sm font-medium text-rose-600">
+          {{ analysisError }}
+        </p>
 
         <button type="button" class="mt-2 h-11 w-full rounded-2xl bg-emerald-600 text-[20px] font-semibold leading-none text-white hover:bg-emerald-700" @click="enregistrerAnalyse">
           {{ analysisSubmitLabel }}
@@ -389,9 +716,12 @@ const activeTab = ref("vitals");
 const showVitalsModal = ref(false);
 const showAnalysisModal = ref(false);
 const showTreatmentModal = ref(false);
+const showTreatmentHistory = ref(false);
 const selectedTreatmentDayKey = ref(null);
 const editingAnalysisId = ref(null);
+const expandedAnalysisResultIndex = ref(0);
 const vitalError = ref("");
+const analysisError = ref("");
 
 const showAddButton = computed(() => activeTab.value !== "treatments");
 const addButtonLabel = computed(() => (activeTab.value === "labs" ? "Ajouter une analyse" : "Ajouter une mesure"));
@@ -401,22 +731,115 @@ const analysisSubmitLabel = computed(() => (editingAnalysisId.value ? "Mettre à
 const analyses = ref([]);
 const latestVital = ref(null);
 const labels = ref([]);
+const vitalDateKeys = ref([]);
 const heartRateValues = ref([]);
 const systolicValues = ref([]);
+const diastolicValues = ref([]);
 const saturationValues = ref([]);
+const historyHeartRateValues = ref([]);
+const historySystolicValues = ref([]);
+const historyDiastolicValues = ref([]);
+const historySaturationValues = ref([]);
+const vitalFilterDate = ref("");
+const vitalFilterType = ref("all");
+const treatmentHistoryPeriod = ref("7");
+const selectedTreatmentHistoryMed = ref("all");
+const showLabsFilters = ref(false);
+const labsFilterType = ref("");
+const labsFilterDate = ref("");
+const labsFilterQuery = ref("");
 
-const analysisTypeOptions = [
-  "Glucose",
-  "Cholestérol total",
-  "Cholestérol HDL",
-  "Cholestérol LDL",
-  "Triglycérides",
-  "Vitamine D",
-  "Vitamine B12",
-  "Ferritine",
-  "TSH",
-  "Créatinine",
-];
+const analysisCatalog = {
+  "Biologie sanguine": [
+    { label: "Glycémie", unit: "mmol/L" },
+    { label: "Insuline", unit: "µIU/mL" },
+    { label: "HbA1c", unit: "%" },
+    { label: "CRP", unit: "mg/L" },
+    { label: "Ferritine", unit: "ng/mL" },
+    { label: "Créatinine", unit: "mg/L" },
+    { label: "TSH", unit: "mUI/L" },
+  ],
+  Hématologie: [
+    { label: "Hémoglobine", unit: "g/dL" },
+    { label: "Hématocrite", unit: "%" },
+    { label: "Globules blancs", unit: "G/L" },
+    { label: "Plaquettes", unit: "G/L" },
+    { label: "VGM", unit: "fL" },
+  ],
+  Radiologie: [
+    { label: "Radiographie thoracique", unit: "" },
+    { label: "Échographie abdominale", unit: "" },
+    { label: "IRM cérébrale", unit: "" },
+    { label: "Scanner thoracique", unit: "" },
+  ],
+  Hormonologie: [
+    { label: "Cortisol", unit: "nmol/L" },
+    { label: "FSH", unit: "UI/L" },
+    { label: "LH", unit: "UI/L" },
+    { label: "Prolactine", unit: "ng/mL" },
+  ],
+  Cardiologie: [
+    { label: "Troponine", unit: "ng/L" },
+    { label: "BNP", unit: "pg/mL" },
+    { label: "D-dimères", unit: "mg/L" },
+    { label: "CK-MB", unit: "UI/L" },
+  ],
+  "Fonction rénale": [
+    { label: "Urée", unit: "mmol/L" },
+    { label: "DFG", unit: "mL/min/1.73m²" },
+    { label: "Microalbuminurie", unit: "mg/24h" },
+    { label: "Acide urique", unit: "mg/L" },
+  ],
+  "Fonction hépatique": [
+    { label: "ASAT", unit: "UI/L" },
+    { label: "ALAT", unit: "UI/L" },
+    { label: "Bilirubine totale", unit: "µmol/L" },
+    { label: "GGT", unit: "UI/L" },
+    { label: "Phosphatases alcalines", unit: "UI/L" },
+  ],
+  "Bilan lipidique": [
+    { label: "Cholestérol total", unit: "mmol/L" },
+    { label: "HDL", unit: "mmol/L" },
+    { label: "LDL", unit: "mmol/L" },
+    { label: "Triglycérides", unit: "mmol/L" },
+  ],
+  Urines: [
+    { label: "Protéinurie", unit: "g/L" },
+    { label: "Leucocyturie", unit: "/µL" },
+    { label: "Nitrites", unit: "positif/négatif" },
+    { label: "Glucosurie", unit: "g/L" },
+  ],
+  Microbiologie: [
+    { label: "Hémoculture", unit: "positif/négatif" },
+    { label: "ECBU", unit: "UFC/mL" },
+    { label: "PCR virale", unit: "copies/mL" },
+  ],
+  Immunologie: [
+    { label: "IgG", unit: "g/L" },
+    { label: "IgA", unit: "g/L" },
+    { label: "IgM", unit: "g/L" },
+    { label: "Facteur rhumatoïde", unit: "UI/mL" },
+    { label: "ANA", unit: "positif/négatif" },
+  ],
+};
+const analysisCategoryOptions = Object.keys(analysisCatalog);
+const analysisResultOptions = computed(() => analysisCatalog[analysisForm.category] ?? []);
+const labTypeOptions = computed(() => {
+  const values = analyses.value.map((item) => item.type).filter(Boolean);
+  return [...new Set(values)];
+});
+const filteredAnalyses = computed(() => {
+  const query = labsFilterQuery.value.trim().toLowerCase();
+  return analyses.value.filter((item) => {
+    const type = item.type;
+    const dateIso = convertirDateIso(item.analysisDate);
+    const matchType = !labsFilterType.value || type === labsFilterType.value;
+    const matchDate = !labsFilterDate.value || dateIso === labsFilterDate.value;
+    const haystack = `${item.name} ${item.value} ${item.unit}`.toLowerCase();
+    const matchQuery = !query || haystack.includes(query);
+    return matchType && matchDate && matchQuery;
+  });
+});
 
 const vitalForm = reactive({
   heartRate: "",
@@ -430,11 +853,11 @@ const vitalForm = reactive({
 });
 
 const analysisForm = reactive({
-  type: "",
-  value: "",
-  unit: "",
+  category: "",
+  results: [
+    { result: "", value: "", unit: "" },
+  ],
   date: new Date().toISOString().slice(0, 10),
-  notes: "",
 });
 
 const chart = { width: 980, height: 350, left: 70, right: 40, top: 40, bottom: 30, minY: 0, maxY: 140 };
@@ -450,10 +873,111 @@ const latestPressure = computed(() => {
   return s && d ? `${s}/${d}` : "--/--";
 });
 const latestOxygen = computed(() => latestVital.value?.oxygen_saturation ?? "--");
+const filteredVitalHistory = computed(() => {
+  const rows = vitalDateKeys.value
+    .map((dateKey, index) => {
+      const heartRate = historyHeartRateValues.value[index] ?? null;
+      const systolic = historySystolicValues.value[index] ?? null;
+      const diastolic = historyDiastolicValues.value[index] ?? null;
+      const oxygen = historySaturationValues.value[index] ?? null;
+      const hasAny = [heartRate, systolic, diastolic, oxygen].some(estValeurMesuree);
+
+      return {
+        dateKey,
+        longDate: formaterDateLongue(dateKey),
+        hasAny,
+        heartRate: heartRate ?? "--",
+        pressure: estValeurMesuree(systolic) && estValeurMesuree(diastolic)
+          ? `${Number(systolic)}/${Number(diastolic)}`
+          : "--/--",
+        oxygen: oxygen ?? "--",
+      };
+    })
+    .filter((row) => row.hasAny)
+    .reverse();
+
+  if (!vitalFilterDate.value) return rows;
+  return rows.filter((row) => row.dateKey === vitalFilterDate.value);
+});
 
 const treatmentDays = ref(construire7DerniersJours());
 const treatmentMedicines = ref([]);
 const treatmentChecks = reactive({});
+const treatmentHistoryPeriods = [
+  { value: "7", label: "7 derniers jours" },
+  { value: "30", label: "30 derniers jours" },
+  { value: "all", label: "Tout l'historique" },
+];
+const treatmentHistoryMedicineOptions = computed(() => [
+  { id: "all", name: "Tous" },
+  ...treatmentMedicines.value.map((med) => ({ id: med.id, name: med.name })),
+]);
+const treatmentHistoryRows = computed(() => {
+  const periodDays = treatmentHistoryPeriod.value === "all"
+    ? 90
+    : Number(treatmentHistoryPeriod.value || 7);
+
+  const keys = Array.from({ length: periodDays }).map((_, idx) => {
+    const date = new Date();
+    date.setDate(date.getDate() - idx);
+    return date.toISOString().slice(0, 10);
+  });
+
+  return keys
+    .map((dateKey) => {
+      const meds = treatmentMedicines.value
+        .filter((med) => selectedTreatmentHistoryMed.value === "all" || med.id === selectedTreatmentHistoryMed.value)
+        .map((med) => {
+          const total = obtenirNombrePrises(med);
+          const taken = compterPrisesCompletees(dateKey, med);
+          const progress = total > 0 ? Math.round((taken / total) * 100) : 0;
+
+          return {
+            id: med.id,
+            name: med.name,
+            dose: med.dose,
+            taken,
+            total,
+            progress,
+            isComplete: total > 0 && taken >= total,
+          };
+        });
+
+      const total = meds.reduce((sum, med) => sum + med.total, 0);
+      const taken = meds.reduce((sum, med) => sum + med.taken, 0);
+      const hasTracked = total > 0;
+
+      return {
+        dateKey,
+        meds,
+        total,
+        taken,
+        hasTracked,
+        isComplete: hasTracked && taken >= total,
+      };
+    })
+    .filter((day) => day.hasTracked)
+    .sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
+});
+const treatmentHistoryStats = computed(() => {
+  const rows = treatmentHistoryRows.value;
+  const totalDays = rows.length;
+  const completeDays = rows.filter((day) => day.isComplete).length;
+  const totalTaken = rows.reduce((sum, day) => sum + day.taken, 0);
+  const observance = totalDays > 0 ? Math.round((completeDays / totalDays) * 100) : 0;
+  const periodSubtitle = treatmentHistoryPeriod.value === "all"
+    ? "Sur tout l'historique"
+    : `Sur les ${treatmentHistoryPeriod.value} derniers jours`;
+
+  return {
+    totalDays,
+    completeDays,
+    totalTaken,
+    observance,
+    periodSubtitle,
+    activeMedicines: treatmentMedicines.value.length,
+  };
+});
 
 const plottedSeries = computed(() => [
   { key: "heart", color: "#ef4444", values: heartRateValues.value, points: construirePoints(heartRateValues.value) },
@@ -508,6 +1032,12 @@ function convertirDateIso(dateValue) {
   return String(dateValue).slice(0, 10);
 }
 
+// Cette fonction verifie qu'une mesure est reellement presente (et pas null/vide).
+function estValeurMesuree(value) {
+  if (value === null || value === undefined || value === "") return false;
+  return Number.isFinite(Number(value));
+}
+
 // Cette fonction formate une date courte pour l'axe du graphique.
 function formaterLibelle(dateIso) {
   if (!dateIso) return "";
@@ -522,13 +1052,89 @@ function formaterDate(dateIso) {
   return date.toLocaleDateString("fr-FR");
 }
 
+// Cette fonction formate une date longue avec jour de semaine (ex: jeudi 26 février 2026).
+function formaterDateLongue(dateIso) {
+  if (!dateIso) return "";
+  const date = new Date(`${dateIso}T00:00:00`);
+  return date.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+// Cette fonction formate la date pour l'historique des prises (sans annee).
+function formaterDateHistoriqueTraitement(dateIso) {
+  if (!dateIso) return "";
+  const date = new Date(`${dateIso}T00:00:00`);
+  return date.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+}
+
+// Cette fonction retourne l'option d'analyse pour une categorie + resultat.
+function trouverOptionAnalyse(category, resultLabel) {
+  const options = analysisCatalog[category] ?? [];
+  return options.find((item) => item.label === resultLabel) ?? null;
+}
+
+// Cette fonction cree une ligne vide pour les resultats multiples.
+function creerLigneResultatAnalyse() {
+  return { result: "", value: "", unit: "" };
+}
+
+// Cette fonction ajoute une ligne de resultat.
+function addAnalysisResult() {
+  analysisForm.results.push(creerLigneResultatAnalyse());
+  expandedAnalysisResultIndex.value = analysisForm.results.length - 1;
+}
+
+// Cette fonction supprime une ligne de resultat.
+function removeAnalysisResult(index) {
+  if (analysisForm.results.length <= 1) return;
+  analysisForm.results.splice(index, 1);
+  if (expandedAnalysisResultIndex.value >= analysisForm.results.length) {
+    expandedAnalysisResultIndex.value = analysisForm.results.length - 1;
+  }
+}
+
+// Cette fonction gere le changement de type d'analyse.
+function handleAnalysisCategoryChange() {
+  analysisForm.results = [creerLigneResultatAnalyse()];
+  expandedAnalysisResultIndex.value = 0;
+}
+
+// Cette fonction applique l'unite par defaut selon le resultat selectionne.
+function handleAnalysisResultChange(index) {
+  const row = analysisForm.results[index];
+  if (!row) return;
+
+  const selected = trouverOptionAnalyse(analysisForm.category, row.result);
+  if (selected?.unit) {
+    row.unit = selected.unit;
+  }
+}
+
 // Cette fonction remet a zero les champs du formulaire d'analyse.
 function reinitialiserFormulaireAnalyse() {
-  analysisForm.type = "";
-  analysisForm.value = "";
-  analysisForm.unit = "";
+  analysisError.value = "";
+  analysisForm.category = "";
+  analysisForm.results = [creerLigneResultatAnalyse()];
+  expandedAnalysisResultIndex.value = 0;
   analysisForm.date = new Date().toISOString().slice(0, 10);
-  analysisForm.notes = "";
+}
+
+// Cette fonction genere un resume court d'un resultat pour l'affichage replie.
+function getAnalysisResultSummary(result) {
+  const resultName = result?.result?.trim();
+  const value = String(result?.value ?? "").trim();
+  const unit = String(result?.unit ?? "").trim();
+  const left = resultName || "Resultat non renseigne";
+  const right = value ? `${value}${unit ? ` ${unit}` : ""}` : "Valeur non renseignee";
+  return `${left} - ${right}`;
 }
 
 // Cette fonction initialise le formulaire des signes vitaux avec des valeurs visibles.
@@ -590,17 +1196,20 @@ function assurerSuiviJour(dayKey) {
 async function chargerDonneesSante() {
   const res = await api.get("/health-data/overview", { params: { days: 7 } });
   const data = res?.data?.data ?? {};
+  const treatmentHistoryRes = await api.get("/health-data/treatment-checks", { params: { days: 90 } });
+  const treatmentHistoryData = Array.isArray(treatmentHistoryRes?.data?.data) ? treatmentHistoryRes.data.data : [];
 
   latestVital.value = data.latest_vitals ?? null;
   analyses.value = Array.isArray(data.lab_results)
     ? data.lab_results.map((item) => ({
         id: item.id,
-        name: item.analysis_type,
+        type: item.analysis_type ?? "",
+        result: item.analysis_result ?? "",
+        name: `${item.analysis_type ?? ""} - ${item.analysis_result ?? ""}`.replace(/ - $/, ""),
         value: item.value,
         unit: item.unit ?? "",
         date: formaterDate(item.analysis_date),
         analysisDate: item.analysis_date,
-        notes: item.notes ?? "",
       }))
     : [];
 
@@ -609,16 +1218,33 @@ async function chargerDonneesSante() {
     ? chartData.labels
     : treatmentDays.value.map((day) => day.key);
 
+  const keepRaw = (values = []) =>
+    labelSource.map((_, index) => {
+      const value = values[index];
+      return value === null || value === undefined || value === "" ? null : value;
+    });
+
+  vitalDateKeys.value = [...labelSource];
+  historyHeartRateValues.value = keepRaw(chartData.heart_rate);
+  historySystolicValues.value = keepRaw(chartData.systolic_pressure);
+  historyDiastolicValues.value = keepRaw(chartData.diastolic_pressure);
+  historySaturationValues.value = keepRaw(chartData.oxygen_saturation);
   labels.value = labelSource.map(formaterLibelle);
   heartRateValues.value = normaliserSerie(chartData.heart_rate, 70);
   systolicValues.value = normaliserSerie(chartData.systolic_pressure, 120);
+  diastolicValues.value = normaliserSerie(chartData.diastolic_pressure, 80);
   saturationValues.value = normaliserSerie(chartData.oxygen_saturation, 98);
   treatmentMedicines.value = Array.isArray(data.treatment_medicines) ? data.treatment_medicines : [];
 
   for (const day of treatmentDays.value) assurerSuiviJour(day.key);
 
-  if (Array.isArray(data.treatment_checks)) {
-    for (const item of data.treatment_checks) {
+  const allTreatmentChecks = [
+    ...(Array.isArray(data.treatment_checks) ? data.treatment_checks : []),
+    ...treatmentHistoryData,
+  ];
+
+  if (allTreatmentChecks.length) {
+    for (const item of allTreatmentChecks) {
       assurerSuiviJour(item.check_date);
       treatmentChecks[item.check_date][item.medication_key] = Boolean(item.taken);
       if (item.medication_key && !String(item.medication_key).includes("__dose_")) {
@@ -661,18 +1287,53 @@ async function enregistrerMesure() {
 
 // Cette fonction enregistre une analyse avec validation simple des champs.
 async function enregistrerAnalyse() {
-  const payload = {
-    analysis_type: analysisForm.type,
-    value: convertirNombreOuNull(analysisForm.value),
-    unit: analysisForm.unit || null,
-    analysis_date: convertirDateIso(analysisForm.date),
-    notes: analysisForm.notes || null,
-  };
+  analysisError.value = "";
+  if (!analysisForm.category) {
+    analysisError.value = "Veuillez choisir un type d'analyse.";
+    return;
+  }
+
+  const validRows = [];
+  for (const row of analysisForm.results) {
+    const analysisType = String(analysisForm.category ?? "").trim();
+    const analysisResult = String(row.result ?? "").trim();
+    const numericValue = convertirNombreOuNull(row.value);
+
+    if (!analysisType) {
+      analysisError.value = "Le type d'analyse est obligatoire.";
+      return;
+    }
+    if (!analysisResult) {
+      analysisError.value = "Chaque resultat doit etre selectionne dans la liste.";
+      return;
+    }
+    if (numericValue === null) {
+      analysisError.value = "Chaque resultat doit avoir une valeur numerique valide.";
+      return;
+    }
+
+    validRows.push({
+      analysis_type: analysisType,
+      analysis_result: analysisResult,
+      value: numericValue,
+      unit: row.unit || null,
+      analysis_date: convertirDateIso(analysisForm.date),
+    });
+  }
+
+  if (!validRows.length) {
+    analysisError.value = "Ajoutez au moins un resultat.";
+    return;
+  }
 
   if (editingAnalysisId.value) {
-    await api.put(`/health-data/labs/${editingAnalysisId.value}`, payload);
+    await api.put(`/health-data/labs/${editingAnalysisId.value}`, validRows[0]);
   } else {
-    await api.post("/health-data/labs", payload);
+    await Promise.all(validRows.map((payload) => api.post("/health-data/labs", payload)));
+    // On reset les filtres pour afficher immediatement les nouvelles analyses ajoutees.
+    labsFilterType.value = "";
+    labsFilterDate.value = "";
+    labsFilterQuery.value = "";
   }
 
   editingAnalysisId.value = null;
@@ -684,11 +1345,17 @@ async function enregistrerAnalyse() {
 // Cette fonction pre-remplit le formulaire pour modifier une analyse.
 function ouvrirEditionAnalyse(item) {
   editingAnalysisId.value = item.id;
-  analysisForm.type = item.name ?? "";
-  analysisForm.value = String(item.value ?? "");
-  analysisForm.unit = item.unit ?? "";
+  analysisError.value = "";
+  analysisForm.category = item.type ?? "";
+  analysisForm.results = [
+    {
+      result: item.result ?? "",
+      value: String(item.value ?? ""),
+      unit: item.unit ?? "",
+    },
+  ];
   analysisForm.date = item.analysisDate ?? new Date().toISOString().slice(0, 10);
-  analysisForm.notes = item.notes ?? "";
+  expandedAnalysisResultIndex.value = 0;
   showAnalysisModal.value = true;
 }
 
@@ -833,5 +1500,3 @@ onMounted(async () => {
   await chargerDonneesSante();
 });
 </script>
-
-
