@@ -137,7 +137,13 @@ class ProfilSanteController extends Controller
         $shouldSendMail = false;
 
         if ($existing) {
-            if ($existing->status !== 'accepted') {
+            if ($existing->status === 'accepted') {
+                $existing->update([
+                    'doctor_user_id' => $doctor?->id,
+                    'doctor_email' => $doctorEmail,
+                ]);
+                $shouldSendMail = true;
+            } else {
                 $existing->update([
                     'doctor_user_id' => $doctor?->id,
                     'doctor_email' => $doctorEmail,

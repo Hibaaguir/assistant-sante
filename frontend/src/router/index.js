@@ -60,6 +60,7 @@ async function getAuthState() {
     return {
       isAuth: false,
       hasProfil: false,
+      role: null,
     };
   }
 
@@ -69,12 +70,14 @@ async function getAuthState() {
       .then((res) => ({
         isAuth: true,
         hasProfil: Boolean(res?.data?.has_profil_sante),
+        role: String(res?.data?.user?.role || "").toLowerCase() || null,
       }))
       .catch(() => {
         localStorage.removeItem("auth_token");
         return {
           isAuth: false,
           hasProfil: false,
+          role: null,
         };
       })
       .finally(() => {
@@ -85,12 +88,28 @@ async function getAuthState() {
   return authCheckInFlight;
 }
 
+function clearLocalAuth() {
+  localStorage.removeItem("auth_token");
+  if (api.defaults.headers.common.Authorization) {
+    delete api.defaults.headers.common.Authorization;
+  }
+}
+
 router.beforeEach(async (to) => {
   const state = await getAuthState();
-  const isAuthPage = ["register", "user-register", "login", "doctor-login", "doctor-register"].includes(String(to.name || ""));
+  const routeName = String(to.name || "");
+  const isDoctorAuthPage = ["doctor-login", "doctor-register"].includes(routeName);
+  const isUserAuthPage = ["register", "user-register", "login"].includes(routeName);
+  const isAuthPage = isDoctorAuthPage || isUserAuthPage;
 
   if (isAuthPage && state.isAuth) {
-    return { name: "dashboard" };
+    if ((isDoctorAuthPage && state.role === "medecin") || (isUserAuthPage && state.role === "user")) {
+      return { name: "dashboard" };
+    }
+
+    // Switching between patient and doctor entry paths must not reuse the wrong session.
+    clearLocalAuth();
+    return true;
   }
 
   if (to.meta.requiresAuth && !state.isAuth) {

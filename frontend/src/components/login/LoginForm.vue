@@ -18,19 +18,6 @@
 
         <form @submit.prevent="submit" class="space-y-5">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Type de compte <span class="text-red-600">*</span></label>
-            <select
-              v-model="form.role"
-              class="h-12 px-4 rounded-xl border-2 bg-white text-gray-900 outline-none w-full"
-              :class="errors.role ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
-            >
-              <option value="user">Utilisateur</option>
-              <option value="medecin">Medecin</option>
-            </select>
-            <p v-if="errors.role" class="mt-2 text-sm text-red-600">{{ errors.role }}</p>
-          </div>
-
-          <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Email <span class="text-red-600">*</span></label>
             <div class="relative">
               <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none">
@@ -66,6 +53,19 @@
               />
             </div>
             <p v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password }}</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Type de compte <span class="text-red-600">*</span></label>
+            <select
+              v-model="form.role"
+              class="h-12 px-4 rounded-xl border-2 bg-white text-gray-900 outline-none w-full"
+              :class="errors.role ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
+            >
+              <option value="user">Utilisateur</option>
+              <option value="medecin">Medecin</option>
+            </select>
+            <p v-if="errors.role" class="mt-2 text-sm text-red-600">{{ errors.role }}</p>
           </div>
 
           <button
