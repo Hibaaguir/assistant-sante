@@ -6,13 +6,11 @@ class UpdateHealthLabResultRequest extends StoreHealthLabResultRequest
 {
     public function rules(): array
     {
-        $rules = parent::rules();
-
-        $rules['analysis_type'][0] = 'sometimes';
-        $rules['analysis_result'][0] = 'sometimes';
-        $rules['value'][0] = 'sometimes';
-        $rules['analysis_date'][0] = 'sometimes';
-
-        return $rules;
+        return array_merge(parent::rules(), [
+            'analysis_type'   => ['sometimes', 'string', 'max:120'],
+            'analysis_result' => ['sometimes', 'string', 'max:120'],
+            'value'           => ['sometimes', 'numeric', 'min:0'],
+            'analysis_date'   => ['sometimes', 'date'],
+        ]);
     }
 }

@@ -105,8 +105,10 @@
 import api from "@/services/api";
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 const form = reactive({
   role: "user",
@@ -145,13 +147,9 @@ function firstMessage(value) {
 }
 
 function mapFieldValidationErrors(validationErrors = {}) {
-  const emailBackend = firstMessage(validationErrors.email);
-  const passwordBackend = firstMessage(validationErrors.password);
-  const roleBackend = firstMessage(validationErrors.role);
-
-  errors.role = roleBackend || "";
-  errors.email = emailBackend || "";
-  errors.password = passwordBackend || "";
+  for (const key of ["role", "email", "password"]) {
+    errors[key] = firstMessage(validationErrors[key]);
+  }
 }
 
 async function submit() {
@@ -182,11 +180,7 @@ async function submit() {
       password: form.password,
     });
 
-    const token = res?.data?.token;
-    if (token) {
-      localStorage.setItem("auth_token", token);
-      api.defaults.headers.common.Authorization = `Bearer ${token}`;
-    }
+    if (res?.data?.token) authStore.setToken(res.data.token);
 
     serverMessage.value = res?.data?.message || "Connexion reussie.";
     messageType.value = "success";

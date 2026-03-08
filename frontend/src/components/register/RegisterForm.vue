@@ -141,8 +141,10 @@
 import api from "@/services/api";
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 const form = reactive({
   name: "",
@@ -162,7 +164,6 @@ const errors = reactive({
 const loading = ref(false);
 const serverMessage = ref("");
 const messageType = ref("success");
-const lastDateInputType = ref("");
 
 function clearErrors() {
   errors.name = "";
@@ -183,16 +184,10 @@ function validatePassword(password) {
 }
 
 function validatePasswordRequirements() {
-  if (!form.password) {
-    errors.password = "";
-    return;
-  }
-  const message = validatePassword(form.password);
-  if (!message) errors.password = "";
+  if (!form.password || !validatePassword(form.password)) errors.password = "";
 }
 
 function handleDateBeforeInput(event) {
-  lastDateInputType.value = event.inputType || "";
   if (event.data && /[^0-9/]/.test(event.data)) event.preventDefault();
 }
 
@@ -261,11 +256,7 @@ async function submit() {
       password_confirmation: form.password_confirmation,
     });
 
-    const token = res?.data?.token;
-    if (token) {
-      localStorage.setItem("auth_token", token);
-      api.defaults.headers.common.Authorization = `Bearer ${token}`;
-    }
+    if (res?.data?.token) authStore.setToken(res.data.token);
 
     serverMessage.value = res?.data?.message || "Compte cree avec succes.";
     messageType.value = "success";

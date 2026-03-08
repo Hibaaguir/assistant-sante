@@ -172,12 +172,10 @@ const goals = [
 if (!Array.isArray(form.objectifs)) form.objectifs = [];
 
 function isGoalSelected(goal) {
-  return Array.isArray(form.objectifs) && form.objectifs.includes(goal);
+  return form.objectifs.includes(goal);
 }
 
 function toggleGoal(goal) {
-  if (!Array.isArray(form.objectifs)) form.objectifs = [];
-
   if (form.objectifs.includes(goal)) {
     form.objectifs = form.objectifs.filter((item) => item !== goal);
   } else {

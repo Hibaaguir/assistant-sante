@@ -1,6 +1,6 @@
-﻿<template>
-  <div v-if="roleResolved" class="min-h-screen text-slate-900 lg:flex" :class="isDoctor ? 'bg-[#f5f6f8]' : 'bg-[#EEF2F7]'">
-    <BarreLateraleApp v-if="!isDoctor" :active="activeRoute" />
+<template>
+  <div v-if="authStore.resolved" class="min-h-screen text-slate-900 lg:flex" :class="authStore.isDoctor ? 'bg-[#f5f6f8]' : 'bg-[#EEF2F7]'">
+    <BarreLateraleApp v-if="!authStore.isDoctor" :active="activeRoute" />
 
     <main class="w-full flex-1">
       <RouterView />
@@ -10,53 +10,29 @@
 
 <script setup>
 /*
-  Layout principal des pages authentifiees.
-  Il affiche la barre laterale et la vue active via RouterView.
-  `activeRoute` aligne l'etat visuel de la navigation avec la route courante.
+  Layout principal des pages authentifiées.
+  Il affiche la barre latérale (patients uniquement) et la vue active via RouterView.
+  L'état auth est lu depuis le store centralisé — pas d'appel /auth/me ici.
 */
 
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import api from '@/services/api'
-import BarreLateraleApp from '../components/navigation/BarreLateraleApp.vue'
+import { useAuthStore } from '@/stores/auth'
+import BarreLateraleApp from '@/components/navigation/BarreLateraleApp.vue'
 
 const route = useRoute()
-const isDoctor = ref(false)
-const roleResolved = ref(false)
+const authStore = useAuthStore()
 
 const activeRoute = computed(() => {
-  if (route.name === 'journal-home' || route.name === 'journal-wizard' || route.name === 'journal-history') {
-    return 'journal-home'
-  }
-
-  if (route.name === 'dashboard') return 'dashboard'
-  if (route.name === 'health') return 'health'
-  if (route.name === 'health-data') return 'health-data'
-  if (route.name === 'ai') return 'ai'
-
-  return ''
+  if (['journal-home', 'journal-wizard', 'journal-history'].includes(route.name)) return 'journal-home'
+  return ['dashboard', 'health', 'health-data', 'ai'].includes(route.name) ? route.name : ''
 })
 
-async function loadRole() {
-  try {
-    const res = await api.get('/auth/me')
-    const role = String(res?.data?.user?.role || res?.data?.role || '').toLowerCase()
-    isDoctor.value = role === 'medecin' || role === 'doctor'
-  } catch (_) {
-    isDoctor.value = false
-  } finally {
-    roleResolved.value = true
+onMounted(() => {
+  // Le store est déjà chargé par le guard router.
+  // Ce onMounted garantit resolved=true même si MainLayout est monté directement.
+  if (!authStore.resolved) {
+    authStore.fetchUser()
   }
-}
-
-onMounted(async () => {
-  await loadRole()
 })
-
-watch(
-  () => route.fullPath,
-  async () => {
-    await loadRole()
-  }
-)
 </script>

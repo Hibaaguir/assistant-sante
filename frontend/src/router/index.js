@@ -1,10 +1,11 @@
 /*
   Configuration centrale des routes de l'application.
-  Le guard global gere l'acces selon l'etat d'authentification et du profil sante.
-  Un cache court ("authCheckInFlight") evite les appels /auth/me en doublon.
+  Le guard global délègue la vérification auth au store Pinia useAuthStore,
+  qui centralise l'appel /auth/me et le token localStorage.
 */
 
 import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 import RegisterForm from "@/components/register/RegisterForm.vue";
 import LoginForm from "@/components/login/LoginForm.vue";
 import RegisterRolePage from "@/pages/auth/RegisterRolePage.vue";
@@ -19,7 +20,6 @@ import DashboardPage from "@/pages/DashboardPage.vue";
 import DoctorLoginPage from "@/pages/doctor/DoctorLoginPage.vue";
 import DoctorRegisterPage from "@/pages/doctor/DoctorRegisterPage.vue";
 import Placeholder from "@/pages/Placeholder.vue";
-import api from "@/services/api";
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -51,72 +51,29 @@ const router = createRouter({
   routes,
 });
 
-// Promesse partagee pour eviter plusieurs verifications auth simultanees.
-let authCheckInFlight = null;
-
-async function getAuthState() {
-  const token = localStorage.getItem("auth_token");
-  if (!token) {
-    return {
-      isAuth: false,
-      hasProfil: false,
-      role: null,
-    };
-  }
-
-  if (!authCheckInFlight) {
-    authCheckInFlight = api
-      .get("/auth/me")
-      .then((res) => ({
-        isAuth: true,
-        hasProfil: Boolean(res?.data?.has_profil_sante),
-        role: String(res?.data?.user?.role || "").toLowerCase() || null,
-      }))
-      .catch(() => {
-        localStorage.removeItem("auth_token");
-        return {
-          isAuth: false,
-          hasProfil: false,
-          role: null,
-        };
-      })
-      .finally(() => {
-        authCheckInFlight = null;
-      });
-  }
-
-  return authCheckInFlight;
-}
-
-function clearLocalAuth() {
-  localStorage.removeItem("auth_token");
-  if (api.defaults.headers.common.Authorization) {
-    delete api.defaults.headers.common.Authorization;
-  }
-}
-
 router.beforeEach(async (to) => {
-  const state = await getAuthState();
+  const authStore = useAuthStore();
+  const user = await authStore.fetchUser();
+
+  const role = authStore.userRole;
   const routeName = String(to.name || "");
   const isDoctorAuthPage = ["doctor-login", "doctor-register"].includes(routeName);
   const isUserAuthPage = ["register", "user-register", "login"].includes(routeName);
-  const isAuthPage = isDoctorAuthPage || isUserAuthPage;
 
-  if (isAuthPage && state.isAuth) {
-    if ((isDoctorAuthPage && state.role === "medecin") || (isUserAuthPage && state.role === "user")) {
+  if ((isDoctorAuthPage || isUserAuthPage) && user) {
+    if ((isDoctorAuthPage && role === "medecin") || (isUserAuthPage && role !== "medecin")) {
       return { name: "dashboard" };
     }
-
-    // Switching between patient and doctor entry paths must not reuse the wrong session.
-    clearLocalAuth();
+    // Session de rôle différent : on la vide proprement.
+    authStore.clearToken();
     return true;
   }
 
-  if (to.meta.requiresAuth && !state.isAuth) {
+  if (to.meta.requiresAuth && !user) {
     return { name: "login" };
   }
 
-  if (to.name === "profil-sante" && state.isAuth && state.hasProfil) {
+  if (to.name === "profil-sante" && user && authStore.hasProfil) {
     return { name: "dashboard" };
   }
 

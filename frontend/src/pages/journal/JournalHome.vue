@@ -55,7 +55,7 @@
         </div>
       </div>
 
-      <CarteInfosDerniereEntree :latest-entry="latest ?? null" />
+      <CarteInfosDerniereEntree :latest-entry="latest" />
     </div>
   </div>
 </template>
@@ -70,8 +70,8 @@
 import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import CarteInfosDerniereEntree from '../../components/journal/CarteInfosDerniereEntree.vue'
-import { useJournalStore } from '../../stores/journal'
+import CarteInfosDerniereEntree from '@/components/journal/CarteInfosDerniereEntree.vue'
+import { useJournalStore } from '@/stores/journal'
 
 const router = useRouter()
 const store = useJournalStore()
@@ -99,5 +99,3 @@ const energyLabel = (value) => {
   return 'Bonne'
 }
 </script>
-
-

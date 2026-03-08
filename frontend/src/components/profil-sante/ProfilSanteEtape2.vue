@@ -551,17 +551,15 @@ const filteredTreatmentNames = computed(() => {
 
 // Helpers communs pour les listes multi-selection (allergies/maladies).
 function isSelected(key, value) {
-  return Array.isArray(form[key]) ? form[key].includes(value) : false;
+  return form[key].includes(value);
 }
 
 function toggleSelected(key, value) {
-  if (!Array.isArray(form[key])) form[key] = [];
   if (form[key].includes(value)) form[key] = form[key].filter((item) => item !== value);
   else form[key] = [...form[key], value];
 }
 
 function removeSelected(key, value) {
-  if (!Array.isArray(form[key])) return;
   form[key] = form[key].filter((item) => item !== value);
 }
 
@@ -656,15 +654,15 @@ function validateTreatment() {
   clearTreatmentErrors();
   let isValid = true;
 
-  if (!String(treatment.type || "").trim()) {
+  if (!treatment.type.trim()) {
     treatmentErrors.type = "Le type de traitement est obligatoire.";
     isValid = false;
   }
-  if (!String(treatment.name || "").trim()) {
+  if (!treatment.name.trim()) {
     treatmentErrors.name = "Le nom du traitement est obligatoire.";
     isValid = false;
   }
-  if (!String(treatment.dose || "").trim()) {
+  if (!treatment.dose.trim()) {
     treatmentErrors.dose = "La dose est obligatoire.";
     isValid = false;
   }
@@ -675,11 +673,11 @@ function validateTreatment() {
     isValid = false;
   }
 
-  if (!String(treatment.start_date || "").trim()) {
+  if (!treatment.start_date.trim()) {
     treatmentErrors.start_date = "La date de début est obligatoire.";
     isValid = false;
   }
-  if (!String(treatment.end_date || "").trim()) {
+  if (!treatment.end_date.trim()) {
     treatmentErrors.end_date = "La date de fin est obligatoire.";
     isValid = false;
   }
@@ -703,12 +701,10 @@ function validateTreatment() {
   return isValid;
 }
 
-// Ajout ou mise a jour d'un traitement dans la liste du formulaire.
 function addTreatment() {
   if (!validateTreatment()) return;
-  if (!Array.isArray(form.traitements)) form.traitements = [];
 
-  const nextItem = {
+  form.traitements.push({
     type: treatment.type,
     name: treatment.name,
     dose: treatment.dose || null,
@@ -717,9 +713,7 @@ function addTreatment() {
     start_date: treatment.start_date || null,
     end_date: treatment.end_date || null,
     duration: buildTreatmentDuration(),
-  };
-
-  form.traitements.push(nextItem);
+  });
 
   cancelTreatment();
 }
@@ -745,7 +739,6 @@ function cancelTreatment() {
 }
 
 function removeTreatment(index) {
-  if (!Array.isArray(form.traitements)) return;
   form.traitements.splice(index, 1);
 }
 </script>

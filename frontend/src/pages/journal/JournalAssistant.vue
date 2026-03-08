@@ -15,7 +15,7 @@
               <span>Sommeil <span aria-hidden="true">&#128522;</span></span>
               <span>{{ form.sleep }}h</span>
             </div>
-            <input v-model.number="form.sleep" type="range" min="0" max="12" class="range-base range-blue" />
+            <input v-model.number="form.sleep" type="range" min="0" max="12" class="range-base" />
             <div class="flex justify-between text-sm text-slate-500"><span>0h</span><span>12h</span></div>
           </div>
 
@@ -24,7 +24,7 @@
               <span>Niveau de stress <span aria-hidden="true">&#128563;</span></span>
               <span>{{ form.stress }}/10</span>
             </div>
-            <input v-model.number="form.stress" type="range" min="0" max="10" class="range-base range-violet" />
+            <input v-model.number="form.stress" type="range" min="0" max="10" class="range-base" />
             <div class="flex justify-between text-sm text-slate-500"><span>Faible</span><span>Élevé</span></div>
           </div>
 
@@ -87,8 +87,8 @@
               <div class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
                 {{ form.caffeine }} tasse(s)
               </div>
-              <button type="button" class="rounded-lg bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-400" @click="diminuerCafeine">-</button>
-              <button type="button" class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600" @click="augmenterCafeine">+</button>
+              <button type="button" class="rounded-lg bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-400" @click="ajusterCafeine(-1)">-</button>
+              <button type="button" class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600" @click="ajusterCafeine(1)">+</button>
             </div>
           </div>
 
@@ -358,8 +358,8 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import IndicateurEtapes from '../../components/journal/IndicateurEtapes.vue'
-import { useJournalStore } from '../../stores/journal'
+import IndicateurEtapes from '@/components/journal/IndicateurEtapes.vue'
+import { useJournalStore } from '@/stores/journal'
 
 const route = useRoute()
 const router = useRouter()
@@ -418,14 +418,15 @@ const form = reactive({
 
 const selectedMealLabel = computed(() => meals.find((item) => item.id === form.selectedMeal)?.label ?? '')
 const hydrationTotal = computed(() => {
-  const extra = typeof form.customHydration === 'number' && form.customHydration > 0 ? form.customHydration : 0
+  const extra = Math.max(0, Number(form.customHydration) || 0)
   return (form.cupCount * 0.5) + (form.bottleCount * 1.5) + extra
 })
-const sugarBadgeClass = computed(() => {
-  if (form.sugar === 'high') return 'border-rose-300 bg-rose-100 text-rose-800'
-  if (form.sugar === 'medium') return 'border-amber-300 bg-amber-100 text-amber-800'
-  return 'border-emerald-300 bg-emerald-100 text-emerald-800'
-})
+const SUGAR_BADGE = {
+  high:   'border-rose-300 bg-rose-100 text-rose-800',
+  medium: 'border-amber-300 bg-amber-100 text-amber-800',
+  low:    'border-emerald-300 bg-emerald-100 text-emerald-800'
+}
+const sugarBadgeClass = computed(() => SUGAR_BADGE[form.sugar] ?? SUGAR_BADGE.low)
 const tobaccoErrors = computed(() => {
   const errors = {
     types: null,
@@ -522,12 +523,8 @@ const supprimerRepas = (index) => {
   form.meals.splice(index, 1)
 }
 
-const augmenterCafeine = () => {
-  form.caffeine = Math.min(20, Number(form.caffeine || 0) + 1)
-}
-
-const diminuerCafeine = () => {
-  form.caffeine = Math.max(0, Number(form.caffeine || 0) - 1)
+const ajusterCafeine = (delta) => {
+  form.caffeine = Math.min(20, Math.max(0, Number(form.caffeine || 0) + delta))
 }
 
 const ajusterVerres = (delta) => {
@@ -588,17 +585,9 @@ const basculerTabac = () => {
 }
 
 const basculerTypeTabac = (type) => {
-  if (type === 'cigarette') {
-    form.tobaccoTypes.cigarette = !form.tobaccoTypes.cigarette
-    if (!form.tobaccoTypes.cigarette) {
-      form.cigarettesPerDay = null
-    }
-    return
-  }
-  form.tobaccoTypes.vape = !form.tobaccoTypes.vape
-  if (!form.tobaccoTypes.vape) {
-    form.vapeLiquidMl = null
-  }
+  form.tobaccoTypes[type] = !form.tobaccoTypes[type]
+  if (!form.tobaccoTypes.cigarette) form.cigarettesPerDay = null
+  if (!form.tobaccoTypes.vape) form.vapeLiquidMl = null
 }
 
 const basculerAlcool = () => {
@@ -673,11 +662,13 @@ const enregistrer = async () => {
   height: 8px;
   border-radius: 999px;
   cursor: pointer;
+  background: #bbf7d0;
 }
 
 .range-base::-webkit-slider-runnable-track {
   height: 8px;
   border-radius: 999px;
+  background: #bbf7d0;
 }
 
 .range-base::-webkit-slider-thumb {
@@ -687,6 +678,7 @@ const enregistrer = async () => {
   height: 20px;
   border: 2px solid #052e16;
   border-radius: 999px;
+  background: #052e16;
   box-shadow: 0 0 0 3px rgba(220, 252, 231, 0.95), 0 2px 8px rgba(2, 44, 34, 0.45);
   margin-top: -6px;
 }
@@ -695,6 +687,7 @@ const enregistrer = async () => {
   height: 8px;
   border: none;
   border-radius: 999px;
+  background: #bbf7d0;
 }
 
 .range-base::-moz-range-thumb {
@@ -702,48 +695,7 @@ const enregistrer = async () => {
   height: 20px;
   border: 2px solid #052e16;
   border-radius: 999px;
+  background: #052e16;
   box-shadow: 0 0 0 3px rgba(220, 252, 231, 0.95), 0 2px 8px rgba(2, 44, 34, 0.45);
-}
-
-.range-blue {
-  background: #bbf7d0;
-}
-
-.range-blue::-webkit-slider-runnable-track,
-.range-blue::-moz-range-track {
-  background: #bbf7d0;
-}
-
-.range-blue::-webkit-slider-thumb,
-.range-blue::-moz-range-thumb {
-  background: #052e16;
-}
-
-.range-violet {
-  background: #bbf7d0;
-}
-
-.range-violet::-webkit-slider-runnable-track,
-.range-violet::-moz-range-track {
-  background: #bbf7d0;
-}
-
-.range-violet::-webkit-slider-thumb,
-.range-violet::-moz-range-thumb {
-  background: #052e16;
-}
-
-.range-emerald {
-  background: #bbf7d0;
-}
-
-.range-emerald::-webkit-slider-runnable-track,
-.range-emerald::-moz-range-track {
-  background: #bbf7d0;
-}
-
-.range-emerald::-webkit-slider-thumb,
-.range-emerald::-moz-range-thumb {
-  background: #052e16;
 }
 </style>

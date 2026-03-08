@@ -44,10 +44,17 @@ class AuthController extends Controller
                 'date_of_birth' => $validated['date_of_birth'],
                 'password' => Hash::make($validated['password']),
                 'role' => 'user',
-                'specialite' => null,
             ]);
 
-            return $this->authenticatedResponse($user, $user->createToken('auth_token')->plainTextToken, false, '/profil-sante', false, 201, 'Compte cree avec succes');
+            return $this->authenticatedResponse(
+                $user,
+                $user->createToken('auth_token')->plainTextToken,
+                false,
+                '/profil-sante',
+                false,
+                201,
+                'Compte cree avec succes'
+            );
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Veuillez corriger les erreurs du formulaire.',
@@ -77,21 +84,25 @@ class AuthController extends Controller
                 'specialite.required' => 'La specialite est obligatoire.',
             ]));
 
-            $doctorEmail = strtolower(trim($validated['email']));
-            $doctorSpecialite = trim((string) $validated['specialite']);
-            $doctorName = trim((string) ($request->input('name') ?: 'Medecin'));
-
             $user = User::create([
-                'name' => $doctorName,
-                'email' => $doctorEmail,
+                'name' => trim($request->input('name') ?: 'Medecin'),
+                'email' => strtolower(trim($validated['email'])),
                 'date_of_birth' => null,
                 'password' => Hash::make($validated['password']),
                 'role' => 'medecin',
-                'specialite' => $doctorSpecialite,
+                'specialite' => trim($validated['specialite']),
             ]);
 
             $hasPendingDoctorInvitations = $this->doctorInvitationLinker->linkForUser($user);
-            return $this->authenticatedResponse($user, $user->createToken('doctor_auth_token')->plainTextToken, false, '/main/dashboard', $hasPendingDoctorInvitations, 201, 'Compte medecin cree avec succes');
+            return $this->authenticatedResponse(
+                $user,
+                $user->createToken('doctor_auth_token')->plainTextToken,
+                false,
+                '/main/dashboard',
+                $hasPendingDoctorInvitations,
+                201,
+                'Compte medecin cree avec succes'
+            );
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Veuillez corriger les erreurs du formulaire medecin.',
@@ -176,7 +187,15 @@ class AuthController extends Controller
             $linkedPendingInvitations = $this->doctorInvitationLinker->linkForUser($user);
             $hasPendingDoctorInvitations = $linkedPendingInvitations || $this->hasPendingDoctorInvitations($user);
 
-            return $this->authenticatedResponse($user, $user->createToken('doctor_auth_token')->plainTextToken, false, '/main/dashboard', $hasPendingDoctorInvitations, 200, 'Connexion medecin reussie.');
+            return $this->authenticatedResponse(
+                $user,
+                $user->createToken('doctor_auth_token')->plainTextToken,
+                false,
+                '/main/dashboard',
+                $hasPendingDoctorInvitations,
+                200,
+                'Connexion medecin reussie.'
+            );
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Veuillez corriger les erreurs du formulaire medecin.',
@@ -273,11 +292,7 @@ class AuthController extends Controller
             ->latest('id')
             ->first();
 
-        if (! $user || ! Hash::check($password, $user->password)) {
-            return null;
-        }
-
-        return $user;
+        return $user && Hash::check($password, $user->password) ? $user : null;
     }
 
     private function baseMessages(): array
@@ -295,7 +310,7 @@ class AuthController extends Controller
     {
         return function ($attribute, $value, $fail) {
             $birthDate = Carbon::parse($value);
-            $age = $birthDate->diffInYears(Carbon::now());
+            $age = $birthDate->diffInYears(now());
 
             if ($age < 18) {
                 $fail('Vous devez avoir au minimum 18 ans pour creer un compte.');

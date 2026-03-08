@@ -18,10 +18,6 @@ class ProfilSanteController extends Controller
 {
     public function store(Request $request)
     {
-        if (! Auth::check()) {
-            return response()->json(['message' => 'Utilisateur non authentifie.'], 401);
-        }
-
         if (is_string($request->input('sexe'))) {
             $request->merge([
                 'sexe' => strtolower(trim($request->input('sexe'))),
@@ -67,7 +63,7 @@ class ProfilSanteController extends Controller
 
         $validated['user_id'] = Auth::id();
         $validated['medecin_email'] = $validated['medecin_email'] !== null
-            ? strtolower(trim((string) $validated['medecin_email']))
+            ? strtolower(trim($validated['medecin_email']))
             : null;
 
         $profil = ProfilSante::updateOrCreate(
@@ -80,22 +76,18 @@ class ProfilSanteController extends Controller
         return response()->json([
             'message' => 'Profil sante enregistre avec succes.',
             'data' => $profil,
-        ], 200);
+        ]);
     }
 
     public function show()
     {
-        if (! Auth::check()) {
-            return response()->json(['message' => 'Utilisateur non authentifie.'], 401);
-        }
-
-        $profil = ProfilSante::where('user_id', Auth::id())->first();
         $user = Auth::user();
+        $profil = $user->profilSante;
 
         return response()->json([
             'data' => $profil,
             'user' => $user,
-        ], 200);
+        ]);
     }
 
     private function syncDoctorInvitation(ProfilSante $profil): void
@@ -134,15 +126,12 @@ class ProfilSanteController extends Controller
             ->where('doctor_email', $doctorEmail)
             ->first();
 
-        $shouldSendMail = false;
-
         if ($existing) {
             if ($existing->status === 'accepted') {
                 $existing->update([
                     'doctor_user_id' => $doctor?->id,
                     'doctor_email' => $doctorEmail,
                 ]);
-                $shouldSendMail = true;
             } else {
                 $existing->update([
                     'doctor_user_id' => $doctor?->id,
@@ -153,7 +142,6 @@ class ProfilSanteController extends Controller
                     'rejected_at' => null,
                     'revoked_at' => null,
                 ]);
-                $shouldSendMail = true;
             }
         } else {
             DoctorInvitation::query()->create([
@@ -163,11 +151,6 @@ class ProfilSanteController extends Controller
                 'status' => 'pending',
                 'token' => Str::random(64),
             ]);
-            $shouldSendMail = true;
-        }
-
-        if (! $shouldSendMail) {
-            return;
         }
 
         try {

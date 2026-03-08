@@ -9,7 +9,7 @@ import { defineStore } from "pinia";
 import api from "@/services/api";
 
 function toNullableInt(value) {
-  if (value === null || value === undefined || value === "") return null;
+  if (value == null || value === "") return null;
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return null;
   return Math.round(parsed);
@@ -74,25 +74,23 @@ function toPayload(entry) {
   };
 }
 
+const DEFAULT_FILTER = { type: "all", month: "", date: "" };
+
 export const useJournalStore = defineStore("journal", () => {
   const entries = ref([]);
   const loading = ref(false);
   const initialized = ref(false);
 
-  const filter = ref({
-    type: "all",
-    month: "",
-    date: "",
-  });
+  const filter = ref({ ...DEFAULT_FILTER });
 
-  const latestEntry = computed(() => [...entries.value].sort((a, b) => b.dateIso.localeCompare(a.dateIso))[0]);
+  const latestEntry = computed(() =>
+    entries.value.reduce((best, e) => (!best || e.dateIso > best.dateIso ? e : best), null)
+  );
 
   const filteredEntries = computed(() => {
     const f = filter.value;
 
-    if (f.type === "all" || f.type === "sleep" || f.type === "stress" || f.type === "energy") {
-      return entries.value;
-    }
+    if (f.type === "all") return entries.value;
 
     if (f.type === "nutrition") {
       return entries.value.filter((entry) => entry.meals.length > 0);
@@ -172,13 +170,7 @@ export const useJournalStore = defineStore("journal", () => {
     filter.value = nextFilter;
   };
 
-  const reinitialiserFiltre = () => {
-    filter.value = {
-      type: "all",
-      month: "",
-      date: "",
-    };
-  };
+  const reinitialiserFiltre = () => { filter.value = { ...DEFAULT_FILTER } };
 
   return {
     entries,

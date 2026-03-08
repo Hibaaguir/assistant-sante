@@ -1,5 +1,0 @@
-[33m2fd02ea6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32myosr[m[33m, [m[1;31morigin/yosr[m[33m)[m chore: commit remaining project changes
-[33mb2962e6c[m feat(profile): update health profile UI and objective/disease options
-[33m013075c4[m Resolve conflicts: accept upstream deletions
-[33mc3ba1165[m French localization and health profile lifestyle toggles
-[33medcdb01c[m Clean repo tracking and remove archive folder

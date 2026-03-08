@@ -7,8 +7,8 @@ use App\Models\DoctorInvitation;
 use App\Models\HealthLabResult;
 use App\Models\HealthTreatmentCheck;
 use App\Models\HealthVital;
-use App\Models\ProfilSante;
 use App\Models\User;
+use App\Services\HealthDataService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +16,8 @@ use Illuminate\Support\Collection;
 
 class DoctorInvitationController extends Controller
 {
+    public function __construct(private readonly HealthDataService $healthDataService) {}
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -37,10 +39,8 @@ class DoctorInvitationController extends Controller
 
     public function accept(Request $request, DoctorInvitation $doctorInvitation): JsonResponse
     {
+        if ($error = $this->authorizeInvitation($doctorInvitation, $request)) return $error;
         $user = $request->user();
-        if ($doctorInvitation->doctor_user_id !== $user->id) {
-            return response()->json(['message' => 'Unauthorized invitation access.'], 403);
-        }
 
         if ($doctorInvitation->status !== 'accepted') {
             $doctorInvitation->update([
@@ -63,10 +63,7 @@ class DoctorInvitationController extends Controller
 
     public function reject(Request $request, DoctorInvitation $doctorInvitation): JsonResponse
     {
-        $user = $request->user();
-        if ($doctorInvitation->doctor_user_id !== $user->id) {
-            return response()->json(['message' => 'Unauthorized invitation access.'], 403);
-        }
+        if ($error = $this->authorizeInvitation($doctorInvitation, $request)) return $error;
 
         $doctorInvitation->update([
             'status' => 'rejected',
@@ -117,7 +114,7 @@ class DoctorInvitationController extends Controller
 
                 return [
                     'invitation_id' => $invitation->id,
-                    'accepted_at' => optional($invitation->accepted_at)?->toISOString(),
+                    'accepted_at' => $invitation->accepted_at?->toISOString(),
                     'patient' => $patient,
                     'profile' => $patient->profilSante,
                     'latest_vitals' => $latestVitals,
@@ -185,9 +182,7 @@ class DoctorInvitationController extends Controller
             ->orderBy('medication_name')
             ->get();
 
-        $profile = ProfilSante::query()
-            ->where('user_id', $patient->id)
-            ->first();
+        $profile = $patient->profilSante;
 
         return response()->json([
             'message' => 'Doctor patient detail fetched successfully.',
@@ -198,9 +193,9 @@ class DoctorInvitationController extends Controller
                 'profile' => $profile,
                 'latest_vitals' => $latestVitals,
                 'vitals' => $vitalsHistory,
-                'vitals_chart' => $this->buildVitalsChartSeries($vitals, $days),
+                'vitals_chart' => $this->healthDataService->buildVitalsChartSeries($vitals, $days),
                 'lab_results' => $labResults,
-                'treatment_medicines' => $this->resolveTreatmentMedicines($patient->id),
+                'treatment_medicines' => $this->healthDataService->resolveTreatmentMedicines($patient->id),
                 'treatment_checks' => $treatmentChecks,
                 'alerts' => $this->buildPatientAlerts($patient, $latestVitals, $labResults),
             ],
@@ -213,9 +208,9 @@ class DoctorInvitationController extends Controller
             'id' => $invitation->id,
             'status' => $invitation->status,
             'doctor_email' => $invitation->doctor_email,
-            'created_at' => optional($invitation->created_at)?->toISOString(),
-            'accepted_at' => optional($invitation->accepted_at)?->toISOString(),
-            'rejected_at' => optional($invitation->rejected_at)?->toISOString(),
+            'created_at' => $invitation->created_at?->toISOString(),
+            'accepted_at' => $invitation->accepted_at?->toISOString(),
+            'rejected_at' => $invitation->rejected_at?->toISOString(),
             'patient' => $invitation->patient,
             'profile' => $invitation->patient?->profilSante,
         ];
@@ -236,138 +231,38 @@ class DoctorInvitationController extends Controller
     {
         $alerts = [];
 
-        if ($latestVitals?->systolic_pressure !== null && (float) $latestVitals->systolic_pressure >= 140) {
+        if ($latestVitals?->systolic_pressure !== null && $latestVitals->systolic_pressure >= 140) {
             $alerts[] = [
                 'severity' => 'warning',
                 'title' => 'Alerte',
                 'message' => 'Tension arterielle elevee : '.(int) $latestVitals->systolic_pressure.'/'.(int) ($latestVitals->diastolic_pressure ?? 0).' mmHg',
                 'recommendation' => 'Surveiller la tension et contacter le patient si la hausse persiste.',
-                'measured_at' => optional($latestVitals->measured_at)?->toISOString(),
+                'measured_at' => $latestVitals->measured_at?->toISOString(),
             ];
         }
 
-        $glucose = $labResults->first(function (HealthLabResult $result) {
-            return str_contains(strtolower((string) $result->analysis_type), 'glucose');
-        });
+        $glucose = $labResults->first(
+            fn (HealthLabResult $result) => str_contains(strtolower((string) $result->analysis_type), 'glucose')
+        );
 
-        if ($glucose && is_numeric($glucose->value) && (float) $glucose->value < 3.9) {
+        if ($glucose && is_numeric($glucose->value) && $glucose->value < 3.9) {
             $alerts[] = [
                 'severity' => 'critical',
                 'title' => 'Alerte critique',
                 'message' => 'Glycemie tres basse detectee : '.rtrim(rtrim((string) $glucose->value, '0'), '.').' '.($glucose->unit ?: 'mmol/L'),
                 'recommendation' => 'Contacter immediatement le patient. Resucrage urgent recommande.',
-                'measured_at' => optional($glucose->analysis_date)?->toISOString(),
+                'measured_at' => $glucose->analysis_date?->toISOString(),
             ];
         }
 
         return $alerts;
     }
 
-    private function buildVitalsChartSeries(Collection $vitals, int $days): array
+    private function authorizeInvitation(DoctorInvitation $invitation, Request $request): ?JsonResponse
     {
-        $dates = collect(range(0, $days - 1))
-            ->map(fn (int $offset) => Carbon::today()->subDays($days - 1 - $offset)->toDateString())
-            ->values();
-
-        $grouped = $vitals
-            ->groupBy(fn (HealthVital $vital) => optional($vital->measured_at)->toDateString())
-            ->map(function (Collection $items): array {
-                $sorted = $items->sortByDesc(function (HealthVital $vital): string {
-                    $timestamp = optional($vital->measured_at)?->format('Y-m-d H:i:s') ?? '0000-00-00 00:00:00';
-                    return $timestamp.'#'.str_pad((string) $vital->id, 10, '0', STR_PAD_LEFT);
-                });
-
-                $latestMeasuredValue = function (string $field) use ($sorted): ?float {
-                    $row = $sorted->first(fn (HealthVital $vital) => $vital->{$field} !== null);
-                    if (! $row) {
-                        return null;
-                    }
-
-                    return round((float) $row->{$field}, 1);
-                };
-
-                return [
-                    'heart_rate' => $latestMeasuredValue('heart_rate'),
-                    'systolic_pressure' => $latestMeasuredValue('systolic_pressure'),
-                    'diastolic_pressure' => $latestMeasuredValue('diastolic_pressure'),
-                    'oxygen_saturation' => $latestMeasuredValue('oxygen_saturation'),
-                ];
-            });
-
-        return [
-            'labels' => $dates,
-            'heart_rate' => $dates->map(fn (string $date) => $grouped[$date]['heart_rate'] ?? null)->all(),
-            'systolic_pressure' => $dates->map(fn (string $date) => $grouped[$date]['systolic_pressure'] ?? null)->all(),
-            'diastolic_pressure' => $dates->map(fn (string $date) => $grouped[$date]['diastolic_pressure'] ?? null)->all(),
-            'oxygen_saturation' => $dates->map(fn (string $date) => $grouped[$date]['oxygen_saturation'] ?? null)->all(),
-        ];
-    }
-
-    private function resolveTreatmentMedicines(int $userId): array
-    {
-        $profil = ProfilSante::query()
-            ->where('user_id', $userId)
-            ->first();
-
-        $rawTreatments = is_array($profil?->traitements) ? $profil->traitements : [];
-        $medicines = [];
-
-        foreach ($rawTreatments as $index => $item) {
-            if (! is_array($item)) {
-                continue;
-            }
-
-            $name = trim((string) ($item['name'] ?? ''));
-            $type = trim((string) ($item['type'] ?? ''));
-            if ($name === '' && $type === '') {
-                continue;
-            }
-
-            $base = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $name !== '' ? $name : $type) ?? 'traitement');
-            $base = trim($base, '-');
-            if ($base === '') {
-                $base = 'traitement';
-            }
-
-            $frequencyCount = (int) ($item['frequency_count'] ?? 0);
-            $frequencyUnit = trim((string) ($item['frequency_unit'] ?? ''));
-            $dosesPerDay = 1;
-            if ($frequencyCount > 0) {
-                $dosesPerDay = $frequencyUnit === 'jour' ? $frequencyCount : 1;
-            }
-
-            $frequency = $frequencyCount > 0 && $frequencyUnit !== ''
-                ? $frequencyCount.' fois / '.$frequencyUnit
-                : 'Non precise';
-
-            $medicines[] = [
-                'id' => $base.'-'.($index + 1),
-                'name' => $name !== '' ? $name : ucfirst($type),
-                'dose' => trim((string) ($item['dose'] ?? '')) ?: 'Dose non precisee',
-                'freq' => $frequency,
-                'doses_per_day' => max(1, min($dosesPerDay, 12)),
-                'note' => trim((string) ($item['duration'] ?? '')) ?: ($type !== '' ? ucfirst($type) : ''),
-            ];
+        if ($invitation->doctor_user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized invitation access.'], 403);
         }
-
-        if (empty($medicines) && ($profil?->prend_medicament) && ! empty($profil?->nom_medicament)) {
-            $nom = trim((string) $profil->nom_medicament);
-            $base = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $nom) ?? 'medicament');
-            $base = trim($base, '-');
-            if ($base === '') {
-                $base = 'medicament';
-            }
-
-            $medicines[] = [
-                'id' => $base.'-1',
-                'name' => $nom,
-                'dose' => 'Dose non precisee',
-                'freq' => 'Non precise',
-                'doses_per_day' => 1,
-                'note' => '',
-            ];
-        }
-
-        return $medicines;
+        return null;
     }
 }

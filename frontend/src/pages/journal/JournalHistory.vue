@@ -86,9 +86,9 @@
 
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import ModalFiltre from '../../components/journal/ModalFiltre.vue'
-import CarteEntreeHistorique from '../../components/journal/CarteEntreeHistorique.vue'
-import { useJournalStore } from '../../stores/journal'
+import ModalFiltre from '@/components/journal/ModalFiltre.vue'
+import CarteEntreeHistorique from '@/components/journal/CarteEntreeHistorique.vue'
+import { useJournalStore } from '@/stores/journal'
 
 const route = useRoute()
 const router = useRouter()
@@ -126,7 +126,7 @@ const noticeMessage = computed(() => {
 
 
 const appliquerFiltre = (nextFilter) => {
-  store.definirFiltre({ type: nextFilter.type, month: nextFilter.month, date: nextFilter.date })
+  store.definirFiltre(nextFilter)
   showFilter.value = false
 }
 
@@ -134,7 +134,4 @@ const reinitialiserFiltre = () => {
   store.reinitialiserFiltre()
   showFilter.value = false
 }
-
 </script>
-
-

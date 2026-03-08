@@ -87,7 +87,7 @@ const props = defineProps({
   }
 })
 
-const entry = computed(() => props.latestEntry ?? null)
+const entry = computed(() => props.latestEntry)
 
 const hydrationText = computed(() => {
   if (!entry.value) return 'Aucune donnee'
@@ -129,12 +129,10 @@ const intensityBadgeClass = computed(() => {
 const tobaccoText = computed(() => {
   if (!entry.value?.tobacco) return 'Non'
   const parts = []
-  const hasCigarette = Boolean(entry.value.tobaccoTypes?.cigarette)
-  const hasVape = Boolean(entry.value.tobaccoTypes?.vape)
-  if (hasCigarette && typeof entry.value.cigarettesPerDay === 'number') {
+  if (entry.value.tobaccoTypes?.cigarette && typeof entry.value.cigarettesPerDay === 'number') {
     parts.push(`Cigarette • ${entry.value.cigarettesPerDay}/j`)
   }
-  if (hasVape && entry.value.vapeFrequency && typeof entry.value.vapeLiquidMl === 'number') {
+  if (entry.value.tobaccoTypes?.vape && entry.value.vapeFrequency && typeof entry.value.vapeLiquidMl === 'number') {
     parts.push(`Vape • ${entry.value.vapeFrequency} • ${entry.value.vapeLiquidMl} liquide`)
   }
   if (!parts.length) return 'Oui'

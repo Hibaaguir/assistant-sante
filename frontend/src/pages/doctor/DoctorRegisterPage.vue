@@ -53,15 +53,14 @@
 import api from "@/services/api";
 import { computed, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
 const route = useRoute();
 const router = useRouter();
-
-const initialEmail = String(route.query.email || "").trim();
-const loginLink = computed(() => ({ name: "doctor-login", query: { email: form.email || initialEmail } }));
+const authStore = useAuthStore();
 
 const form = reactive({
-  email: initialEmail,
+  email: String(route.query.email || "").trim(),
   password: "",
   password_confirmation: "",
   specialite: "",
@@ -76,6 +75,8 @@ const errors = reactive({
 const loading = ref(false);
 const serverMessage = ref("");
 const messageType = ref("success");
+
+const loginLink = computed(() => ({ name: "doctor-login", query: { email: form.email } }));
 
 function clearErrors() {
   errors.email = "";
@@ -111,11 +112,7 @@ async function submit() {
       specialite: form.specialite,
     });
 
-    const token = res?.data?.token;
-    if (token) {
-      localStorage.setItem("auth_token", token);
-      api.defaults.headers.common.Authorization = `Bearer ${token}`;
-    }
+    if (res?.data?.token) authStore.setToken(res.data.token);
 
     serverMessage.value = res?.data?.message || "Compte medecin cree avec succes.";
     messageType.value = "success";

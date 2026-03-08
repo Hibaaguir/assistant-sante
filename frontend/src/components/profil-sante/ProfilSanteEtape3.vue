@@ -93,14 +93,10 @@ const hasDoctor = computed(() => (form.consulte_medecin ? "yes" : "no"));
 
 // Synchronise les champs lies quand l'utilisateur change de choix.
 function setDoctor(value) {
-  if (value === "yes") {
-    form.consulte_medecin = true;
-    form.medecin_peut_consulter = true;
-    return;
-  }
-
-  form.consulte_medecin = false;
-  form.medecin_peut_consulter = false;
+  const yes = value === "yes";
+  form.consulte_medecin = yes;
+  form.medecin_peut_consulter = yes;
+  if (!yes) form.medecin_email = "";
   form.medecin_email = "";
 }
 </script>

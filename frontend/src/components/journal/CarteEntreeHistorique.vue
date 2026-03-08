@@ -61,17 +61,13 @@ defineProps({
     type: Object,
     required: true
   },
-  editing: {
-    type: Boolean,
-    default: false
-  },
   filterType: {
     type: String,
     default: 'all'
   }
 })
 
-defineEmits(['edit', 'delete', 'save', 'cancel-edit'])
+defineEmits(['edit', 'delete'])
 
 // Cette fonction transforme les heures de sommeil en texte simple.
 const libellerSommeil = (hours) => {

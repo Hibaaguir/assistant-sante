@@ -108,11 +108,13 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import api from "@/services/api";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 import Etape1 from "./ProfilSanteEtape1.vue";
 import Etape2 from "./ProfilSanteEtape2.vue";
 import Etape3 from "./ProfilSanteEtape3.vue";
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 const currentStep = ref(1);
 const totalSteps = 3;
@@ -172,8 +174,7 @@ const computedAge = computed(() => {
 });
 
 onMounted(async () => {
-  const token = localStorage.getItem("auth_token");
-  if (!token) {
+  if (!authStore.isLoggedIn) {
     router.replace({ name: "register" });
     return;
   }
@@ -191,7 +192,7 @@ onMounted(async () => {
     }
   } catch (error) {
     if (error.response?.status === 401) {
-      localStorage.removeItem("auth_token");
+      authStore.clearToken();
       router.replace({ name: "register" });
       return;
     }
@@ -246,7 +247,7 @@ function extractValidationMessage(errors) {
 function buildPayload() {
   const objectifs = normalizeArray(form.objectifs);
 
-  const payload = {
+  return {
     sexe: typeof form.sexe === "string" ? form.sexe.toLowerCase().trim() : form.sexe,
     taille: form.taille,
     poids: form.poids,
@@ -266,16 +267,14 @@ function buildPayload() {
           }))
           .filter((item) => item.type)
       : [],
-    prend_medicament: Boolean(form.prend_medicament),
+    prend_medicament: form.prend_medicament,
     nom_medicament: form.prend_medicament ? form.nom_medicament : null,
-    fumeur: Boolean(form.fumeur),
-    alcool: Boolean(form.alcool),
-    consulte_medecin: Boolean(form.consulte_medecin),
-    medecin_peut_consulter: Boolean(form.consulte_medecin && form.medecin_peut_consulter),
+    fumeur: form.fumeur,
+    alcool: form.alcool,
+    consulte_medecin: form.consulte_medecin,
+    medecin_peut_consulter: form.consulte_medecin && form.medecin_peut_consulter,
     medecin_email: form.consulte_medecin && form.medecin_peut_consulter ? form.medecin_email : null,
   };
-
-  return payload;
 }
 
 async function enregistrer() {
@@ -294,7 +293,7 @@ async function enregistrer() {
     router.push({ name: "health" });
   } catch (error) {
     if (error.response?.status === 401) {
-      localStorage.removeItem("auth_token");
+      authStore.clearToken();
       router.replace({ name: "register" });
       return;
     }
@@ -330,7 +329,7 @@ function stepClass(stepNumber) {
 function goBack() {
   stepError.value = "";
   clearStep1Errors();
-  if (currentStep.value > 1) currentStep.value -= 1;
+  currentStep.value -= 1;
 }
 
 function goNext() {
@@ -339,7 +338,7 @@ function goNext() {
   clearStep1Errors();
   if (currentStep.value === 1 && !validateStep1()) return;
   if (currentStep.value === 2 && !validateStep2()) return;
-  if (currentStep.value < totalSteps) currentStep.value += 1;
+  currentStep.value += 1;
 }
 
 function clearStep1Errors() {

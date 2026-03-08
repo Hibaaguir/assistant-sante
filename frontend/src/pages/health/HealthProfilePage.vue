@@ -35,11 +35,11 @@
         </div>
 
         <div v-if="!editing.base" class="space-y-2">
-          <FieldRow label="Nom" :value="user.name || '-'" icon="user" />
-          <FieldRow label="Âge" :value="computedAge || '-'" icon="calendar" />
-          <FieldRow label="Sexe" :value="profil.sexe || '-'" icon="users" />
-          <FieldRow label="Taille" :value="profil.taille ? `${profil.taille} cm` : '-'" icon="ruler" />
-          <FieldRow label="Poids" :value="profil.poids ? `${profil.poids} kg` : '-'" icon="weight" />
+          <HealthFieldRow label="Nom" :value="user.name || '-'" icon="user" />
+          <HealthFieldRow label="Âge" :value="computedAge || '-'" icon="calendar" />
+          <HealthFieldRow label="Sexe" :value="profil.sexe || '-'" icon="users" />
+          <HealthFieldRow label="Taille" :value="profil.taille ? `${profil.taille} cm` : '-'" icon="ruler" />
+          <HealthFieldRow label="Poids" :value="profil.poids ? `${profil.poids} kg` : '-'" icon="weight" />
         </div>
 
         <form v-else class="space-y-4" @submit.prevent="saveSection('base')">
@@ -85,10 +85,10 @@
         </div>
 
         <div v-if="!editing.health" class="space-y-2">
-          <FieldRow label="Groupe sanguin" :value="profil.groupe_sanguin || '-'" icon="droplet" />
-          <FieldRow label="Objectifs" :value="joinList(profil.objectifs)" icon="target" />
-          <FieldRow label="Allergies" :value="joinList(profil.allergies)" icon="alert" />
-          <FieldRow label="Maladies chroniques" :value="joinList(profil.maladies_chroniques)" icon="shield" />
+          <HealthFieldRow label="Groupe sanguin" :value="profil.groupe_sanguin || '-'" icon="droplet" />
+          <HealthFieldRow label="Objectifs" :value="joinList(profil.objectifs)" icon="target" />
+          <HealthFieldRow label="Allergies" :value="joinList(profil.allergies)" icon="alert" />
+          <HealthFieldRow label="Maladies chroniques" :value="joinList(profil.maladies_chroniques)" icon="shield" />
         </div>
 
         <form v-else class="space-y-4" @submit.prevent="saveSection('health')">
@@ -186,9 +186,9 @@
         </div>
 
         <div v-if="!editing.habits" class="space-y-2">
-          <FieldRow label="Fumeur" :value="yesNo(profil.fumeur)" icon="smoke" />
-          <FieldRow label="Alcool" :value="yesNo(profil.alcool)" icon="wine" />
-          <FieldRow label="Traitements" :value="treatmentsSummary(profil.traitements)" icon="pill" />
+          <HealthFieldRow label="Fumeur" :value="yesNo(profil.fumeur)" icon="smoke" />
+          <HealthFieldRow label="Alcool" :value="yesNo(profil.alcool)" icon="wine" />
+          <HealthFieldRow label="Traitements" :value="treatmentsSummary(profil.traitements)" icon="pill" />
         </div>
 
         <form v-else class="space-y-4" @submit.prevent="saveSection('habits')">
@@ -323,9 +323,9 @@
         </div>
 
         <div v-if="!editing.doctor" class="space-y-2">
-          <FieldRow label="Consulte médecin" :value="yesNo(profil.consulte_medecin)" icon="stetho" />
-          <FieldRow label="Autorise accès médecin" :value="yesNo(profil.medecin_peut_consulter)" icon="shield" />
-          <FieldRow label="Email médecin" :value="profil.medecin_email || '-'" icon="stetho" />
+          <HealthFieldRow label="Consulte médecin" :value="yesNo(profil.consulte_medecin)" icon="stetho" />
+          <HealthFieldRow label="Autorise accès médecin" :value="yesNo(profil.medecin_peut_consulter)" icon="shield" />
+          <HealthFieldRow label="Email médecin" :value="profil.medecin_email || '-'" icon="stetho" />
         </div>
 
         <form v-else class="space-y-4" @submit.prevent="saveSection('doctor')">
@@ -366,9 +366,11 @@
 </template>
 
 <script setup>
-import { computed, defineComponent, h, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 import api from "@/services/api";
+import HealthFieldRow from "@/components/health/HealthFieldRow.vue";
 
 /*
   Cette page affiche et edite le profil sante utilisateur.
@@ -379,6 +381,7 @@ import api from "@/services/api";
 
 // State principal de la page.
 const router = useRouter();
+const authStore = useAuthStore();
 const loading = ref(true);
 const error = ref("");
 const doctorEmailError = ref("");
@@ -529,8 +532,7 @@ function addCustom(key, value) {
   if (!normalized) return;
   if (!Array.isArray(draft[key])) draft[key] = [];
   if (!draft[key].includes(normalized)) draft[key] = [...draft[key], normalized];
-  if (key === "allergies") customInputs.allergies = "";
-  if (key === "maladies_chroniques") customInputs.maladies_chroniques = "";
+  customInputs[key] = "";
 }
 
 function addSelectedOption(key, value, kind) {
@@ -565,8 +567,7 @@ function handleTreatmentDateInput(event, key) {
 
 // Validation locale de l'email medecin avant envoi serveur.
 function validateDoctorEmail() {
-  const canUseDoctorEmail = Boolean(draft.consulte_medecin && draft.medecin_peut_consulter);
-  if (!canUseDoctorEmail) {
+  if (!(draft.consulte_medecin && draft.medecin_peut_consulter)) {
     doctorEmailError.value = "";
     return true;
   }
@@ -755,7 +756,7 @@ async function saveSection(section) {
     editing[section] = false;
   } catch (e) {
     if (e?.response?.status === 401) {
-      localStorage.removeItem("auth_token");
+      authStore.clearToken();
       router.replace({ name: "register" });
       return;
     }
@@ -786,7 +787,7 @@ onMounted(async () => {
     syncDraftFromProfil();
   } catch (e) {
     if (e?.response?.status === 401) {
-      localStorage.removeItem("auth_token");
+      authStore.clearToken();
       router.replace({ name: "register" });
       return;
     }
@@ -794,55 +795,5 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
-
-// Composant interne: mapping simple des icones par nom.
-const Icon = defineComponent({
-  name: "HealthIcon",
-  props: { name: { type: String, required: true } },
-  setup(props) {
-    const map = {
-      user: () => [h("circle", { cx: "12", cy: "8", r: "4" }), h("path", { d: "M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" })],
-      calendar: () => [h("rect", { x: "3", y: "4", width: "18", height: "17", rx: "2" }), h("path", { d: "M16 2v4M8 2v4M3 10h18" })],
-      users: () => [h("circle", { cx: "9", cy: "8", r: "3" }), h("path", { d: "M3 20c0-2.8 2.7-5 6-5s6 2.2 6 5" }), h("circle", { cx: "18", cy: "9", r: "2" }), h("path", { d: "M15 20c.3-1.6 1.7-3 3.5-3.6" })],
-      ruler: () => [h("path", { d: "M16 3 3 16l5 5L21 8l-5-5z" }), h("path", { d: "m12 7 5 5M9 10l2 2M6 13l2 2" })],
-      weight: () => [h("path", { d: "M7 7a5 5 0 0 1 10 0" }), h("path", { d: "M4 9h16l2 11H2L4 9z" })],
-      droplet: () => [h("path", { d: "M12 3s6 6.4 6 10a6 6 0 0 1-12 0c0-3.6 6-10 6-10z" })],
-      target: () => [h("circle", { cx: "12", cy: "12", r: "8" }), h("circle", { cx: "12", cy: "12", r: "4" }), h("circle", { cx: "12", cy: "12", r: "1.5" })],
-      alert: () => [h("circle", { cx: "12", cy: "12", r: "10" }), h("path", { d: "M12 8v5M12 16h.01" })],
-      shield: () => [h("path", { d: "M12 3 5 6v6c0 5 3.4 8 7 9 3.6-1 7-4 7-9V6l-7-3z" })],
-      smoke: () => [h("path", { d: "M3 14h10v4H3zM15 15h2v3h-2zM19 15h2v3h-2zM16 6c1 1 1 2 0 3M19 5c1.5 1.2 1.8 3 .8 4.5" })],
-      wine: () => [h("path", { d: "M8 3h8v3a4 4 0 0 1-8 0V3zM12 10v8M9 21h6" })],
-      pill: () => [h("path", { d: "M14.5 3.5a5 5 0 0 1 7 7l-6 6a5 5 0 0 1-7-7l6-6z" }), h("path", { d: "m9 9 6 6" })],
-      stetho: () => [h("path", { d: "M8 4v5a4 4 0 1 0 8 0V4M12 13v3a4 4 0 0 0 8 0v-1a2 2 0 1 0-4 0v1" })],
-    };
-
-    return () =>
-      h(
-        "svg",
-        { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2", class: "h-5 w-5 text-slate-400" },
-        map[props.name] ? map[props.name]() : map.user(),
-      );
-  },
-});
-
-// Composant interne: ligne label/valeur reutilisable dans les cartes.
-const FieldRow = defineComponent({
-  name: "FieldRow",
-  props: {
-    label: { type: String, required: true },
-    value: { type: String, required: true },
-    icon: { type: String, required: true },
-  },
-  setup(props) {
-    return () =>
-      h("div", { class: "flex items-start gap-3 rounded-xl px-2.5 py-2 transition-colors hover:bg-slate-100/70 sm:px-3 sm:py-2.5" }, [
-        h("div", { class: "mt-1" }, [h(Icon, { name: props.icon })]),
-        h("div", null, [
-          h("dt", { class: "text-[13px] font-normal text-slate-500 sm:text-[14px]" }, props.label),
-          h("dd", { class: "text-[18px] font-medium leading-none text-slate-900 sm:text-[20px]" }, props.value),
-        ]),
-      ]);
-  },
 });
 </script>

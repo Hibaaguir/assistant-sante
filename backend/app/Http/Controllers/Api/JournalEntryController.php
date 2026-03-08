@@ -31,10 +31,7 @@ class JournalEntryController extends Controller
         $payload['user_id'] = $request->user()->id;
 
         $entry = JournalEntry::updateOrCreate(
-            [
-                'user_id' => $request->user()->id,
-                'entry_date' => $payload['entry_date'],
-            ],
+            ['user_id' => $payload['user_id'], 'entry_date' => $payload['entry_date']],
             $payload
         );
 
@@ -46,11 +43,7 @@ class JournalEntryController extends Controller
 
     public function show(Request $request, JournalEntry $journalEntry): JsonResponse
     {
-        if ($journalEntry->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'Unauthorized access to this journal entry.',
-            ], 403);
-        }
+        if ($error = $this->authorizeEntry($journalEntry, $request)) return $error;
 
         return response()->json([
             'message' => 'Journal entry fetched successfully.',
@@ -60,11 +53,7 @@ class JournalEntryController extends Controller
 
     public function update(UpdateJournalEntryRequest $request, JournalEntry $journalEntry): JsonResponse
     {
-        if ($journalEntry->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'Unauthorized access to this journal entry.',
-            ], 403);
-        }
+        if ($error = $this->authorizeEntry($journalEntry, $request)) return $error;
 
         $journalEntry->update($request->validated());
 
@@ -76,17 +65,21 @@ class JournalEntryController extends Controller
 
     public function destroy(Request $request, JournalEntry $journalEntry): JsonResponse
     {
-        if ($journalEntry->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'Unauthorized access to this journal entry.',
-            ], 403);
-        }
+        if ($error = $this->authorizeEntry($journalEntry, $request)) return $error;
 
         $journalEntry->delete();
 
         return response()->json([
             'message' => 'Journal entry deleted successfully.',
         ]);
+    }
+
+    private function authorizeEntry(JournalEntry $entry, Request $request): ?JsonResponse
+    {
+        if ($entry->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized access to this journal entry.'], 403);
+        }
+        return null;
     }
 }
 

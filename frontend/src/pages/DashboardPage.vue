@@ -1,7 +1,7 @@
 <template>
-  <DoctorDashboard v-if="authResolved && isDoctor" />
+  <DoctorDashboard v-if="authStore.resolved && authStore.isDoctor" />
 
-  <div v-else-if="authResolved" class="mx-auto max-w-[1320px] p-4 sm:p-6 lg:p-8">
+  <div v-else-if="authStore.resolved" class="mx-auto max-w-[1320px] p-4 sm:p-6 lg:p-8">
     <header>
       <h1 class="text-[34px] font-semibold leading-none text-slate-900">Dashboard</h1>
       <p class="mt-2 text-sm text-slate-600">Vue d'ensemble de votre santé</p>
@@ -40,7 +40,7 @@
           </g>
         </svg>
 
-        <div v-if="hoverIndex !== null" class="pointer-events-none absolute rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 text-[12px] shadow-lg" :style="{ left: `${tooltipLeft}px`, top: `${tooltipTop}px` }">
+        <div v-if="hoverIndex !== null" class="pointer-events-none absolute rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 text-[12px] shadow-lg" :style="{ left: `${tooltipLeft}px`, top: `${TOOLTIP_TOP}px` }">
           <p class="text-slate-900">{{ labels[hoverIndex] }}</p>
           <p v-if="selectedSeries.rhythm" class="mt-1 text-rose-500">Rythme cardiaque (bpm) : {{ heartRateValues[hoverIndex] }}</p>
           <p v-if="selectedSeries.tension" class="mt-1 text-blue-600">Tension systolique (mmHg) : {{ systolicValues[hoverIndex] }}</p>
@@ -60,16 +60,16 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import api from '@/services/api'
+import { useAuthStore } from '@/stores/auth'
 import DoctorDashboard from '@/components/doctor/DoctorDashboard.vue'
 
+const authStore = useAuthStore()
 const chartRef = ref(null)
 const labels = ref([])
 const heartRateValues = ref([])
 const systolicValues = ref([])
 const saturationValues = ref([])
-const hoveredIndex = ref(null)
-const isDoctor = ref(false)
-const authResolved = ref(false)
+const hoverIndex = ref(null)
 const selectedSeries = reactive({
   rhythm: true,
   tension: true,
@@ -88,43 +88,20 @@ const chart = {
 }
 const yTicks = [0, 35, 70, 105, 140]
 
-const hoverIndex = computed(() => hoveredIndex.value)
-const visibleSeries = computed(() => {
-  const items = []
-  if (selectedSeries.rhythm) {
-    items.push({
-      key: 'rhythm',
-      color: '#f43f5e',
-      values: heartRateValues.value,
-      points: construirePoints(heartRateValues.value)
-    })
-  }
-  if (selectedSeries.tension) {
-    items.push({
-      key: 'tension',
-      color: '#3b82f6',
-      values: systolicValues.value,
-      points: construirePoints(systolicValues.value)
-    })
-  }
-  if (selectedSeries.saturation) {
-    items.push({
-      key: 'saturation',
-      color: '#8b5cf6',
-      values: saturationValues.value,
-      points: construirePoints(saturationValues.value)
-    })
-  }
-  return items
-})
-const tooltipLeft = computed(() => {
-  if (hoverIndex.value === null) return 0
-  return Math.max(8, Math.min(convertirXEnPx(hoverIndex.value) + 12, chart.width - 230))
-})
-const tooltipTop = computed(() => {
-  if (hoverIndex.value === null) return 0
-  return chart.top + 10
-})
+const SERIES_DEFS = [
+  { key: 'rhythm',     color: '#f43f5e', valuesRef: heartRateValues },
+  { key: 'tension',    color: '#3b82f6', valuesRef: systolicValues },
+  { key: 'saturation', color: '#8b5cf6', valuesRef: saturationValues },
+]
+const visibleSeries = computed(() =>
+  SERIES_DEFS
+    .filter(s => selectedSeries[s.key])
+    .map(s => ({ key: s.key, color: s.color, values: s.valuesRef.value, points: construirePoints(s.valuesRef.value) }))
+)
+const tooltipLeft = computed(() =>
+  Math.max(8, Math.min(convertirXEnPx(hoverIndex.value) + 12, chart.width - 230))
+)
+const TOOLTIP_TOP = chart.top + 10
 
 function normaliserSerie(values, fallback = 0) {
   let last = fallback
@@ -181,31 +158,20 @@ function gererMouvementGraphique(event) {
   const usable = chart.width - chart.left - chart.right
   const step = labels.value.length > 1 ? usable / (labels.value.length - 1) : usable
   const nearest = Math.round((localX - chart.left) / step)
-  hoveredIndex.value = Math.min(Math.max(nearest, 0), labels.value.length - 1)
+  hoverIndex.value = Math.min(Math.max(nearest, 0), labels.value.length - 1)
 }
 
 function gererSortieGraphique() {
-  hoveredIndex.value = null
+  hoverIndex.value = null
 }
 
 function basculerSerie(key) {
-  const activeCount = [selectedSeries.rhythm, selectedSeries.tension, selectedSeries.saturation].filter(Boolean).length
-  if (selectedSeries[key] && activeCount === 1) return
+  if (selectedSeries[key] && Object.values(selectedSeries).filter(Boolean).length === 1) return
   selectedSeries[key] = !selectedSeries[key]
 }
 
 onMounted(async () => {
-  try {
-    const authRes = await api.get('/auth/me')
-    const role = String(authRes?.data?.user?.role || authRes?.data?.role || '').toLowerCase()
-    isDoctor.value = role === 'medecin' || role === 'doctor'
-  } catch (_) {
-    isDoctor.value = false
-  } finally {
-    authResolved.value = true
-  }
-
-  if (!isDoctor.value) {
+  if (!authStore.isDoctor) {
     await chargerDonneesSante()
   }
 })
