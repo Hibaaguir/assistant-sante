@@ -197,30 +197,171 @@
     </section>
 
     <section v-else-if="detailTab === 'vitals'" class="mt-8 space-y-4">
-      <article v-for="entry in patient.vitalsHistory" :key="entry.date" class="rounded-[20px] border border-[#d4d9e1] bg-white p-5 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
+      <article class="rounded-[20px] border border-[#d4d9e1] bg-white p-5 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h3 class="text-[18px] font-bold text-[#041c49]">Filtrer les signes vitaux</h3>
+            <p class="mt-1 text-[14px] text-[#5b6b84]">Affinez l'historique par date et par type de mesure.</p>
+          </div>
+
+          <button
+            v-if="vitalDateFilter || vitalSignFilter !== 'all'"
+            type="button"
+            class="inline-flex h-[42px] items-center justify-center rounded-[14px] border border-[#d4d9e1] px-4 text-[14px] font-semibold text-[#40506a] transition hover:border-[#aeb9ca] hover:text-[#1a2c52]"
+            @click="resetVitalFilters"
+          >
+            Reinitialiser
+          </button>
+        </div>
+
+        <div class="mt-5 grid gap-4 md:grid-cols-2">
+          <div>
+            <label class="mb-2 block text-[14px] font-semibold text-[#23375f]">Date</label>
+            <input
+              v-model="vitalDateFilter"
+              type="date"
+              class="h-[52px] w-full rounded-[16px] border border-[#d7dce6] bg-[#fbfcfd] px-4 text-[15px] text-[#061a45] outline-none transition focus:border-[#4a55f5]"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-[14px] font-semibold text-[#23375f]">Signe vital</label>
+            <select
+              v-model="vitalSignFilter"
+              class="h-[52px] w-full rounded-[16px] border border-[#d7dce6] bg-[#fbfcfd] px-4 text-[15px] text-[#061a45] outline-none transition focus:border-[#4a55f5]"
+            >
+              <option value="all">Tous les signes</option>
+              <option value="heartRate">Rythme cardiaque</option>
+              <option value="bloodPressure">Tension</option>
+              <option value="saturation">Saturation O2</option>
+            </select>
+          </div>
+        </div>
+      </article>
+
+      <article v-for="entry in filteredVitalsHistory" :key="entry.isoDate || entry.date" class="rounded-[20px] border border-[#d4d9e1] bg-white p-5 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
         <div class="flex items-center gap-2 text-[16px] font-bold text-[#061a45]">
           <CalendarIcon class="h-[18px] w-[18px]" />
           {{ entry.date }}
         </div>
         <div class="mt-4 grid gap-4 lg:grid-cols-3">
-          <div class="rounded-[16px] border border-[#f4bcc3] bg-[#fff5f6] px-5 py-4">
-            <p class="text-[14px] text-[#455572]">Rythme cardiaque</p>
-            <p class="mt-2 text-[18px] font-bold text-[#061a45]">{{ entry.heartRate }}</p>
-          </div>
-          <div class="rounded-[16px] border border-[#aac8ff] bg-[#eff6ff] px-5 py-4">
-            <p class="text-[14px] text-[#455572]">Tension</p>
-            <p class="mt-2 text-[18px] font-bold text-[#061a45]">{{ entry.bloodPressure }}</p>
-          </div>
-          <div class="rounded-[16px] border border-[#dcc5ff] bg-[#faf4ff] px-5 py-4">
-            <p class="text-[14px] text-[#455572]">Saturation O2</p>
-            <p class="mt-2 text-[18px] font-bold text-[#061a45]">{{ entry.saturation }}</p>
+          <div
+            v-for="card in entry.cards"
+            :key="card.key"
+            class="rounded-[16px] border px-5 py-4"
+            :class="card.class"
+          >
+            <p class="text-[14px] text-[#455572]">{{ card.label }}</p>
+            <p class="mt-2 text-[18px] font-bold text-[#061a45]">{{ card.value }}</p>
           </div>
         </div>
+      </article>
+
+      <article
+        v-if="!filteredVitalsHistory.length"
+        class="rounded-[20px] border border-dashed border-[#cfd6e2] bg-white px-6 py-8 text-center shadow-[0_1px_4px_rgba(15,23,42,0.05)]"
+      >
+        <p class="text-[17px] font-semibold text-[#10254f]">Aucun signe vital ne correspond aux filtres.</p>
+        <p class="mt-2 text-[14px] text-[#5b6b84]">Essayez une autre date ou choisissez un autre type de mesure.</p>
       </article>
     </section>
 
     <section v-else-if="detailTab === 'analyses'" class="mt-8 space-y-4">
-      <article v-for="analysis in patient.analyses" :key="`${analysis.name}-full`" class="rounded-[20px] border border-[#d4d9e1] bg-white px-6 py-5 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
+      <article class="rounded-[20px] border border-[#d4d9e1] bg-white p-5 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h3 class="text-[18px] font-bold text-[#041c49]">Filtrer les analyses</h3>
+            <p class="mt-1 text-[14px] text-[#5b6b84]">Affinez les resultats par date et par type d'analyse.</p>
+          </div>
+
+          <button
+            v-if="analysisDateFilter || analysisTypeFilter !== 'all'"
+            type="button"
+            class="inline-flex h-[42px] items-center justify-center rounded-[14px] border border-[#d4d9e1] px-4 text-[14px] font-semibold text-[#40506a] transition hover:border-[#aeb9ca] hover:text-[#1a2c52]"
+            @click="resetAnalysisFilters"
+          >
+            Reinitialiser
+          </button>
+        </div>
+
+        <div class="mt-5 grid gap-4 md:grid-cols-2">
+          <div>
+            <label class="mb-2 block text-[14px] font-semibold text-[#23375f]">Date</label>
+            <input
+              v-model="analysisDateFilter"
+              type="date"
+              class="h-[52px] w-full rounded-[16px] border border-[#d7dce6] bg-[#fbfcfd] px-4 text-[15px] text-[#061a45] outline-none transition focus:border-[#4a55f5]"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-[14px] font-semibold text-[#23375f]">Type d'analyse</label>
+            <select
+              v-model="analysisTypeFilter"
+              class="h-[52px] w-full rounded-[16px] border border-[#d7dce6] bg-[#fbfcfd] px-4 text-[15px] text-[#061a45] outline-none transition focus:border-[#4a55f5]"
+            >
+              <option value="all">Tous les types</option>
+              <option v-for="type in analysisTypes" :key="type" :value="type">{{ type }}</option>
+            </select>
+          </div>
+        </div>
+      </article>
+
+      <article class="rounded-[20px] border border-[#d4d9e1] bg-white p-4 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <p class="text-[16px] font-bold text-[#041c49]">Observation generale</p>
+              <span class="rounded-full bg-[#f3f6fb] px-2.5 py-1 text-[12px] text-[#5c6d89]">Interne</span>
+            </div>
+            <p v-if="analysisObservationSavedAt" class="mt-1 text-[12px] text-[#6a7891]">Sauvegardee le {{ analysisObservationSavedAt }}</p>
+          </div>
+
+          <button
+            type="button"
+            class="inline-flex h-[40px] items-center justify-center rounded-[14px] border border-[#d4d9e1] px-4 text-[14px] font-semibold text-[#40506a] transition hover:border-[#aeb9ca] hover:text-[#1a2c52]"
+            @click="analysisObservationOpen = !analysisObservationOpen"
+          >
+            {{ analysisObservationOpen ? "Fermer" : "Ajouter une observation" }}
+          </button>
+        </div>
+
+        <div v-if="analysisObservationOpen" class="mt-4 space-y-3">
+          <textarea
+            v-model.trim="analysisObservation"
+            rows="3"
+            placeholder="Exemple : bilan rassurant, surveillance conseillee."
+            class="w-full rounded-[16px] border border-[#d7dce6] bg-[#fbfcfd] px-4 py-3 text-[14px] leading-6 text-[#061a45] outline-none transition placeholder:text-[#9aa5ba] focus:border-[#4a55f5]"
+          />
+
+          <div class="flex flex-wrap justify-end gap-3">
+            <button
+              type="button"
+              class="inline-flex h-[40px] items-center justify-center rounded-[14px] border border-[#d4d9e1] px-4 text-[14px] font-semibold text-[#40506a] transition hover:border-[#aeb9ca] hover:text-[#1a2c52]"
+              @click="clearAnalysisObservation"
+            >
+              Effacer
+            </button>
+            <button
+              type="button"
+              class="inline-flex h-[40px] items-center justify-center rounded-[14px] bg-[#3f49f4] px-4 text-[14px] font-semibold text-white transition hover:bg-[#3140ef]"
+              @click="saveAnalysisObservation"
+            >
+              Enregistrer
+            </button>
+          </div>
+        </div>
+
+        <div
+          v-if="analysisObservationMessage"
+          class="mt-3 rounded-[14px] border px-3 py-2 text-[13px]"
+          :class="analysisObservationMessageType === 'success' ? 'border-[#c6ead0] bg-[#f2fcf4] text-[#118445]' : 'border-[#f1d4ae] bg-[#fff8ef] text-[#b46910]'"
+        >
+          {{ analysisObservationMessage }}
+        </div>
+      </article>
+
+      <article v-for="analysis in filteredAnalyses" :key="`${analysis.name}-${analysis.isoDate || analysis.date}`" class="rounded-[20px] border border-[#d4d9e1] bg-white px-6 py-5 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
         <div class="flex flex-wrap items-center gap-3">
           <h3 class="text-[18px] font-bold text-[#061a45]">{{ analysis.name }}</h3>
           <span class="inline-flex rounded-full px-3 py-1 text-[13px] font-medium" :class="analysis.badgeClass">{{ analysis.status }}</span>
@@ -233,6 +374,14 @@
             {{ analysis.date }}
           </span>
         </div>
+      </article>
+
+      <article
+        v-if="!filteredAnalyses.length"
+        class="rounded-[20px] border border-dashed border-[#cfd6e2] bg-white px-6 py-8 text-center shadow-[0_1px_4px_rgba(15,23,42,0.05)]"
+      >
+        <p class="text-[17px] font-semibold text-[#10254f]">Aucune analyse ne correspond aux filtres.</p>
+        <p class="mt-2 text-[14px] text-[#5b6b84]">Essayez une autre date ou un autre type d'analyse.</p>
       </article>
     </section>
 
@@ -258,7 +407,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import {
   AlertTriangleIcon,
   ArrowLeftIcon,
@@ -270,7 +419,7 @@ import {
   WaveIcon
 } from '@/components/doctor/DoctorIcons.js'
 
-defineProps({
+const props = defineProps({
   patient: {
     type: Object,
     required: true
@@ -287,4 +436,159 @@ const detailTabs = [
   { key: 'analyses', label: 'Analyses', icon: WaveIcon },
   { key: 'treatments', label: 'Traitements', icon: LinkIcon }
 ]
+
+const vitalDateFilter = ref('')
+const vitalSignFilter = ref('all')
+const analysisDateFilter = ref('')
+const analysisTypeFilter = ref('all')
+const analysisObservation = ref('')
+const analysisObservationOpen = ref(false)
+const analysisObservationSavedAt = ref('')
+const analysisObservationMessage = ref('')
+const analysisObservationMessageType = ref('success')
+
+function buildVitalCards(entry) {
+  return [
+    {
+      key: 'heartRate',
+      label: 'Rythme cardiaque',
+      value: entry.heartRate,
+      class: 'border-[#f4bcc3] bg-[#fff5f6]'
+    },
+    {
+      key: 'bloodPressure',
+      label: 'Tension',
+      value: entry.bloodPressure,
+      class: 'border-[#aac8ff] bg-[#eff6ff]'
+    },
+    {
+      key: 'saturation',
+      label: 'Saturation O2',
+      value: entry.saturation,
+      class: 'border-[#dcc5ff] bg-[#faf4ff]'
+    }
+  ]
+}
+
+const filteredVitalsHistory = computed(() => {
+  const entries = Array.isArray(props.patient?.vitalsHistory) ? props.patient.vitalsHistory : []
+
+  return entries
+    .filter((entry) => !vitalDateFilter.value || entry.isoDate === vitalDateFilter.value)
+    .map((entry) => {
+      const cards = buildVitalCards(entry).filter((card) => vitalSignFilter.value === 'all' || card.key === vitalSignFilter.value)
+      return { ...entry, cards }
+    })
+    .filter((entry) => entry.cards.length > 0)
+})
+
+const analysisTypes = computed(() => {
+  const analyses = Array.isArray(props.patient?.analyses) ? props.patient.analyses : []
+  return [...new Set(analyses.map((analysis) => String(analysis.type || '').trim()).filter(Boolean))]
+})
+
+const filteredAnalyses = computed(() => {
+  const analyses = Array.isArray(props.patient?.analyses) ? props.patient.analyses : []
+
+  return analyses.filter((analysis) => {
+    const dateOk = !analysisDateFilter.value || analysis.isoDate === analysisDateFilter.value
+    const typeOk = analysisTypeFilter.value === 'all' || analysis.type === analysisTypeFilter.value
+    return dateOk && typeOk
+  })
+})
+
+const analysisObservationStorageKey = computed(() => {
+  const patientId = props.patient?.id ?? 'unknown'
+  return `doctor-analysis-observation-${patientId}`
+})
+
+function loadAnalysisObservation() {
+  analysisObservationMessage.value = ''
+  if (typeof window === 'undefined') return
+
+  const raw = window.localStorage.getItem(analysisObservationStorageKey.value)
+  if (!raw) {
+    analysisObservation.value = ''
+    analysisObservationSavedAt.value = ''
+    return
+  }
+
+  try {
+    const parsed = JSON.parse(raw)
+    analysisObservation.value = String(parsed?.text || '')
+    analysisObservationSavedAt.value = String(parsed?.savedAtLabel || '')
+    analysisObservationOpen.value = false
+  } catch {
+    analysisObservation.value = ''
+    analysisObservationSavedAt.value = ''
+    analysisObservationOpen.value = false
+  }
+}
+
+function resetVitalFilters() {
+  vitalDateFilter.value = ''
+  vitalSignFilter.value = 'all'
+}
+
+function resetAnalysisFilters() {
+  analysisDateFilter.value = ''
+  analysisTypeFilter.value = 'all'
+}
+
+function saveAnalysisObservation() {
+  const text = String(analysisObservation.value || '').trim()
+
+  if (!text) {
+    analysisObservationMessageType.value = 'warning'
+    analysisObservationMessage.value = "Ecrivez une observation avant de l'enregistrer."
+    return
+  }
+
+  const now = new Date()
+  const savedAtLabel = now.toLocaleString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(
+      analysisObservationStorageKey.value,
+      JSON.stringify({
+        text,
+        savedAt: now.toISOString(),
+        savedAtLabel
+      })
+    )
+  }
+
+  analysisObservation.value = text
+  analysisObservationSavedAt.value = savedAtLabel
+  analysisObservationMessageType.value = 'success'
+  analysisObservationMessage.value = 'Observation generale enregistree.'
+  analysisObservationOpen.value = false
+}
+
+function clearAnalysisObservation() {
+  analysisObservation.value = ''
+  analysisObservationSavedAt.value = ''
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem(analysisObservationStorageKey.value)
+  }
+
+  analysisObservationMessageType.value = 'success'
+  analysisObservationMessage.value = 'Observation effacee.'
+  analysisObservationOpen.value = false
+}
+
+watch(
+  () => props.patient?.id,
+  () => {
+    loadAnalysisObservation()
+  },
+  { immediate: true }
+)
 </script>

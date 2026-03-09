@@ -316,6 +316,7 @@ export function groupVitalsHistory(rows) {
       return true
     })
     .map((row) => ({
+      isoDate: String(row?.measured_at || '').slice(0, 10),
       date: formatDateShort(row?.measured_at),
       heartRate: row?.heart_rate ? `${Math.round(Number(row.heart_rate))} bpm` : '--',
       bloodPressure: row?.systolic_pressure
@@ -342,11 +343,13 @@ export function mapAnalysis(item) {
         : 'bg-[#d7f5df] text-[#11a84d]'
 
   return {
+    type: item?.analysis_type || 'Autre',
     name: [item?.analysis_type, item?.analysis_result].filter(Boolean).join(' - ') || 'Analyse',
     value,
     range: 'Plage normale : a verifier',
     status,
     badgeClass,
+    isoDate: String(item?.analysis_date || '').slice(0, 10),
     date: formatDateNumeric(item?.analysis_date)
   }
 }
