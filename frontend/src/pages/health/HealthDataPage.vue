@@ -21,7 +21,7 @@
           :class="activeTab === 'labs' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-50'"
           @click="activeTab = 'labs'"
         >
-          Analyses biologiques
+          Analyse medical
         </button>
         <button
           type="button"
@@ -99,10 +99,12 @@ import api from "@/services/api";
 import TabSignesVitaux from "@/components/health/TabSignesVitaux.vue";
 import TabAnalyseBiologique from "@/components/health/TabAnalyseBiologique.vue";
 import TabTraitements from "@/components/health/TabTraitements.vue";
+import { useNotificationsStore } from "@/stores/notifications";
 
 // Refs vers les composants enfants pour appeler leurs methodes exposees.
 const vitalsTab = ref(null);
 const labsTab = ref(null);
+const notifications = useNotificationsStore();
 
 const activeTab = ref("vitals");
 
@@ -192,10 +194,11 @@ function assurerSuiviJour(dayKey) {
 }
 
 async function chargerDonneesSante() {
-  const res = await api.get("/health-data/overview", { params: { days: 7 } });
-  const data = res?.data?.data ?? {};
-  const treatmentHistoryRes = await api.get("/health-data/treatment-checks", { params: { days: 90 } });
-  const treatmentHistoryData = Array.isArray(treatmentHistoryRes?.data?.data) ? treatmentHistoryRes.data.data : [];
+  try {
+    const res = await api.get("/health-data/overview", { params: { days: 7 } });
+    const data = res?.data?.data ?? {};
+    const treatmentHistoryRes = await api.get("/health-data/treatment-checks", { params: { days: 90 } });
+    const treatmentHistoryData = Array.isArray(treatmentHistoryRes?.data?.data) ? treatmentHistoryRes.data.data : [];
 
   latestVital.value = data.latest_vitals ?? null;
   analyses.value = Array.isArray(data.lab_results)
@@ -236,19 +239,23 @@ async function chargerDonneesSante() {
 
   for (const day of treatmentDays.value) assurerSuiviJour(day.key);
 
-  const allTreatmentChecks = [
-    ...(Array.isArray(data.treatment_checks) ? data.treatment_checks : []),
-    ...treatmentHistoryData,
-  ];
+    const allTreatmentChecks = [
+      ...(Array.isArray(data.treatment_checks) ? data.treatment_checks : []),
+      ...treatmentHistoryData,
+    ];
 
-  if (allTreatmentChecks.length) {
-    for (const item of allTreatmentChecks) {
-      assurerSuiviJour(item.check_date);
-      treatmentChecks[item.check_date][item.medication_key] = Boolean(item.taken);
-      if (item.medication_key && !String(item.medication_key).includes("__dose_")) {
-        treatmentChecks[item.check_date][construireClePrise(item.medication_key, 1)] = Boolean(item.taken);
+    if (allTreatmentChecks.length) {
+      for (const item of allTreatmentChecks) {
+        assurerSuiviJour(item.check_date);
+        treatmentChecks[item.check_date][item.medication_key] = Boolean(item.taken);
+        if (item.medication_key && !String(item.medication_key).includes("__dose_")) {
+          treatmentChecks[item.check_date][construireClePrise(item.medication_key, 1)] = Boolean(item.taken);
+        }
       }
     }
+  } catch (error) {
+    const message = error?.response?.data?.message || "Erreur lors du chargement des donnees de sante.";
+    notifications.error(message);
   }
 }
 

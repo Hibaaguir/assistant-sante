@@ -111,11 +111,6 @@ export const LinkIcon = createIcon([
   ['path', { d: 'M14 11a5 5 0 0 1 0 7l-1.5 1.5a5 5 0 1 1-7-7L7 11' }]
 ])
 
-export const TrendUpIcon = createIcon([
-  ['path', { d: 'M4 16 10 10l4 4 6-6' }],
-  ['path', { d: 'M14 8h6v6' }]
-])
-
 export const ChevronDownIcon = createIcon([['path', { d: 'm6 9 6 6 6-6' }]])
 
 export const ArrowLeftIcon = createIcon([

@@ -1,4 +1,4 @@
-import { DropIcon, HeartIcon, TrendUpIcon, WaveIcon } from '@/components/doctor/DoctorIcons.js'
+import { DropIcon, HeartIcon, WaveIcon } from '@/components/doctor/DoctorIcons.js'
 
 // ---------------------------------------------------------------------------
 // Formatting helpers
@@ -253,9 +253,6 @@ export function mapPatientDetailResponse(data, fallbackPatient) {
 }
 
 export function buildOverviewStats(latestVitals, profile) {
-  const heightCm = Number(profile?.taille || 0)
-  const weightKg = Number(profile?.poids || 0)
-  const bmi = heightCm > 0 ? weightKg / (heightCm / 100) ** 2 : null
   const heartRate = Number(latestVitals?.heart_rate || 0)
   const systolic = Number(latestVitals?.systolic_pressure || 0)
   const oxygen = Number(latestVitals?.oxygen_saturation || 0)
@@ -292,16 +289,6 @@ export function buildOverviewStats(latestVitals, profile) {
       iconWrapClass: 'bg-[#efe1ff]',
       iconClass: 'text-[#8c30ff]',
       cardClass: 'border-[#dbc1ff] bg-[#fbf7ff]'
-    },
-    {
-      label: 'IMC',
-      value: bmi ? bmi.toFixed(1) : '--',
-      badge: bmi && bmi >= 25 ? 'Attention' : 'Normal',
-      badgeClass: bmi && bmi >= 25 ? 'bg-[#ffe6b8] text-[#d47b00]' : 'bg-[#d7f5df] text-[#11a84d]',
-      icon: TrendUpIcon,
-      iconWrapClass: 'bg-[#d7f3e3]',
-      iconClass: 'text-[#0da84c]',
-      cardClass: 'border-[#aee9c2] bg-[#f3fff7]'
     }
   ]
 }

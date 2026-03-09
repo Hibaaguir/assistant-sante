@@ -52,7 +52,7 @@
     </div>
 
     <div class="mt-5">
-      <p class="text-[14px] font-semibold text-slate-800">Médicament</p>
+      <p class="text-[14px] font-semibold text-slate-800">Traitements</p>
       <div class="mt-3 flex flex-wrap gap-2">
         <button
           v-for="med in treatmentHistoryMedicineOptions"
@@ -240,6 +240,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import api from "@/services/api";
+import { useNotificationsStore } from "@/stores/notifications";
 
 const props = defineProps({
   treatmentMedicines: { type: Array, default: () => [] },
@@ -248,6 +249,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["refresh"]);
+const notifications = useNotificationsStore();
 
 const showTreatmentModal = ref(false);
 const showTreatmentHistory = ref(false);
@@ -436,8 +438,16 @@ async function synchroniserSuiviTraitements() {
 async function basculerPrise(dayKey, med, doseIndex) {
   assurerSuiviJour(dayKey);
   const key = construireClePrise(med.id, doseIndex);
+  const previousValue = Boolean(props.treatmentChecks[dayKey][key]);
   props.treatmentChecks[dayKey][key] = !props.treatmentChecks[dayKey][key];
-  await synchroniserSuiviTraitements();
+  try {
+    await synchroniserSuiviTraitements();
+    notifications.actionUpdated();
+  } catch (error) {
+    props.treatmentChecks[dayKey][key] = previousValue;
+    const message = error?.response?.data?.message || "Erreur lors de la mise a jour.";
+    notifications.error(message);
+  }
 }
 
 // Cette fonction ouvre la modale de suivi pour un jour precis.

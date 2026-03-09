@@ -81,14 +81,16 @@
     </section>
 
     <section v-if="detailTab === 'overview'" class="mt-8 space-y-6">
-      <div class="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+      <div class="grid gap-4 lg:grid-cols-3">
         <article v-for="item in patient.overviewStats" :key="item.label" class="rounded-[20px] border p-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)]" :class="item.cardClass">
-          <div class="flex h-[40px] w-[40px] items-center justify-center rounded-[14px]" :class="item.iconWrapClass">
-            <component :is="item.icon" class="h-[18px] w-[18px]" :class="item.iconClass" />
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex h-[40px] w-[40px] items-center justify-center rounded-[14px]" :class="item.iconWrapClass">
+              <component :is="item.icon" class="h-[18px] w-[18px]" :class="item.iconClass" />
+            </div>
+            <span class="inline-flex rounded-full px-3 py-1 text-[13px] font-medium" :class="item.badgeClass">{{ item.badge }}</span>
           </div>
+          <p class="mt-4 text-[22px] font-bold text-[#031a46]">{{ item.value }}</p>
           <p class="mt-4 text-[16px] font-medium text-[#455572]">{{ item.label }}</p>
-          <p class="mt-5 text-[22px] font-bold text-[#031a46]">{{ item.value }}</p>
-          <span class="mt-3 inline-flex rounded-full px-3 py-1 text-[13px] font-medium" :class="item.badgeClass">{{ item.badge }}</span>
         </article>
       </div>
 
