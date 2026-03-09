@@ -360,10 +360,12 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import IndicateurEtapes from '@/components/journal/IndicateurEtapes.vue'
 import { useJournalStore } from '@/stores/journal'
+import { useNotificationsStore } from '@/stores/notifications'
 
 const route = useRoute()
 const router = useRouter()
 const store = useJournalStore()
+const notifications = useNotificationsStore()
 const editEntryId = computed(() => String(route.query.edit || ''))
 const isEditMode = computed(() => Boolean(editEntryId.value))
 
@@ -513,6 +515,7 @@ const ajouterRepas = () => {
   mealDraft.label = ''
   mealDraft.calories = null
   form.selectedMeal = ''
+  notifications.actionAdded()
 }
 
 const mealTypeLabel = (type) => {
@@ -521,6 +524,7 @@ const mealTypeLabel = (type) => {
 
 const supprimerRepas = (index) => {
   form.meals.splice(index, 1)
+  notifications.actionDeleted()
 }
 
 const ajusterCafeine = (delta) => {
@@ -560,6 +564,7 @@ const gererSelectionActivite = () => {
 const annulerNouvelleActivite = () => {
   showNewActivityForm.value = false
   newActivityName.value = ''
+  notifications.actionCanceled()
 }
 
 const ajouterNouvelleActivite = () => {
@@ -571,6 +576,7 @@ const ajouterNouvelleActivite = () => {
   form.activityType = name
   showNewActivityForm.value = false
   newActivityName.value = ''
+  notifications.actionAdded()
 }
 
 const basculerTabac = () => {
@@ -637,19 +643,23 @@ const enregistrer = async () => {
     }
 
     await store.ajouterEntree(payload)
+    notifications.actionAdded()
     router.push({ name: 'journal-home' })
   } catch (error) {
     console.error('Journal save error:', error)
     if (error?.response?.status === 422 && error?.response?.data?.errors) {
       const firstError = Object.values(error.response.data.errors)?.[0]
       saveError.value = Array.isArray(firstError) ? firstError[0] : 'Validation invalide.'
+      notifications.warning(saveError.value)
       return
     }
     if (error?.response?.status === 401) {
       saveError.value = 'Session expiree. Reconnectez-vous.'
+      notifications.error(saveError.value)
       return
     }
     saveError.value = "Erreur lors de l'enregistrement du journal."
+    notifications.error(saveError.value)
   }
 }
 </script>

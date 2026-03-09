@@ -166,19 +166,34 @@
       </div>
     </div>
   </div>
+
+  <ConfirmDialog
+    :open="showDeleteConfirm"
+    title="Supprimer l'analyse"
+    :message="deleteMessage"
+    confirm-label="Supprimer"
+    cancel-label="Annuler"
+    @cancel="cancelDelete"
+    @confirm="confirmDelete"
+  />
 </template>
 
 <script setup>
 import { computed, reactive, ref } from "vue";
 import api from "@/services/api";
+import { useNotificationsStore } from "@/stores/notifications";
+import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 
 const props = defineProps({
   analyses: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(["refresh"]);
+const notifications = useNotificationsStore();
 
 const showAnalysisModal = ref(false);
+const showDeleteConfirm = ref(false);
+const pendingDeleteItem = ref(null);
 const editingAnalysisId = ref(null);
 const expandedAnalysisResultIndex = ref(0);
 const analysisError = ref("");
@@ -289,6 +304,10 @@ const filteredAnalyses = computed(() => {
 });
 const analysisModalTitle = computed(() => (editingAnalysisId.value ? "Modifier une analyse" : "Ajouter une analyse"));
 const analysisSubmitLabel = computed(() => (editingAnalysisId.value ? "Mettre à jour" : "Enregistrer"));
+const deleteMessage = computed(() => {
+  const name = pendingDeleteItem.value?.name ? `"${pendingDeleteItem.value.name}"` : "cet element";
+  return `Cette action est definitive. Voulez-vous supprimer ${name} ?`;
+});
 
 // Cette fonction convertit une valeur en nombre ou renvoie null.
 function convertirNombreOuNull(value) {
@@ -406,20 +425,27 @@ async function enregistrerAnalyse() {
     return;
   }
 
-  if (editingAnalysisId.value) {
-    await api.put(`/health-data/labs/${editingAnalysisId.value}`, validRows[0]);
-  } else {
-    await Promise.all(validRows.map((payload) => api.post("/health-data/labs", payload)));
-    // On reset les filtres pour afficher immediatement les nouvelles analyses ajoutees.
-    labsFilterType.value = "";
-    labsFilterDate.value = "";
-    labsFilterQuery.value = "";
-  }
+  try {
+    if (editingAnalysisId.value) {
+      await api.put(`/health-data/labs/${editingAnalysisId.value}`, validRows[0]);
+      notifications.actionUpdated();
+    } else {
+      await Promise.all(validRows.map((payload) => api.post("/health-data/labs", payload)));
+      notifications.actionAdded();
+      // On reset les filtres pour afficher immediatement les nouvelles analyses ajoutees.
+      labsFilterType.value = "";
+      labsFilterDate.value = "";
+      labsFilterQuery.value = "";
+    }
 
-  editingAnalysisId.value = null;
-  reinitialiserFormulaireAnalyse();
-  showAnalysisModal.value = false;
-  emit("refresh");
+    editingAnalysisId.value = null;
+    reinitialiserFormulaireAnalyse();
+    showAnalysisModal.value = false;
+    emit("refresh");
+  } catch (error) {
+    const message = error?.response?.data?.message || "Erreur lors de l'enregistrement.";
+    notifications.error(message);
+  }
 }
 
 // Cette fonction pre-remplit le formulaire pour modifier une analyse.
@@ -441,10 +467,29 @@ function ouvrirEditionAnalyse(item) {
 
 // Cette fonction supprime une analyse apres confirmation utilisateur.
 async function supprimerAnalyse(item) {
-  const ok = window.confirm(`Supprimer l'analyse "${item.name}" ?`);
-  if (!ok) return;
-  await api.delete(`/health-data/labs/${item.id}`);
-  emit("refresh");
+  pendingDeleteItem.value = item;
+  showDeleteConfirm.value = true;
+}
+
+function cancelDelete() {
+  pendingDeleteItem.value = null;
+  showDeleteConfirm.value = false;
+  notifications.actionCanceled();
+}
+
+async function confirmDelete() {
+  if (!pendingDeleteItem.value?.id) return;
+  try {
+    await api.delete(`/health-data/labs/${pendingDeleteItem.value.id}`);
+    notifications.actionDeleted();
+    emit("refresh");
+  } catch (error) {
+    const message = error?.response?.data?.message || "Erreur lors de la suppression.";
+    notifications.error(message);
+  } finally {
+    pendingDeleteItem.value = null;
+    showDeleteConfirm.value = false;
+  }
 }
 
 // Cette methode est exposee pour que le parent puisse ouvrir la modale d'ajout.

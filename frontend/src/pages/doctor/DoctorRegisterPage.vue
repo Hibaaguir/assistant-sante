@@ -54,10 +54,12 @@ import api from "@/services/api";
 import { computed, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { useNotificationsStore } from "@/stores/notifications";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const notifications = useNotificationsStore();
 
 const form = reactive({
   email: String(route.query.email || "").trim(),
@@ -116,6 +118,7 @@ async function submit() {
 
     serverMessage.value = res?.data?.message || "Compte medecin cree avec succes.";
     messageType.value = "success";
+    notifications.actionAdded();
     setTimeout(() => router.push("/main/dashboard"), 300);
   } catch (err) {
     messageType.value = "error";
@@ -126,8 +129,10 @@ async function submit() {
       errors.password = Array.isArray(data.errors.password) ? data.errors.password[0] : "";
       errors.specialite = Array.isArray(data.errors.specialite) ? data.errors.specialite[0] : "";
       serverMessage.value = "Veuillez corriger les erreurs du formulaire medecin.";
+      notifications.warning(serverMessage.value);
     } else {
       serverMessage.value = data?.message || "Erreur lors de la creation du compte medecin.";
+      notifications.error(serverMessage.value);
     }
   } finally {
     loading.value = false;

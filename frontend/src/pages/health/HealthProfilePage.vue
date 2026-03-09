@@ -12,6 +12,26 @@
       </div>
     </header>
 
+    <div v-if="notifications.items.length" class="mb-4 space-y-2">
+      <article
+        v-for="toast in notifications.items"
+        :key="toast.id"
+        class="rounded-xl border px-4 py-3 shadow-sm"
+        :class="toastTone(toast.type).card"
+      >
+        <div class="flex items-center justify-between gap-3">
+          <p class="min-w-0 text-[16px] font-medium leading-6" :class="toastTone(toast.type).text">
+            {{ toast.message }}
+          </p>
+          <button type="button" class="text-slate-400 hover:text-slate-600" @click="notifications.remove(toast.id)" aria-label="Fermer la notification">
+            <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="m6 6 12 12M18 6 6 18" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+      </article>
+    </div>
+
     <div v-if="loading" class="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
       Chargement du profil...
     </div>
@@ -282,7 +302,7 @@
                 <button type="button" class="h-10 rounded-lg bg-emerald-600 text-sm font-medium text-white" @click="saveTreatmentDraft">
                   {{ editingTreatmentIndex > -1 ? "Mettre à jour" : "Ajouter" }}
                 </button>
-                <button type="button" class="h-10 rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-800" @click="cancelTreatmentEdit">Annuler</button>
+                <button type="button" class="h-10 rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-800" @click="cancelTreatmentEditWithNotice">Annuler</button>
               </div>
             </div>
 
@@ -371,6 +391,7 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import api from "@/services/api";
 import HealthFieldRow from "@/components/health/HealthFieldRow.vue";
+import { useNotificationsStore } from "@/stores/notifications";
 
 /*
   Cette page affiche et edite le profil sante utilisateur.
@@ -382,6 +403,7 @@ import HealthFieldRow from "@/components/health/HealthFieldRow.vue";
 // State principal de la page.
 const router = useRouter();
 const authStore = useAuthStore();
+const notifications = useNotificationsStore();
 const loading = ref(true);
 const error = ref("");
 const doctorEmailError = ref("");
@@ -553,6 +575,13 @@ function treatmentsSummary(value) {
   return labels.length ? labels.join(", ") : `${value.length} traitement(s)`;
 }
 
+function toastTone(type) {
+  if (type === "success") return { card: "border-emerald-300 bg-emerald-50", text: "text-emerald-700" };
+  if (type === "error") return { card: "border-rose-300 bg-rose-50", text: "text-rose-700" };
+  if (type === "warning") return { card: "border-amber-300 bg-amber-50", text: "text-amber-700" };
+  return { card: "border-blue-300 bg-blue-50", text: "text-blue-700" };
+}
+
 function formatDateWithSlashes(value) {
   const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
   if (digits.length <= 2) return digits;
@@ -629,8 +658,14 @@ function cancelTreatmentEdit() {
   resetTreatmentDraft();
 }
 
+function cancelTreatmentEditWithNotice() {
+  cancelTreatmentEdit();
+  notifications.actionCanceled();
+}
+
 function saveTreatmentDraft() {
   if (!treatmentDraft.type || !treatmentDraft.name) return;
+  const isUpdate = editingTreatmentIndex.value > -1;
 
   const nextTreatment = {
     type: treatmentDraft.type,
@@ -662,11 +697,14 @@ function saveTreatmentDraft() {
   }
 
   cancelTreatmentEdit();
+  if (isUpdate) notifications.actionUpdated();
+  else notifications.actionAdded();
 }
 
 function removeTreatment(index) {
   if (!Array.isArray(draft.traitements)) return;
   draft.traitements.splice(index, 1);
+  notifications.actionDeleted();
 }
 
 // Synchronise les donnees du profil vers le draft editable.
@@ -708,6 +746,7 @@ function startEdit(section) {
 function cancelEdit(section) {
   syncDraftFromProfil();
   editing[section] = false;
+  notifications.actionCanceled();
 }
 
 // Construit le payload API final avec normalisation des champs.
@@ -754,6 +793,7 @@ async function saveSection(section) {
     Object.assign(user, response?.data?.user || user);
     syncDraftFromProfil();
     editing[section] = false;
+    notifications.actionUpdated();
   } catch (e) {
     if (e?.response?.status === 401) {
       authStore.clearToken();
@@ -766,12 +806,15 @@ async function saveSection(section) {
         doctorEmailError.value = Array.isArray(doctorFieldError)
           ? doctorFieldError[0]
           : "Email medecin invalide.";
+        notifications.warning(doctorEmailError.value);
         return;
       }
       const firstError = Object.values(e.response.data.errors)[0];
       error.value = Array.isArray(firstError) ? firstError[0] : "Validation invalide.";
+      notifications.warning(error.value);
     } else {
       error.value = "Erreur lors de la sauvegarde du profil.";
+      notifications.error(error.value);
     }
   } finally {
     savingSection.value = "";

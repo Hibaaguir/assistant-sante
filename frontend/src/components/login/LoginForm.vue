@@ -106,9 +106,11 @@ import api from "@/services/api";
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { useNotificationsStore } from "@/stores/notifications";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const notifications = useNotificationsStore();
 
 const form = reactive({
   role: "user",
@@ -184,6 +186,7 @@ async function submit() {
 
     serverMessage.value = res?.data?.message || "Connexion reussie.";
     messageType.value = "success";
+    notifications.success("Connexion reussie.");
 
     setTimeout(() => router.push(res?.data?.redirect_to || "/main/dashboard"), 250);
   } catch (err) {
@@ -194,6 +197,7 @@ async function submit() {
 
     if (!err?.response) {
       serverMessage.value = "Probleme reseau. Reessayez.";
+      notifications.error(serverMessage.value);
       return;
     }
 
@@ -201,16 +205,19 @@ async function submit() {
       serverMessage.value = INVALID_CREDENTIALS_MESSAGE;
       errors.email = INVALID_CREDENTIALS_MESSAGE;
       errors.password = INVALID_CREDENTIALS_MESSAGE;
+      notifications.warning(serverMessage.value);
       return;
     }
 
     if (status === 422 && data?.errors) {
       mapFieldValidationErrors(data.errors);
       serverMessage.value = "Veuillez corriger les erreurs du formulaire.";
+      notifications.warning(serverMessage.value);
       return;
     }
 
     serverMessage.value = data?.message || "Erreur lors de la connexion.";
+    notifications.error(serverMessage.value);
   } finally {
     loading.value = false;
   }

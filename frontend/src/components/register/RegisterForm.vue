@@ -94,6 +94,11 @@
                 :class="errors.password ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
               />
             </div>
+            <div class="mt-2 space-y-1 text-sm">
+              <p :class="passwordHasMinLength ? 'text-emerald-600' : 'text-gray-400'">Au moins 8 caracteres</p>
+              <p :class="passwordHasLetter ? 'text-emerald-600' : 'text-gray-400'">Au moins une lettre</p>
+              <p :class="passwordHasNumber ? 'text-emerald-600' : 'text-gray-400'">Au moins un chiffre</p>
+            </div>
             <p v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password }}</p>
           </div>
 
@@ -139,12 +144,14 @@
 
 <script setup>
 import api from "@/services/api";
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { useNotificationsStore } from "@/stores/notifications";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const notifications = useNotificationsStore();
 
 const form = reactive({
   name: "",
@@ -164,6 +171,9 @@ const errors = reactive({
 const loading = ref(false);
 const serverMessage = ref("");
 const messageType = ref("success");
+const passwordHasMinLength = computed(() => form.password.length >= 8);
+const passwordHasLetter = computed(() => /[a-zA-Z]/.test(form.password));
+const passwordHasNumber = computed(() => /[0-9]/.test(form.password));
 
 function clearErrors() {
   errors.name = "";
@@ -181,6 +191,11 @@ function validatePassword(password) {
   if (!/[a-zA-Z]/.test(password)) return "Le mot de passe doit contenir au moins une lettre.";
   if (!/[0-9]/.test(password)) return "Le mot de passe doit contenir au moins un chiffre.";
   return "";
+}
+
+function firstMessage(value) {
+  if (Array.isArray(value)) return String(value[0] || "");
+  return typeof value === "string" ? value : "";
 }
 
 function validatePasswordRequirements() {
@@ -213,6 +228,22 @@ function validateDateFormat() {
     errors.date_of_birth = "Format invalide. Utilisez JJ/MM/AAAA.";
     return;
   }
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const year = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  const isInvalidDate =
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31 ||
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day;
+  if (isInvalidDate) {
+    errors.date_of_birth = "Date invalide. Utilisez JJ/MM/AAAA.";
+    return;
+  }
   errors.date_of_birth = "";
 }
 
@@ -238,6 +269,9 @@ async function submit() {
   if (!isValidEmail(form.email)) {
     errors.email = "Format d'email invalide.";
   }
+  if (form.name.trim().length < 3) {
+    errors.name = "Le nom d'utilisateur doit contenir au moins 3 caracteres.";
+  }
 
   const passwordError = validatePassword(form.password);
   if (passwordError) errors.password = passwordError;
@@ -260,10 +294,33 @@ async function submit() {
 
     serverMessage.value = res?.data?.message || "Compte cree avec succes.";
     messageType.value = "success";
+    notifications.actionAdded();
     setTimeout(() => router.push(res?.data?.redirect_to || "/profil-sante"), 500);
   } catch (err) {
     messageType.value = "error";
-    serverMessage.value = err?.response?.data?.message || "Une erreur est survenue. Veuillez reessayer.";
+    const status = err?.response?.status;
+    const data = err?.response?.data || {};
+
+    if (status === 422 && data?.errors) {
+      errors.name = firstMessage(data.errors.name);
+      errors.email = firstMessage(data.errors.email);
+      errors.date_of_birth = firstMessage(data.errors.date_of_birth);
+      errors.password = firstMessage(data.errors.password);
+
+      serverMessage.value = data.message || "Veuillez corriger les erreurs du formulaire.";
+      notifications.warning(serverMessage.value);
+      return;
+    }
+
+    if (status === 409 && data?.errors?.email) {
+      errors.email = firstMessage(data.errors.email);
+      serverMessage.value = data.message || "Cet email est deja utilise.";
+      notifications.warning(serverMessage.value);
+      return;
+    }
+
+    serverMessage.value = data?.message || "Une erreur est survenue. Veuillez reessayer.";
+    notifications.error(serverMessage.value);
   } finally {
     loading.value = false;
   }

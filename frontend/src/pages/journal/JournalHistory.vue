@@ -20,8 +20,8 @@
 
     <p
       v-if="noticeMessage"
-      class="mb-4 rounded-xl border px-4 py-3 text-sm font-medium"
-      :class="noticeTone === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700'"
+      class="mb-4 rounded-xl border px-4 py-3 text-[15px] font-semibold"
+      :class="noticeTone === 'success' ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-amber-300 bg-amber-50 text-amber-700'"
     >
       {{ noticeMessage }}
     </p>
@@ -40,7 +40,7 @@
         :editing="false"
         :filter-type="store.filter.type"
         @edit="router.push({ name: 'journal-wizard', query: { edit: entry.id } })"
-        @delete="store.supprimerEntree(entry.id)"
+        @delete="handleDelete(entry.id)"
       />
     </div>
 
@@ -74,6 +74,16 @@
       @apply="appliquerFiltre"
       @reset="reinitialiserFiltre"
     />
+
+    <ConfirmDialog
+      :open="showDeleteConfirm"
+      title="Supprimer l'entree"
+      message="Cette action est definitive. Voulez-vous continuer ?"
+      confirm-label="Supprimer"
+      cancel-label="Annuler"
+      @cancel="cancelDelete"
+      @confirm="confirmDelete"
+    />
   </div>
 </template>
 
@@ -88,12 +98,17 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ModalFiltre from '@/components/journal/ModalFiltre.vue'
 import CarteEntreeHistorique from '@/components/journal/CarteEntreeHistorique.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import { useJournalStore } from '@/stores/journal'
+import { useNotificationsStore } from '@/stores/notifications'
 
 const route = useRoute()
 const router = useRouter()
 const store = useJournalStore()
+const notifications = useNotificationsStore()
 const showFilter = ref(false)
+const showDeleteConfirm = ref(false)
+const pendingDeleteId = ref(null)
 
 onMounted(async () => {
   await store.initialiser()
@@ -133,5 +148,30 @@ const appliquerFiltre = (nextFilter) => {
 const reinitialiserFiltre = () => {
   store.reinitialiserFiltre()
   showFilter.value = false
+}
+
+const handleDelete = async (id) => {
+  pendingDeleteId.value = id
+  showDeleteConfirm.value = true
+}
+
+const cancelDelete = () => {
+  pendingDeleteId.value = null
+  showDeleteConfirm.value = false
+  notifications.actionCanceled()
+}
+
+const confirmDelete = async () => {
+  if (!pendingDeleteId.value) return
+  try {
+    await store.supprimerEntree(pendingDeleteId.value);
+    notifications.actionDeleted();
+  } catch (error) {
+    const message = error?.response?.data?.message || "Erreur lors de la suppression.";
+    notifications.error(message);
+  } finally {
+    pendingDeleteId.value = null
+    showDeleteConfirm.value = false
+  }
 }
 </script>

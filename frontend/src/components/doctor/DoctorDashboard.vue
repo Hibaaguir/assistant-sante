@@ -82,6 +82,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useNotificationsStore } from '@/stores/notifications'
 import api from '@/services/api'
 import { BellIcon, LogoutIcon, UserPlusIcon, UsersIcon } from '@/components/doctor/DoctorIcons.js'
 import { mapInvitation, mapPatient, mapPatientDetailResponse } from '@/components/doctor/doctorUtils.js'
@@ -91,6 +92,7 @@ import DoctorPatientList from '@/components/doctor/DoctorPatientList.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const notifications = useNotificationsStore()
 
 // ---------------------------------------------------------------------------
 // Reactive state
@@ -112,7 +114,7 @@ const selectedPatient = ref(null)
 
 const headerTabs = computed(() => [
   { key: 'patients', label: 'Mes Patients', count: patients.value.length, icon: UsersIcon },
-  { key: 'invitations', label: 'Invitations', count: invitations.value.length, icon: UserPlusIcon }
+  { key: 'invitations', label: "Invitations d'ajout", count: invitations.value.length, icon: UserPlusIcon }
 ])
 
 const totalAlerts = computed(() =>
@@ -136,6 +138,7 @@ async function loadDoctorData() {
     patients.value = (Array.isArray(patientsRes?.data?.data) ? patientsRes.data.data : []).map(mapPatient)
   } catch (_) {
     errorMessage.value = "Impossible de charger les donnees medecin pour le moment."
+    notifications.error(errorMessage.value)
     invitations.value = []
     processedInvitations.value = []
     patients.value = []
@@ -159,6 +162,7 @@ async function openPatient(patient) {
     selectedPatient.value = detail
   } catch (_) {
     errorMessage.value = "Impossible de charger le detail du patient pour le moment."
+    notifications.error(errorMessage.value)
   }
 }
 
@@ -176,8 +180,10 @@ async function acceptInvitation(invitationId) {
   try {
     await api.post(`/doctor-invitations/${invitationId}/accept`)
     await loadDoctorData()
+    notifications.actionUpdated()
   } catch (_) {
     errorMessage.value = "Impossible d'accepter cette invitation pour le moment."
+    notifications.error(errorMessage.value)
   } finally {
     actionInvitationId.value = null
   }
@@ -189,8 +195,10 @@ async function rejectInvitation(invitationId) {
   try {
     await api.post(`/doctor-invitations/${invitationId}/reject`)
     await loadDoctorData()
+    notifications.actionCanceled()
   } catch (_) {
     errorMessage.value = "Impossible de refuser cette invitation pour le moment."
+    notifications.error(errorMessage.value)
   } finally {
     actionInvitationId.value = null
   }

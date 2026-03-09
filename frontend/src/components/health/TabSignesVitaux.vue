@@ -238,6 +238,7 @@
 <script setup>
 import { computed, reactive, ref } from "vue";
 import api from "@/services/api";
+import { useNotificationsStore } from "@/stores/notifications";
 
 const props = defineProps({
   latestVital: { type: Object, default: null },
@@ -254,6 +255,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["refresh"]);
+const notifications = useNotificationsStore();
 
 const showVitalsModal = ref(false);
 const vitalError = ref("");
@@ -471,16 +473,22 @@ async function enregistrerMesure() {
     return;
   }
 
-  await api.post("/health-data/vitals", {
-    measured_at: measuredAt,
-    heart_rate: heartRate,
-    systolic_pressure: systolic,
-    diastolic_pressure: diastolic,
-    oxygen_saturation: oxygen,
-  });
-  reinitialiserFormulaireVital();
-  showVitalsModal.value = false;
-  emit("refresh");
+  try {
+    await api.post("/health-data/vitals", {
+      measured_at: measuredAt,
+      heart_rate: heartRate,
+      systolic_pressure: systolic,
+      diastolic_pressure: diastolic,
+      oxygen_saturation: oxygen,
+    });
+    notifications.actionAdded();
+    reinitialiserFormulaireVital();
+    showVitalsModal.value = false;
+    emit("refresh");
+  } catch (error) {
+    const message = error?.response?.data?.message || "Erreur lors de l'enregistrement.";
+    notifications.error(message);
+  }
 }
 
 // Cette methode est exposee pour que le parent puisse ouvrir la modale d'ajout.

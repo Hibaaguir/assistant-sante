@@ -34,7 +34,7 @@ class AuthController extends Controller
                     'max:255',
                     Rule::unique('users', 'email')->where(fn ($query) => $query->where('role', 'user')),
                 ],
-                'date_of_birth' => [$this->dateRule()],
+                'date_of_birth' => ['required', 'date_format:Y-m-d', $this->dateRule()],
                 'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
             ], $this->baseMessages());
 
@@ -302,6 +302,7 @@ class AuthController extends Controller
             'email.required' => "L'adresse email est obligatoire.",
             'email.unique' => 'Cet email est deja utilise pour ce role.',
             'date_of_birth.required' => 'La date de naissance est obligatoire.',
+            'date_of_birth.date_format' => 'Format de date invalide. Utilisez YYYY-MM-DD.',
             'password.required' => 'Le mot de passe est obligatoire.',
         ];
     }
@@ -309,7 +310,23 @@ class AuthController extends Controller
     private function dateRule(): \Closure
     {
         return function ($attribute, $value, $fail) {
-            $birthDate = Carbon::parse($value);
+            try {
+                $birthDate = Carbon::createFromFormat('Y-m-d', (string) $value);
+            } catch (\Throwable) {
+                $fail('Date de naissance invalide.');
+                return;
+            }
+
+            if (! $birthDate || $birthDate->format('Y-m-d') !== $value) {
+                $fail('Date de naissance invalide.');
+                return;
+            }
+
+            if ($birthDate->isFuture()) {
+                $fail('La date de naissance ne peut pas etre dans le futur.');
+                return;
+            }
+
             $age = $birthDate->diffInYears(now());
 
             if ($age < 18) {
