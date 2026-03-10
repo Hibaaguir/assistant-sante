@@ -306,7 +306,7 @@ const analysisModalTitle = computed(() => (editingAnalysisId.value ? "Modifier u
 const analysisSubmitLabel = computed(() => (editingAnalysisId.value ? "Mettre à jour" : "Enregistrer"));
 const deleteMessage = computed(() => {
   const name = pendingDeleteItem.value?.name ? `"${pendingDeleteItem.value.name}"` : "cet element";
-  return `Cette action est definitive. Voulez-vous supprimer ${name} ?`;
+  return `Vous êtes sur le point de supprimer ${name}. Cette action est irreversible.`;
 });
 
 // Cette fonction convertit une valeur en nombre ou renvoie null.
@@ -474,7 +474,6 @@ async function supprimerAnalyse(item) {
 function cancelDelete() {
   pendingDeleteItem.value = null;
   showDeleteConfirm.value = false;
-  notifications.actionCanceled();
 }
 
 async function confirmDelete() {

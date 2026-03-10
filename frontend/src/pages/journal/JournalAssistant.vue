@@ -4,6 +4,7 @@
       <h2 class="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">Nouvelle entrée</h2>
       <p class="mt-2 text-base text-slate-600">Remplissez votre journal quotidien</p>
     </div>
+    <InlineNotifications />
 
     <div class="mt-5 rounded-2xl border border-slate-300 bg-slate-100 p-4 sm:p-6">
       <IndicateurEtapes :current="step" :steps="steps" />
@@ -352,6 +353,16 @@
     <p v-if="saveError" class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
       {{ saveError }}
     </p>
+
+    <ConfirmDialog
+      :open="confirmDeleteMealOpen"
+      title="Confirmer la suppression"
+      message="Voulez-vous supprimer ce repas ?"
+      confirm-label="Supprimer"
+      cancel-label="Annuler"
+      @confirm="confirmSupprimerRepas"
+      @cancel="cancelSupprimerRepas"
+    />
   </div>
 </template>
 
@@ -361,6 +372,8 @@ import { useRoute, useRouter } from 'vue-router'
 import IndicateurEtapes from '@/components/journal/IndicateurEtapes.vue'
 import { useJournalStore } from '@/stores/journal'
 import { useNotificationsStore } from '@/stores/notifications'
+import InlineNotifications from '@/components/ui/InlineNotifications.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -394,6 +407,8 @@ const STATIC_ENERGY = 7
 const mealDraft = reactive({ label: '', calories: null })
 const showNewActivityForm = ref(false)
 const newActivityName = ref('')
+const confirmDeleteMealOpen = ref(false)
+const pendingDeleteMealIndex = ref(-1)
 
 const form = reactive({
   sleep: 7,
@@ -523,8 +538,23 @@ const mealTypeLabel = (type) => {
 }
 
 const supprimerRepas = (index) => {
+  pendingDeleteMealIndex.value = index
+  confirmDeleteMealOpen.value = true
+}
+
+const confirmSupprimerRepas = () => {
+  const index = pendingDeleteMealIndex.value
+  confirmDeleteMealOpen.value = false
+  pendingDeleteMealIndex.value = -1
+  if (index < 0 || index >= form.meals.length) return
   form.meals.splice(index, 1)
   notifications.actionDeleted()
+}
+
+const cancelSupprimerRepas = () => {
+  confirmDeleteMealOpen.value = false
+  pendingDeleteMealIndex.value = -1
+  notifications.actionCanceled()
 }
 
 const ajusterCafeine = (delta) => {

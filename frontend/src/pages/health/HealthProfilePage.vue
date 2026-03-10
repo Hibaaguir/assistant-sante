@@ -12,32 +12,14 @@
       </div>
     </header>
 
-    <div v-if="notifications.items.length" class="mb-4 space-y-2">
-      <article
-        v-for="toast in notifications.items"
-        :key="toast.id"
-        class="rounded-xl border px-4 py-3 shadow-sm"
-        :class="toastTone(toast.type).card"
-      >
-        <div class="flex items-center justify-between gap-3">
-          <p class="min-w-0 text-[16px] font-medium leading-6" :class="toastTone(toast.type).text">
-            {{ toast.message }}
-          </p>
-          <button type="button" class="text-slate-400 hover:text-slate-600" @click="notifications.remove(toast.id)" aria-label="Fermer la notification">
-            <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="m6 6 12 12M18 6 6 18" stroke-linecap="round" />
-            </svg>
-          </button>
-        </div>
-      </article>
-    </div>
+    <InlineNotifications />
 
     <div v-if="loading" class="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
       Chargement du profil...
     </div>
 
-    <div v-else-if="error" class="rounded-3xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
-      {{ error }}
+    <div v-else-if="loadError" class="rounded-3xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+      {{ loadError }}
     </div>
 
     <div v-else class="grid gap-4 lg:grid-cols-2">
@@ -62,7 +44,12 @@
           <HealthFieldRow label="Poids" :value="profil.poids ? `${profil.poids} kg` : '-'" icon="weight" />
         </div>
 
-        <form v-else class="space-y-4" @submit.prevent="saveSection('base')">
+        <form v-else class="space-y-4" novalidate @submit.prevent="saveSection('base')">
+          <div v-if="sectionErrors.base.form.length" class="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <p v-for="(message, idx) in sectionErrors.base.form" :key="`base-form-error-${idx}`">
+              {{ message }}
+            </p>
+          </div>
           <div>
             <label class="mb-1 block text-sm font-semibold text-slate-900">Nom</label>
             <input :value="user.name || ''" disabled class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base text-slate-700" />
@@ -70,19 +57,40 @@
           <div class="grid gap-3 md:grid-cols-2">
             <div>
               <label class="mb-1 block text-sm font-semibold text-slate-900">Sexe</label>
-              <select v-model="draft.sexe" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base">
+              <select
+                v-model="draft.sexe"
+                class="h-11 w-full rounded-xl border bg-slate-100 px-4 text-base"
+                :class="sectionErrors.base.sexe ? 'border-red-400 focus:border-red-500' : 'border-slate-200'"
+              >
                 <option value="femme">Femme</option>
                 <option value="homme">Homme</option>
               </select>
+              <p v-if="sectionErrors.base.sexe" class="mt-1 text-xs font-medium text-red-600">{{ sectionErrors.base.sexe }}</p>
             </div>
             <div>
               <label class="mb-1 block text-sm font-semibold text-slate-900">Taille (cm)</label>
-              <input v-model="draft.taille" type="number" min="0" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base" />
+              <input
+                v-model="draft.taille"
+                type="number"
+                min="80"
+                max="250"
+                class="h-11 w-full rounded-xl border bg-slate-100 px-4 text-base"
+                :class="sectionErrors.base.taille ? 'border-red-400 focus:border-red-500' : 'border-slate-200'"
+              />
+              <p v-if="sectionErrors.base.taille" class="mt-1 text-xs font-medium text-red-600">{{ sectionErrors.base.taille }}</p>
             </div>
           </div>
           <div>
             <label class="mb-1 block text-sm font-semibold text-slate-900">Poids (kg)</label>
-            <input v-model="draft.poids" type="number" min="0" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base" />
+            <input
+              v-model="draft.poids"
+              type="number"
+              min="35"
+              max="250"
+              class="h-11 w-full rounded-xl border bg-slate-100 px-4 text-base"
+              :class="sectionErrors.base.poids ? 'border-red-400 focus:border-red-500' : 'border-slate-200'"
+            />
+            <p v-if="sectionErrors.base.poids" class="mt-1 text-xs font-medium text-red-600">{{ sectionErrors.base.poids }}</p>
           </div>
           <div class="grid gap-3 md:grid-cols-2">
             <button type="submit" :disabled="savingSection==='base'" class="h-11 rounded-xl bg-[#2563eb] px-5 text-sm font-bold text-white disabled:opacity-60">Enregistrer</button>
@@ -111,7 +119,12 @@
           <HealthFieldRow label="Maladies chroniques" :value="joinList(profil.maladies_chroniques)" icon="shield" />
         </div>
 
-        <form v-else class="space-y-4" @submit.prevent="saveSection('health')">
+        <form v-else class="space-y-4" novalidate @submit.prevent="saveSection('health')">
+          <div v-if="sectionErrors.health.form.length" class="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <p v-for="(message, idx) in sectionErrors.health.form" :key="`health-form-error-${idx}`">
+              {{ message }}
+            </p>
+          </div>
           <div>
             <label class="mb-1 block text-sm font-semibold text-slate-900">Groupe sanguin</label>
             <select v-model="draft.groupe_sanguin" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base">
@@ -120,7 +133,7 @@
           </div>
           <div>
             <label class="mb-1 block text-sm font-semibold text-slate-900">Objectifs</label>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div class="rounded-xl border bg-slate-50 p-3" :class="sectionErrors.health.objectifs ? 'border-red-300' : 'border-slate-200'">
               <div class="flex flex-wrap gap-2">
                 <button
                   v-for="goal in goalOptions"
@@ -134,6 +147,7 @@
                 </button>
               </div>
             </div>
+            <p v-if="sectionErrors.health.objectifs" class="mt-1 text-xs font-medium text-red-600">{{ sectionErrors.health.objectifs }}</p>
           </div>
           <div>
             <label class="mb-1 block text-sm font-semibold text-slate-900">Allergies</label>
@@ -211,7 +225,7 @@
           <HealthFieldRow label="Traitements" :value="treatmentsSummary(profil.traitements)" icon="pill" />
         </div>
 
-        <form v-else class="space-y-4" @submit.prevent="saveSection('habits')">
+        <form v-else class="space-y-4" novalidate @submit.prevent="saveSection('habits')">
           <div class="grid grid-cols-2 gap-3">
             <div class="flex h-14 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3">
               <label class="text-sm font-semibold text-slate-900">Fumeur</label>
@@ -316,7 +330,7 @@
                 </div>
                 <div class="ml-3 flex items-center gap-3">
                   <button type="button" class="text-xs font-medium text-blue-700" @click="openTreatmentEditor(index)">Modifier</button>
-                  <button type="button" class="text-xs font-medium text-red-600" @click="removeTreatment(index)">Retirer</button>
+                  <button type="button" class="text-xs font-medium text-red-600" @click="requestRemoveTreatment(index)">Retirer</button>
                 </div>
               </div>
             </div>
@@ -348,7 +362,7 @@
           <HealthFieldRow label="Email médecin" :value="profil.medecin_email || '-'" icon="stetho" />
         </div>
 
-        <form v-else class="space-y-4" @submit.prevent="saveSection('doctor')">
+        <form v-else class="space-y-4" novalidate @submit.prevent="saveSection('doctor')">
           <div>
             <label class="mb-1 block text-sm font-semibold text-slate-900">Consulte médecin</label>
             <select v-model="draft.consulte_medecin" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base" @change="validateDoctorEmail">
@@ -382,6 +396,16 @@
         </form>
       </section>
     </div>
+
+    <ConfirmDialog
+      :open="confirmDeleteTreatmentOpen"
+      title="Confirmer la suppression"
+      message="Voulez-vous supprimer ce traitement ?"
+      confirm-label="Supprimer"
+      cancel-label="Annuler"
+      @confirm="confirmRemoveTreatment"
+      @cancel="cancelRemoveTreatment"
+    />
   </div>
 </template>
 
@@ -392,6 +416,8 @@ import { useAuthStore } from "@/stores/auth";
 import api from "@/services/api";
 import HealthFieldRow from "@/components/health/HealthFieldRow.vue";
 import { useNotificationsStore } from "@/stores/notifications";
+import InlineNotifications from "@/components/ui/InlineNotifications.vue";
+import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 
 /*
   Cette page affiche et edite le profil sante utilisateur.
@@ -405,11 +431,23 @@ const router = useRouter();
 const authStore = useAuthStore();
 const notifications = useNotificationsStore();
 const loading = ref(true);
-const error = ref("");
+const loadError = ref("");
 const doctorEmailError = ref("");
 const savingSection = ref("");
 const profil = reactive({});
 const user = reactive({});
+const sectionErrors = reactive({
+  base: {
+    sexe: "",
+    taille: "",
+    poids: "",
+    form: [],
+  },
+  health: {
+    objectifs: "",
+    form: [],
+  },
+});
 
 const editing = reactive({
   base: false,
@@ -498,6 +536,8 @@ const selectedDiseaseOption = ref("");
 
 const showTreatmentEditor = ref(false);
 const editingTreatmentIndex = ref(-1);
+const confirmDeleteTreatmentOpen = ref(false);
+const pendingDeleteTreatmentIndex = ref(-1);
 const treatmentDraft = reactive({
   type: "",
   name: "",
@@ -575,12 +615,6 @@ function treatmentsSummary(value) {
   return labels.length ? labels.join(", ") : `${value.length} traitement(s)`;
 }
 
-function toastTone(type) {
-  if (type === "success") return { card: "border-emerald-300 bg-emerald-50", text: "text-emerald-700" };
-  if (type === "error") return { card: "border-rose-300 bg-rose-50", text: "text-rose-700" };
-  if (type === "warning") return { card: "border-amber-300 bg-amber-50", text: "text-amber-700" };
-  return { card: "border-blue-300 bg-blue-50", text: "text-blue-700" };
-}
 
 function formatDateWithSlashes(value) {
   const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
@@ -707,6 +741,25 @@ function removeTreatment(index) {
   notifications.actionDeleted();
 }
 
+function requestRemoveTreatment(index) {
+  pendingDeleteTreatmentIndex.value = index;
+  confirmDeleteTreatmentOpen.value = true;
+}
+
+function cancelRemoveTreatment() {
+  confirmDeleteTreatmentOpen.value = false;
+  pendingDeleteTreatmentIndex.value = -1;
+  notifications.actionCanceled();
+}
+
+function confirmRemoveTreatment() {
+  const index = pendingDeleteTreatmentIndex.value;
+  confirmDeleteTreatmentOpen.value = false;
+  pendingDeleteTreatmentIndex.value = -1;
+  if (index < 0 || !Array.isArray(draft.traitements) || index >= draft.traitements.length) return;
+  removeTreatment(index);
+}
+
 // Synchronise les donnees du profil vers le draft editable.
 function syncDraftFromProfil() {
   draft.sexe = profil.sexe || "";
@@ -739,14 +792,69 @@ function resetEditFlags() {
 
 function startEdit(section) {
   syncDraftFromProfil();
+  clearSectionErrors();
   resetEditFlags();
   editing[section] = true;
 }
 
 function cancelEdit(section) {
   syncDraftFromProfil();
+  clearSectionErrors(section);
   editing[section] = false;
   notifications.actionCanceled();
+}
+
+function clearSectionErrors(section = null) {
+  const clearBase = section === null || section === "base";
+  const clearHealth = section === null || section === "health";
+
+  if (clearBase) {
+    sectionErrors.base.sexe = "";
+    sectionErrors.base.taille = "";
+    sectionErrors.base.poids = "";
+    sectionErrors.base.form = [];
+  }
+
+  if (clearHealth) {
+    sectionErrors.health.objectifs = "";
+    sectionErrors.health.form = [];
+  }
+}
+
+function validateBaseSection() {
+  clearSectionErrors("base");
+
+  if (!draft.sexe) {
+    sectionErrors.base.sexe = "Veuillez selectionner le sexe.";
+  }
+
+  if (draft.taille === "" || draft.taille === null) {
+    sectionErrors.base.taille = "La taille est obligatoire.";
+  }
+
+  if (draft.poids === "" || draft.poids === null) {
+    sectionErrors.base.poids = "Le poids est obligatoire.";
+  }
+
+  const taille = Number(draft.taille);
+  if (sectionErrors.base.taille === "" && (!Number.isFinite(taille) || taille < 80 || taille > 250)) {
+    sectionErrors.base.taille = "La taille doit etre une valeur entre 80 et 250 cm.";
+  }
+
+  const poids = Number(draft.poids);
+  if (sectionErrors.base.poids === "" && (!Number.isFinite(poids) || poids < 35 || poids > 250)) {
+    sectionErrors.base.poids = "Le poids doit etre une valeur entre 35 et 250 kg.";
+  }
+
+  return !sectionErrors.base.sexe && !sectionErrors.base.taille && !sectionErrors.base.poids;
+}
+
+function validateHealthSection() {
+  clearSectionErrors("health");
+  if (!Array.isArray(draft.objectifs) || draft.objectifs.length === 0) {
+    sectionErrors.health.objectifs = "Veuillez selectionner au moins un objectif.";
+  }
+  return !sectionErrors.health.objectifs;
 }
 
 // Construit le payload API final avec normalisation des champs.
@@ -780,13 +888,22 @@ function buildPayload() {
 
 // Sauvegarde d'une section avec gestion des cas d'erreur API.
 async function saveSection(section) {
+  if (section === "base" && !validateBaseSection()) {
+    notifications.warning("Veuillez corriger les champs en erreur.");
+    return;
+  }
+
+  if (section === "health" && !validateHealthSection()) {
+    notifications.warning("Veuillez corriger les champs en erreur.");
+    return;
+  }
+
   if (section === "doctor" && !validateDoctorEmail()) {
-    error.value = "";
     return;
   }
 
   savingSection.value = section;
-  error.value = "";
+  clearSectionErrors(section);
   try {
     const response = await api.post("/profil-sante", buildPayload());
     Object.assign(profil, response?.data?.data || {});
@@ -809,12 +926,52 @@ async function saveSection(section) {
         notifications.warning(doctorEmailError.value);
         return;
       }
-      const firstError = Object.values(e.response.data.errors)[0];
-      error.value = Array.isArray(firstError) ? firstError[0] : "Validation invalide.";
-      notifications.warning(error.value);
+
+      clearSectionErrors();
+      const backendErrors = e.response.data.errors || {};
+      const mappedMessages = [];
+
+      if (backendErrors.sexe) {
+        sectionErrors.base.sexe = "Veuillez selectionner le sexe.";
+        mappedMessages.push(sectionErrors.base.sexe);
+      }
+      if (backendErrors.taille) {
+        sectionErrors.base.taille = "La taille doit etre une valeur entre 80 et 250 cm.";
+        mappedMessages.push(sectionErrors.base.taille);
+      }
+      if (backendErrors.poids) {
+        sectionErrors.base.poids = "Le poids doit etre une valeur entre 35 et 250 kg.";
+        mappedMessages.push(sectionErrors.base.poids);
+      }
+      if (backendErrors.objectifs) {
+        sectionErrors.health.objectifs = "Veuillez selectionner au moins un objectif.";
+        mappedMessages.push(sectionErrors.health.objectifs);
+      }
+
+      const fallbackMessages = Object.values(backendErrors)
+        .flatMap((entry) => (Array.isArray(entry) ? entry : [entry]))
+        .filter(Boolean)
+        .map((entry) => String(entry));
+      const finalMessages = mappedMessages.length ? [...new Set(mappedMessages)] : fallbackMessages;
+
+      if (sectionErrors[section]) {
+        sectionErrors[section].form = finalMessages.length ? finalMessages : ["Validation invalide."];
+      }
+
+      const hasBaseErrors = Boolean(sectionErrors.base.sexe || sectionErrors.base.taille || sectionErrors.base.poids);
+      const hasHealthErrors = Boolean(sectionErrors.health.objectifs);
+
+      if (hasBaseErrors && !editing.base) {
+        resetEditFlags();
+        editing.base = true;
+      } else if (hasHealthErrors && !editing.health) {
+        resetEditFlags();
+        editing.health = true;
+      }
+
+      notifications.warning("Veuillez corriger les champs en erreur.");
     } else {
-      error.value = "Erreur lors de la sauvegarde du profil.";
-      notifications.error(error.value);
+      notifications.error("Erreur lors de la sauvegarde du profil.");
     }
   } finally {
     savingSection.value = "";
@@ -834,7 +991,7 @@ onMounted(async () => {
       router.replace({ name: "register" });
       return;
     }
-    error.value = "Impossible de charger les données du profil.";
+    loadError.value = "Impossible de charger les données du profil.";
   } finally {
     loading.value = false;
   }
