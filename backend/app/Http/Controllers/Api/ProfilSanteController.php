@@ -66,12 +66,20 @@ class ProfilSanteController extends Controller
             ? strtolower(trim($validated['medecin_email']))
             : null;
 
+        $existingProfil = ProfilSante::query()
+            ->where('user_id', Auth::id())
+            ->first();
+
+        $previousDoctorEmail = $existingProfil?->medecin_email !== null
+            ? strtolower(trim((string) $existingProfil->medecin_email))
+            : null;
+
         $profil = ProfilSante::updateOrCreate(
             ['user_id' => Auth::id()],
             $validated
         );
 
-        $this->syncDoctorInvitation($profil);
+        $this->syncDoctorInvitation($profil, $previousDoctorEmail);
 
         return response()->json([
             'message' => 'Profil sante enregistre avec succes.',
@@ -90,7 +98,7 @@ class ProfilSanteController extends Controller
         ]);
     }
 
-    private function syncDoctorInvitation(ProfilSante $profil): void
+    private function syncDoctorInvitation(ProfilSante $profil, ?string $previousDoctorEmail = null): void
     {
         $patient = Auth::user();
         if (! $patient) {
@@ -113,6 +121,19 @@ class ProfilSanteController extends Controller
         }
 
         $doctorEmail = strtolower(trim((string) $profil->medecin_email));
+        $doctorEmailChanged = $doctorEmail !== ($previousDoctorEmail !== null ? strtolower(trim($previousDoctorEmail)) : null);
+
+        if ($doctorEmailChanged) {
+            DoctorInvitation::query()
+                ->where('patient_user_id', $patient->id)
+                ->where('status', 'pending')
+                ->where('doctor_email', '!=', $doctorEmail)
+                ->update([
+                    'status' => 'revoked',
+                    'revoked_at' => now(),
+                ]);
+        }
+
         $doctor = User::query()
             ->whereRaw('LOWER(email) = ?', [$doctorEmail])
             ->first();
@@ -132,7 +153,7 @@ class ProfilSanteController extends Controller
                     'doctor_user_id' => $doctor?->id,
                     'doctor_email' => $doctorEmail,
                 ]);
-            } else {
+            } elseif ($doctorEmailChanged) {
                 $existing->update([
                     'doctor_user_id' => $doctor?->id,
                     'doctor_email' => $doctorEmail,
@@ -141,6 +162,11 @@ class ProfilSanteController extends Controller
                     'accepted_at' => null,
                     'rejected_at' => null,
                     'revoked_at' => null,
+                ]);
+            } else {
+                $existing->update([
+                    'doctor_user_id' => $doctor?->id,
+                    'doctor_email' => $doctorEmail,
                 ]);
             }
         } else {
@@ -151,6 +177,10 @@ class ProfilSanteController extends Controller
                 'status' => 'pending',
                 'token' => Str::random(64),
             ]);
+        }
+
+        if (! $doctorEmailChanged) {
+            return;
         }
 
         try {
