@@ -11,8 +11,8 @@
 
 <script setup>
 import { useAuthStore } from '@/stores/auth'
-import DoctorDashboard from '@/components/dashboards/DoctorDashboard.vue'
-import PatientDashboard from '@/components/dashboards/PatientDashboard.vue'
+import DoctorDashboard from '@/components/dashboards/doctorDashboard/DoctorDashboard.vue'
+import PatientDashboard from '@/components/dashboards/userDashboard/PatientDashboard.vue'
 
 const authStore = useAuthStore()
 </script>

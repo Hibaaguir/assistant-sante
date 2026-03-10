@@ -73,9 +73,9 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import api from '@/services/api'
 import InlineNotifications from '@/components/ui/InlineNotifications.vue'
-import RythmeCardiqueChart from '@/components/dashboards/RythmeCardiqueChart.vue'
-import TensionArterielleChart from '@/components/dashboards/TensionArterielleChart.vue'
-import SaturationO2Chart from '@/components/dashboards/SaturationO2Chart.vue'
+import RythmeCardiqueChart from '@/components/dashboards/userDashboard/RythmeCardiqueChart.vue'
+import TensionArterielleChart from '@/components/dashboards/userDashboard/TensionArterielleChart.vue'
+import SaturationO2Chart from '@/components/dashboards/userDashboard/SaturationO2Chart.vue'
 
 const chartRef = ref(null)
 const labels = ref([])

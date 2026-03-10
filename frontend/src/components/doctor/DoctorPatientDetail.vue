@@ -640,8 +640,8 @@ import {
   LinkIcon,
   WaveIcon
 } from '@/components/doctor/DoctorIcons.js'
-import ObservanceTraitementChart from '@/components/dashboards/ObservanceTraitementChart.vue'
-import HistogrammeAnalysesChart from '@/components/dashboards/HistogrammeAnalysesChart.vue'
+import ObservanceTraitementChart from '@/components/dashboards/doctorDashboard/ObservanceTraitementChart.vue'
+import HistogrammeAnalysesChart from '@/components/dashboards/doctorDashboard/HistogrammeAnalysesChart.vue'
 
 const props = defineProps({
   patient: {
