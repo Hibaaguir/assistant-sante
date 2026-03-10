@@ -233,6 +233,7 @@ export function mapPatientDetailResponse(data, fallbackPatient) {
   const latestVitals = data?.latest_vitals || {}
   const labs = Array.isArray(data?.lab_results) ? data.lab_results : []
   const vitals = Array.isArray(data?.vitals) ? data.vitals : []
+  const vitalsChart = data?.vitals_chart || {}
   const treatments = Array.isArray(data?.treatment_medicines) ? data.treatment_medicines : []
   const treatmentChecks = Array.isArray(data?.treatment_checks) ? data.treatment_checks : []
   const patient = data?.patient || {}
@@ -246,9 +247,11 @@ export function mapPatientDetailResponse(data, fallbackPatient) {
     detailTags: buildDetailTags(profile),
     detailAlerts: normalizeDetailAlerts(data?.alerts),
     overviewStats: buildOverviewStats(latestVitals, profile),
+    vitalsChart: mapVitalsChart(vitalsChart),
     vitalsHistory: groupVitalsHistory(vitals),
     analyses: labs.map(mapAnalysis),
-    treatments: buildTreatments(treatments, treatmentChecks)
+    treatments: buildTreatments(treatments, treatmentChecks),
+    treatmentHistoryRows: buildTreatmentHistoryRows(treatments, treatmentChecks)
   }
 }
 
@@ -313,12 +316,25 @@ export function groupVitalsHistory(rows) {
     }))
 }
 
+export function mapVitalsChart(chartData) {
+  const labelSource = Array.isArray(chartData?.labels) ? chartData.labels : []
+
+  return {
+    labels: labelSource.map((label) => formatDateShort(label)),
+    heartRate: carryForwardSeries(keepNumericSeries(chartData?.heart_rate, labelSource.length)),
+    systolicPressure: carryForwardSeries(keepNumericSeries(chartData?.systolic_pressure, labelSource.length)),
+    diastolicPressure: carryForwardSeries(keepNumericSeries(chartData?.diastolic_pressure, labelSource.length)),
+    oxygenSaturation: carryForwardSeries(keepNumericSeries(chartData?.oxygen_saturation, labelSource.length)),
+  }
+}
+
 export function mapAnalysis(item) {
+  const numericValue = Number(item?.value)
+  const unit = item?.unit ? String(item.unit) : ''
   const value =
     item?.value !== null && item?.value !== undefined
-      ? `${item.value}${item?.unit ? ` ${item.unit}` : ''}`
+      ? `${item.value}${unit ? ` ${unit}` : ''}`
       : '--'
-  const numericValue = Number(item?.value)
   const status = Number.isFinite(numericValue)
     ? numericValue < 3.9 ? 'Critique' : numericValue > 7 ? 'Attention' : 'Normal'
     : 'Normal'
@@ -331,6 +347,9 @@ export function mapAnalysis(item) {
 
   return {
     type: item?.analysis_type || 'Autre',
+    result: item?.analysis_result || '',
+    unit,
+    numericValue: Number.isFinite(numericValue) ? numericValue : null,
     name: [item?.analysis_type, item?.analysis_result].filter(Boolean).join(' - ') || 'Analyse',
     value,
     range: 'Plage normale : a verifier',
@@ -341,26 +360,115 @@ export function mapAnalysis(item) {
   }
 }
 
-export function buildTreatments(medicines, checks) {
-  const groupedChecks = {}
-  ;(Array.isArray(checks) ? checks : []).forEach((check) => {
-    const key = String(check?.medication_key || '')
-    if (!groupedChecks[key]) groupedChecks[key] = []
-    groupedChecks[key].push(check)
-  })
+function keepNumericSeries(values, expectedLength = 0) {
+  const source = Array.isArray(values) ? values : []
+  const size = Math.max(expectedLength, source.length)
 
+  return Array.from({ length: size }, (_, index) => {
+    const value = source[index]
+    if (value === null || value === undefined || value === '') return null
+
+    const numeric = Number(value)
+    return Number.isFinite(numeric) ? numeric : null
+  })
+}
+
+function carryForwardSeries(values) {
+  let previousValue = null
+
+  return (Array.isArray(values) ? values : []).map((value) => {
+    if (Number.isFinite(value)) {
+      previousValue = value
+      return value
+    }
+
+    return previousValue
+  })
+}
+
+export function buildTreatments(medicines, checks) {
   return (Array.isArray(medicines) ? medicines : []).map((medicine) => {
-    const rows = groupedChecks[medicine.id] || []
+    const rows = resolveTreatmentChecksForMedicine(checks, medicine.id)
     const total = rows.length
     const taken = rows.filter((row) => row?.taken).length
     const adherenceValue = total > 0 ? Math.round((taken / total) * 100) : 0
 
     return {
+      id: medicine.id,
       name: medicine.name || 'Traitement',
       dose: `${medicine.dose || 'Dose non precisee'} - ${medicine.freq || 'Non precise'}`,
       when: medicine.note || 'Selon prescription',
       adherence: `${adherenceValue}%`,
+      taken,
+      total,
+      dosesPerDay: Number(medicine.doses_per_day || 1),
       barClass: adherenceValue >= 90 ? 'bg-[#0cb342]' : 'bg-[#ea7a00]'
     }
+  })
+}
+
+export function buildTreatmentHistoryRows(medicines, checks) {
+  const meds = Array.isArray(medicines) ? medicines : []
+  const rows = Array.isArray(checks) ? checks : []
+  const daysMap = new Map()
+
+  rows.forEach((check) => {
+    const dateKey = String(check?.check_date || '')
+    if (!dateKey) return
+
+    if (!daysMap.has(dateKey)) {
+      daysMap.set(dateKey, {
+        dateKey,
+        meds: [],
+        total: 0,
+        taken: 0,
+      })
+    }
+  })
+
+  const sortedDays = [...daysMap.keys()].sort((a, b) => (a < b ? 1 : -1))
+
+  return sortedDays.map((dateKey) => {
+    let dayTotal = 0
+    let dayTaken = 0
+
+    const dayMeds = meds.map((medicine) => {
+      const medicineRows = resolveTreatmentChecksForMedicine(
+        rows.filter((check) => String(check?.check_date || '') === dateKey),
+        medicine.id
+      )
+      const total = medicineRows.length
+      const taken = medicineRows.filter((row) => row?.taken).length
+
+      dayTotal += total
+      dayTaken += taken
+
+      return {
+        id: medicine.id,
+        name: medicine.name || 'Traitement',
+        dose: medicine.dose || 'Dose non precisee',
+        taken,
+        total,
+        progress: total > 0 ? Math.round((taken / total) * 100) : 0,
+        isComplete: total > 0 && taken >= total,
+      }
+    }).filter((medicine) => medicine.total > 0)
+
+    return {
+      dateKey,
+      meds: dayMeds,
+      total: dayTotal,
+      taken: dayTaken,
+      isComplete: dayTotal > 0 && dayTaken >= dayTotal,
+      hasTracked: dayTotal > 0,
+    }
+  }).filter((day) => day.hasTracked)
+}
+
+function resolveTreatmentChecksForMedicine(checks, medicineId) {
+  const prefix = `${medicineId}__dose_`
+  return (Array.isArray(checks) ? checks : []).filter((check) => {
+    const key = String(check?.medication_key || '')
+    return key === medicineId || key.startsWith(prefix)
   })
 }

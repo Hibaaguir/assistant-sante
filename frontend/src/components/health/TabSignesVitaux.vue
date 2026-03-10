@@ -1,4 +1,26 @@
 <template>
+  <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h2 class="text-[20px] font-semibold leading-none text-slate-900">Derniers signes vitaux</h2>
+      <p class="mt-2 text-[14px] text-slate-500">
+        {{ latestVitalMeasuredAtLabel ? `Derniere entree du ${latestVitalMeasuredAtLabel}` : "Aucune mesure enregistree pour le moment." }}
+      </p>
+    </div>
+
+    <button
+      v-if="canEditLatestVital"
+      type="button"
+      class="inline-flex h-11 items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 text-[14px] font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700"
+      @click="openEditLatestModal"
+    >
+      <svg viewBox="0 0 24 24" class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 20h9" stroke-linecap="round" />
+        <path d="m16.5 3.5 4 4L7 21l-4 1 1-4L16.5 3.5Z" stroke-linejoin="round" />
+      </svg>
+      Modifier la derniere entree
+    </button>
+  </div>
+
   <section class="mt-6 grid gap-5 xl:grid-cols-3">
     <article class="min-h-[162px] rounded-2xl border border-[#efc4cc] bg-[#fdf2f5] px-6 py-6">
       <div class="flex items-start justify-between">
@@ -142,7 +164,10 @@
   <div v-if="showVitalsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4">
     <div class="w-full max-w-[470px] rounded-3xl bg-white p-7 shadow-2xl">
       <div class="mb-4 flex items-center justify-between">
-        <h3 class="text-[24px] font-semibold leading-none text-slate-900">Ajouter une mesure</h3>
+        <div>
+          <h3 class="text-[24px] font-semibold leading-none text-slate-900">{{ vitalModalTitle }}</h3>
+          <p v-if="isEditingLatestVital" class="mt-2 text-[13px] text-slate-500">Seule la derniere entree peut etre modifiee.</p>
+        </div>
         <button type="button" class="text-slate-500 hover:text-slate-700" @click="showVitalsModal = false">
           <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18" /></svg>
         </button>
@@ -220,7 +245,13 @@
 
         <div>
           <label class="mb-2 block text-[18px] font-semibold text-slate-700">Date</label>
-          <input v-model="vitalForm.date" type="date" class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none" />
+          <input
+            v-model="vitalForm.date"
+            type="date"
+            :disabled="isEditingLatestVital"
+            class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:cursor-not-allowed disabled:opacity-70"
+          />
+          <p v-if="isEditingLatestVital" class="mt-2 text-[13px] text-slate-500">La date reste verrouillee pour mettre a jour uniquement la derniere mesure.</p>
         </div>
 
         <p v-if="vitalError" class="text-sm font-medium text-rose-600">
@@ -228,7 +259,7 @@
         </p>
 
         <button type="button" class="mt-2 h-11 w-full rounded-2xl bg-emerald-600 text-[16px] font-semibold text-white hover:bg-emerald-700" @click="enregistrerMesure">
-          Enregistrer
+          {{ isEditingLatestVital ? "Enregistrer les modifications" : "Enregistrer" }}
         </button>
       </div>
     </div>
@@ -261,6 +292,7 @@ const showVitalsModal = ref(false);
 const vitalError = ref("");
 const vitalFilterDate = ref("");
 const vitalFilterType = ref("all");
+const isEditingLatestVital = ref(false);
 
 const vitalForm = reactive({
   heartRate: "",
@@ -288,6 +320,15 @@ const latestPressure = computed(() => {
   return s && d ? `${s}/${d}` : "--/--";
 });
 const latestOxygen = computed(() => props.latestVital?.oxygen_saturation ?? "--");
+const latestVitalMeasuredDate = computed(() => convertirDateIso(props.latestVital?.measured_at));
+const latestVitalMeasuredAtLabel = computed(() => (props.latestVital?.measured_at ? formaterDate(latestVitalMeasuredDate.value) : ""));
+const canEditLatestVital = computed(() =>
+  Boolean(
+    props.latestVital?.measured_at &&
+    [props.latestVital?.heart_rate, props.latestVital?.systolic_pressure, props.latestVital?.diastolic_pressure, props.latestVital?.oxygen_saturation].some(estValeurMesuree)
+  )
+);
+const vitalModalTitle = computed(() => (isEditingLatestVital.value ? "Modifier la derniere mesure" : "Ajouter une mesure"));
 
 const filteredVitalHistory = computed(() => {
   const rows = props.vitalDateKeys
@@ -399,6 +440,7 @@ function normaliserSerie(values, fallback = 0) {
 // Cette fonction initialise le formulaire des signes vitaux avec des valeurs visibles.
 function reinitialiserFormulaireVital() {
   vitalError.value = "";
+  isEditingLatestVital.value = false;
   vitalForm.heartRate = String(props.latestVital?.heart_rate ?? 72);
   vitalForm.systolic = String(props.latestVital?.systolic_pressure ?? 120);
   vitalForm.diastolic = String(props.latestVital?.diastolic_pressure ?? 80);
@@ -497,5 +539,24 @@ function openAddModal() {
   showVitalsModal.value = true;
 }
 
-defineExpose({ openAddModal });
+function openEditLatestModal() {
+  if (!canEditLatestVital.value) {
+    notifications.warning("Aucune derniere mesure disponible a modifier.");
+    return;
+  }
+
+  vitalError.value = "";
+  isEditingLatestVital.value = true;
+  vitalForm.heartRate = String(props.latestVital?.heart_rate ?? "");
+  vitalForm.systolic = String(props.latestVital?.systolic_pressure ?? "");
+  vitalForm.diastolic = String(props.latestVital?.diastolic_pressure ?? "");
+  vitalForm.oxygen = String(props.latestVital?.oxygen_saturation ?? "");
+  vitalForm.skipHeartRate = !estValeurMesuree(props.latestVital?.heart_rate);
+  vitalForm.skipPressure = !estValeurMesuree(props.latestVital?.systolic_pressure) && !estValeurMesuree(props.latestVital?.diastolic_pressure);
+  vitalForm.skipOxygen = !estValeurMesuree(props.latestVital?.oxygen_saturation);
+  vitalForm.date = latestVitalMeasuredDate.value;
+  showVitalsModal.value = true;
+}
+
+defineExpose({ openAddModal, openEditLatestModal });
 </script>
