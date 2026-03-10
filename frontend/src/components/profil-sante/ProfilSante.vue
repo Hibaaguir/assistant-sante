@@ -59,21 +59,12 @@
           {{ stepError }}
         </p>
 
-        <Etape1 v-if="currentStep === 1" :form="form" :computed-age="computedAge" :errors="step1Errors" />
+        <Etape1 v-if="currentStep === 1" :form="form" :computed-age="computedAge" :errors="step1Errors" :show-errors="step1HasTriedContinue" />
         <Etape2 v-else-if="currentStep === 2" :form="form" />
         <Etape3 v-else :form="form" />
       </div>
 
-      <div v-if="!loading" class="flex justify-between items-center">
-        <button
-          type="button"
-          class="gap-2 rounded-xl border-2 h-12 px-6 disabled:opacity-30"
-          :disabled="currentStep === 1 || saving"
-          @click="goBack"
-        >
-          Precedent
-        </button>
-
+      <div v-if="!loading" class="flex justify-end items-center">
         <button
           v-if="currentStep < totalSteps"
           type="button"
@@ -123,6 +114,7 @@ const saving = ref(false);
 const saveError = ref("");
 const saveSuccess = ref("");
 const stepError = ref("");
+const step1HasTriedContinue = ref(false);
 const step1Errors = reactive({
   sexe: "",
   taille: "",
@@ -327,7 +319,13 @@ function stepClass(stepNumber) {
 }
 
 function goBack() {
+  if (currentStep.value === 1) {
+    router.back();
+    return;
+  }
+
   stepError.value = "";
+  step1HasTriedContinue.value = false;
   clearStep1Errors();
   currentStep.value -= 1;
 }
@@ -336,8 +334,12 @@ function goNext() {
   saveSuccess.value = "";
   stepError.value = "";
   clearStep1Errors();
-  if (currentStep.value === 1 && !validateStep1()) return;
+  if (currentStep.value === 1) {
+    step1HasTriedContinue.value = true;
+    if (!validateStep1()) return;
+  }
   if (currentStep.value === 2 && !validateStep2()) return;
+  step1HasTriedContinue.value = false;
   currentStep.value += 1;
 }
 
@@ -353,7 +355,6 @@ function validateStep1() {
 
   if (!form.sexe) {
     step1Errors.sexe = "Veuillez selectionner votre genre.";
-    return false;
   }
 
   if (!form.taille) {
@@ -362,35 +363,26 @@ function validateStep1() {
   if (!form.poids) {
     step1Errors.poids = "Le poids est obligatoire.";
   }
-  if (step1Errors.taille || step1Errors.poids) {
-    return false;
+
+  if (form.taille) {
+    const taille = Number(form.taille);
+    if (!Number.isFinite(taille) || taille < 80 || taille > 250) {
+      step1Errors.taille = "La taille doit etre une valeur entre 80 et 250 cm.";
+    }
   }
 
-  const taille = Number(form.taille);
-  const poids = Number(form.poids);
-
-  if (!Number.isFinite(taille) || taille <= 80) {
-    step1Errors.taille = "La taille doit etre une valeur entre 80 et 250 cm.";
-  }
-  if (!Number.isFinite(poids) || poids <= 35) {
-    step1Errors.poids = "Le poids doit etre une valeur entre 35 et 250 kg.";
-  }
-  if (taille > 250) {
-    step1Errors.taille = "La taille ne doit pas depasser 250 cm.";
-  }
-  if (poids > 250) {
-    step1Errors.poids = "Le poids ne doit pas depasser 250 kg.";
-  }
-  if (step1Errors.taille || step1Errors.poids) {
-    return false;
+  if (form.poids) {
+    const poids = Number(form.poids);
+    if (!Number.isFinite(poids) || poids < 35 || poids > 250) {
+      step1Errors.poids = "Le poids doit etre une valeur entre 35 et 250 kg.";
+    }
   }
 
   if (!Array.isArray(form.objectifs) || !form.objectifs.length) {
     step1Errors.objectifs = "Veuillez selectionner au moins un objectif.";
-    return false;
   }
 
-  return true;
+  return !step1Errors.sexe && !step1Errors.taille && !step1Errors.poids && !step1Errors.objectifs;
 }
 
 function validateStep2() {

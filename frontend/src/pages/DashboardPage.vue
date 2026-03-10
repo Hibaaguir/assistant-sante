@@ -6,6 +6,7 @@
       <h1 class="text-[34px] font-semibold leading-none text-slate-900">Dashboard</h1>
       <p class="mt-2 text-sm text-slate-600">Vue d'ensemble de votre santé</p>
     </header>
+    <InlineNotifications />
 
     <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div class="mb-3 flex items-center justify-between">
@@ -62,6 +63,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 import DoctorDashboard from '@/components/doctor/DoctorDashboard.vue'
+import InlineNotifications from '@/components/ui/InlineNotifications.vue'
 
 const authStore = useAuthStore()
 const chartRef = ref(null)
@@ -176,3 +178,4 @@ onMounted(async () => {
   }
 })
 </script>
+

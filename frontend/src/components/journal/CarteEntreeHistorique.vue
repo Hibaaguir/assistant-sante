@@ -37,7 +37,7 @@
             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
           </svg>
         </button>
-        <button type="button" class="rounded-md p-1 text-pink-500 transition-colors hover:bg-pink-50 hover:text-pink-700" @click="$emit('delete')">
+        <button type="button" class="rounded-md p-1 text-pink-500 transition-colors hover:bg-pink-50 hover:text-pink-700" @click="$emit('request-delete')">
           <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M3 6h18" />
             <path d="M8 6V4h8v2" />
@@ -67,7 +67,7 @@ defineProps({
   }
 })
 
-defineEmits(['edit', 'delete'])
+defineEmits(['edit', 'request-delete'])
 
 // Cette fonction transforme les heures de sommeil en texte simple.
 const libellerSommeil = (hours) => {
@@ -109,5 +109,4 @@ const resumerTabac = (entry) => {
   return parts.join(', ')
 }
 </script>
-
 

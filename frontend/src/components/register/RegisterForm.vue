@@ -123,10 +123,6 @@
             <span v-else>Creation...</span>
           </button>
 
-          <div v-if="serverMessage" class="rounded-xl border px-4 py-3 text-sm" :class="messageType === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'">
-            {{ serverMessage }}
-          </div>
-
           <p class="text-xs text-center text-gray-500">Vous pourrez completer votre profil sante juste apres.</p>
           <p class="text-xs text-center text-gray-500">
             Vous avez deja un compte ?
@@ -147,11 +143,9 @@ import api from "@/services/api";
 import { computed, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
-import { useNotificationsStore } from "@/stores/notifications";
 
 const router = useRouter();
 const authStore = useAuthStore();
-const notifications = useNotificationsStore();
 
 const form = reactive({
   name: "",
@@ -169,8 +163,6 @@ const errors = reactive({
 });
 
 const loading = ref(false);
-const serverMessage = ref("");
-const messageType = ref("success");
 const passwordHasMinLength = computed(() => form.password.length >= 8);
 const passwordHasLetter = computed(() => /[a-zA-Z]/.test(form.password));
 const passwordHasNumber = computed(() => /[0-9]/.test(form.password));
@@ -253,8 +245,6 @@ function convertDateFormat(dateStr) {
 }
 
 async function submit() {
-  serverMessage.value = "";
-  messageType.value = "success";
   clearErrors();
 
   if (!form.name || !form.email || !form.date_of_birth || !form.password) {
@@ -262,7 +252,6 @@ async function submit() {
     if (!form.email) errors.email = "L'adresse email est obligatoire.";
     if (!form.date_of_birth) errors.date_of_birth = "La date de naissance est obligatoire.";
     if (!form.password) errors.password = "Le mot de passe est obligatoire.";
-    serverMessage.value = "Veuillez remplir les champs obligatoires.";
     return;
   }
 
@@ -292,12 +281,8 @@ async function submit() {
 
     if (res?.data?.token) authStore.setToken(res.data.token);
 
-    serverMessage.value = res?.data?.message || "Compte cree avec succes.";
-    messageType.value = "success";
-    notifications.actionAdded();
     setTimeout(() => router.push(res?.data?.redirect_to || "/profil-sante"), 500);
   } catch (err) {
-    messageType.value = "error";
     const status = err?.response?.status;
     const data = err?.response?.data || {};
 
@@ -307,20 +292,13 @@ async function submit() {
       errors.date_of_birth = firstMessage(data.errors.date_of_birth);
       errors.password = firstMessage(data.errors.password);
 
-      serverMessage.value = data.message || "Veuillez corriger les erreurs du formulaire.";
-      notifications.warning(serverMessage.value);
       return;
     }
 
     if (status === 409 && data?.errors?.email) {
       errors.email = firstMessage(data.errors.email);
-      serverMessage.value = data.message || "Cet email est deja utilise.";
-      notifications.warning(serverMessage.value);
       return;
     }
-
-    serverMessage.value = data?.message || "Une erreur est survenue. Veuillez reessayer.";
-    notifications.error(serverMessage.value);
   } finally {
     loading.value = false;
   }

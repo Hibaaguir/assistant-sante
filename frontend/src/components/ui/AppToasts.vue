@@ -1,5 +1,5 @@
 <template>
-  <Teleport v-if="!isInlineHealthPage" to="body">
+  <Teleport v-if="!isInlineMainArea" to="body">
     <div class="pointer-events-none fixed left-1/2 top-16 z-[1200] flex w-[min(96vw,1180px)] -translate-x-1/2 flex-col gap-2">
       <TransitionGroup name="toast">
         <article
@@ -33,7 +33,7 @@ import { useNotificationsStore } from "@/stores/notifications";
 
 const notifications = useNotificationsStore();
 const route = useRoute();
-const isInlineHealthPage = computed(() => route.name === "health");
+const isInlineMainArea = computed(() => String(route.path || "").startsWith("/main"));
 
 function tone(type) {
   if (type === "success") {

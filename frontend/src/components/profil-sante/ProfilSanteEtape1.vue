@@ -12,7 +12,7 @@
         <div class="grid grid-cols-2 gap-4 max-w-xl">
           <label
             class="relative cursor-pointer rounded-2xl border-2 p-6 transition-all hover:shadow-md"
-            :class="form.sexe === 'homme' ? 'border-teal-500 bg-teal-50/50 shadow-sm' : (errors.sexe ? 'border-red-300 bg-white' : 'border-gray-200 bg-white hover:border-gray-300')"
+            :class="form.sexe === 'homme' ? 'border-teal-500 bg-teal-50/50 shadow-sm' : (showErrors && errors.sexe ? 'border-red-300 bg-white' : 'border-gray-200 bg-white hover:border-gray-300')"
           >
             <input class="sr-only" type="radio" name="sex" :checked="form.sexe === 'homme'" @change="form.sexe = 'homme'" />
             <div class="flex flex-col items-center gap-3">
@@ -26,7 +26,7 @@
 
           <label
             class="relative cursor-pointer rounded-2xl border-2 p-6 transition-all hover:shadow-md"
-            :class="form.sexe === 'femme' ? 'border-teal-500 bg-teal-50/50 shadow-sm' : (errors.sexe ? 'border-red-300 bg-white' : 'border-gray-200 bg-white hover:border-gray-300')"
+            :class="form.sexe === 'femme' ? 'border-teal-500 bg-teal-50/50 shadow-sm' : (showErrors && errors.sexe ? 'border-red-300 bg-white' : 'border-gray-200 bg-white hover:border-gray-300')"
           >
             <input class="sr-only" type="radio" name="sex" :checked="form.sexe === 'femme'" @change="form.sexe = 'femme'" />
             <div class="flex flex-col items-center gap-3">
@@ -38,7 +38,7 @@
             </div>
           </label>
         </div>
-        <p v-if="errors.sexe" class="text-sm text-red-600">{{ errors.sexe }}</p>
+        <p v-if="showErrors && errors.sexe" class="text-sm text-red-600">{{ errors.sexe }}</p>
       </div>
 
       <div class="space-y-4 max-w-md">
@@ -63,9 +63,9 @@
               max="250"
               placeholder="Taille en cm"
               class="h-14 w-full text-lg rounded-xl border-2 px-4 outline-none focus:border-teal-500"
-              :class="errors.taille ? 'border-red-300' : 'border-gray-200'"
+              :class="showErrors && errors.taille ? 'border-red-300' : 'border-gray-200'"
             />
-            <p v-if="errors.taille" class="text-sm text-red-600 px-1">{{ errors.taille }}</p>
+            <p v-if="showErrors && errors.taille" class="text-sm text-red-600 px-1">{{ errors.taille }}</p>
             <p class="text-xs text-gray-500 px-1">Ex: 175</p>
           </div>
           <div class="space-y-2">
@@ -76,9 +76,9 @@
               max="250"
               placeholder="Poids en kg"
               class="h-14 w-full text-lg rounded-xl border-2 px-4 outline-none focus:border-teal-500"
-              :class="errors.poids ? 'border-red-300' : 'border-gray-200'"
+              :class="showErrors && errors.poids ? 'border-red-300' : 'border-gray-200'"
             />
-            <p v-if="errors.poids" class="text-sm text-red-600 px-1">{{ errors.poids }}</p>
+            <p v-if="showErrors && errors.poids" class="text-sm text-red-600 px-1">{{ errors.poids }}</p>
             <p class="text-xs text-gray-500 px-1">Ex: 70</p>
           </div>
         </div>
@@ -130,7 +130,7 @@
             </div>
           </div>
         </div>
-        <p v-if="errors.objectifs" class="text-sm text-red-600">{{ errors.objectifs }}</p>
+        <p v-if="showErrors && errors.objectifs" class="text-sm text-red-600">{{ errors.objectifs }}</p>
       </div>
     </div>
   </div>
@@ -142,6 +142,7 @@
   Le composant met a jour directement l'objet `form` partage.
   L'objectif est de garder une saisie simple avant validation finale.
 */
+import { toRef } from "vue";
 
 const props = defineProps({
   form: { type: Object, required: true },
@@ -155,10 +156,12 @@ const props = defineProps({
       objectifs: "",
     }),
   },
+  showErrors: { type: Boolean, default: false },
 });
 
 const form = props.form;
 const errors = props.errors;
+const showErrors = toRef(props, "showErrors");
 
 const goals = [
   { value: "Maintenir mon poids", label: "Bien-etre general", color: "bg-purple-50 text-purple-600 border-purple-200", icon: "M5 13a7 7 0 0 0 14 0M8 8h.01M16 8h.01" },

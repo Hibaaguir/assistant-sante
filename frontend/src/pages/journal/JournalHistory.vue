@@ -17,6 +17,7 @@
         </button>
       </div>
     </div>
+    <InlineNotifications />
 
     <p
       v-if="noticeMessage"
@@ -40,7 +41,7 @@
         :editing="false"
         :filter-type="store.filter.type"
         @edit="router.push({ name: 'journal-wizard', query: { edit: entry.id } })"
-        @delete="handleDelete(entry.id)"
+        @request-delete="handleDelete(entry.id)"
       />
     </div>
 
@@ -99,6 +100,7 @@ import { useRoute, useRouter } from 'vue-router'
 import ModalFiltre from '@/components/journal/ModalFiltre.vue'
 import CarteEntreeHistorique from '@/components/journal/CarteEntreeHistorique.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import InlineNotifications from '@/components/ui/InlineNotifications.vue'
 import { useJournalStore } from '@/stores/journal'
 import { useNotificationsStore } from '@/stores/notifications'
 
@@ -150,7 +152,7 @@ const reinitialiserFiltre = () => {
   showFilter.value = false
 }
 
-const handleDelete = async (id) => {
+const handleDelete = (id) => {
   pendingDeleteId.value = id
   showDeleteConfirm.value = true
 }

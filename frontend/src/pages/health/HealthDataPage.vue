@@ -4,6 +4,7 @@
       <h1 class="text-[28px] font-semibold leading-tight tracking-[-0.01em] text-slate-900">Données de santé</h1>
       <p class="mt-1 text-[13px] text-slate-500">Suivez vos indicateurs de santé dans le temps</p>
     </header>
+    <InlineNotifications />
 
     <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
       <div class="grid grid-cols-3 gap-1">
@@ -100,6 +101,7 @@ import TabSignesVitaux from "@/components/health/TabSignesVitaux.vue";
 import TabAnalyseBiologique from "@/components/health/TabAnalyseBiologique.vue";
 import TabTraitements from "@/components/health/TabTraitements.vue";
 import { useNotificationsStore } from "@/stores/notifications";
+import InlineNotifications from "@/components/ui/InlineNotifications.vue";
 
 // Refs vers les composants enfants pour appeler leurs methodes exposees.
 const vitalsTab = ref(null);
@@ -261,3 +263,4 @@ async function chargerDonneesSante() {
 
 onMounted(chargerDonneesSante);
 </script>
+

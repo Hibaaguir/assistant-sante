@@ -29,6 +29,7 @@
         </button>
       </div>
     </header>
+    <InlineNotifications />
 
     <section class="mt-10 rounded-[18px] bg-[#eef0f3] p-[6px]">
       <div class="grid grid-cols-2 gap-3 md:flex md:items-center md:gap-0">
@@ -86,6 +87,7 @@ import { useNotificationsStore } from '@/stores/notifications'
 import api from '@/services/api'
 import { BellIcon, LogoutIcon, UserPlusIcon, UsersIcon } from '@/components/doctor/DoctorIcons.js'
 import { mapInvitation, mapPatient, mapPatientDetailResponse } from '@/components/doctor/doctorUtils.js'
+import InlineNotifications from '@/components/ui/InlineNotifications.vue'
 import DoctorInvitations from '@/components/doctor/DoctorInvitations.vue'
 import DoctorPatientDetail from '@/components/doctor/DoctorPatientDetail.vue'
 import DoctorPatientList from '@/components/doctor/DoctorPatientList.vue'
