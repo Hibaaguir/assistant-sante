@@ -16,9 +16,9 @@ use Illuminate\Support\Collection;
 
 class DoctorInvitationController extends Controller
 {
-    public function __construct(private readonly HealthDataService $healthDataService) {}
+    public function __construct(private readonly HealthDataService $serviceDonneesSante) {}
 
-    public function index(Request $request): JsonResponse
+    public function lister(Request $request): JsonResponse
     {
         $user = $request->user();
 
@@ -28,18 +28,18 @@ class DoctorInvitationController extends Controller
             ->orderByRaw("case when status = 'pending' then 0 else 1 end")
             ->orderByDesc('id')
             ->get()
-            ->map(fn (DoctorInvitation $invitation) => $this->serializeInvitation($invitation))
+            ->map(fn (DoctorInvitation $invitation) => $this->serialiserInvitation($invitation))
             ->values();
 
         return response()->json([
-            'message' => 'Invitations fetched successfully.',
+            'message' => 'Invitations recuperees avec succes.',
             'data' => $invitations,
         ]);
     }
 
-    public function accept(Request $request, DoctorInvitation $doctorInvitation): JsonResponse
+    public function accepter(Request $request, DoctorInvitation $doctorInvitation): JsonResponse
     {
-        if ($error = $this->authorizeInvitation($doctorInvitation, $request)) return $error;
+        if ($error = $this->autoriserInvitation($doctorInvitation, $request)) return $error;
         $user = $request->user();
 
         if ($doctorInvitation->status !== 'accepted') {
@@ -56,14 +56,14 @@ class DoctorInvitationController extends Controller
         }
 
         return response()->json([
-            'message' => 'Invitation accepted.',
-            'data' => $this->serializeInvitation($doctorInvitation->fresh(['patient:id,name,email,date_of_birth,created_at', 'patient.profilSante'])),
+            'message' => 'Invitation acceptee.',
+            'data' => $this->serialiserInvitation($doctorInvitation->fresh(['patient:id,name,email,date_of_birth,created_at', 'patient.profilSante'])),
         ]);
     }
 
-    public function reject(Request $request, DoctorInvitation $doctorInvitation): JsonResponse
+    public function refuser(Request $request, DoctorInvitation $doctorInvitation): JsonResponse
     {
-        if ($error = $this->authorizeInvitation($doctorInvitation, $request)) return $error;
+        if ($error = $this->autoriserInvitation($doctorInvitation, $request)) return $error;
 
         $doctorInvitation->update([
             'status' => 'rejected',
@@ -71,12 +71,12 @@ class DoctorInvitationController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Invitation rejected.',
-            'data' => $this->serializeInvitation($doctorInvitation->fresh(['patient:id,name,email,date_of_birth,created_at', 'patient.profilSante'])),
+            'message' => 'Invitation refusee.',
+            'data' => $this->serialiserInvitation($doctorInvitation->fresh(['patient:id,name,email,date_of_birth,created_at', 'patient.profilSante'])),
         ]);
     }
 
-    public function patients(Request $request): JsonResponse
+    public function listerPatients(Request $request): JsonResponse
     {
         $user = $request->user();
 
@@ -118,24 +118,24 @@ class DoctorInvitationController extends Controller
                     'patient' => $patient,
                     'profile' => $patient->profilSante,
                     'latest_vitals' => $latestVitals,
-                    'alerts' => $this->buildPatientAlerts($patient, $latestVitals, $latestLabResults),
+                    'alerts' => $this->construireAlertesPatient($patient, $latestVitals, $latestLabResults),
                 ];
             })
             ->filter()
             ->values();
 
         return response()->json([
-            'message' => 'Doctor patients fetched successfully.',
+            'message' => 'Patients du medecin recuperes avec succes.',
             'data' => $patients,
         ]);
     }
 
-    public function patientDetail(Request $request, User $patient): JsonResponse
+    public function detailPatient(Request $request, User $patient): JsonResponse
     {
-        $invitation = $this->findAuthorizedInvitation($request, $patient);
+        $invitation = $this->trouverInvitationAutorisee($request, $patient);
         if (! $invitation) {
             return response()->json([
-                'message' => 'Unauthorized patient access.',
+                'message' => 'Acces non autorise a ce patient.',
             ], 403);
         }
 
@@ -185,7 +185,7 @@ class DoctorInvitationController extends Controller
         $profile = $patient->profilSante;
 
         return response()->json([
-            'message' => 'Doctor patient detail fetched successfully.',
+            'message' => 'Detail du patient recupere avec succes.',
             'data' => [
                 'invitation_id' => $invitation->id,
                 'accepted_at' => optional($invitation->accepted_at)?->toISOString(),
@@ -193,16 +193,16 @@ class DoctorInvitationController extends Controller
                 'profile' => $profile,
                 'latest_vitals' => $latestVitals,
                 'vitals' => $vitalsHistory,
-                'vitals_chart' => $this->healthDataService->buildVitalsChartSeries($vitals, $days),
+                'vitals_chart' => $this->serviceDonneesSante->construireSeriesGraphiqueSignesVitaux($vitals, $days),
                 'lab_results' => $labResults,
-                'treatment_medicines' => $this->healthDataService->resolveTreatmentMedicines($patient->id),
+                'treatment_medicines' => $this->serviceDonneesSante->resoudreMedicamentsTraitement($patient->id),
                 'treatment_checks' => $treatmentChecks,
-                'alerts' => $this->buildPatientAlerts($patient, $latestVitals, $labResults),
+                'alerts' => $this->construireAlertesPatient($patient, $latestVitals, $labResults),
             ],
         ]);
     }
 
-    private function serializeInvitation(DoctorInvitation $invitation): array
+    private function serialiserInvitation(DoctorInvitation $invitation): array
     {
         return [
             'id' => $invitation->id,
@@ -216,7 +216,7 @@ class DoctorInvitationController extends Controller
         ];
     }
 
-    private function findAuthorizedInvitation(Request $request, User $patient): ?DoctorInvitation
+    private function trouverInvitationAutorisee(Request $request, User $patient): ?DoctorInvitation
     {
         return DoctorInvitation::query()
             ->where('doctor_user_id', $request->user()->id)
@@ -227,7 +227,7 @@ class DoctorInvitationController extends Controller
             ->first();
     }
 
-    private function buildPatientAlerts(User $patient, ?HealthVital $latestVitals, Collection $labResults): array
+    private function construireAlertesPatient(User $patient, ?HealthVital $latestVitals, Collection $labResults): array
     {
         $alerts = [];
 
@@ -258,10 +258,10 @@ class DoctorInvitationController extends Controller
         return $alerts;
     }
 
-    private function authorizeInvitation(DoctorInvitation $invitation, Request $request): ?JsonResponse
+    private function autoriserInvitation(DoctorInvitation $invitation, Request $request): ?JsonResponse
     {
         if ($invitation->doctor_user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized invitation access.'], 403);
+            return response()->json(['message' => "Acces non autorise a cette invitation."], 403);
         }
         return null;
     }

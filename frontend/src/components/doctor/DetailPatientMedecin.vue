@@ -1,7 +1,7 @@
 <template>
   <section class="mt-8">
     <button type="button" class="inline-flex items-center gap-2 text-[14px] font-medium text-[#2454ff]" @click="$emit('back')">
-      <ArrowLeftIcon class="h-[16px] w-[16px]" />
+      <IconeFlecheGauche class="h-[16px] w-[16px]" />
       Retour a la liste des patients
     </button>
 
@@ -23,7 +23,7 @@
             <span>{{ patient.gender }}</span>
             <span>•</span>
             <span class="inline-flex items-center gap-1.5">
-              <ClockIcon class="h-[16px] w-[16px]" />
+              <IconeHorloge class="h-[16px] w-[16px]" />
               Derniere mise a jour : {{ patient.lastSeen }}
             </span>
           </div>
@@ -46,7 +46,7 @@
       >
         <div class="flex flex-col gap-4 md:flex-row md:items-start">
           <div class="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[14px]" :class="alert.iconWrapClass">
-            <AlertTriangleIcon class="h-[22px] w-[22px]" :class="alert.iconClass" />
+            <IconeTriangleAlerte class="h-[22px] w-[22px]" :class="alert.iconClass" />
           </div>
           <div class="w-full">
             <div class="flex flex-wrap items-center gap-3">
@@ -261,9 +261,9 @@
         </article>
       </div>
 
-      <ObservanceTraitementChart :patient="patient" />
+      <CourbeObservanceTraitement :patient="patient" />
 
-      <HistogrammeAnalysesChart :patient="patient" />
+      <HistogrammeAnalyses :patient="patient" />
 
       <article class="overflow-hidden rounded-[20px] border border-[#d6e3ea] bg-[linear-gradient(135deg,#f8fcff_0%,#ffffff_65%,#f9fcfb_100%)] shadow-[0_8px_18px_rgba(35,84,126,0.06)]">
         <div class="border-b border-[#e2ebf0] bg-[linear-gradient(90deg,rgba(46,144,250,0.05)_0%,rgba(22,163,74,0.03)_100%)] px-5 py-4">
@@ -361,7 +361,7 @@
 
       <article v-for="entry in filteredVitalsHistory" :key="entry.isoDate || entry.date" class="rounded-[20px] border border-[#d4d9e1] bg-white p-5 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
         <div class="flex items-center gap-2 text-[16px] font-bold text-[#061a45]">
-          <CalendarIcon class="h-[18px] w-[18px]" />
+          <IconeCalendrier class="h-[18px] w-[18px]" />
           {{ entry.date }}
         </div>
         <div class="mt-4 grid gap-4 lg:grid-cols-3">
@@ -458,14 +458,14 @@
             <button
               type="button"
               class="inline-flex h-[40px] items-center justify-center rounded-[14px] border border-[#d4d9e1] px-4 text-[14px] font-semibold text-[#40506a] transition hover:border-[#aeb9ca] hover:text-[#1a2c52]"
-              @click="clearAnalysisObservation"
+              @click="effacerObservationAnalyse"
             >
               Effacer
             </button>
             <button
               type="button"
               class="inline-flex h-[40px] items-center justify-center rounded-[14px] bg-[#3f49f4] px-4 text-[14px] font-semibold text-white transition hover:bg-[#3140ef]"
-              @click="saveAnalysisObservation"
+              @click="enregistrerObservationAnalyse"
             >
               Enregistrer
             </button>
@@ -490,7 +490,7 @@
           <span class="text-[20px] font-bold text-[#061a45]">{{ analysis.value }}</span>
           <span>{{ analysis.range }}</span>
           <span class="inline-flex items-center gap-2">
-            <CalendarIcon class="h-[16px] w-[16px]" />
+            <IconeCalendrier class="h-[16px] w-[16px]" />
             {{ analysis.date }}
           </span>
         </div>
@@ -631,17 +631,17 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import {
-  AlertTriangleIcon,
-  ArrowLeftIcon,
-  CalendarIcon,
-  ClockIcon,
-  EyeIcon,
-  HeartIcon,
-  LinkIcon,
-  WaveIcon
-} from '@/components/doctor/DoctorIcons.js'
-import ObservanceTraitementChart from '@/components/dashboards/doctorDashboard/ObservanceTraitementChart.vue'
-import HistogrammeAnalysesChart from '@/components/dashboards/doctorDashboard/HistogrammeAnalysesChart.vue'
+  IconeTriangleAlerte,
+  IconeFlecheGauche,
+  IconeCalendrier,
+  IconeHorloge,
+  IconeOeil,
+  IconeCoeur,
+  IconeLien,
+  IconeOnde
+} from '@/components/doctor/IconesMedecin.js'
+import CourbeObservanceTraitement from '@/components/dashboards/doctorDashboard/CourbeObservanceTraitement.vue'
+import HistogrammeAnalyses from '@/components/dashboards/doctorDashboard/HistogrammeAnalyses.vue'
 
 const props = defineProps({
   patient: {
@@ -655,10 +655,10 @@ defineEmits(['back'])
 const detailTab = ref('overview')
 
 const detailTabs = [
-  { key: 'overview', label: "Vue d'ensemble", icon: EyeIcon },
-  { key: 'vitals', label: 'Signes vitaux', icon: HeartIcon },
-  { key: 'analyses', label: 'Analyses', icon: WaveIcon },
-  { key: 'treatments', label: 'Traitements', icon: LinkIcon }
+  { key: 'overview', label: "Vue d'ensemble", icon: IconeOeil },
+  { key: 'vitals', label: 'Signes vitaux', icon: IconeCoeur },
+  { key: 'analyses', label: 'Analyses', icon: IconeOnde },
+  { key: 'treatments', label: 'Traitements', icon: IconeLien }
 ]
 
 const vitalDateFilter = ref('')
@@ -682,24 +682,24 @@ const chartFrame = {
   bottom: 40,
 }
 
-function buildVitalCards(entry) {
+function construireCartesSignesVitaux(entree) {
   return [
     {
       key: 'heartRate',
       label: 'Rythme cardiaque',
-      value: entry.heartRate,
+      value: entree.heartRate,
       class: 'border-[#f4bcc3] bg-[#fff5f6]'
     },
     {
       key: 'bloodPressure',
       label: 'Tension',
-      value: entry.bloodPressure,
+      value: entree.bloodPressure,
       class: 'border-[#aac8ff] bg-[#eff6ff]'
     },
     {
       key: 'saturation',
       label: 'Saturation O2',
-      value: entry.saturation,
+      value: entree.saturation,
       class: 'border-[#dcc5ff] bg-[#faf4ff]'
     }
   ]
@@ -712,7 +712,7 @@ const filteredVitalsHistory = computed(() => {
   return visibleEntries
     .filter((entry) => !vitalDateFilter.value || entry.isoDate === vitalDateFilter.value)
     .map((entry) => {
-      const cards = buildVitalCards(entry).filter((card) => vitalSignFilter.value === 'all' || card.key === vitalSignFilter.value)
+      const cards = construireCartesSignesVitaux(entry).filter((card) => vitalSignFilter.value === 'all' || card.key === vitalSignFilter.value)
       return { ...entry, cards }
     })
     .filter((entry) => entry.cards.length > 0)
@@ -776,7 +776,7 @@ const filteredTreatmentHistoryRows = computed(() => {
 })
 
 const heartRateChart = computed(() =>
-  buildTrendChart(
+  construireGraphiqueTendance(
     props.patient?.vitalsChart?.labels,
     [
       {
@@ -790,7 +790,7 @@ const heartRateChart = computed(() =>
 )
 
 const pressureChart = computed(() =>
-  buildTrendChart(
+  construireGraphiqueTendance(
     props.patient?.vitalsChart?.labels,
     [
       {
@@ -809,7 +809,7 @@ const pressureChart = computed(() =>
 )
 
 const oxygenChart = computed(() =>
-  buildTrendChart(
+  construireGraphiqueTendance(
     props.patient?.vitalsChart?.labels,
     [
       {
@@ -827,7 +827,7 @@ const analysisObservationStorageKey = computed(() => {
   return `doctor-analysis-observation-${patientId}`
 })
 
-function loadAnalysisObservation() {
+function chargerObservationAnalyse() {
   analysisObservationMessage.value = ''
   if (typeof window === 'undefined') return
 
@@ -850,7 +850,7 @@ function loadAnalysisObservation() {
   }
 }
 
-function buildTrendChart(labelsInput, seriesInput, options = {}) {
+function construireGraphiqueTendance(labelsInput, seriesInput, options = {}) {
   const labels = Array.isArray(labelsInput) ? labelsInput : []
   const xPositions = buildXPositions(labels.length)
   const series = Array.isArray(seriesInput) ? seriesInput : []
@@ -965,7 +965,7 @@ function resetTreatmentFilters() {
   treatmentStatusFilter.value = 'all'
 }
 
-function saveAnalysisObservation() {
+function enregistrerObservationAnalyse() {
   const text = String(analysisObservation.value || '').trim()
 
   if (!text) {
@@ -1001,7 +1001,7 @@ function saveAnalysisObservation() {
   analysisObservationOpen.value = false
 }
 
-function clearAnalysisObservation() {
+function effacerObservationAnalyse() {
   analysisObservation.value = ''
   analysisObservationSavedAt.value = ''
 
@@ -1017,7 +1017,7 @@ function clearAnalysisObservation() {
 watch(
   () => props.patient?.id,
   () => {
-    loadAnalysisObservation()
+    chargerObservationAnalyse()
   },
   { immediate: true }
 )

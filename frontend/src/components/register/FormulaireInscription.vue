@@ -16,7 +16,7 @@
           <p class="text-sm text-gray-500 mt-1">Completez les champs pour creer votre espace sante.</p>
         </div>
 
-        <form @submit.prevent="submit" class="space-y-5">
+        <form @submit.prevent="soumettre" class="space-y-5">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Nom d'utilisateur <span class="text-red-600">*</span></label>
             <div class="relative">
@@ -67,9 +67,9 @@
                 placeholder="JJ/MM/AAAA"
                 inputmode="numeric"
                 maxlength="10"
-                @beforeinput="handleDateBeforeInput"
-                @input="handleDateInput"
-                @blur="validateDateFormat"
+                @beforeinput="gererAvantSaisieDate"
+                @input="gererSaisieDate"
+                @blur="validerFormatDate"
                 class="h-12 pl-12 pr-4 rounded-xl border-2 bg-white text-gray-900 placeholder:text-gray-400 outline-none w-full"
                 :class="errors.date_of_birth ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
               />
@@ -89,15 +89,15 @@
                 type="password"
                 placeholder="Min 8 caracteres (lettres + chiffres)"
                 autocomplete="new-password"
-                @input="validatePasswordRequirements"
+                @input="validerReglesMotDePasse"
                 class="h-12 pl-12 pr-4 rounded-xl border-2 bg-white text-gray-900 placeholder:text-gray-400 outline-none w-full"
                 :class="errors.password ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
               />
             </div>
             <div class="mt-2 space-y-1 text-sm">
-              <p :class="passwordHasMinLength ? 'text-emerald-600' : 'text-gray-400'">Au moins 8 caracteres</p>
-              <p :class="passwordHasLetter ? 'text-emerald-600' : 'text-gray-400'">Au moins une lettre</p>
-              <p :class="passwordHasNumber ? 'text-emerald-600' : 'text-gray-400'">Au moins un chiffre</p>
+              <p :class="motDePasseAlaBonneLongueur ? 'text-emerald-600' : 'text-gray-400'">Au moins 8 caracteres</p>
+              <p :class="motDePasseContientLettre ? 'text-emerald-600' : 'text-gray-400'">Au moins une lettre</p>
+              <p :class="motDePasseContientNombre ? 'text-emerald-600' : 'text-gray-400'">Au moins un chiffre</p>
             </div>
             <p v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password }}</p>
           </div>
@@ -126,11 +126,11 @@
           <p class="text-xs text-center text-gray-500">Vous pourrez completer votre profil sante juste apres.</p>
           <p class="text-xs text-center text-gray-500">
             Vous avez deja un compte ?
-            <RouterLink :to="{ name: 'login' }" class="text-teal-700 font-semibold hover:underline">Se connecter</RouterLink>
+            <RouterLink :to="{ name: 'connexion' }" class="text-teal-700 font-semibold hover:underline">Se connecter</RouterLink>
           </p>
           <p class="text-xs text-center text-gray-500">
             Vous souhaitez creer un compte medecin ?
-            <RouterLink :to="{ name: 'register' }" class="text-sky-700 font-semibold hover:underline">Choisir un autre role</RouterLink>
+            <RouterLink :to="{ name: 'inscription' }" class="text-sky-700 font-semibold hover:underline">Choisir un autre role</RouterLink>
           </p>
         </form>
       </div>
@@ -163,54 +163,54 @@ const errors = reactive({
 });
 
 const loading = ref(false);
-const passwordHasMinLength = computed(() => form.password.length >= 8);
-const passwordHasLetter = computed(() => /[a-zA-Z]/.test(form.password));
-const passwordHasNumber = computed(() => /[0-9]/.test(form.password));
+const motDePasseAlaBonneLongueur = computed(() => form.password.length >= 8);
+const motDePasseContientLettre = computed(() => /[a-zA-Z]/.test(form.password));
+const motDePasseContientNombre = computed(() => /[0-9]/.test(form.password));
 
-function clearErrors() {
+function effacerErreurs() {
   errors.name = "";
   errors.email = "";
   errors.date_of_birth = "";
   errors.password = "";
 }
 
-function isValidEmail(email) {
+function estEmailValide(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function validatePassword(password) {
+function validerMotDePasse(password) {
   if (password.length < 8) return "Le mot de passe est trop court (min 8 caracteres).";
   if (!/[a-zA-Z]/.test(password)) return "Le mot de passe doit contenir au moins une lettre.";
   if (!/[0-9]/.test(password)) return "Le mot de passe doit contenir au moins un chiffre.";
   return "";
 }
 
-function firstMessage(value) {
+function premierMessage(value) {
   if (Array.isArray(value)) return String(value[0] || "");
   return typeof value === "string" ? value : "";
 }
 
-function validatePasswordRequirements() {
-  if (!form.password || !validatePassword(form.password)) errors.password = "";
+function validerReglesMotDePasse() {
+  if (!form.password || !validerMotDePasse(form.password)) errors.password = "";
 }
 
-function handleDateBeforeInput(event) {
+function gererAvantSaisieDate(event) {
   if (event.data && /[^0-9/]/.test(event.data)) event.preventDefault();
 }
 
-function normalizeDateInput(value) {
+function normaliserSaisieDate(value) {
   const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
   if (digits.length <= 2) return digits;
   if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
   return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
 }
 
-function handleDateInput(event) {
+function gererSaisieDate(event) {
   const raw = event?.target?.value ?? "";
-  form.date_of_birth = normalizeDateInput(raw).slice(0, 10);
+  form.date_of_birth = normaliserSaisieDate(raw).slice(0, 10);
 }
 
-function validateDateFormat() {
+function validerFormatDate() {
   if (!form.date_of_birth) {
     errors.date_of_birth = "";
     return;
@@ -239,13 +239,13 @@ function validateDateFormat() {
   errors.date_of_birth = "";
 }
 
-function convertDateFormat(dateStr) {
+function convertirFormatDate(dateStr) {
   const match = String(dateStr || "").match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   return match ? `${match[3]}-${match[2]}-${match[1]}` : dateStr;
 }
 
-async function submit() {
-  clearErrors();
+async function soumettre() {
+  effacerErreurs();
 
   if (!form.name || !form.email || !form.date_of_birth || !form.password) {
     if (!form.name) errors.name = "Le nom d'utilisateur est obligatoire.";
@@ -255,17 +255,17 @@ async function submit() {
     return;
   }
 
-  if (!isValidEmail(form.email)) {
+  if (!estEmailValide(form.email)) {
     errors.email = "Format d'email invalide.";
   }
   if (form.name.trim().length < 3) {
     errors.name = "Le nom d'utilisateur doit contenir au moins 3 caracteres.";
   }
 
-  const passwordError = validatePassword(form.password);
+  const passwordError = validerMotDePasse(form.password);
   if (passwordError) errors.password = passwordError;
   if (form.password !== form.password_confirmation) errors.password = "Les mots de passe ne correspondent pas.";
-  validateDateFormat();
+  validerFormatDate();
   if (errors.name || errors.email || errors.date_of_birth || errors.password) return;
 
   loading.value = true;
@@ -274,12 +274,12 @@ async function submit() {
     const res = await api.post("/auth/register", {
       name: form.name,
       email: form.email,
-      date_of_birth: convertDateFormat(form.date_of_birth),
+      date_of_birth: convertirFormatDate(form.date_of_birth),
       password: form.password,
       password_confirmation: form.password_confirmation,
     });
 
-    if (res?.data?.token) authStore.setToken(res.data.token);
+    if (res?.data?.token) authStore.definirToken(res.data.token);
 
     setTimeout(() => router.push(res?.data?.redirect_to || "/profil-sante"), 500);
   } catch (err) {
@@ -287,16 +287,16 @@ async function submit() {
     const data = err?.response?.data || {};
 
     if (status === 422 && data?.errors) {
-      errors.name = firstMessage(data.errors.name);
-      errors.email = firstMessage(data.errors.email);
-      errors.date_of_birth = firstMessage(data.errors.date_of_birth);
-      errors.password = firstMessage(data.errors.password);
+      errors.name = premierMessage(data.errors.name);
+      errors.email = premierMessage(data.errors.email);
+      errors.date_of_birth = premierMessage(data.errors.date_of_birth);
+      errors.password = premierMessage(data.errors.password);
 
       return;
     }
 
     if (status === 409 && data?.errors?.email) {
-      errors.email = firstMessage(data.errors.email);
+      errors.email = premierMessage(data.errors.email);
       return;
     }
   } finally {

@@ -2,7 +2,7 @@
   <div>
     <section class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <article
-        v-for="card in statCards"
+        v-for="card in cartesStatistiques"
         :key="card.key"
         class="rounded-[18px] border bg-white px-5 py-6 shadow-[0_1px_3px_rgba(15,23,42,0.05)]"
         :class="card.borderClass"
@@ -19,22 +19,22 @@
       </article>
     </section>
 
-    <section v-if="showAlerts" class="mt-8 rounded-[18px] border border-[#d4d9e1] bg-white p-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
+    <section v-if="afficherAlertes" class="mt-8 rounded-[18px] border border-[#d4d9e1] bg-white p-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
       <div class="flex items-center justify-between gap-3">
-        <h2 class="text-[18px] font-bold text-[#06214d]">Alertes actives ({{ alerts.length }})</h2>
-        <button type="button" class="text-[14px] font-medium text-[#30466e]" @click="$emit('update:showAlerts', false)">Masquer</button>
+        <h2 class="text-[18px] font-bold text-[#06214d]">Alertes actives ({{ alertes.length }})</h2>
+        <button type="button" class="text-[14px] font-medium text-[#30466e]" @click="$emit('update:afficherAlertes', false)">Masquer</button>
       </div>
 
       <div class="mt-6 space-y-4">
         <article
-          v-for="alert in alerts"
+          v-for="alert in alertes"
           :key="alert.id"
           class="flex flex-col gap-4 rounded-[17px] border px-4 py-4 md:flex-row md:items-start md:justify-between md:px-5"
           :class="alert.rowClass"
         >
           <div class="flex items-start gap-4">
             <div class="mt-[2px] flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full" :class="alert.iconWrapClass">
-              <AlertTriangleIcon class="h-[20px] w-[20px]" :class="alert.iconClass" />
+              <IconeTriangleAlerte class="h-[20px] w-[20px]" :class="alert.iconClass" />
             </div>
             <div>
               <p class="text-[16px] font-semibold text-[#031a46]">{{ alert.patient }}</p>
@@ -49,7 +49,7 @@
     <section class="mt-8 rounded-[18px] border border-[#d4d9e1] bg-white p-4 shadow-[0_1px_4px_rgba(15,23,42,0.05)] sm:p-6">
       <div class="flex flex-col gap-4 xl:flex-row xl:items-center">
         <label class="relative block xl:flex-1">
-          <SearchIcon class="pointer-events-none absolute left-5 top-1/2 h-[20px] w-[20px] -translate-y-1/2 text-[#9aa5b7]" />
+          <IconeRecherche class="pointer-events-none absolute left-5 top-1/2 h-[20px] w-[20px] -translate-y-1/2 text-[#9aa5b7]" />
           <input
             v-model="search"
             type="text"
@@ -64,8 +64,8 @@
             :key="tab.key"
             type="button"
             class="h-[50px] rounded-[15px] px-5 text-[15px] font-semibold transition"
-            :class="activePatientTab === tab.key ? tab.activeClass : 'bg-[#f1f2f4] text-[#243657]'"
-            @click="activePatientTab = tab.key"
+            :class="ongletPatientActif === tab.key ? tab.activeClass : 'bg-[#f1f2f4] text-[#243657]'"
+            @click="ongletPatientActif = tab.key"
           >
             {{ tab.label }}
           </button>
@@ -75,7 +75,7 @@
 
     <section class="mt-6 space-y-4">
       <article
-        v-for="patient in filteredPatients"
+        v-for="patient in patientsFiltres"
         :key="patient.id"
         class="cursor-pointer rounded-[18px] border border-[#d4d9e1] bg-white px-6 py-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)] transition hover:border-[#c7d5f5] hover:shadow-[0_8px_18px_rgba(15,23,42,0.08)]"
         @click="$emit('open-patient', patient)"
@@ -96,7 +96,7 @@
                 <span>{{ patient.age }} ans</span>
                 <span class="text-[#9aa5b7]">•</span>
                 <span class="inline-flex items-center gap-1.5">
-                  <ClockIcon class="h-[16px] w-[16px]" />
+                  <IconeHorloge class="h-[16px] w-[16px]" />
                   {{ patient.lastSeen }}
                 </span>
                 <span class="text-[#9aa5b7]">•</span>
@@ -105,18 +105,18 @@
 
               <div class="mt-4 flex flex-wrap gap-3">
                 <span class="inline-flex h-[34px] items-center gap-2 rounded-[10px] border border-[#f4bcc3] bg-[#fff5f6] px-3 text-[14px] font-semibold text-[#102241]">
-                  <HeartIcon class="h-[16px] w-[16px] text-[#ff2143]" />
+                  <IconeCoeur class="h-[16px] w-[16px] text-[#ff2143]" />
                   {{ patient.heartRate }}
                 </span>
                 <span class="inline-flex h-[34px] items-center gap-2 rounded-[10px] border border-[#aac8ff] bg-[#eff6ff] px-3 text-[14px] font-semibold text-[#102241]">
-                  <WaveIcon class="h-[16px] w-[16px] text-[#1454ff]" />
+                  <IconeOnde class="h-[16px] w-[16px] text-[#1454ff]" />
                   {{ patient.bloodPressure }}
                 </span>
                 <span
                   v-if="patient.glucose"
                   class="inline-flex h-[34px] items-center gap-2 rounded-[10px] border border-[#f4bcc3] bg-[#fff5f6] px-3 text-[14px] font-semibold text-[#102241]"
                 >
-                  <DropIcon class="h-[16px] w-[16px] text-[#ff3b30]" />
+                  <IconeGoutte class="h-[16px] w-[16px] text-[#ff3b30]" />
                   {{ patient.glucose }}
                 </span>
               </div>
@@ -135,7 +135,7 @@
 
           <div v-if="patient.alertCount" class="flex shrink-0 flex-col items-end gap-2 xl:min-w-[160px]">
             <div class="inline-flex h-[40px] items-center gap-2 rounded-[12px] border px-4 text-[14px] font-semibold" :class="patient.alertBadgeClass">
-              <AlertTriangleIcon class="h-[16px] w-[16px]" />
+              <IconeTriangleAlerte class="h-[16px] w-[16px]" />
               {{ patient.alertCount }} alerte<span v-if="patient.alertCount > 1">s</span>
             </div>
             <p v-if="patient.alertLabel" class="text-[14px] font-medium" :class="patient.alertLabelClass">{{ patient.alertLabel }}</p>
@@ -149,32 +149,32 @@
 <script setup>
 import { computed, ref } from 'vue'
 import {
-  AlertTriangleIcon,
-  ClockIcon,
-  DropIcon,
-  HeartIcon,
-  HeartSolidIcon,
-  PulseIcon,
-  SearchIcon,
-  UserOutlineIcon,
-  WaveIcon
-} from '@/components/doctor/DoctorIcons.js'
+  IconeTriangleAlerte,
+  IconeHorloge,
+  IconeGoutte,
+  IconeCoeur,
+  IconeCoeurPlein,
+  IconePouls,
+  IconeRecherche,
+  IconeContourUtilisateur,
+  IconeOnde
+} from '@/components/doctor/IconesMedecin.js'
 
 const props = defineProps({
   patients: {
     type: Array,
     default: () => []
   },
-  showAlerts: {
+  afficherAlertes: {
     type: Boolean,
     default: true
   }
 })
 
-defineEmits(['open-patient', 'update:showAlerts'])
+defineEmits(['open-patient', 'update:afficherAlertes'])
 
 const search = ref('')
-const activePatientTab = ref('all')
+const ongletPatientActif = ref('all')
 
 const patientTabs = [
   { key: 'all', label: 'Tous', activeClass: 'bg-[#1454ff] text-white shadow-[0_6px_16px_rgba(20,84,255,0.25)]' },
@@ -183,7 +183,7 @@ const patientTabs = [
   { key: 'stable', label: 'Stables', activeClass: 'bg-[#08b33b] text-white shadow-[0_6px_16px_rgba(8,179,59,0.2)]' }
 ]
 
-const alerts = computed(() =>
+const alertes = computed(() =>
   props.patients
     .flatMap((patient) => (Array.isArray(patient.alerts) ? patient.alerts : []).map((alert) => ({
       ...alert,
@@ -192,7 +192,7 @@ const alerts = computed(() =>
     .sort((a, b) => new Date(b.isoTime || 0).getTime() - new Date(a.isoTime || 0).getTime())
 )
 
-const statCards = computed(() => {
+const cartesStatistiques = computed(() => {
   const counts = {
     total: props.patients.length,
     critical: props.patients.filter((item) => item.status === 'critical').length,
@@ -207,7 +207,7 @@ const statCards = computed(() => {
       value: counts.total,
       valueClass: 'text-[#031a46]',
       borderClass: 'border-[#d7dce3]',
-      icon: UserOutlineIcon,
+      icon: IconeContourUtilisateur,
       iconWrapClass: 'bg-[#dbe9ff]',
       iconClass: 'text-[#1454ff]'
     },
@@ -217,7 +217,7 @@ const statCards = computed(() => {
       value: counts.critical,
       valueClass: 'text-[#ff1f2d]',
       borderClass: 'border-[#f3b8bb]',
-      icon: AlertTriangleIcon,
+      icon: IconeTriangleAlerte,
       iconWrapClass: 'bg-[#fee3e5]',
       iconClass: 'text-[#ff1f2d]'
     },
@@ -227,7 +227,7 @@ const statCards = computed(() => {
       value: counts.watch,
       valueClass: 'text-[#ef7a00]',
       borderClass: 'border-[#f0cb58]',
-      icon: PulseIcon,
+      icon: IconePouls,
       iconWrapClass: 'bg-[#fff0c8]',
       iconClass: 'text-[#ef7a00]'
     },
@@ -237,18 +237,18 @@ const statCards = computed(() => {
       value: counts.stable,
       valueClass: 'text-[#07b33f]',
       borderClass: 'border-[#b5e6c6]',
-      icon: HeartSolidIcon,
+      icon: IconeCoeurPlein,
       iconWrapClass: 'bg-[#d2f3de]',
       iconClass: 'text-[#07b33f]'
     }
   ]
 })
 
-const filteredPatients = computed(() => {
+const patientsFiltres = computed(() => {
   const term = search.value.trim().toLowerCase()
 
   return props.patients.filter((patient) => {
-    const matchesTab = activePatientTab.value === 'all' || patient.status === activePatientTab.value
+    const matchesTab = ongletPatientActif.value === 'all' || patient.status === ongletPatientActif.value
     const matchesSearch =
       !term ||
       patient.name.toLowerCase().includes(term) ||

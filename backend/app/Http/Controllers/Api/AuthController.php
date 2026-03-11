@@ -19,11 +19,11 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     public function __construct(
-        private readonly DoctorInvitationLinker $doctorInvitationLinker,
+        private readonly DoctorInvitationLinker $lieurInvitationMedecin,
     ) {
     }
 
-    public function register(Request $request): JsonResponse
+    public function inscrire(Request $request): JsonResponse
     {
         try {
             $validated = $request->validate([
@@ -34,9 +34,9 @@ class AuthController extends Controller
                     'max:255',
                     Rule::unique('users', 'email')->where(fn ($query) => $query->where('role', 'user')),
                 ],
-                'date_of_birth' => ['required', 'date_format:Y-m-d', $this->dateRule()],
+                'date_of_birth' => ['required', 'date_format:Y-m-d', $this->regleDate()],
                 'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
-            ], $this->baseMessages());
+            ], $this->messagesDeBase());
 
             $user = User::create([
                 'name' => $validated['name'],
@@ -46,7 +46,7 @@ class AuthController extends Controller
                 'role' => 'user',
             ]);
 
-            return $this->authenticatedResponse(
+            return $this->reponseAuthentifiee(
                 $user,
                 $user->createToken('auth_token')->plainTextToken,
                 false,
@@ -61,14 +61,14 @@ class AuthController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         } catch (QueryException $e) {
-            return $this->handleRegistrationQueryException($e);
+            return $this->gererExceptionRequeteInscription($e);
         } catch (\Throwable $e) {
             Log::error('Registration error: '.$e->getMessage());
             return response()->json(['message' => 'Erreur lors de la creation du compte'], 500);
         }
     }
 
-    public function registerDoctor(Request $request): JsonResponse
+    public function inscrireMedecin(Request $request): JsonResponse
     {
         try {
             $validated = $request->validate([
@@ -80,7 +80,7 @@ class AuthController extends Controller
                 ],
                 'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
                 'specialite' => ['required', 'string', 'min:2', 'max:120'],
-            ], array_merge($this->baseMessages(), [
+            ], array_merge($this->messagesDeBase(), [
                 'specialite.required' => 'La specialite est obligatoire.',
             ]));
 
@@ -93,8 +93,8 @@ class AuthController extends Controller
                 'specialite' => trim($validated['specialite']),
             ]);
 
-            $hasPendingDoctorInvitations = $this->doctorInvitationLinker->linkForUser($user);
-            return $this->authenticatedResponse(
+            $hasPendingDoctorInvitations = $this->lieurInvitationMedecin->lierPourUtilisateur($user);
+            return $this->reponseAuthentifiee(
                 $user,
                 $user->createToken('doctor_auth_token')->plainTextToken,
                 false,
@@ -109,14 +109,14 @@ class AuthController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         } catch (QueryException $e) {
-            return $this->handleRegistrationQueryException($e);
+            return $this->gererExceptionRequeteInscription($e);
         } catch (\Throwable $e) {
             Log::error('Doctor registration error: '.$e->getMessage());
             return response()->json(['message' => 'Erreur lors de la creation du compte medecin'], 500);
         }
     }
 
-    public function login(Request $request): JsonResponse
+    public function connecter(Request $request): JsonResponse
     {
         try {
             $credentials = $request->validate([
@@ -126,7 +126,7 @@ class AuthController extends Controller
             ]);
 
             $role = $credentials['role'] ?? 'user';
-            $user = $this->findUserForLogin(
+            $user = $this->trouverUtilisateurPourConnexion(
                 strtolower(trim($credentials['email'])),
                 $credentials['password'],
                 $role,
@@ -137,11 +137,11 @@ class AuthController extends Controller
             }
 
             $user->tokens()->delete();
-            $linkedPendingInvitations = $role === 'medecin' ? $this->doctorInvitationLinker->linkForUser($user) : false;
+            $linkedPendingInvitations = $role === 'medecin' ? $this->lieurInvitationMedecin->lierPourUtilisateur($user) : false;
             $hasProfil = $role === 'user' ? $user->profilSante()->exists() : false;
-            $hasPendingDoctorInvitations = $role === 'medecin' && ($linkedPendingInvitations || $this->hasPendingDoctorInvitations($user));
+            $hasPendingDoctorInvitations = $role === 'medecin' && ($linkedPendingInvitations || $this->aInvitationsMedecinEnAttente($user));
 
-            return $this->authenticatedResponse(
+            return $this->reponseAuthentifiee(
                 $user,
                 $user->createToken($role === 'medecin' ? 'doctor_auth_token' : 'auth_token')->plainTextToken,
                 $hasProfil,
@@ -161,7 +161,7 @@ class AuthController extends Controller
         }
     }
 
-    public function loginDoctor(Request $request): JsonResponse
+    public function connecterMedecin(Request $request): JsonResponse
     {
         try {
             $validated = $request->validate([
@@ -177,17 +177,17 @@ class AuthController extends Controller
                 'password' => $validated['password'],
             ];
 
-            $user = $this->findUserForLogin($credentials['email'], $credentials['password'], 'medecin');
+            $user = $this->trouverUtilisateurPourConnexion($credentials['email'], $credentials['password'], 'medecin');
 
             if (! $user) {
                 return response()->json(['message' => 'Email ou mot de passe invalide.'], 401);
             }
 
             $user->tokens()->delete();
-            $linkedPendingInvitations = $this->doctorInvitationLinker->linkForUser($user);
-            $hasPendingDoctorInvitations = $linkedPendingInvitations || $this->hasPendingDoctorInvitations($user);
+            $linkedPendingInvitations = $this->lieurInvitationMedecin->lierPourUtilisateur($user);
+            $hasPendingDoctorInvitations = $linkedPendingInvitations || $this->aInvitationsMedecinEnAttente($user);
 
-            return $this->authenticatedResponse(
+            return $this->reponseAuthentifiee(
                 $user,
                 $user->createToken('doctor_auth_token')->plainTextToken,
                 false,
@@ -207,25 +207,25 @@ class AuthController extends Controller
         }
     }
 
-    public function me(Request $request): JsonResponse
+    public function utilisateurConnecte(Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();
         $hasProfil = $user->role === 'user' ? $user->profilSante()->exists() : false;
 
         if ($user->role === 'medecin') {
-            $this->doctorInvitationLinker->linkForUser($user);
+            $this->lieurInvitationMedecin->lierPourUtilisateur($user);
         }
 
         return response()->json([
-            'user' => $this->userPayload($user),
+            'user' => $this->donneesUtilisateur($user),
             'has_profil_sante' => $hasProfil,
-            'has_pending_doctor_invitations' => $user->role === 'medecin' ? $this->hasPendingDoctorInvitations($user) : false,
+            'has_pending_doctor_invitations' => $user->role === 'medecin' ? $this->aInvitationsMedecinEnAttente($user) : false,
             'redirect_to' => $user->role === 'medecin' ? '/main/dashboard' : ($hasProfil ? '/main' : '/profil-sante'),
         ]);
     }
 
-    public function logout(Request $request): JsonResponse
+    public function deconnexion(Request $request): JsonResponse
     {
         $request->user()?->currentAccessToken()?->delete();
 
@@ -234,19 +234,19 @@ class AuthController extends Controller
         ]);
     }
 
-    private function authenticatedResponse(User $user, string $token, bool $hasProfil, string $redirectTo, bool $hasPendingDoctorInvitations, int $status, string $message): JsonResponse
+    private function reponseAuthentifiee(User $user, string $token, bool $hasProfil, string $redirectTo, bool $hasPendingDoctorInvitations, int $status, string $message): JsonResponse
     {
         return response()->json([
             'message' => $message,
             'token' => $token,
             'has_profil_sante' => $hasProfil,
             'redirect_to' => $redirectTo,
-            'user' => $this->userPayload($user),
+            'user' => $this->donneesUtilisateur($user),
             'has_pending_doctor_invitations' => $hasPendingDoctorInvitations,
         ], $status);
     }
 
-    private function userPayload(User $user): array
+    private function donneesUtilisateur(User $user): array
     {
         return [
             'id' => $user->id,
@@ -258,7 +258,7 @@ class AuthController extends Controller
         ];
     }
 
-    private function hasPendingDoctorInvitations(User $user): bool
+    private function aInvitationsMedecinEnAttente(User $user): bool
     {
         return DoctorInvitation::query()
             ->where('doctor_user_id', $user->id)
@@ -266,7 +266,7 @@ class AuthController extends Controller
             ->exists();
     }
 
-    private function handleRegistrationQueryException(QueryException $e): JsonResponse
+    private function gererExceptionRequeteInscription(QueryException $e): JsonResponse
     {
         $sqlState = $e->errorInfo[0] ?? null;
         $driverCode = $e->errorInfo[1] ?? null;
@@ -284,7 +284,7 @@ class AuthController extends Controller
         return response()->json(['message' => 'Erreur lors de la creation du compte'], 500);
     }
 
-    private function findUserForLogin(string $email, string $password, string $role): ?User
+    private function trouverUtilisateurPourConnexion(string $email, string $password, string $role): ?User
     {
         $user = User::query()
             ->where('email', $email)
@@ -295,7 +295,7 @@ class AuthController extends Controller
         return $user && Hash::check($password, $user->password) ? $user : null;
     }
 
-    private function baseMessages(): array
+    private function messagesDeBase(): array
     {
         return [
             'name.required' => "Le nom d'utilisateur est obligatoire.",
@@ -307,7 +307,7 @@ class AuthController extends Controller
         ];
     }
 
-    private function dateRule(): \Closure
+    private function regleDate(): \Closure
     {
         return function ($attribute, $value, $fail) {
             try {

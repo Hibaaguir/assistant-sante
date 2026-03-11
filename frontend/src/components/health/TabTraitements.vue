@@ -442,11 +442,11 @@ async function basculerPrise(dayKey, med, doseIndex) {
   props.treatmentChecks[dayKey][key] = !props.treatmentChecks[dayKey][key];
   try {
     await synchroniserSuiviTraitements();
-    notifications.actionUpdated();
+    notifications.actionModifiee();
   } catch (error) {
     props.treatmentChecks[dayKey][key] = previousValue;
     const message = error?.response?.data?.message || "Erreur lors de la mise a jour.";
-    notifications.error(message);
+    notifications.erreur(message);
   }
 }
 

@@ -1,10 +1,10 @@
-﻿<template>
+<template>
   <div class="mx-auto max-w-[1320px] p-4 sm:p-6 lg:p-8">
     <div>
       <h2 class="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">Nouvelle entrée</h2>
       <p class="mt-2 text-base text-slate-600">Remplissez votre journal quotidien</p>
     </div>
-    <InlineNotifications />
+    <NotificationsEnLigne />
 
     <div class="mt-5 rounded-2xl border border-slate-300 bg-slate-100 p-4 sm:p-6">
       <IndicateurEtapes :current="step" :steps="steps" />
@@ -354,7 +354,7 @@
       {{ saveError }}
     </p>
 
-    <ConfirmDialog
+    <DialogueConfirmation
       :open="confirmDeleteMealOpen"
       title="Confirmer la suppression"
       message="Voulez-vous supprimer ce repas ?"
@@ -372,8 +372,8 @@ import { useRoute, useRouter } from 'vue-router'
 import IndicateurEtapes from '@/components/journal/IndicateurEtapes.vue'
 import { useJournalStore } from '@/stores/journal'
 import { useNotificationsStore } from '@/stores/notifications'
-import InlineNotifications from '@/components/ui/InlineNotifications.vue'
-import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import NotificationsEnLigne from '@/components/ui/NotificationsEnLigne.vue'
+import DialogueConfirmation from '@/components/ui/DialogueConfirmation.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -493,29 +493,29 @@ onMounted(async () => {
   await store.initialiser()
   if (!isEditMode.value) return
 
-  const entry = store.obtenirParId(editEntryId.value)
-  if (!entry) return
+  const entree = store.obtenirParId(editEntryId.value)
+  if (!entree) return
 
-  form.sleep = Number(entry.sleep ?? 7)
-  form.stress = Number(entry.stress ?? 5)
+  form.sleep = Number(entree.sleep ?? 7)
+  form.stress = Number(entree.stress ?? 5)
   form.energy = STATIC_ENERGY
-  form.sugar = entry.sugar ?? 'low'
-  form.caffeine = Number(entry.caffeine ?? 0)
-  form.meals = Array.isArray(entry.meals) ? [...entry.meals] : []
-  form.activityType = entry.activityType ?? ''
-  form.activityDuration = Number(entry.activityDuration ?? 0)
-  form.intensity = entry.intensity ?? 'medium'
-  form.tobacco = Boolean(entry.tobacco)
-  form.alcohol = Boolean(entry.alcohol)
-  form.tobaccoTypes = entry.tobaccoTypes ?? { cigarette: false, vape: false }
-  form.cigarettesPerDay = entry.cigarettesPerDay ?? null
-  form.vapeLiquidMl = entry.vapeLiquidMl ?? null
-  form.alcoholDrinks = entry.alcoholDrinks ?? null
+  form.sugar = entree.sugar ?? 'low'
+  form.caffeine = Number(entree.caffeine ?? 0)
+  form.meals = Array.isArray(entree.meals) ? [...entree.meals] : []
+  form.activityType = entree.activityType ?? ''
+  form.activityDuration = Number(entree.activityDuration ?? 0)
+  form.intensity = entree.intensity ?? 'medium'
+  form.tobacco = Boolean(entree.tobacco)
+  form.alcohol = Boolean(entree.alcohol)
+  form.tobaccoTypes = entree.tobaccoTypes ?? { cigarette: false, vape: false }
+  form.cigarettesPerDay = entree.cigarettesPerDay ?? null
+  form.vapeLiquidMl = entree.vapeLiquidMl ?? null
+  form.alcoholDrinks = entree.alcoholDrinks ?? null
 
   // Preserve previously saved hydration in a simple way while keeping the current UI.
   form.cupCount = 0
   form.bottleCount = 0
-  form.customHydration = Number(entry.hydration ?? 0)
+  form.customHydration = Number(entree.hydration ?? 0)
 })
 
 const ajouterRepas = () => {
@@ -530,7 +530,7 @@ const ajouterRepas = () => {
   mealDraft.label = ''
   mealDraft.calories = null
   form.selectedMeal = ''
-  notifications.actionAdded()
+  notifications.actionAjoutee()
 }
 
 const mealTypeLabel = (type) => {
@@ -548,13 +548,13 @@ const confirmSupprimerRepas = () => {
   pendingDeleteMealIndex.value = -1
   if (index < 0 || index >= form.meals.length) return
   form.meals.splice(index, 1)
-  notifications.actionDeleted()
+  notifications.actionSupprimee()
 }
 
 const cancelSupprimerRepas = () => {
   confirmDeleteMealOpen.value = false
   pendingDeleteMealIndex.value = -1
-  notifications.actionCanceled()
+  notifications.actionAnnulee()
 }
 
 const ajusterCafeine = (delta) => {
@@ -576,7 +576,7 @@ const allerSuivant = () => {
 
 const allerPrecedent = () => {
   if (step.value === 1) {
-    router.push({ name: 'journal-home' })
+    router.push({ name: 'journal' })
     return
   }
   step.value = Math.max(1, step.value - 1)
@@ -594,7 +594,7 @@ const gererSelectionActivite = () => {
 const annulerNouvelleActivite = () => {
   showNewActivityForm.value = false
   newActivityName.value = ''
-  notifications.actionCanceled()
+  notifications.actionAnnulee()
 }
 
 const ajouterNouvelleActivite = () => {
@@ -606,7 +606,7 @@ const ajouterNouvelleActivite = () => {
   form.activityType = name
   showNewActivityForm.value = false
   newActivityName.value = ''
-  notifications.actionAdded()
+  notifications.actionAjoutee()
 }
 
 const basculerTabac = () => {
@@ -635,8 +635,8 @@ const basculerAlcool = () => {
 
 const annulerModification = async () => {
   if (!isEditMode.value) return
-  await store.fetchEntries()
-  router.push({ name: 'journal-history', query: { notice: 'canceled' } })
+  await store.chargerEntrees()
+  router.push({ name: 'historique-journal', query: { notice: 'canceled' } })
 }
 
 const enregistrer = async () => {
@@ -668,28 +668,28 @@ const enregistrer = async () => {
 
     if (isEditMode.value) {
       await store.mettreAJourEntree(editEntryId.value, payload)
-      router.push({ name: 'journal-history', query: { notice: 'saved' } })
+      router.push({ name: 'historique-journal', query: { notice: 'saved' } })
       return
     }
 
     await store.ajouterEntree(payload)
-    notifications.actionAdded()
-    router.push({ name: 'journal-home' })
+    notifications.actionAjoutee()
+    router.push({ name: 'journal' })
   } catch (error) {
     console.error('Journal save error:', error)
     if (error?.response?.status === 422 && error?.response?.data?.errors) {
       const firstError = Object.values(error.response.data.errors)?.[0]
       saveError.value = Array.isArray(firstError) ? firstError[0] : 'Validation invalide.'
-      notifications.warning(saveError.value)
+      notifications.avertissement(saveError.value)
       return
     }
     if (error?.response?.status === 401) {
       saveError.value = 'Session expiree. Reconnectez-vous.'
-      notifications.error(saveError.value)
+      notifications.erreur(saveError.value)
       return
     }
     saveError.value = "Erreur lors de l'enregistrement du journal."
-    notifications.error(saveError.value)
+    notifications.erreur(saveError.value)
   }
 }
 </script>

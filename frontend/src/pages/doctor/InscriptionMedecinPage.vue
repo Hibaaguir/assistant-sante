@@ -40,7 +40,7 @@
 
         <div class="my-7 h-px bg-[#e2e6ee]" />
 
-        <form class="space-y-5" @submit.prevent="submit">
+        <form class="space-y-5" @submit.prevent="soumettre">
           <div>
             <label class="mb-2 block text-base font-semibold text-[#162a55]">Nom complet</label>
             <input
@@ -48,7 +48,7 @@
               type="text"
               placeholder="Dr. Jean Dupont"
               autocomplete="name"
-              :class="fieldClass(errors.name)"
+              :class="classeChamp(errors.name)"
             />
             <p v-if="errors.name" class="mt-2 text-sm text-red-600">{{ errors.name }}</p>
           </div>
@@ -60,7 +60,7 @@
               type="text"
               placeholder="Entrez votre specialite"
               autocomplete="organization-title"
-              :class="fieldClass(errors.specialite)"
+              :class="classeChamp(errors.specialite)"
             />
             <p v-if="errors.specialite" class="mt-2 text-sm text-red-600">{{ errors.specialite }}</p>
           </div>
@@ -79,7 +79,7 @@
                 type="email"
                 placeholder="docteur@exemple.com"
                 autocomplete="email"
-                :class="[fieldClass(errors.email), 'pl-12']"
+                :class="[classeChamp(errors.email), 'pl-12']"
               />
             </div>
             <p v-if="errors.email" class="mt-2 text-sm text-red-600">{{ errors.email }}</p>
@@ -99,7 +99,7 @@
                 :type="showPassword ? 'text' : 'password'"
                 placeholder="Minimum 8 caracteres"
                 autocomplete="new-password"
-                :class="[fieldClass(errors.password), 'pl-12 pr-14']"
+                :class="[classeChamp(errors.password), 'pl-12 pr-14']"
               />
               <button
                 type="button"
@@ -137,7 +137,7 @@
 
         <p class="mt-8 text-center text-base text-[#50607d]">
           Vous avez deja un compte ?
-          <RouterLink :to="loginLink" class="font-semibold text-[#4f46ff] transition hover:text-[#2f55ff] hover:underline">Se connecter</RouterLink>
+          <RouterLink :to="lienConnexion" class="font-semibold text-[#4f46ff] transition hover:text-[#2f55ff] hover:underline">Se connecter</RouterLink>
         </p>
       </div>
     </div>
@@ -173,26 +173,26 @@ const showPassword = ref(false);
 const serverMessage = ref("");
 const messageType = ref("success");
 
-const loginLink = computed(() => ({ name: "doctor-login", query: { email: form.email } }));
+const lienConnexion = computed(() => ({ name: "connexion-medecin", query: { email: form.email } }));
 
-function clearErrors() {
+function effacerErreurs() {
   errors.name = "";
   errors.email = "";
   errors.password = "";
   errors.specialite = "";
 }
 
-function fieldClass(hasError) {
+function classeChamp(hasError) {
   return [
     "h-14 w-full rounded-[18px] border bg-white px-4 text-[17px] text-[#0f172a] outline-none transition placeholder:text-[#a0a8b8]",
     hasError ? "border-red-300 focus:border-red-400" : "border-[#d7dce5] focus:border-[#4f46ff]",
   ];
 }
 
-async function submit() {
+async function soumettre() {
   serverMessage.value = "";
   messageType.value = "success";
-  clearErrors();
+  effacerErreurs();
 
   if (!form.name || !form.email || !form.password || !form.specialite) {
     if (!form.name) errors.name = "Le nom complet est obligatoire.";
@@ -214,7 +214,7 @@ async function submit() {
       specialite: form.specialite,
     });
 
-    if (res?.data?.token) authStore.setToken(res.data.token);
+    if (res?.data?.token) authStore.definirToken(res.data.token);
 
     serverMessage.value = res?.data?.message || "Compte medecin cree avec succes.";
     messageType.value = "success";

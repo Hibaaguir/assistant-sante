@@ -74,7 +74,7 @@
           <select
             v-model="analysisForm.category"
             class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] text-slate-800 outline-none focus:border-blue-500"
-            @change="handleAnalysisCategoryChange"
+            @change="gererChangementCategorieAnalyse"
           >
             <option value="">Sélectionnez</option>
             <option v-for="item in analysisCategoryOptions" :key="item" :value="item">{{ item }}</option>
@@ -91,7 +91,7 @@
               <div>
                 <p class="text-[13px] font-semibold text-slate-700">Résultat {{ index + 1 }}</p>
                 <p v-if="expandedAnalysisResultIndex !== index" class="mt-1 text-xs text-slate-500">
-                  {{ getAnalysisResultSummary(result) }}
+                  {{ resumerResultatAnalyse(result) }}
                 </p>
               </div>
               <div class="flex items-center gap-2">
@@ -107,7 +107,7 @@
                   v-if="analysisForm.results.length > 1 && !editingAnalysisId"
                   type="button"
                   class="text-xs font-semibold text-rose-600 hover:text-rose-700"
-                  @click="removeAnalysisResult(index)"
+                  @click="supprimerResultatAnalyse(index)"
                 >
                   Supprimer
                 </button>
@@ -121,7 +121,7 @@
                 v-model="result.result"
                 :disabled="!analysisForm.category"
                 class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] text-slate-800 outline-none focus:border-blue-500 disabled:opacity-60"
-                @change="handleAnalysisResultChange(index)"
+                @change="gererChangementResultatAnalyse(index)"
               >
                 <option value="">Sélectionnez</option>
                 <option v-for="item in analysisResultOptions" :key="item.label" :value="item.label">{{ item.label }}</option>
@@ -145,7 +145,7 @@
             v-if="!editingAnalysisId"
             type="button"
             class="h-10 rounded-xl border border-slate-300 px-4 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
-            @click="addAnalysisResult"
+            @click="ajouterResultatAnalyse"
           >
             + Ajouter un autre résultat
           </button>
@@ -167,14 +167,14 @@
     </div>
   </div>
 
-  <ConfirmDialog
+  <DialogueConfirmation
     :open="showDeleteConfirm"
     title="Supprimer l'analyse"
     :message="deleteMessage"
     confirm-label="Supprimer"
     cancel-label="Annuler"
-    @cancel="cancelDelete"
-    @confirm="confirmDelete"
+    @cancel="annulerSuppression"
+    @confirm="confirmerSuppression"
   />
 </template>
 
@@ -182,7 +182,7 @@
 import { computed, reactive, ref } from "vue";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
-import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
+import DialogueConfirmation from "@/components/ui/DialogueConfirmation.vue";
 
 const props = defineProps({
   analyses: { type: Array, default: () => [] },
@@ -334,13 +334,13 @@ function creerLigneResultatAnalyse() {
 }
 
 // Cette fonction ajoute une ligne de resultat.
-function addAnalysisResult() {
+function ajouterResultatAnalyse() {
   analysisForm.results.push(creerLigneResultatAnalyse());
   expandedAnalysisResultIndex.value = analysisForm.results.length - 1;
 }
 
 // Cette fonction supprime une ligne de resultat.
-function removeAnalysisResult(index) {
+function supprimerResultatAnalyse(index) {
   if (analysisForm.results.length <= 1) return;
   analysisForm.results.splice(index, 1);
   if (expandedAnalysisResultIndex.value >= analysisForm.results.length) {
@@ -349,13 +349,13 @@ function removeAnalysisResult(index) {
 }
 
 // Cette fonction gere le changement de type d'analyse.
-function handleAnalysisCategoryChange() {
+function gererChangementCategorieAnalyse() {
   analysisForm.results = [creerLigneResultatAnalyse()];
   expandedAnalysisResultIndex.value = 0;
 }
 
 // Cette fonction applique l'unite par defaut selon le resultat selectionne.
-function handleAnalysisResultChange(index) {
+function gererChangementResultatAnalyse(index) {
   const row = analysisForm.results[index];
   if (!row) return;
 
@@ -375,7 +375,7 @@ function reinitialiserFormulaireAnalyse() {
 }
 
 // Cette fonction genere un resume court d'un resultat pour l'affichage replie.
-function getAnalysisResultSummary(result) {
+function resumerResultatAnalyse(result) {
   const resultName = result?.result?.trim();
   const value = String(result?.value ?? "").trim();
   const unit = String(result?.unit ?? "").trim();
@@ -428,10 +428,10 @@ async function enregistrerAnalyse() {
   try {
     if (editingAnalysisId.value) {
       await api.put(`/health-data/labs/${editingAnalysisId.value}`, validRows[0]);
-      notifications.actionUpdated();
+      notifications.actionModifiee();
     } else {
       await Promise.all(validRows.map((payload) => api.post("/health-data/labs", payload)));
-      notifications.actionAdded();
+      notifications.actionAjoutee();
       // On reset les filtres pour afficher immediatement les nouvelles analyses ajoutees.
       labsFilterType.value = "";
       labsFilterDate.value = "";
@@ -444,7 +444,7 @@ async function enregistrerAnalyse() {
     emit("refresh");
   } catch (error) {
     const message = error?.response?.data?.message || "Erreur lors de l'enregistrement.";
-    notifications.error(message);
+    notifications.erreur(message);
   }
 }
 
@@ -471,20 +471,20 @@ async function supprimerAnalyse(item) {
   showDeleteConfirm.value = true;
 }
 
-function cancelDelete() {
+function annulerSuppression() {
   pendingDeleteItem.value = null;
   showDeleteConfirm.value = false;
 }
 
-async function confirmDelete() {
+async function confirmerSuppression() {
   if (!pendingDeleteItem.value?.id) return;
   try {
     await api.delete(`/health-data/labs/${pendingDeleteItem.value.id}`);
-    notifications.actionDeleted();
+    notifications.actionSupprimee();
     emit("refresh");
   } catch (error) {
     const message = error?.response?.data?.message || "Erreur lors de la suppression.";
-    notifications.error(message);
+    notifications.erreur(message);
   } finally {
     pendingDeleteItem.value = null;
     showDeleteConfirm.value = false;
@@ -492,16 +492,16 @@ async function confirmDelete() {
 }
 
 // Cette methode est exposee pour que le parent puisse ouvrir la modale d'ajout.
-function openAddModal() {
+function ouvrirModalAjout() {
   editingAnalysisId.value = null;
   reinitialiserFormulaireAnalyse();
   showAnalysisModal.value = true;
 }
 
 // Cette methode est exposee pour que le parent puisse basculer l'affichage des filtres.
-function toggleFilters() {
+function basculerFiltres() {
   showLabsFilters.value = !showLabsFilters.value;
 }
 
-defineExpose({ openAddModal, toggleFilters });
+defineExpose({ ouvrirModalAjout, basculerFiltres });
 </script>

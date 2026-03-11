@@ -1,4 +1,4 @@
-﻿/*
+/*
   Store Pinia du module journal.
   Il centralise le chargement, la transformation et la sauvegarde des entrees.
   Les pages journal consomment cet etat pour garder une logique unique.
@@ -8,14 +8,14 @@ import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import api from "@/services/api";
 
-function toNullableInt(value) {
+function convertirEntierOuNull(value) {
   if (value == null || value === "") return null;
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return null;
   return Math.round(parsed);
 }
 
-function formatDateLabel(dateIso) {
+function formaterLibelleDate(dateIso) {
   if (!dateIso) return "";
   const date = new Date(`${dateIso}T00:00:00`);
   if (Number.isNaN(date.getTime())) return dateIso;
@@ -26,51 +26,51 @@ function formatDateLabel(dateIso) {
   });
 }
 
-function toView(model) {
+function versVue(modele) {
   return {
-    id: String(model.id),
-    dateIso: model.entry_date,
-    dateLabel: formatDateLabel(model.entry_date),
-    sleep: Number(model.sleep ?? 0),
-    stress: Number(model.stress ?? 0),
-    energy: Number(model.energy ?? 0),
-    sugar: model.sugar ?? "low",
-    caffeine: Number(model.caffeine ?? 0),
-    hydration: Number(model.hydration ?? 0),
-    meals: Array.isArray(model.meals) ? model.meals : [],
-    activityType: model.activity_type ?? "",
-    activityDuration: Number(model.activity_duration ?? 0),
-    intensity: model.intensity ?? "medium",
-    tobacco: Boolean(model.tobacco),
-    alcohol: Boolean(model.alcohol),
-    tobaccoTypes: model.tobacco_types ?? { cigarette: false, vape: false },
-    cigarettesPerDay: model.cigarettes_per_day,
-    vapeFrequency: model.vape_frequency,
-    vapeLiquidMl: model.vape_liquid_ml,
-    alcoholDrinks: model.alcohol_drinks,
+    id: String(modele.id),
+    dateIso: modele.entry_date,
+    dateLabel: formaterLibelleDate(modele.entry_date),
+    sleep: Number(modele.sleep ?? 0),
+    stress: Number(modele.stress ?? 0),
+    energy: Number(modele.energy ?? 0),
+    sugar: modele.sugar ?? "low",
+    caffeine: Number(modele.caffeine ?? 0),
+    hydration: Number(modele.hydration ?? 0),
+    meals: Array.isArray(modele.meals) ? modele.meals : [],
+    activityType: modele.activity_type ?? "",
+    activityDuration: Number(modele.activity_duration ?? 0),
+    intensity: modele.intensity ?? "medium",
+    tobacco: Boolean(modele.tobacco),
+    alcohol: Boolean(modele.alcohol),
+    tobaccoTypes: modele.tobacco_types ?? { cigarette: false, vape: false },
+    cigarettesPerDay: modele.cigarettes_per_day,
+    vapeFrequency: modele.vape_frequency,
+    vapeLiquidMl: modele.vape_liquid_ml,
+    alcoholDrinks: modele.alcohol_drinks,
   };
 }
 
-function toPayload(entry) {
+function versChargeUtile(entree) {
   return {
-    entry_date: entry.dateIso || new Date().toISOString().slice(0, 10),
-    sleep: toNullableInt(entry.sleep),
-    stress: toNullableInt(entry.stress),
-    energy: toNullableInt(entry.energy),
-    sugar: entry.sugar ?? "low",
-    caffeine: toNullableInt(entry.caffeine) ?? 0,
-    hydration: entry.hydration ?? 0,
-    meals: Array.isArray(entry.meals) ? entry.meals : [],
-    activity_type: entry.activityType ?? null,
-    activity_duration: toNullableInt(entry.activityDuration),
-    intensity: entry.intensity ?? "medium",
-    tobacco: Boolean(entry.tobacco),
-    alcohol: Boolean(entry.alcohol),
-    tobacco_types: entry.tobaccoTypes ?? { cigarette: false, vape: false },
-    cigarettes_per_day: toNullableInt(entry.cigarettesPerDay),
-    vape_frequency: entry.vapeFrequency ?? null,
-    vape_liquid_ml: toNullableInt(entry.vapeLiquidMl),
-    alcohol_drinks: toNullableInt(entry.alcoholDrinks),
+    entry_date: entree.dateIso || new Date().toISOString().slice(0, 10),
+    sleep: convertirEntierOuNull(entree.sleep),
+    stress: convertirEntierOuNull(entree.stress),
+    energy: convertirEntierOuNull(entree.energy),
+    sugar: entree.sugar ?? "low",
+    caffeine: convertirEntierOuNull(entree.caffeine) ?? 0,
+    hydration: entree.hydration ?? 0,
+    meals: Array.isArray(entree.meals) ? entree.meals : [],
+    activity_type: entree.activityType ?? null,
+    activity_duration: convertirEntierOuNull(entree.activityDuration),
+    intensity: entree.intensity ?? "medium",
+    tobacco: Boolean(entree.tobacco),
+    alcohol: Boolean(entree.alcohol),
+    tobacco_types: entree.tobaccoTypes ?? { cigarette: false, vape: false },
+    cigarettes_per_day: convertirEntierOuNull(entree.cigarettesPerDay),
+    vape_frequency: entree.vapeFrequency ?? null,
+    vape_liquid_ml: convertirEntierOuNull(entree.vapeLiquidMl),
+    alcohol_drinks: convertirEntierOuNull(entree.alcoholDrinks),
   };
 }
 
@@ -83,47 +83,47 @@ export const useJournalStore = defineStore("journal", () => {
 
   const filter = ref({ ...DEFAULT_FILTER });
 
-  const latestEntry = computed(() =>
+  const derniereEntree = computed(() =>
     entries.value.reduce((best, e) => (!best || e.dateIso > best.dateIso ? e : best), null)
   );
 
-  const filteredEntries = computed(() => {
+  const entreesFiltrees = computed(() => {
     const f = filter.value;
 
     if (f.type === "all") return entries.value;
 
     if (f.type === "nutrition") {
-      return entries.value.filter((entry) => entry.meals.length > 0);
+      return entries.value.filter((entree) => entree.meals.length > 0);
     }
 
     if (f.type === "hydration") {
-      return entries.value.filter((entry) => entry.hydration > 0);
+      return entries.value.filter((entree) => entree.hydration > 0);
     }
 
     if (f.type === "activity") {
-      return entries.value.filter((entry) => Boolean(entry.activityType));
+      return entries.value.filter((entree) => Boolean(entree.activityType));
     }
 
     if (f.type === "month") {
       if (!f.month) return [];
-      return entries.value.filter((entry) => entry.dateIso.startsWith(f.month));
+      return entries.value.filter((entree) => entree.dateIso.startsWith(f.month));
     }
 
     if (f.type === "date") {
       if (!f.date) return [];
-      return entries.value.filter((entry) => entry.dateIso === f.date);
+      return entries.value.filter((entree) => entree.dateIso === f.date);
     }
 
     return entries.value;
   });
 
-  const obtenirParId = (id) => entries.value.find((entry) => entry.id === String(id));
+  const obtenirParId = (id) => entries.value.find((entree) => entree.id === String(id));
 
-  const fetchEntries = async () => {
+  const chargerEntrees = async () => {
     loading.value = true;
     try {
       const res = await api.get("/journal");
-      entries.value = Array.isArray(res?.data?.data) ? res.data.data.map(toView) : [];
+      entries.value = Array.isArray(res?.data?.data) ? res.data.data.map(versVue) : [];
       initialized.value = true;
     } finally {
       loading.value = false;
@@ -132,38 +132,38 @@ export const useJournalStore = defineStore("journal", () => {
 
   const initialiser = async () => {
     if (initialized.value || loading.value) return;
-    await fetchEntries();
+    await chargerEntrees();
   };
 
-  const ajouterEntree = async (entry) => {
-    const payload = toPayload({
-      ...entry,
+  const ajouterEntree = async (entree) => {
+    const chargeUtile = versChargeUtile({
+      ...entree,
       dateIso: new Date().toISOString().slice(0, 10),
     });
-    const res = await api.post("/journal", payload);
+    const res = await api.post("/journal", chargeUtile);
     if (res?.data?.data) {
-      const next = toView(res.data.data);
-      const idx = entries.value.findIndex((item) => item.id === next.id);
-      if (idx >= 0) entries.value[idx] = next;
-      else entries.value.unshift(next);
+      const suivant = versVue(res.data.data);
+      const idx = entries.value.findIndex((item) => item.id === suivant.id);
+      if (idx >= 0) entries.value[idx] = suivant;
+      else entries.value.unshift(suivant);
     }
   };
 
   const mettreAJourEntree = async (id, patch) => {
     const current = obtenirParId(id);
     if (!current) return;
-    const payload = toPayload({ ...current, ...patch });
-    const res = await api.put(`/journal/${id}`, payload);
+    const chargeUtile = versChargeUtile({ ...current, ...patch });
+    const res = await api.put(`/journal/${id}`, chargeUtile);
     if (res?.data?.data) {
-      const next = toView(res.data.data);
+      const suivant = versVue(res.data.data);
       const idx = entries.value.findIndex((item) => item.id === String(id));
-      if (idx >= 0) entries.value[idx] = next;
+      if (idx >= 0) entries.value[idx] = suivant;
     }
   };
 
   const supprimerEntree = async (id) => {
     await api.delete(`/journal/${id}`);
-    entries.value = entries.value.filter((entry) => entry.id !== String(id));
+    entries.value = entries.value.filter((entree) => entree.id !== String(id));
   };
 
   const definirFiltre = (nextFilter) => {
@@ -177,10 +177,10 @@ export const useJournalStore = defineStore("journal", () => {
     filter,
     loading,
     initialized,
-    latestEntry,
-    filteredEntries,
+    derniereEntree,
+    entreesFiltrees,
     obtenirParId,
-    fetchEntries,
+    chargerEntrees,
     initialiser,
     ajouterEntree,
     mettreAJourEntree,
@@ -189,5 +189,4 @@ export const useJournalStore = defineStore("journal", () => {
     reinitialiserFiltre,
   };
 });
-
 

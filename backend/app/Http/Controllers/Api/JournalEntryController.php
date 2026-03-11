@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 class JournalEntryController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function lister(Request $request): JsonResponse
     {
         $entries = JournalEntry::query()
             ->where('user_id', $request->user()->id)
@@ -20,12 +20,12 @@ class JournalEntryController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Journal entries fetched successfully.',
+            'message' => 'Entrees du journal recuperees avec succes.',
             'data' => $entries,
         ]);
     }
 
-    public function store(StoreJournalEntryRequest $request): JsonResponse
+    public function enregistrer(StoreJournalEntryRequest $request): JsonResponse
     {
         $payload = $request->validated();
         $payload['user_id'] = $request->user()->id;
@@ -36,50 +36,49 @@ class JournalEntryController extends Controller
         );
 
         return response()->json([
-            'message' => 'Journal entry saved successfully.',
+            'message' => 'Entree du journal enregistree avec succes.',
             'data' => $entry,
         ], 201);
     }
 
-    public function show(Request $request, JournalEntry $journalEntry): JsonResponse
+    public function afficher(Request $request, JournalEntry $journalEntry): JsonResponse
     {
-        if ($error = $this->authorizeEntry($journalEntry, $request)) return $error;
+        if ($error = $this->autoriserEntree($journalEntry, $request)) return $error;
 
         return response()->json([
-            'message' => 'Journal entry fetched successfully.',
+            'message' => 'Entree du journal recuperee avec succes.',
             'data' => $journalEntry,
         ]);
     }
 
-    public function update(UpdateJournalEntryRequest $request, JournalEntry $journalEntry): JsonResponse
+    public function mettreAJour(UpdateJournalEntryRequest $request, JournalEntry $journalEntry): JsonResponse
     {
-        if ($error = $this->authorizeEntry($journalEntry, $request)) return $error;
+        if ($error = $this->autoriserEntree($journalEntry, $request)) return $error;
 
         $journalEntry->update($request->validated());
 
         return response()->json([
-            'message' => 'Journal entry updated successfully.',
+            'message' => 'Entree du journal mise a jour avec succes.',
             'data' => $journalEntry->fresh(),
         ]);
     }
 
-    public function destroy(Request $request, JournalEntry $journalEntry): JsonResponse
+    public function supprimer(Request $request, JournalEntry $journalEntry): JsonResponse
     {
-        if ($error = $this->authorizeEntry($journalEntry, $request)) return $error;
+        if ($error = $this->autoriserEntree($journalEntry, $request)) return $error;
 
         $journalEntry->delete();
 
         return response()->json([
-            'message' => 'Journal entry deleted successfully.',
+            'message' => 'Entree du journal supprimee avec succes.',
         ]);
     }
 
-    private function authorizeEntry(JournalEntry $entry, Request $request): ?JsonResponse
+    private function autoriserEntree(JournalEntry $entry, Request $request): ?JsonResponse
     {
         if ($entry->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized access to this journal entry.'], 403);
+            return response()->json(['message' => "Acces non autorise a cette entree du journal."], 403);
         }
         return null;
     }
 }
-

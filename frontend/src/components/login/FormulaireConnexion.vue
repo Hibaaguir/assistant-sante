@@ -16,7 +16,7 @@
           <p class="text-sm text-gray-500 mt-1">Entrez vos identifiants pour continuer.</p>
         </div>
 
-        <form @submit.prevent="submit" class="space-y-5">
+        <form @submit.prevent="soumettre" class="space-y-5">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Email <span class="text-red-600">*</span></label>
             <div class="relative">
@@ -89,7 +89,7 @@
 
           <p class="text-xs text-center text-gray-500">
             Vous n'avez pas de compte ?
-            <RouterLink :to="{ name: 'register' }" class="text-teal-700 font-semibold hover:underline">
+            <RouterLink :to="{ name: 'inscription' }" class="text-teal-700 font-semibold hover:underline">
               Choisir un type de compte
             </RouterLink>
           </p>
@@ -130,17 +130,17 @@ const REQUIRED_FORM_MESSAGE = "Veuillez remplir les champs obligatoires.";
 const INVALID_EMAIL_MESSAGE = "Format d'email invalide.";
 const INVALID_CREDENTIALS_MESSAGE = "Email ou mot de passe invalide.";
 
-function clearErrors() {
+function effacerErreurs() {
   errors.role = "";
   errors.email = "";
   errors.password = "";
 }
 
-function isValidEmail(email) {
+function estEmailValide(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function firstMessage(value) {
+function premierMessage(value) {
   if (Array.isArray(value)) return value[0] || "";
   if (typeof value === "string") return value;
   return "";
@@ -148,14 +148,14 @@ function firstMessage(value) {
 
 function mapFieldValidationErrors(validationErrors = {}) {
   for (const key of ["role", "email", "password"]) {
-    errors[key] = firstMessage(validationErrors[key]);
+    errors[key] = premierMessage(validationErrors[key]);
   }
 }
 
-async function submit() {
+async function soumettre() {
   serverMessage.value = "";
   messageType.value = "success";
-  clearErrors();
+  effacerErreurs();
 
   if (!form.role || !form.email || !form.password) {
     if (!form.role) errors.role = "Le type de compte est obligatoire.";
@@ -165,7 +165,7 @@ async function submit() {
     return;
   }
 
-  if (!isValidEmail(form.email)) {
+  if (!estEmailValide(form.email)) {
     errors.email = INVALID_EMAIL_MESSAGE;
     serverMessage.value = INVALID_EMAIL_MESSAGE;
     return;
@@ -180,7 +180,7 @@ async function submit() {
       password: form.password,
     });
 
-    if (res?.data?.token) authStore.setToken(res.data.token);
+    if (res?.data?.token) authStore.definirToken(res.data.token);
 
     serverMessage.value = res?.data?.message || "Connexion reussie.";
     messageType.value = "success";

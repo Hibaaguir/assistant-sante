@@ -3,7 +3,7 @@
         class="flex items-start gap-3 rounded-xl px-2.5 py-2 transition-colors hover:bg-slate-100/70 sm:px-3 sm:py-2.5"
     >
         <div class="mt-1">
-            <HealthIcon :name="icon" />
+            <IconeSante :name="icon" />
         </div>
         <div>
             <dt class="text-[13px] font-normal text-slate-500 sm:text-[14px]">
@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import HealthIcon from "./HealthIcon.vue";
+import IconeSante from "./IconeSante.vue";
 
 defineProps({
     label: { type: String, required: true },

@@ -1,5 +1,5 @@
 <!--
-  DoctorDashboard.vue
+  TableauDeBordMedecin.vue
   Dashboard principal du médecin ("Espace Medecin") : affiche la liste
   des patients suivis avec leurs alertes, un détail patient interactif,
   et la gestion des invitations (accepter / refuser). Les données sont
@@ -21,38 +21,38 @@
         <button
           type="button"
           class="relative flex h-[40px] w-[50px] items-center justify-center rounded-[14px] border border-[#d7dce3] bg-[#f6f6f7] text-[#4b5568]"
-          @click="showAlerts = !showAlerts"
+          @click="afficherAlertes = !afficherAlertes"
         >
-          <BellIcon class="h-[18px] w-[18px]" />
+          <IconeCloche class="h-[18px] w-[18px]" />
           <span class="absolute right-[-6px] top-[-7px] flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-[#ef0808] px-1 text-[12px] font-bold leading-none text-white">{{ totalAlerts }}</span>
         </button>
         <button
           type="button"
           class="inline-flex h-[40px] items-center gap-2 rounded-[14px] border border-[#b9d4ff] bg-[#edf4ff] px-5 text-[16px] font-medium text-[#1454ff]"
-          @click="logout"
+          @click="deconnexion"
         >
-          <LogoutIcon class="h-[17px] w-[17px]" />
+          <IconeDeconnexion class="h-[17px] w-[17px]" />
           <span>Deconnexion</span>
         </button>
       </div>
     </header>
-    <InlineNotifications />
+    <NotificationsEnLigne />
 
     <section class="mt-10 rounded-[18px] bg-[#eef0f3] p-[6px]">
       <div class="grid grid-cols-2 gap-3 md:flex md:items-center md:gap-0">
         <button
-          v-for="tab in headerTabs"
+          v-for="tab in ongletsEntete"
           :key="tab.key"
           type="button"
           class="inline-flex h-[48px] items-center justify-center gap-3 rounded-[14px] px-6 text-[16px] font-semibold transition"
-          :class="activeHeaderTab === tab.key ? 'bg-white text-[#0a244f] shadow-[0_3px_10px_rgba(15,23,42,0.10)]' : 'text-[#4c5d7a]'"
-          @click="activeHeaderTab = tab.key"
+          :class="ongletEnteteActif === tab.key ? 'bg-white text-[#0a244f] shadow-[0_3px_10px_rgba(15,23,42,0.10)]' : 'text-[#4c5d7a]'"
+          @click="ongletEnteteActif = tab.key"
         >
           <component :is="tab.icon" class="h-[18px] w-[18px]" />
           <span>{{ tab.label }}</span>
           <span
             class="inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-2 text-[13px] font-semibold"
-            :class="activeHeaderTab === tab.key ? 'bg-[#dbe9ff] text-[#3f6ed8]' : 'bg-[#dde2ea] text-[#6d7b93]'"
+            :class="ongletEnteteActif === tab.key ? 'bg-[#dbe9ff] text-[#3f6ed8]' : 'bg-[#dde2ea] text-[#6d7b93]'"
           >
             {{ tab.count }}
           </span>
@@ -60,28 +60,28 @@
       </div>
     </section>
 
-    <template v-if="activeHeaderTab === 'patients'">
-      <DoctorPatientList
-        v-if="!selectedPatient"
+    <template v-if="ongletEnteteActif === 'patients'">
+      <ListePatientsMedecin
+        v-if="!patientSelectionne"
         :patients="patients"
-        v-model:show-alerts="showAlerts"
-        @open-patient="openPatient"
+        v-model:afficher-alertes="afficherAlertes"
+        @open-patient="ouvrirPatient"
       />
-      <DoctorPatientDetail
+      <DetailPatientMedecin
         v-else
-        :key="selectedPatient.id"
-        :patient="selectedPatient"
-        @back="backToPatientList"
+        :key="patientSelectionne.id"
+        :patient="patientSelectionne"
+        @back="retourListePatients"
       />
     </template>
 
-    <DoctorInvitations
+    <InvitationsMedecin
       v-else
       :invitations="invitations"
       :processed-invitations="processedInvitations"
       :action-invitation-id="actionInvitationId"
-      @accept-invitation="acceptInvitation"
-      @reject-invitation="rejectInvitation"
+      @accept-invitation="accepterInvitation"
+      @reject-invitation="refuserInvitation"
     />
   </div>
 </template>
@@ -92,12 +92,12 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import api from '@/services/api'
-import { BellIcon, LogoutIcon, UserPlusIcon, UsersIcon } from '@/components/doctor/DoctorIcons.js'
-import { mapInvitation, mapPatient, mapPatientDetailResponse } from '@/components/doctor/doctorUtils.js'
-import InlineNotifications from '@/components/ui/InlineNotifications.vue'
-import DoctorInvitations from '@/components/doctor/DoctorInvitations.vue'
-import DoctorPatientDetail from '@/components/doctor/DoctorPatientDetail.vue'
-import DoctorPatientList from '@/components/doctor/DoctorPatientList.vue'
+import { IconeCloche, IconeDeconnexion, IconeAjoutUtilisateur, IconeUtilisateurs } from '@/components/doctor/IconesMedecin.js'
+import { mapperInvitation, mapperPatient, mapperDetailPatient } from '@/components/doctor/utilitairesMedecin.js'
+import NotificationsEnLigne from '@/components/ui/NotificationsEnLigne.vue'
+import InvitationsMedecin from '@/components/doctor/InvitationsMedecin.vue'
+import DetailPatientMedecin from '@/components/doctor/DetailPatientMedecin.vue'
+import ListePatientsMedecin from '@/components/doctor/ListePatientsMedecin.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -107,23 +107,23 @@ const notifications = useNotificationsStore()
 // Reactive state
 // ---------------------------------------------------------------------------
 
-const activeHeaderTab = ref('patients')
-const showAlerts = ref(true)
+const ongletEnteteActif = ref('patients')
+const afficherAlertes = ref(true)
 const errorMessage = ref('')
 const patients = ref([])
 const invitations = ref([])
 const processedInvitations = ref([])
 const actionInvitationId = ref(null)
 const detailCache = ref({})
-const selectedPatient = ref(null)
+const patientSelectionne = ref(null)
 
 // ---------------------------------------------------------------------------
 // Computed
 // ---------------------------------------------------------------------------
 
-const headerTabs = computed(() => [
-  { key: 'patients', label: 'Mes Patients', count: patients.value.length, icon: UsersIcon },
-  { key: 'invitations', label: "Invitations d'ajout", count: invitations.value.length, icon: UserPlusIcon }
+const ongletsEntete = computed(() => [
+  { key: 'patients', label: 'Mes Patients', count: patients.value.length, icon: IconeUtilisateurs },
+  { key: 'invitations', label: "Invitations d'ajout", count: invitations.value.length, icon: IconeAjoutUtilisateur }
 ])
 
 const totalAlerts = computed(() =>
@@ -134,7 +134,7 @@ const totalAlerts = computed(() =>
 // Data loading
 // ---------------------------------------------------------------------------
 
-async function loadDoctorData() {
+async function chargerDonneesMedecin() {
   errorMessage.value = ''
   try {
     const [invitationsRes, patientsRes] = await Promise.all([
@@ -142,12 +142,12 @@ async function loadDoctorData() {
       api.get('/doctor-invitations/patients')
     ])
     const invitationRows = Array.isArray(invitationsRes?.data?.data) ? invitationsRes.data.data : []
-    invitations.value = invitationRows.filter((item) => item.status === 'pending').map(mapInvitation)
-    processedInvitations.value = invitationRows.filter((item) => item.status === 'accepted').map(mapInvitation)
-    patients.value = (Array.isArray(patientsRes?.data?.data) ? patientsRes.data.data : []).map(mapPatient)
+    invitations.value = invitationRows.filter((item) => item.status === 'pending').map(mapperInvitation)
+    processedInvitations.value = invitationRows.filter((item) => item.status === 'accepted').map(mapperInvitation)
+    patients.value = (Array.isArray(patientsRes?.data?.data) ? patientsRes.data.data : []).map(mapperPatient)
   } catch (_) {
     errorMessage.value = "Impossible de charger les donnees medecin pour le moment."
-    notifications.error(errorMessage.value)
+    notifications.erreur(errorMessage.value)
     invitations.value = []
     processedInvitations.value = []
     patients.value = []
@@ -158,56 +158,56 @@ async function loadDoctorData() {
 // Patient detail navigation
 // ---------------------------------------------------------------------------
 
-async function openPatient(patient) {
+async function ouvrirPatient(patient) {
   errorMessage.value = ''
   if (detailCache.value[patient.id]) {
-    selectedPatient.value = detailCache.value[patient.id]
+    patientSelectionne.value = detailCache.value[patient.id]
     return
   }
   try {
     const res = await api.get(`/doctor-invitations/patients/${patient.id}`)
-    const detail = mapPatientDetailResponse(res?.data?.data, patient)
+    const detail = mapperDetailPatient(res?.data?.data, patient)
     detailCache.value = { ...detailCache.value, [patient.id]: detail }
-    selectedPatient.value = detail
+    patientSelectionne.value = detail
   } catch (_) {
     errorMessage.value = "Impossible de charger le detail du patient pour le moment."
-    notifications.error(errorMessage.value)
+    notifications.erreur(errorMessage.value)
   }
 }
 
-function backToPatientList() {
-  selectedPatient.value = null
+function retourListePatients() {
+  patientSelectionne.value = null
 }
 
 // ---------------------------------------------------------------------------
 // Invitation actions
 // ---------------------------------------------------------------------------
 
-async function acceptInvitation(invitationId) {
+async function accepterInvitation(invitationId) {
   actionInvitationId.value = invitationId
   errorMessage.value = ''
   try {
     await api.post(`/doctor-invitations/${invitationId}/accept`)
-    await loadDoctorData()
-    notifications.actionUpdated()
+    await chargerDonneesMedecin()
+    notifications.actionModifiee()
   } catch (_) {
     errorMessage.value = "Impossible d'accepter cette invitation pour le moment."
-    notifications.error(errorMessage.value)
+    notifications.erreur(errorMessage.value)
   } finally {
     actionInvitationId.value = null
   }
 }
 
-async function rejectInvitation(invitationId) {
+async function refuserInvitation(invitationId) {
   actionInvitationId.value = invitationId
   errorMessage.value = ''
   try {
     await api.post(`/doctor-invitations/${invitationId}/reject`)
-    await loadDoctorData()
-    notifications.actionCanceled()
+    await chargerDonneesMedecin()
+    notifications.actionAnnulee()
   } catch (_) {
     errorMessage.value = "Impossible de refuser cette invitation pour le moment."
-    notifications.error(errorMessage.value)
+    notifications.erreur(errorMessage.value)
   } finally {
     actionInvitationId.value = null
   }
@@ -218,11 +218,11 @@ async function rejectInvitation(invitationId) {
 // ---------------------------------------------------------------------------
 
 onMounted(async () => {
-  await loadDoctorData()
+  await chargerDonneesMedecin()
 })
 
-async function logout() {
-  await authStore.logout()
-  router.push({ name: 'doctor-login' })
+async function deconnexion() {
+  await authStore.deconnexion()
+  router.push({ name: 'connexion-medecin' })
 }
 </script>

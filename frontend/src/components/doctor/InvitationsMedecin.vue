@@ -2,7 +2,7 @@
   <section class="mt-10">
     <div class="flex items-start gap-4">
       <div class="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[14px] bg-[#dbe4ff] text-[#4a45ff]">
-        <UserPlusIcon class="h-[24px] w-[24px]" />
+        <IconeAjoutUtilisateur class="h-[24px] w-[24px]" />
       </div>
       <div>
         <h2 class="text-[25px] font-bold leading-none text-[#041c49]">Invitations de patients</h2>
@@ -19,7 +19,7 @@
         <div class="px-6 py-6">
           <div class="flex items-start gap-4">
             <div class="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-[14px] bg-[#eef2f8] text-[#4a45ff]">
-              <UserOutlineIcon class="h-[24px] w-[24px]" />
+              <IconeContourUtilisateur class="h-[24px] w-[24px]" />
             </div>
 
             <div class="min-w-0">
@@ -27,15 +27,15 @@
 
               <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[14px] font-medium text-[#41506b]">
                 <span class="inline-flex items-center gap-2">
-                  <MailIcon class="h-[16px] w-[16px]" />
+                  <IconeMail class="h-[16px] w-[16px]" />
                   {{ invitation.email }}
                 </span>
                 <span class="inline-flex items-center gap-2">
-                  <UserSmallIcon class="h-[16px] w-[16px]" />
+                  <IconePetitUtilisateur class="h-[16px] w-[16px]" />
                   {{ invitation.age }} ans
                 </span>
                 <span class="inline-flex items-center gap-2">
-                  <CalendarIcon class="h-[16px] w-[16px]" />
+                  <IconeCalendrier class="h-[16px] w-[16px]" />
                   Invite le {{ invitation.invitedAt }}
                 </span>
               </div>
@@ -51,7 +51,7 @@
               </div>
 
               <button type="button" class="mt-5 inline-flex items-center gap-2 text-[14px] font-semibold text-[#4a45ff]">
-                <ChevronDownIcon class="h-[16px] w-[16px]" />
+                <IconeChevronBas class="h-[16px] w-[16px]" />
                 Voir le message du patient
               </button>
             </div>
@@ -65,7 +65,7 @@
             :disabled="actionInvitationId === invitation.id"
             @click="$emit('accept-invitation', invitation.id)"
           >
-            <CheckCircleIcon class="h-[18px] w-[18px]" />
+            <IconeCercleValide class="h-[18px] w-[18px]" />
             Accepter
           </button>
           <button
@@ -74,7 +74,7 @@
             :disabled="actionInvitationId === invitation.id"
             @click="$emit('reject-invitation', invitation.id)"
           >
-            <XCircleIcon class="h-[18px] w-[18px]" />
+            <IconeCercleFerme class="h-[18px] w-[18px]" />
             Refuser
           </button>
         </div>
@@ -96,7 +96,7 @@
         >
           <div class="flex items-center gap-3">
             <div class="flex h-[34px] w-[34px] items-center justify-center rounded-[12px] bg-[#e7f6ec] text-[#06af46]">
-              <CheckCircleIcon class="h-[18px] w-[18px]" />
+              <IconeCercleValide class="h-[18px] w-[18px]" />
             </div>
             <div>
               <p class="text-[15px] font-bold text-[#031a46]">{{ invitation.name }}</p>
@@ -119,15 +119,15 @@
 
 <script setup>
 import {
-  CalendarIcon,
-  CheckCircleIcon,
-  ChevronDownIcon,
-  MailIcon,
-  UserOutlineIcon,
-  UserPlusIcon,
-  UserSmallIcon,
-  XCircleIcon
-} from '@/components/doctor/DoctorIcons.js'
+  IconeCalendrier,
+  IconeCercleValide,
+  IconeChevronBas,
+  IconeMail,
+  IconeContourUtilisateur,
+  IconeAjoutUtilisateur,
+  IconePetitUtilisateur,
+  IconeCercleFerme
+} from '@/components/doctor/IconesMedecin.js'
 
 defineProps({
   invitations: {

@@ -7,5 +7,6 @@ Route::get('/', function () {
 });
 
 Route::view('/profil-sante', 'profil-sante');
+Route::view('/inscription', 'register');
 
 Route::view('/register', 'register');

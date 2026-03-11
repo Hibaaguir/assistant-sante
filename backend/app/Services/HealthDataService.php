@@ -13,7 +13,7 @@ class HealthDataService
      * Construit les séries de données de signes vitaux pour l'affichage en graphique.
      * Regroupe les valeurs par date et retourne la dernière mesure de chaque journée.
      */
-    public function buildVitalsChartSeries(Collection $vitals, int $days): array
+    public function construireSeriesGraphiqueSignesVitaux(Collection $vitals, int $days): array
     {
         $dates = collect(range(0, $days - 1))
             ->map(fn (int $offset) => Carbon::today()->subDays($days - 1 - $offset)->toDateString())
@@ -56,7 +56,7 @@ class HealthDataService
      * Résout la liste des médicaments/traitements d'un utilisateur à partir de son profil santé.
      * Normalise les entrées brutes du champ JSON "traitements" et gère le cas nominatif simple.
      */
-    public function resolveTreatmentMedicines(int $userId): array
+    public function resoudreMedicamentsTraitement(int $userId): array
     {
         $profil = ProfilSante::query()
             ->where('user_id', $userId)

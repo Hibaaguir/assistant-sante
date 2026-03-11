@@ -1,5 +1,5 @@
 <!--
-  PatientDashboard.vue
+  TableauDeBordPatient.vue
   Dashboard principal du patient : affiche un graphique SVG interactif
   montrant l'évolution des signes vitaux (rythme cardiaque, tension
   systolique, saturation O₂) sur les 7 derniers jours.
@@ -11,7 +11,7 @@
       <h1 class="text-[34px] font-semibold leading-none text-slate-900">Dashboard</h1>
       <p class="mt-2 text-sm text-slate-600">Vue d'ensemble de votre santé</p>
     </header>
-    <InlineNotifications />
+    <NotificationsEnLigne />
 
     <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div class="mb-3 flex items-center justify-between">
@@ -66,7 +66,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import api from '@/services/api'
-import InlineNotifications from '@/components/ui/InlineNotifications.vue'
+import NotificationsEnLigne from '@/components/ui/NotificationsEnLigne.vue'
 
 const chartRef = ref(null)
 const labels = ref([])

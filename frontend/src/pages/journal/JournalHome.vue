@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="mx-auto max-w-[1320px] p-4 sm:p-6 lg:p-8">
     <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
       <div>
@@ -8,7 +8,7 @@
       <button
         type="button"
         class="rounded-2xl border border-cyan-200 bg-cyan-50 px-6 py-3 text-lg font-semibold text-cyan-800 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-cyan-100 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
-        @click="router.push({ name: 'journal-history' })"
+        @click="router.push({ name: 'historique-journal' })"
       >
         Voir l'historique
       </button>
@@ -18,7 +18,7 @@
       <button
         type="button"
         class="rounded-[28px] border border-indigo-200 bg-gradient-to-br from-indigo-50 to-blue-50 p-8 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
-        @click="router.push({ name: 'journal-wizard' })"
+        @click="router.push({ name: 'assistant-journal' })"
       >
         <div class="mb-8 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-b from-indigo-600 to-blue-600 text-white shadow-md">
           <svg viewBox="0 0 24 24" class="h-10 w-10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -39,15 +39,15 @@
           </div>
           <div class="flex items-center justify-between border-b border-slate-200 pb-4">
             <span>Sommeil</span>
-            <span class="font-semibold text-slate-900">{{ sleepLabel(latest.sleep) }}</span>
+            <span class="font-semibold text-slate-900">{{ libelleSommeil(latest.sleep) }}</span>
           </div>
           <div class="flex items-center justify-between border-b border-slate-200 pb-4">
             <span>Stress</span>
-            <span class="font-semibold text-slate-900">{{ stressLabel(latest.stress) }}</span>
+            <span class="font-semibold text-slate-900">{{ libelleStress(latest.stress) }}</span>
           </div>
           <div class="flex items-center justify-between">
             <span>Energie</span>
-            <span class="font-semibold text-slate-900">{{ energyLabel(latest.energy) }}</span>
+            <span class="font-semibold text-slate-900">{{ libelleEnergie(latest.energy) }}</span>
           </div>
         </div>
         <div v-else class="mt-8 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
@@ -55,7 +55,7 @@
         </div>
       </div>
 
-      <CarteInfosDerniereEntree :latest-entry="latest" />
+      <CarteInfosDerniereEntree :derniere-entree="latest" />
     </div>
   </div>
 </template>
@@ -75,25 +75,25 @@ import { useJournalStore } from '@/stores/journal'
 
 const router = useRouter()
 const store = useJournalStore()
-const { latestEntry: latest } = storeToRefs(store)
+const { derniereEntree: latest } = storeToRefs(store)
 
 onMounted(async () => {
   await store.initialiser();
 });
 
-const sleepLabel = (hours) => {
+const libelleSommeil = (hours) => {
   const h = Math.floor(hours)
   const m = Math.round((hours - h) * 60)
   return m ? `${h}h ${m}min` : `${h}h`
 }
 
-const stressLabel = (value) => {
+const libelleStress = (value) => {
   if (value >= 8) return 'Eleve'
   if (value <= 3) return 'Faible'
   return 'Modere'
 }
 
-const energyLabel = (value) => {
+const libelleEnergie = (value) => {
   if (value >= 8) return 'Excellente'
   if (value <= 4) return 'Faible'
   return 'Bonne'

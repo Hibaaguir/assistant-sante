@@ -16,7 +16,7 @@ use Illuminate\Validation\Rule;
 
 class ProfilSanteController extends Controller
 {
-    public function store(Request $request)
+    public function enregistrer(Request $request)
     {
         if (is_string($request->input('sexe'))) {
             $request->merge([
@@ -79,7 +79,7 @@ class ProfilSanteController extends Controller
             $validated
         );
 
-        $this->syncDoctorInvitation($profil, $previousDoctorEmail);
+        $this->synchroniserInvitationMedecin($profil, $previousDoctorEmail);
 
         return response()->json([
             'message' => 'Profil sante enregistre avec succes.',
@@ -87,7 +87,7 @@ class ProfilSanteController extends Controller
         ]);
     }
 
-    public function show()
+    public function afficher()
     {
         $user = Auth::user();
         $profil = $user->profilSante;
@@ -98,7 +98,7 @@ class ProfilSanteController extends Controller
         ]);
     }
 
-    private function syncDoctorInvitation(ProfilSante $profil, ?string $previousDoctorEmail = null): void
+    private function synchroniserInvitationMedecin(ProfilSante $profil, ?string $previousDoctorEmail = null): void
     {
         $patient = Auth::user();
         if (! $patient) {

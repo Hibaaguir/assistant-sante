@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="mx-auto max-w-[1460px] px-4 py-4 sm:px-6 lg:px-8">
     <header class="mb-4 flex items-start gap-3 sm:gap-4">
       <div class="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-md shadow-indigo-200/80 sm:h-12 sm:w-12">
@@ -12,7 +12,7 @@
       </div>
     </header>
 
-    <InlineNotifications />
+    <NotificationsEnLigne />
 
     <div v-if="loading" class="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
       Chargement du profil...
@@ -37,14 +37,14 @@
         </div>
 
         <div v-if="!editing.base" class="space-y-2">
-          <HealthFieldRow label="Nom" :value="user.name || '-'" icon="user" />
-          <HealthFieldRow label="Âge" :value="computedAge || '-'" icon="calendar" />
-          <HealthFieldRow label="Sexe" :value="profil.sexe || '-'" icon="users" />
-          <HealthFieldRow label="Taille" :value="profil.taille ? `${profil.taille} cm` : '-'" icon="ruler" />
-          <HealthFieldRow label="Poids" :value="profil.poids ? `${profil.poids} kg` : '-'" icon="weight" />
+          <LigneChampSante label="Nom" :value="user.name || '-'" icon="user" />
+          <LigneChampSante label="Âge" :value="computedAge || '-'" icon="calendar" />
+          <LigneChampSante label="Sexe" :value="profil.sexe || '-'" icon="users" />
+          <LigneChampSante label="Taille" :value="profil.taille ? `${profil.taille} cm` : '-'" icon="ruler" />
+          <LigneChampSante label="Poids" :value="profil.poids ? `${profil.poids} kg` : '-'" icon="weight" />
         </div>
 
-        <form v-else class="space-y-4" novalidate @submit.prevent="saveSection('base')">
+        <form v-else class="space-y-4" novalidate @submit.prevent="enregistrerSection('base')">
           <div v-if="sectionErrors.base.form.length" class="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             <p v-for="(message, idx) in sectionErrors.base.form" :key="`base-form-error-${idx}`">
               {{ message }}
@@ -113,13 +113,13 @@
         </div>
 
         <div v-if="!editing.health" class="space-y-2">
-          <HealthFieldRow label="Groupe sanguin" :value="profil.groupe_sanguin || '-'" icon="droplet" />
-          <HealthFieldRow label="Objectifs" :value="joinList(profil.objectifs)" icon="target" />
-          <HealthFieldRow label="Allergies" :value="joinList(profil.allergies)" icon="alert" />
-          <HealthFieldRow label="Maladies chroniques" :value="joinList(profil.maladies_chroniques)" icon="shield" />
+          <LigneChampSante label="Groupe sanguin" :value="profil.groupe_sanguin || '-'" icon="droplet" />
+          <LigneChampSante label="Objectifs" :value="joindreListe(profil.objectifs)" icon="target" />
+          <LigneChampSante label="Allergies" :value="joindreListe(profil.allergies)" icon="alert" />
+          <LigneChampSante label="Maladies chroniques" :value="joindreListe(profil.maladies_chroniques)" icon="shield" />
         </div>
 
-        <form v-else class="space-y-4" novalidate @submit.prevent="saveSection('health')">
+        <form v-else class="space-y-4" novalidate @submit.prevent="enregistrerSection('health')">
           <div v-if="sectionErrors.health.form.length" class="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             <p v-for="(message, idx) in sectionErrors.health.form" :key="`health-form-error-${idx}`">
               {{ message }}
@@ -220,12 +220,12 @@
         </div>
 
         <div v-if="!editing.habits" class="space-y-2">
-          <HealthFieldRow label="Fumeur" :value="yesNo(profil.fumeur)" icon="smoke" />
-          <HealthFieldRow label="Alcool" :value="yesNo(profil.alcool)" icon="wine" />
-          <HealthFieldRow label="Traitements" :value="treatmentsSummary(profil.traitements)" icon="pill" />
+          <LigneChampSante label="Fumeur" :value="ouiNon(profil.fumeur)" icon="smoke" />
+          <LigneChampSante label="Alcool" :value="ouiNon(profil.alcool)" icon="wine" />
+          <LigneChampSante label="Traitements" :value="treatmentsSummary(profil.traitements)" icon="pill" />
         </div>
 
-        <form v-else class="space-y-4" novalidate @submit.prevent="saveSection('habits')">
+        <form v-else class="space-y-4" novalidate @submit.prevent="enregistrerSection('habits')">
           <div class="grid grid-cols-2 gap-3">
             <div class="flex h-14 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3">
               <label class="text-sm font-semibold text-slate-900">Fumeur</label>
@@ -357,21 +357,21 @@
         </div>
 
         <div v-if="!editing.doctor" class="space-y-2">
-          <HealthFieldRow label="Consulte médecin" :value="yesNo(profil.consulte_medecin)" icon="stetho" />
-          <HealthFieldRow label="Autorise accès médecin" :value="yesNo(profil.medecin_peut_consulter)" icon="shield" />
-          <HealthFieldRow label="Email médecin" :value="profil.medecin_email || '-'" icon="stetho" />
+          <LigneChampSante label="Consulte médecin" :value="ouiNon(profil.consulte_medecin)" icon="stetho" />
+          <LigneChampSante label="Autorise accès médecin" :value="ouiNon(profil.medecin_peut_consulter)" icon="shield" />
+          <LigneChampSante label="Email médecin" :value="profil.medecin_email || '-'" icon="stetho" />
         </div>
 
-        <form v-else class="space-y-4" novalidate @submit.prevent="saveSection('doctor')">
+        <form v-else class="space-y-4" novalidate @submit.prevent="enregistrerSection('doctor')">
           <div>
             <label class="mb-1 block text-sm font-semibold text-slate-900">Consulte médecin</label>
-            <select v-model="draft.consulte_medecin" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base" @change="validateDoctorEmail">
+            <select v-model="draft.consulte_medecin" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base" @change="validerEmailMedecin">
               <option :value="true">Oui</option><option :value="false">Non</option>
             </select>
           </div>
           <div>
             <label class="mb-1 block text-sm font-semibold text-slate-900">Autorise accès médecin</label>
-            <select v-model="draft.medecin_peut_consulter" :disabled="!draft.consulte_medecin" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base disabled:opacity-60" @change="validateDoctorEmail">
+            <select v-model="draft.medecin_peut_consulter" :disabled="!draft.consulte_medecin" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base disabled:opacity-60" @change="validerEmailMedecin">
               <option :value="true">Oui</option><option :value="false">Non</option>
             </select>
           </div>
@@ -382,8 +382,8 @@
               :disabled="!(draft.consulte_medecin && draft.medecin_peut_consulter)"
               class="h-11 w-full rounded-xl border bg-slate-100 px-4 text-base disabled:opacity-60"
               :class="doctorEmailError ? 'border-red-400 focus:border-red-500' : 'border-slate-200'"
-              @input="validateDoctorEmail"
-              @blur="validateDoctorEmail"
+              @input="validerEmailMedecin"
+              @blur="validerEmailMedecin"
             />
             <p v-if="doctorEmailError" class="mt-1 text-xs font-medium text-red-600">
               {{ doctorEmailError }}
@@ -397,7 +397,7 @@
       </section>
     </div>
 
-    <ConfirmDialog
+    <DialogueConfirmation
       :open="confirmDeleteTreatmentOpen"
       title="Confirmer la suppression"
       message="Voulez-vous supprimer ce traitement ?"
@@ -414,10 +414,10 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import api from "@/services/api";
-import HealthFieldRow from "@/components/health/HealthFieldRow.vue";
+import LigneChampSante from "@/components/health/LigneChampSante.vue";
 import { useNotificationsStore } from "@/stores/notifications";
-import InlineNotifications from "@/components/ui/InlineNotifications.vue";
-import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
+import NotificationsEnLigne from "@/components/ui/NotificationsEnLigne.vue";
+import DialogueConfirmation from "@/components/ui/DialogueConfirmation.vue";
 
 /*
   Cette page affiche et edite le profil sante utilisateur.
@@ -561,16 +561,16 @@ const computedAge = computed(() => {
 });
 
 // Helpers d'affichage simples.
-function yesNo(value) {
+function ouiNon(value) {
   return value ? "Oui" : "Non";
 }
 
-function joinList(value) {
+function joindreListe(value) {
   if (!Array.isArray(value) || value.length === 0) return "-";
   return value.filter(Boolean).join(", ");
 }
 
-function normalizeList(value) {
+function normaliserListe(value) {
   if (!Array.isArray(value)) return [];
   return value.map((item) => String(item || "").trim()).filter(Boolean);
 }
@@ -629,7 +629,7 @@ function handleTreatmentDateInput(event, key) {
 }
 
 // Validation locale de l'email medecin avant envoi serveur.
-function validateDoctorEmail() {
+function validerEmailMedecin() {
   if (!(draft.consulte_medecin && draft.medecin_peut_consulter)) {
     doctorEmailError.value = "";
     return true;
@@ -694,7 +694,7 @@ function cancelTreatmentEdit() {
 
 function cancelTreatmentEditWithNotice() {
   cancelTreatmentEdit();
-  notifications.actionCanceled();
+  notifications.actionAnnulee();
 }
 
 function saveTreatmentDraft() {
@@ -731,14 +731,14 @@ function saveTreatmentDraft() {
   }
 
   cancelTreatmentEdit();
-  if (isUpdate) notifications.actionUpdated();
-  else notifications.actionAdded();
+  if (isUpdate) notifications.actionModifiee();
+  else notifications.actionAjoutee();
 }
 
 function removeTreatment(index) {
   if (!Array.isArray(draft.traitements)) return;
   draft.traitements.splice(index, 1);
-  notifications.actionDeleted();
+  notifications.actionSupprimee();
 }
 
 function requestRemoveTreatment(index) {
@@ -749,7 +749,7 @@ function requestRemoveTreatment(index) {
 function cancelRemoveTreatment() {
   confirmDeleteTreatmentOpen.value = false;
   pendingDeleteTreatmentIndex.value = -1;
-  notifications.actionCanceled();
+  notifications.actionAnnulee();
 }
 
 function confirmRemoveTreatment() {
@@ -766,9 +766,9 @@ function syncDraftFromProfil() {
   draft.taille = profil.taille ?? "";
   draft.poids = profil.poids ?? "";
   draft.groupe_sanguin = profil.groupe_sanguin || "";
-  draft.objectifs = normalizeList(profil.objectifs);
-  draft.allergies = normalizeList(profil.allergies);
-  draft.maladies_chroniques = normalizeList(profil.maladies_chroniques);
+  draft.objectifs = normaliserListe(profil.objectifs);
+  draft.allergies = normaliserListe(profil.allergies);
+  draft.maladies_chroniques = normaliserListe(profil.maladies_chroniques);
   draft.traitements = Array.isArray(profil.traitements) ? [...profil.traitements] : [];
   draft.fumeur = Boolean(profil.fumeur);
   draft.alcool = Boolean(profil.alcool);
@@ -801,7 +801,7 @@ function cancelEdit(section) {
   syncDraftFromProfil();
   clearSectionErrors(section);
   editing[section] = false;
-  notifications.actionCanceled();
+  notifications.actionAnnulee();
 }
 
 function clearSectionErrors(section = null) {
@@ -858,10 +858,10 @@ function validateHealthSection() {
 }
 
 // Construit le payload API final avec normalisation des champs.
-function buildPayload() {
-  const objectifs = normalizeList(draft.objectifs);
-  const allergies = normalizeList(draft.allergies);
-  const maladiesChroniques = normalizeList(draft.maladies_chroniques);
+function construireChargeUtile() {
+  const objectifs = normaliserListe(draft.objectifs);
+  const allergies = normaliserListe(draft.allergies);
+  const maladiesChroniques = normaliserListe(draft.maladies_chroniques);
   const traitements = Array.isArray(draft.traitements) ? draft.traitements : [];
   const prendMedicament = traitements.length > 0;
   const consulteMedecin = Boolean(draft.consulte_medecin);
@@ -887,34 +887,34 @@ function buildPayload() {
 }
 
 // Sauvegarde d'une section avec gestion des cas d'erreur API.
-async function saveSection(section) {
+async function enregistrerSection(section) {
   if (section === "base" && !validateBaseSection()) {
-    notifications.warning("Veuillez corriger les champs en erreur.");
+    notifications.avertissement("Veuillez corriger les champs en erreur.");
     return;
   }
 
   if (section === "health" && !validateHealthSection()) {
-    notifications.warning("Veuillez corriger les champs en erreur.");
+    notifications.avertissement("Veuillez corriger les champs en erreur.");
     return;
   }
 
-  if (section === "doctor" && !validateDoctorEmail()) {
+  if (section === "doctor" && !validerEmailMedecin()) {
     return;
   }
 
   savingSection.value = section;
   clearSectionErrors(section);
   try {
-    const response = await api.post("/profil-sante", buildPayload());
+    const response = await api.post("/profil-sante", construireChargeUtile());
     Object.assign(profil, response?.data?.data || {});
     Object.assign(user, response?.data?.user || user);
     syncDraftFromProfil();
     editing[section] = false;
-    notifications.actionUpdated();
+    notifications.actionModifiee();
   } catch (e) {
     if (e?.response?.status === 401) {
-      authStore.clearToken();
-      router.replace({ name: "register" });
+      authStore.supprimerToken();
+      router.replace({ name: "inscription" });
       return;
     }
     if (e?.response?.status === 422 && e?.response?.data?.errors) {
@@ -923,7 +923,7 @@ async function saveSection(section) {
         doctorEmailError.value = Array.isArray(doctorFieldError)
           ? doctorFieldError[0]
           : "Email medecin invalide.";
-        notifications.warning(doctorEmailError.value);
+        notifications.avertissement(doctorEmailError.value);
         return;
       }
 
@@ -969,9 +969,9 @@ async function saveSection(section) {
         editing.health = true;
       }
 
-      notifications.warning("Veuillez corriger les champs en erreur.");
+      notifications.avertissement("Veuillez corriger les champs en erreur.");
     } else {
-      notifications.error("Erreur lors de la sauvegarde du profil.");
+      notifications.erreur("Erreur lors de la sauvegarde du profil.");
     }
   } finally {
     savingSection.value = "";
@@ -987,8 +987,8 @@ onMounted(async () => {
     syncDraftFromProfil();
   } catch (e) {
     if (e?.response?.status === 401) {
-      authStore.clearToken();
-      router.replace({ name: "register" });
+      authStore.supprimerToken();
+      router.replace({ name: "inscription" });
       return;
     }
     loadError.value = "Impossible de charger les données du profil.";

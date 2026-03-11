@@ -167,7 +167,7 @@ const computedAge = computed(() => {
 
 onMounted(async () => {
   if (!authStore.isLoggedIn) {
-    router.replace({ name: "register" });
+    router.replace({ name: "inscription" });
     return;
   }
 
@@ -179,13 +179,13 @@ onMounted(async () => {
     userDateOfBirth.value = user?.date_of_birth ? String(user.date_of_birth) : "";
 
     if (profil) {
-      router.replace({ name: "health" });
+      router.replace({ name: "mon-profil-sante" });
       return;
     }
   } catch (error) {
     if (error.response?.status === 401) {
-      authStore.clearToken();
-      router.replace({ name: "register" });
+      authStore.supprimerToken();
+      router.replace({ name: "inscription" });
       return;
     }
     saveError.value = "Impossible de charger le profil sante.";
@@ -236,7 +236,7 @@ function extractValidationMessage(errors) {
   return messages.join(" ");
 }
 
-function buildPayload() {
+function construireChargeUtile() {
   const objectifs = normalizeArray(form.objectifs);
 
   return {
@@ -277,16 +277,16 @@ async function enregistrer() {
   saveSuccess.value = "";
   saving.value = true;
 
-  const payload = buildPayload();
+  const payload = construireChargeUtile();
 
   try {
     await api.post("/profil-sante", payload);
     saveSuccess.value = "Profil enregistre avec succes.";
-    router.push({ name: "health" });
+    router.push({ name: "mon-profil-sante" });
   } catch (error) {
     if (error.response?.status === 401) {
-      authStore.clearToken();
-      router.replace({ name: "register" });
+      authStore.supprimerToken();
+      router.replace({ name: "inscription" });
       return;
     }
 

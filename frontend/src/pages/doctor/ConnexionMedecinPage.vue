@@ -6,7 +6,7 @@
         <h1 class="mt-3 text-3xl font-semibold text-slate-950">Connexion</h1>
         <p class="mt-2 text-sm leading-6 text-slate-600">Connectez-vous avec votre email et votre mot de passe.</p>
 
-        <form @submit.prevent="submit" class="mt-8 space-y-4">
+        <form @submit.prevent="soumettre" class="mt-8 space-y-4">
           <div>
             <label class="mb-2 block text-sm font-medium text-slate-700">Email</label>
             <input v-model.trim="form.email" type="email" placeholder="medecin@exemple.com" autocomplete="email" class="h-12 w-full rounded-2xl border px-4 text-slate-900 outline-none transition" :class="errors.email ? 'border-red-300 focus:border-red-400' : 'border-slate-200 focus:border-sky-500'" />
@@ -31,7 +31,7 @@
 
         <p class="mt-6 text-sm text-slate-600">
           Pas encore de compte ?
-          <RouterLink :to="registerLink" class="font-semibold text-sky-700 hover:underline">Creer un compte medecin</RouterLink>
+          <RouterLink :to="lienInscription" class="font-semibold text-sky-700 hover:underline">Creer un compte medecin</RouterLink>
         </p>
       </div>
     </div>
@@ -62,17 +62,17 @@ const loading = ref(false);
 const serverMessage = ref("");
 const messageType = ref("success");
 
-const registerLink = computed(() => ({ name: "doctor-register", query: { email: form.email } }));
+const lienInscription = computed(() => ({ name: "inscription-medecin", query: { email: form.email } }));
 
-function clearErrors() {
+function effacerErreurs() {
   errors.email = "";
   errors.password = "";
 }
 
-async function submit() {
+async function soumettre() {
   serverMessage.value = "";
   messageType.value = "success";
-  clearErrors();
+  effacerErreurs();
 
   if (!form.email || !form.password) {
     if (!form.email) errors.email = "L'adresse email est obligatoire.";
@@ -89,7 +89,7 @@ async function submit() {
       password: form.password,
     });
 
-    if (res?.data?.token) authStore.setToken(res.data.token);
+    if (res?.data?.token) authStore.definirToken(res.data.token);
 
     serverMessage.value = res?.data?.message || "Connexion medecin reussie.";
     messageType.value = "success";

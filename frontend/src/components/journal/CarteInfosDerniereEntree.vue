@@ -3,7 +3,7 @@
     <h3 class="text-3xl font-bold text-slate-900">Autres informations</h3>
     <p class="mt-2 text-sm text-slate-500">Details supplementaires de la derniere entree</p>
 
-    <div v-if="!entry" class="mt-8 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
+    <div v-if="!entree" class="mt-8 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
       Aucune donnee
     </div>
 
@@ -74,24 +74,24 @@
 <script setup>
 /*
   Carte "Autres informations" de la derniere entree.
-  Les textes affiches sont derives de l'objet `latestEntry`.
+  Les textes affiches sont derives de l'objet `derniereEntree`.
   Le composant reste purement visuel pour etre reutilisable.
 */
 
 import { computed } from 'vue'
 
 const props = defineProps({
-  latestEntry: {
+  derniereEntree: {
     type: Object,
     default: null
   }
 })
 
-const entry = computed(() => props.latestEntry)
+const entree = computed(() => props.derniereEntree)
 
 const hydrationText = computed(() => {
-  if (!entry.value) return 'Aucune donnee'
-  return `${entry.value.hydration} L`
+  if (!entree.value) return 'Aucune donnee'
+  return `${entree.value.hydration} L`
 })
 
 const mealTypeMap = {
@@ -102,62 +102,61 @@ const mealTypeMap = {
 }
 
 const mealsText = computed(() => {
-  if (!entry.value || !entry.value.meals.length) return 'Aucun repas'
-  const kinds = [...new Set(entry.value.meals.map((meal) => mealTypeMap[meal.type] ?? meal.type))]
-  return `${entry.value.meals.length} repas / ${kinds.join('/')}`
+  if (!entree.value || !entree.value.meals.length) return 'Aucun repas'
+  const kinds = [...new Set(entree.value.meals.map((meal) => mealTypeMap[meal.type] ?? meal.type))]
+  return `${entree.value.meals.length} repas / ${kinds.join('/')}`
 })
 
 const activityText = computed(() => {
-  if (!entry.value?.activityType) return 'Non renseignee'
-  return `${entry.value.activityType} ${entry.value.activityDuration} min`
+  if (!entree.value?.activityType) return 'Non renseignee'
+  return `${entree.value.activityType} ${entree.value.activityDuration} min`
 })
 
 const intensityLabel = computed(() => {
-  if (!entry.value) return 'Non'
-  if (entry.value.intensity === 'high') return 'Intense'
-  if (entry.value.intensity === 'light') return 'Legere'
+  if (!entree.value) return 'Non'
+  if (entree.value.intensity === 'high') return 'Intense'
+  if (entree.value.intensity === 'light') return 'Legere'
   return 'Moderee'
 })
 
 const intensityBadgeClass = computed(() => {
-  if (!entry.value) return 'border-slate-300 bg-slate-100 text-slate-700'
-  if (entry.value.intensity === 'high') return 'border-rose-300 bg-rose-100 text-rose-700'
-  if (entry.value.intensity === 'light') return 'border-sky-300 bg-sky-100 text-sky-700'
+  if (!entree.value) return 'border-slate-300 bg-slate-100 text-slate-700'
+  if (entree.value.intensity === 'high') return 'border-rose-300 bg-rose-100 text-rose-700'
+  if (entree.value.intensity === 'light') return 'border-sky-300 bg-sky-100 text-sky-700'
   return 'border-emerald-300 bg-emerald-100 text-emerald-700'
 })
 
 const tobaccoText = computed(() => {
-  if (!entry.value?.tobacco) return 'Non'
+  if (!entree.value?.tobacco) return 'Non'
   const parts = []
-  if (entry.value.tobaccoTypes?.cigarette && typeof entry.value.cigarettesPerDay === 'number') {
-    parts.push(`Cigarette • ${entry.value.cigarettesPerDay}/j`)
+  if (entree.value.tobaccoTypes?.cigarette && typeof entree.value.cigarettesPerDay === 'number') {
+    parts.push(`Cigarette • ${entree.value.cigarettesPerDay}/j`)
   }
-  if (entry.value.tobaccoTypes?.vape && entry.value.vapeFrequency && typeof entry.value.vapeLiquidMl === 'number') {
-    parts.push(`Vape • ${entry.value.vapeFrequency} • ${entry.value.vapeLiquidMl} liquide`)
+  if (entree.value.tobaccoTypes?.vape && entree.value.vapeFrequency && typeof entree.value.vapeLiquidMl === 'number') {
+    parts.push(`Vape • ${entree.value.vapeFrequency} • ${entree.value.vapeLiquidMl} liquide`)
   }
   if (!parts.length) return 'Oui'
   return parts.join(', ')
 })
 
 const alcoholText = computed(() => {
-  if (!entry.value?.alcohol) return 'Non'
-  const drinks = Number(entry.value.alcoholDrinks ?? 0)
+  if (!entree.value?.alcohol) return 'Non'
+  const drinks = Number(entree.value.alcoholDrinks ?? 0)
   if (drinks > 0) return `${drinks} verres/jour`
   return 'Oui'
 })
 
 const sugarLabel = computed(() => {
-  if (!entry.value) return 'Non'
-  if (entry.value.sugar === 'high') return 'Eleve'
-  if (entry.value.sugar === 'low') return 'Faible'
+  if (!entree.value) return 'Non'
+  if (entree.value.sugar === 'high') return 'Eleve'
+  if (entree.value.sugar === 'low') return 'Faible'
   return 'Modere'
 })
 
 const sugarBadgeClass = computed(() => {
-  if (!entry.value) return 'border-slate-300 bg-slate-100 text-slate-700'
-  if (entry.value.sugar === 'high') return 'border-rose-300 bg-rose-100 text-rose-700'
-  if (entry.value.sugar === 'low') return 'border-emerald-300 bg-emerald-100 text-emerald-700'
+  if (!entree.value) return 'border-slate-300 bg-slate-100 text-slate-700'
+  if (entree.value.sugar === 'high') return 'border-rose-300 bg-rose-100 text-rose-700'
+  if (entree.value.sugar === 'low') return 'border-emerald-300 bg-emerald-100 text-emerald-700'
   return 'border-amber-300 bg-amber-100 text-amber-700'
 })
 </script>
-

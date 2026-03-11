@@ -1,10 +1,10 @@
-import { DropIcon, HeartIcon, WaveIcon } from '@/components/doctor/DoctorIcons.js'
+import { IconeGoutte, IconeCoeur, IconeOnde } from '@/components/doctor/IconesMedecin.js'
 
 // ---------------------------------------------------------------------------
 // Formatting helpers
 // ---------------------------------------------------------------------------
 
-export function computeAge(dateString) {
+export function calculerAge(dateString) {
   if (!dateString) return null
   const date = new Date(dateString)
   if (Number.isNaN(date.getTime())) return null
@@ -15,7 +15,7 @@ export function computeAge(dateString) {
   return age
 }
 
-export function formatRelativeTime(dateString) {
+export function formaterTempsRelatif(dateString) {
   if (!dateString) return '-'
   const date = new Date(dateString)
   if (Number.isNaN(date.getTime())) return '-'
@@ -27,35 +27,35 @@ export function formatRelativeTime(dateString) {
   return diffDays === 1 ? 'Il y a 1 jour' : `Il y a ${diffDays} jours`
 }
 
-export function formatDateLong(dateString) {
+export function formaterDateLongue(dateString) {
   if (!dateString) return '-'
   const date = new Date(dateString)
   if (Number.isNaN(date.getTime())) return '-'
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-export function formatDateShort(dateString) {
+export function formaterDateCourte(dateString) {
   if (!dateString) return '-'
   const date = new Date(dateString)
   if (Number.isNaN(date.getTime())) return '-'
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }).replace('.', '')
 }
 
-export function formatDateNumeric(dateString) {
+export function formaterDateNumerique(dateString) {
   if (!dateString) return '-'
   const date = new Date(dateString)
   if (Number.isNaN(date.getTime())) return '-'
   return date.toLocaleDateString('fr-FR')
 }
 
-export function formatAbsoluteAlertTime(dateString) {
+export function formaterHeureAlerteAbsolue(dateString) {
   if (!dateString) return "Aujourd'hui"
   const date = new Date(dateString)
   if (Number.isNaN(date.getTime())) return "Aujourd'hui"
   return date.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
 }
 
-export function toSentenceCase(value) {
+export function mettreEnPhrase(value) {
   const text = String(value || '').trim()
   if (!text) return '-'
   return text.charAt(0).toUpperCase() + text.slice(1)
@@ -65,7 +65,7 @@ export function toSentenceCase(value) {
 // Color / status resolvers
 // ---------------------------------------------------------------------------
 
-export function resolveAvatarColor(status, name) {
+export function resoudreCouleurAvatar(status, name) {
   if (status === 'critical') return '#f5002d'
   if (status === 'watch') return '#ef7b00'
   const palette = ['#3d57f4', '#4955f2', '#3558f0']
@@ -73,13 +73,13 @@ export function resolveAvatarColor(status, name) {
   return palette[index]
 }
 
-export function resolveDotColor(status) {
+export function resoudreCouleurPoint(status) {
   if (status === 'critical') return '#ff5964'
   if (status === 'watch') return '#f59d0b'
   return '#08c44e'
 }
 
-export function resolvePatientStatus(alertsList) {
+export function resoudreStatutPatient(alertsList) {
   if (alertsList.some((alert) => alert.severity === 'critical')) return 'critical'
   if (alertsList.length) return 'watch'
   return 'stable'
@@ -89,7 +89,7 @@ export function resolvePatientStatus(alertsList) {
 // Tag / label builders
 // ---------------------------------------------------------------------------
 
-export function buildListTags(profile) {
+export function construireEtiquettesListe(profile) {
   const tags = [
     ...(Array.isArray(profile?.maladies_chroniques) ? profile.maladies_chroniques : []),
     ...(Array.isArray(profile?.allergies) ? profile.allergies : [])
@@ -97,7 +97,7 @@ export function buildListTags(profile) {
   return tags.length ? tags.slice(0, 3) : ['Suivi general']
 }
 
-export function buildDetailTags(profile) {
+export function construireEtiquettesDetail(profile) {
   const diseaseTags = (Array.isArray(profile?.maladies_chroniques) ? profile.maladies_chroniques : []).map((label) => ({
     label,
     class: 'border-[#b8d1ff] bg-[#eef5ff] text-[#2454ff]'
@@ -109,7 +109,7 @@ export function buildDetailTags(profile) {
   return [...diseaseTags, ...allergyTags]
 }
 
-export function buildInitials(name) {
+export function construireInitiales(name) {
   return (
     String(name || '')
       .trim()
@@ -121,7 +121,7 @@ export function buildInitials(name) {
   )
 }
 
-export function getLatestGlucoseValue(alertsSource) {
+export function obtenirDerniereValeurGlucose(alertsSource) {
   const glucoseAlert = (Array.isArray(alertsSource) ? alertsSource : []).find((item) =>
     String(item?.message || '').toLowerCase().includes('glyc')
   )
@@ -134,14 +134,14 @@ export function getLatestGlucoseValue(alertsSource) {
 // Alert normalizers
 // ---------------------------------------------------------------------------
 
-export function normalizeListAlerts(list, patientName) {
+export function normaliserAlertesListe(list, patientName) {
   return (Array.isArray(list) ? list : []).map((alert, index) => {
     const critical = String(alert?.severity || '').toLowerCase() === 'critical'
     return {
       id: `${patientName}-${index + 1}`,
       patient: patientName,
       message: alert?.message || 'Alerte patient.',
-      time: formatAbsoluteAlertTime(alert?.measured_at),
+      time: formaterHeureAlerteAbsolue(alert?.measured_at),
       isoTime: alert?.measured_at || null,
       rowClass: critical ? 'border-[#ffb9bc] bg-[#fff5f5]' : 'border-[#f2cc4e] bg-[#fffdf3]',
       iconWrapClass: critical ? 'bg-[#ffe5e5]' : 'bg-[#fff1c5]',
@@ -151,13 +151,13 @@ export function normalizeListAlerts(list, patientName) {
   })
 }
 
-export function normalizeDetailAlerts(list) {
+export function normaliserAlertesDetail(list) {
   return (Array.isArray(list) ? list : []).map((alert, index) => {
     const isCritical = String(alert?.severity || '').toLowerCase() === 'critical'
     return {
       id: index + 1,
       title: alert?.title || (isCritical ? 'Alerte critique' : 'Alerte'),
-      time: formatAbsoluteAlertTime(alert?.measured_at),
+      time: formaterHeureAlerteAbsolue(alert?.measured_at),
       message: alert?.message || 'Alerte patient.',
       recommendation: alert?.recommendation || 'Verifier rapidement la situation du patient.',
       containerClass: isCritical ? 'border-[#ff9e9e] bg-[#fff4f4]' : 'border-[#f1c338] bg-[#fffdf0]',
@@ -171,32 +171,32 @@ export function normalizeDetailAlerts(list) {
 // Data mappers – patient list
 // ---------------------------------------------------------------------------
 
-export function mapPatient(item) {
+export function mapperPatient(item) {
   const patient = item?.patient || {}
   const profile = item?.profile || {}
   const latestVitals = item?.latest_vitals || {}
-  const patientAlerts = normalizeListAlerts(item?.alerts, patient.name)
-  const glucose = getLatestGlucoseValue(item?.alerts)
-  const status = resolvePatientStatus(patientAlerts)
+  const patientAlerts = normaliserAlertesListe(item?.alerts, patient.name)
+  const glucose = obtenirDerniereValeurGlucose(item?.alerts)
+  const status = resoudreStatutPatient(patientAlerts)
 
   return {
     id: patient.id,
     invitationId: item?.invitation_id,
     name: patient.name || 'Patient',
-    initials: buildInitials(patient.name),
+    initials: construireInitiales(patient.name),
     email: patient.email || '',
-    age: computeAge(patient.date_of_birth),
-    lastSeen: formatRelativeTime(latestVitals.measured_at || item?.accepted_at || patient.created_at),
-    nextVisit: formatDateLong(item?.accepted_at || patient.created_at),
+    age: calculerAge(patient.date_of_birth),
+    lastSeen: formaterTempsRelatif(latestVitals.measured_at || item?.accepted_at || patient.created_at),
+    nextVisit: formaterDateLongue(item?.accepted_at || patient.created_at),
     heartRate: latestVitals?.heart_rate ? `${Math.round(Number(latestVitals.heart_rate))} bpm` : '--',
     bloodPressure: latestVitals?.systolic_pressure
       ? `${Math.round(Number(latestVitals.systolic_pressure))}/${Math.round(Number(latestVitals.diastolic_pressure || 0))}`
       : '--',
     glucose,
     status,
-    tags: buildListTags(profile),
-    avatarColor: resolveAvatarColor(status, patient.name),
-    dotColor: resolveDotColor(status),
+    tags: construireEtiquettesListe(profile),
+    avatarColor: resoudreCouleurAvatar(status, patient.name),
+    dotColor: resoudreCouleurPoint(status),
     alertCount: patientAlerts.length,
     alertBadgeClass:
       status === 'critical'
@@ -210,7 +210,7 @@ export function mapPatient(item) {
   }
 }
 
-export function mapInvitation(invitation) {
+export function mapperInvitation(invitation) {
   const patient = invitation?.patient || {}
   const profile = invitation?.profile || {}
 
@@ -218,9 +218,9 @@ export function mapInvitation(invitation) {
     id: invitation?.id,
     name: patient.name || 'Patient',
     email: patient.email || '',
-    age: computeAge(patient.date_of_birth),
-    invitedAt: formatDateLong(invitation?.created_at),
-    tags: buildListTags(profile)
+    age: calculerAge(patient.date_of_birth),
+    invitedAt: formaterDateLongue(invitation?.created_at),
+    tags: construireEtiquettesListe(profile)
   }
 }
 
@@ -228,7 +228,7 @@ export function mapInvitation(invitation) {
 // Data mappers – patient detail
 // ---------------------------------------------------------------------------
 
-export function mapPatientDetailResponse(data, fallbackPatient) {
+export function mapperDetailPatient(data, fallbackPatient) {
   const profile = data?.profile || {}
   const latestVitals = data?.latest_vitals || {}
   const labs = Array.isArray(data?.lab_results) ? data.lab_results : []
@@ -241,21 +241,21 @@ export function mapPatientDetailResponse(data, fallbackPatient) {
   return {
     ...fallbackPatient,
     name: patient.name || fallbackPatient.name,
-    age: computeAge(patient.date_of_birth) || fallbackPatient.age,
-    gender: toSentenceCase(profile.sexe || ''),
-    lastSeen: formatRelativeTime(latestVitals.measured_at || patient.updated_at || patient.created_at),
-    detailTags: buildDetailTags(profile),
-    detailAlerts: normalizeDetailAlerts(data?.alerts),
-    overviewStats: buildOverviewStats(latestVitals, profile),
-    vitalsChart: mapVitalsChart(vitalsChart),
-    vitalsHistory: groupVitalsHistory(vitals),
-    analyses: labs.map(mapAnalysis),
-    treatments: buildTreatments(treatments, treatmentChecks),
-    treatmentHistoryRows: buildTreatmentHistoryRows(treatments, treatmentChecks)
+    age: calculerAge(patient.date_of_birth) || fallbackPatient.age,
+    gender: mettreEnPhrase(profile.sexe || ''),
+    lastSeen: formaterTempsRelatif(latestVitals.measured_at || patient.updated_at || patient.created_at),
+    detailTags: construireEtiquettesDetail(profile),
+    detailAlerts: normaliserAlertesDetail(data?.alerts),
+    overviewStats: construireStatistiquesResume(latestVitals, profile),
+    vitalsChart: mapperGraphiqueSignesVitaux(vitalsChart),
+    vitalsHistory: grouperHistoriqueSignesVitaux(vitals),
+    analyses: labs.map(mapperAnalyse),
+    treatments: construireTraitements(treatments, treatmentChecks),
+    treatmentHistoryRows: construireLignesHistoriqueTraitements(treatments, treatmentChecks)
   }
 }
 
-export function buildOverviewStats(latestVitals, profile) {
+export function construireStatistiquesResume(latestVitals, profile) {
   const heartRate = Number(latestVitals?.heart_rate || 0)
   const systolic = Number(latestVitals?.systolic_pressure || 0)
   const oxygen = Number(latestVitals?.oxygen_saturation || 0)
@@ -266,7 +266,7 @@ export function buildOverviewStats(latestVitals, profile) {
       value: heartRate ? `${Math.round(heartRate)} bpm` : '--',
       badge: heartRate >= 90 ? 'Legerement eleve' : 'Normal',
       badgeClass: heartRate >= 90 ? 'bg-[#ffe6b8] text-[#d47b00]' : 'bg-[#d7f5df] text-[#11a84d]',
-      icon: HeartIcon,
+      icon: IconeCoeur,
       iconWrapClass: 'bg-[#ffe3e8]',
       iconClass: 'text-[#ff2143]',
       cardClass: 'border-[#f4bac3] bg-[#fff7f8]'
@@ -278,7 +278,7 @@ export function buildOverviewStats(latestVitals, profile) {
         : '--',
       badge: systolic >= 135 ? 'Elevee' : 'Normal',
       badgeClass: systolic >= 135 ? 'bg-[#ffe6b8] text-[#d47b00]' : 'bg-[#d7f5df] text-[#11a84d]',
-      icon: WaveIcon,
+      icon: IconeOnde,
       iconWrapClass: 'bg-[#d8e9ff]',
       iconClass: 'text-[#2454ff]',
       cardClass: 'border-[#aed0ff] bg-[#f4fbff]'
@@ -288,7 +288,7 @@ export function buildOverviewStats(latestVitals, profile) {
       value: oxygen ? `${Math.round(oxygen)} %` : '--',
       badge: oxygen >= 95 ? 'Normal' : 'Basse',
       badgeClass: oxygen >= 95 ? 'bg-[#d7f5df] text-[#11a84d]' : 'bg-[#ffe6b8] text-[#d47b00]',
-      icon: DropIcon,
+      icon: IconeGoutte,
       iconWrapClass: 'bg-[#efe1ff]',
       iconClass: 'text-[#8c30ff]',
       cardClass: 'border-[#dbc1ff] bg-[#fbf7ff]'
@@ -296,7 +296,7 @@ export function buildOverviewStats(latestVitals, profile) {
   ]
 }
 
-export function groupVitalsHistory(rows) {
+export function grouperHistoriqueSignesVitaux(rows) {
   const seen = new Set()
   return (Array.isArray(rows) ? rows : [])
     .filter((row) => {
@@ -307,7 +307,7 @@ export function groupVitalsHistory(rows) {
     })
     .map((row) => ({
       isoDate: String(row?.measured_at || '').slice(0, 10),
-      date: formatDateShort(row?.measured_at),
+      date: formaterDateCourte(row?.measured_at),
       heartRate: row?.heart_rate ? `${Math.round(Number(row.heart_rate))} bpm` : '--',
       bloodPressure: row?.systolic_pressure
         ? `${Math.round(Number(row.systolic_pressure))}/${Math.round(Number(row.diastolic_pressure || 0))}`
@@ -316,19 +316,19 @@ export function groupVitalsHistory(rows) {
     }))
 }
 
-export function mapVitalsChart(chartData) {
+export function mapperGraphiqueSignesVitaux(chartData) {
   const labelSource = Array.isArray(chartData?.labels) ? chartData.labels : []
 
   return {
-    labels: labelSource.map((label) => formatDateShort(label)),
-    heartRate: carryForwardSeries(keepNumericSeries(chartData?.heart_rate, labelSource.length)),
-    systolicPressure: carryForwardSeries(keepNumericSeries(chartData?.systolic_pressure, labelSource.length)),
-    diastolicPressure: carryForwardSeries(keepNumericSeries(chartData?.diastolic_pressure, labelSource.length)),
-    oxygenSaturation: carryForwardSeries(keepNumericSeries(chartData?.oxygen_saturation, labelSource.length)),
+    labels: labelSource.map((label) => formaterDateCourte(label)),
+    heartRate: propagerSerie(conserverSerieNumerique(chartData?.heart_rate, labelSource.length)),
+    systolicPressure: propagerSerie(conserverSerieNumerique(chartData?.systolic_pressure, labelSource.length)),
+    diastolicPressure: propagerSerie(conserverSerieNumerique(chartData?.diastolic_pressure, labelSource.length)),
+    oxygenSaturation: propagerSerie(conserverSerieNumerique(chartData?.oxygen_saturation, labelSource.length)),
   }
 }
 
-export function mapAnalysis(item) {
+export function mapperAnalyse(item) {
   const numericValue = Number(item?.value)
   const unit = item?.unit ? String(item.unit) : ''
   const value =
@@ -356,11 +356,11 @@ export function mapAnalysis(item) {
     status,
     badgeClass,
     isoDate: String(item?.analysis_date || '').slice(0, 10),
-    date: formatDateNumeric(item?.analysis_date)
+    date: formaterDateNumerique(item?.analysis_date)
   }
 }
 
-function keepNumericSeries(values, expectedLength = 0) {
+function conserverSerieNumerique(values, expectedLength = 0) {
   const source = Array.isArray(values) ? values : []
   const size = Math.max(expectedLength, source.length)
 
@@ -373,7 +373,7 @@ function keepNumericSeries(values, expectedLength = 0) {
   })
 }
 
-function carryForwardSeries(values) {
+function propagerSerie(values) {
   let previousValue = null
 
   return (Array.isArray(values) ? values : []).map((value) => {
@@ -386,7 +386,7 @@ function carryForwardSeries(values) {
   })
 }
 
-export function buildTreatments(medicines, checks) {
+export function construireTraitements(medicines, checks) {
   return (Array.isArray(medicines) ? medicines : []).map((medicine) => {
     const rows = resolveTreatmentChecksForMedicine(checks, medicine.id)
     const total = rows.length
@@ -407,7 +407,7 @@ export function buildTreatments(medicines, checks) {
   })
 }
 
-export function buildTreatmentHistoryRows(medicines, checks) {
+export function construireLignesHistoriqueTraitements(medicines, checks) {
   const meds = Array.isArray(medicines) ? medicines : []
   const rows = Array.isArray(checks) ? checks : []
   const daysMap = new Map()

@@ -1,5 +1,5 @@
 <!--
-  PatientDashboard.vue
+  TableauDeBordPatient.vue
   Dashboard principal du patient : affiche un graphique SVG interactif
   montrant l'évolution des signes vitaux sur les 7 derniers jours.
   Chaque courbe (rythme cardiaque, tension, saturation O₂) est rendue
@@ -12,7 +12,7 @@
       <h1 class="text-[34px] font-semibold leading-none text-slate-900">Dashboard</h1>
       <p class="mt-2 text-sm text-slate-600">Vue d'ensemble de votre santé</p>
     </header>
-    <InlineNotifications />
+    <NotificationsEnLigne />
 
     <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div class="mb-3 flex items-center justify-between">
@@ -36,9 +36,9 @@
           <line v-if="hoverIndex !== null" :x1="convertirXEnPx(hoverIndex)" :y1="chart.top" :x2="convertirXEnPx(hoverIndex)" :y2="chart.height - chart.bottom" stroke="#cbd5e1" stroke-width="1.5" />
 
           <!-- Courbes des signes vitaux -->
-          <RythmeCardiqueChart    v-if="selectedSeries.rhythm"     :values="heartRateValues"   :hover-index="hoverIndex" :chart="chart" />
-          <TensionArterielleChart v-if="selectedSeries.tension"    :values="systolicValues"    :hover-index="hoverIndex" :chart="chart" />
-          <SaturationO2Chart      v-if="selectedSeries.saturation" :values="saturationValues"  :hover-index="hoverIndex" :chart="chart" />
+          <CourbeRythmeCardiaque    v-if="selectedSeries.rhythm"     :values="heartRateValues"   :hover-index="hoverIndex" :chart="chart" />
+          <CourbeTensionArterielle v-if="selectedSeries.tension"    :values="systolicValues"    :hover-index="hoverIndex" :chart="chart" />
+          <CourbeSaturationO2      v-if="selectedSeries.saturation" :values="saturationValues"  :hover-index="hoverIndex" :chart="chart" />
 
           <!-- Axe Y -->
           <g fill="#94a3b8" font-size="13">
@@ -72,10 +72,10 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import api from '@/services/api'
-import InlineNotifications from '@/components/ui/InlineNotifications.vue'
-import RythmeCardiqueChart from '@/components/dashboards/userDashboard/RythmeCardiqueChart.vue'
-import TensionArterielleChart from '@/components/dashboards/userDashboard/TensionArterielleChart.vue'
-import SaturationO2Chart from '@/components/dashboards/userDashboard/SaturationO2Chart.vue'
+import NotificationsEnLigne from '@/components/ui/NotificationsEnLigne.vue'
+import CourbeRythmeCardiaque from '@/components/dashboards/userDashboard/CourbeRythmeCardiaque.vue'
+import CourbeTensionArterielle from '@/components/dashboards/userDashboard/CourbeTensionArterielle.vue'
+import CourbeSaturationO2 from '@/components/dashboards/userDashboard/CourbeSaturationO2.vue'
 
 const chartRef = ref(null)
 const labels = ref([])

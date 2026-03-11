@@ -1,5 +1,5 @@
 <!--
-  HistogrammeAnalysesChart.vue
+  HistogrammeAnalyses.vue
   Histogramme interactif des analyses biologiques d'un patient. Affiche
   les résultats numériques récents sous forme de barres colorées (vert,
   orange ou rouge selon le statut), avec un filtre semaine/mois, un panneau

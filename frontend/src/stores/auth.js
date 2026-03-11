@@ -1,7 +1,7 @@
 /*
   Store d'authentification centralisé.
   Source unique de vérité pour l'utilisateur connecté, son rôle, et la gestion du token.
-  Expose fetchUser() avec déduplication des appels simultanés.
+  Expose chargerUtilisateur() avec déduplication des appels simultanés.
 */
 
 import { defineStore } from 'pinia'
@@ -15,13 +15,13 @@ export const useAuthStore = defineStore('auth', () => {
   // Promesse partagée pour éviter plusieurs appels /auth/me simultanés.
   let _fetchInFlight = null
 
-  const isLoggedIn = computed(() => Boolean(localStorage.getItem('auth_token')))
-  const userName = computed(() => user.value?.name || '')
-  const userRole = computed(() => user.value?.role?.toLowerCase() || null)
-  const isDoctor = computed(() => userRole.value === 'medecin' || userRole.value === 'doctor')
-  const hasProfil = computed(() => Boolean(user.value?.has_profil_sante))
+  const estConnecte = computed(() => Boolean(localStorage.getItem('auth_token')))
+  const nomUtilisateur = computed(() => user.value?.name || '')
+  const roleUtilisateur = computed(() => user.value?.role?.toLowerCase() || null)
+  const estMedecin = computed(() => roleUtilisateur.value === 'medecin' || roleUtilisateur.value === 'doctor')
+  const aProfilSante = computed(() => Boolean(user.value?.has_profil_sante))
 
-  async function fetchUser() {
+  async function chargerUtilisateur() {
     if (!localStorage.getItem('auth_token')) {
       user.value = null
       resolved.value = true
@@ -41,7 +41,7 @@ export const useAuthStore = defineStore('auth', () => {
           return user.value
         })
         .catch(() => {
-          clearToken()
+          supprimerToken()
           user.value = null
           resolved.value = true
           return null
@@ -54,38 +54,38 @@ export const useAuthStore = defineStore('auth', () => {
     return _fetchInFlight
   }
 
-  async function logout() {
+  async function deconnexion() {
     try {
       await api.post('/auth/logout')
     } catch (_) {
       // La déconnexion locale doit toujours fonctionner même si l'API échoue.
     } finally {
-      clearToken()
+      supprimerToken()
       user.value = null
       resolved.value = false
     }
   }
 
-  function clearToken() {
+  function supprimerToken() {
     localStorage.removeItem('auth_token')
     delete api.defaults.headers.common.Authorization
   }
 
-  function setToken(token) {
+  function definirToken(token) {
     localStorage.setItem('auth_token', token)
   }
 
   return {
     user,
     resolved,
-    isLoggedIn,
-    isDoctor,
-    userName,
-    userRole,
-    hasProfil,
-    fetchUser,
-    logout,
-    clearToken,
-    setToken,
+    estConnecte,
+    estMedecin,
+    nomUtilisateur,
+    roleUtilisateur,
+    aProfilSante,
+    chargerUtilisateur,
+    deconnexion,
+    supprimerToken,
+    definirToken,
   }
 })

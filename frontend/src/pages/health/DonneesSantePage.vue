@@ -4,7 +4,7 @@
       <h1 class="text-[28px] font-semibold leading-tight tracking-[-0.01em] text-slate-900">Données de santé</h1>
       <p class="mt-1 text-[13px] text-slate-500">Suivez vos indicateurs de santé dans le temps</p>
     </header>
-    <InlineNotifications />
+    <NotificationsEnLigne />
 
     <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
       <div class="grid grid-cols-3 gap-1">
@@ -35,12 +35,12 @@
       </div>
     </section>
 
-    <div v-if="showAddButton" class="mt-4 flex justify-end gap-2">
+    <div v-if="afficherBoutonAjout" class="mt-4 flex justify-end gap-2">
       <button
         v-if="activeTab === 'labs'"
         type="button"
         class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
-        @click="labsTab?.toggleFilters()"
+        @click="labsTab?.basculerFiltres()"
       >
         <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 5h18M7 12h10M10 19h4" stroke-linecap="round" />
@@ -56,7 +56,7 @@
         <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M12 5v14M5 12h14" stroke-linecap="round" />
         </svg>
-        {{ addButtonLabel }}
+        {{ libelleBoutonAjout }}
       </button>
     </div>
 
@@ -101,7 +101,7 @@ import TabSignesVitaux from "@/components/health/TabSignesVitaux.vue";
 import TabAnalyseBiologique from "@/components/health/TabAnalyseBiologique.vue";
 import TabTraitements from "@/components/health/TabTraitements.vue";
 import { useNotificationsStore } from "@/stores/notifications";
-import InlineNotifications from "@/components/ui/InlineNotifications.vue";
+import NotificationsEnLigne from "@/components/ui/NotificationsEnLigne.vue";
 
 // Refs vers les composants enfants pour appeler leurs methodes exposees.
 const vitalsTab = ref(null);
@@ -110,8 +110,8 @@ const notifications = useNotificationsStore();
 
 const activeTab = ref("vitals");
 
-const showAddButton = computed(() => activeTab.value !== "treatments");
-const addButtonLabel = computed(() => (activeTab.value === "labs" ? "Ajouter une analyse" : "Ajouter une mesure"));
+const afficherBoutonAjout = computed(() => activeTab.value !== "treatments");
+const libelleBoutonAjout = computed(() => (activeTab.value === "labs" ? "Ajouter une analyse" : "Ajouter une mesure"));
 
 // Donnees brutes rechargees depuis l'API.
 const analyses = ref([]);
@@ -131,8 +131,8 @@ const treatmentChecks = reactive({});
 const treatmentDays = ref(construire7DerniersJours());
 
 function ouvrirModalAjout() {
-  if (activeTab.value === "labs") labsTab.value?.openAddModal();
-  else vitalsTab.value?.openAddModal();
+  if (activeTab.value === "labs") labsTab.value?.ouvrirModalAjout();
+  else vitalsTab.value?.ouvrirModalAjout();
 }
 
 function convertirDateIso(dateValue) {
@@ -140,11 +140,11 @@ function convertirDateIso(dateValue) {
   return String(dateValue).slice(0, 10);
 }
 
-function toDate(dateIso) {
+function versDate(dateIso) {
   return dateIso ? new Date(`${dateIso}T00:00:00`) : null;
 }
-const formaterLibelle = (iso) => toDate(iso)?.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }) ?? "";
-const formaterDate = (iso) => toDate(iso)?.toLocaleDateString("fr-FR") ?? "";
+const formaterLibelle = (iso) => versDate(iso)?.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }) ?? "";
+const formaterDate = (iso) => versDate(iso)?.toLocaleDateString("fr-FR") ?? "";
 
 function normaliserSerie(values, fallback = 0) {
   let last = fallback;
@@ -257,10 +257,9 @@ async function chargerDonneesSante() {
     }
   } catch (error) {
     const message = error?.response?.data?.message || "Erreur lors du chargement des donnees de sante.";
-    notifications.error(message);
+    notifications.erreur(message);
   }
 }
 
 onMounted(chargerDonneesSante);
 </script>
-

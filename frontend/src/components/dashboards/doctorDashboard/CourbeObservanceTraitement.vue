@@ -1,5 +1,5 @@
 <!--
-  ObservanceTraitementChart.vue
+  CourbeObservanceTraitement.vue
   Graphique avancé en aire (gradient) montrant l'évolution de l'observance
   du traitement d'un patient jour par jour. Affiche le pourcentage de prises
   effectuées, avec des points cliquables pour voir la valeur exacte, des

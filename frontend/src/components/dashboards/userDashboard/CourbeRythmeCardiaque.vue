@@ -1,19 +1,19 @@
 <!--
-  TensionArterielleChart.vue
-  Composant SVG qui trace la courbe de la tension artérielle systolique (mmHg)
-  à l'intérieur du graphique patient. Reçoit les valeurs, la config du graphique
-  et l'index survolé en props ; dessine la polyline et les points interactifs.
+  CourbeRythmeCardiaque.vue
+  Composant SVG qui trace la courbe du rythme cardiaque (bpm) à l'intérieur
+  du graphique patient. Reçoit les valeurs, la config du graphique et l'index
+  survolé en props ; dessine la polyline et les points interactifs.
 -->
 <template>
   <g>
-    <polyline fill="none" stroke="#3b82f6" stroke-width="3" :points="points" />
+    <polyline fill="none" stroke="#f43f5e" stroke-width="3" :points="points" />
     <circle
       v-for="(point, i) in values"
       :key="i"
       :cx="convertirXEnPx(i)"
       :cy="convertirYEnPx(point)"
       :r="hoverIndex === i ? 6 : 5"
-      fill="#3b82f6"
+      fill="#f43f5e"
     />
     <circle
       v-if="hoverIndex !== null"

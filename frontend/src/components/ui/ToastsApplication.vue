@@ -6,15 +6,15 @@
           v-for="toast in notifications.items"
           :key="toast.id"
           class="pointer-events-auto relative rounded-xl border px-4 py-3 shadow-sm"
-          :class="tone(toast.type).card"
+          :class="tonNotification(toast.type).card"
           role="status"
           aria-live="polite"
         >
           <div class="flex items-center justify-between gap-3">
-            <p class="min-w-0 text-[16px] font-medium leading-6" :class="tone(toast.type).text">
+            <p class="min-w-0 text-[16px] font-medium leading-6" :class="tonNotification(toast.type).text">
               {{ toast.message }}
             </p>
-            <button type="button" class="text-slate-400 hover:text-slate-600" @click="notifications.remove(toast.id)" aria-label="Fermer la notification">
+            <button type="button" class="text-slate-400 hover:text-slate-600" @click="notifications.retirer(toast.id)" aria-label="Fermer la notification">
               <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2">
                 <path d="m6 6 12 12M18 6 6 18" stroke-linecap="round" />
               </svg>
@@ -35,7 +35,7 @@ const notifications = useNotificationsStore();
 const route = useRoute();
 const isInlineMainArea = computed(() => String(route.path || "").startsWith("/main"));
 
-function tone(type) {
+function tonNotification(type) {
   if (type === "success") {
     return {
       card: "border-emerald-300 bg-emerald-50",

@@ -7,26 +7,26 @@
             <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M8 2v4M16 2v4M4 9h16M5 5h14v15H5z" />
             </svg>
-            {{ entry.dateLabel }}
+            {{ entree.dateLabel }}
           </span>
 
           <template v-if="filterType === 'all'">
-            <span>Sommeil: <b class="text-slate-900">{{ libellerSommeil(entry.sleep) }}</b></span>
-            <span>Stress: <b class="text-slate-900">{{ libellerStress(entry.stress) }}</b></span>
-            <span>Energie: <b class="text-slate-900">{{ libellerEnergie(entry.energy) }}</b></span>
-            <span>Repas: <b class="text-slate-900">{{ entry.meals.length }} repas</b></span>
-            <span>Hydratation: <b class="text-slate-900">{{ entry.hydration }}L</b></span>
-            <span>Activite: <b class="text-slate-900">{{ entry.activityType }} {{ entry.activityDuration }}min</b></span>
-            <span>Tabac: <b class="text-slate-900">{{ resumerTabac(entry) }}</b></span>
+            <span>Sommeil: <b class="text-slate-900">{{ libellerSommeil(entree.sleep) }}</b></span>
+            <span>Stress: <b class="text-slate-900">{{ libellerStress(entree.stress) }}</b></span>
+            <span>Energie: <b class="text-slate-900">{{ libellerEnergie(entree.energy) }}</b></span>
+            <span>Repas: <b class="text-slate-900">{{ entree.meals.length }} repas</b></span>
+            <span>Hydratation: <b class="text-slate-900">{{ entree.hydration }}L</b></span>
+            <span>Activite: <b class="text-slate-900">{{ entree.activityType }} {{ entree.activityDuration }}min</b></span>
+            <span>Tabac: <b class="text-slate-900">{{ resumerTabac(entree) }}</b></span>
           </template>
-          <span v-else-if="filterType === 'sleep'">Sommeil: <b class="text-slate-900">{{ libellerSommeil(entry.sleep) }}</b></span>
-          <span v-else-if="filterType === 'stress'">Stress: <b class="text-slate-900">{{ libellerStress(entry.stress) }}</b></span>
-          <span v-else-if="filterType === 'energy'">Energie: <b class="text-slate-900">{{ libellerEnergie(entry.energy) }}</b></span>
-          <span v-else-if="filterType === 'nutrition'">Repas: <b class="text-slate-900">{{ entry.meals.length }} repas</b></span>
-          <span v-else-if="filterType === 'hydration'">Hydratation: <b class="text-slate-900">{{ entry.hydration }}L</b></span>
-          <span v-else-if="filterType === 'activity'">Activite: <b class="text-slate-900">{{ entry.activityType }} {{ entry.activityDuration }}min</b></span>
-          <span v-else-if="filterType === 'date'">Date: <b class="text-slate-900">{{ entry.dateIso }}</b></span>
-          <span v-else-if="filterType === 'month'">Mois: <b class="text-slate-900">{{ libellerMois(entry.dateIso) }}</b></span>
+          <span v-else-if="filterType === 'sleep'">Sommeil: <b class="text-slate-900">{{ libellerSommeil(entree.sleep) }}</b></span>
+          <span v-else-if="filterType === 'stress'">Stress: <b class="text-slate-900">{{ libellerStress(entree.stress) }}</b></span>
+          <span v-else-if="filterType === 'energy'">Energie: <b class="text-slate-900">{{ libellerEnergie(entree.energy) }}</b></span>
+          <span v-else-if="filterType === 'nutrition'">Repas: <b class="text-slate-900">{{ entree.meals.length }} repas</b></span>
+          <span v-else-if="filterType === 'hydration'">Hydratation: <b class="text-slate-900">{{ entree.hydration }}L</b></span>
+          <span v-else-if="filterType === 'activity'">Activite: <b class="text-slate-900">{{ entree.activityType }} {{ entree.activityDuration }}min</b></span>
+          <span v-else-if="filterType === 'date'">Date: <b class="text-slate-900">{{ entree.dateIso }}</b></span>
+          <span v-else-if="filterType === 'month'">Mois: <b class="text-slate-900">{{ libellerMois(entree.dateIso) }}</b></span>
         </div>
       </div>
 
@@ -57,7 +57,7 @@
 */
 
 defineProps({
-  entry: {
+  entree: {
     type: Object,
     required: true
   },
@@ -96,17 +96,16 @@ const libellerMois = (iso) => {
 }
 
 // Cette fonction construit un resume simple de la consommation de tabac.
-const resumerTabac = (entry) => {
-  if (!entry.tobacco) return 'Non'
+const resumerTabac = (entree) => {
+  if (!entree.tobacco) return 'Non'
   const parts = []
-  if (entry.tobaccoTypes?.cigarette && typeof entry.cigarettesPerDay === 'number') {
-    parts.push(`Cigarette • ${entry.cigarettesPerDay}/j`)
+  if (entree.tobaccoTypes?.cigarette && typeof entree.cigarettesPerDay === 'number') {
+    parts.push(`Cigarette • ${entree.cigarettesPerDay}/j`)
   }
-  if (entry.tobaccoTypes?.vape && entry.vapeFrequency && typeof entry.vapeLiquidMl === 'number') {
-    parts.push(`Vape • ${entry.vapeFrequency} • ${entry.vapeLiquidMl} liquide`)
+  if (entree.tobaccoTypes?.vape && entree.vapeFrequency && typeof entree.vapeLiquidMl === 'number') {
+    parts.push(`Vape • ${entree.vapeFrequency} • ${entree.vapeLiquidMl} liquide`)
   }
   if (!parts.length) return 'Oui'
   return parts.join(', ')
 }
 </script>
-

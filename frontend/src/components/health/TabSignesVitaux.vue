@@ -6,19 +6,6 @@
         {{ latestVitalMeasuredAtLabel ? `Derniere entree du ${latestVitalMeasuredAtLabel}` : "Aucune mesure enregistree pour le moment." }}
       </p>
     </div>
-
-    <button
-      v-if="canEditLatestVital"
-      type="button"
-      class="inline-flex h-11 items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 text-[14px] font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700"
-      @click="openEditLatestModal"
-    >
-      <svg viewBox="0 0 24 24" class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M12 20h9" stroke-linecap="round" />
-        <path d="m16.5 3.5 4 4L7 21l-4 1 1-4L16.5 3.5Z" stroke-linejoin="round" />
-      </svg>
-      Modifier la derniere entree
-    </button>
   </div>
 
   <section class="mt-6 grid gap-5 xl:grid-cols-3">
@@ -32,7 +19,29 @@
         <span class="rounded-full bg-[#dff6e4] px-3 py-1 text-[12px] leading-none text-[#08aa48]">Normal</span>
       </div>
       <p class="mt-4 text-[16px] leading-none text-slate-700">Rythme cardiaque</p>
-      <p class="mt-3 text-[40px] font-semibold leading-none text-slate-900">{{ latestHeartRate }} <span class="text-[34px] font-medium text-slate-700">bpm</span></p>
+      <div class="mt-3 flex items-baseline gap-2">
+        <button
+          v-if="peutModifierDerniereMesure && mesureEnEdition !== 'rythme-cardiaque'"
+          type="button"
+          class="group inline-flex items-end gap-2 text-left"
+          @click="activerEditionMesure('rythme-cardiaque')"
+        >
+          <span class="text-[30px] font-semibold leading-none text-slate-900 transition group-hover:text-[#ff2458]">{{ formulaireDerniereMesure.rythmeCardiaque || latestHeartRate }}</span>
+          <span class="text-[18px] font-medium leading-none text-slate-700 transition group-hover:text-[#ff2458]">bpm</span>
+        </button>
+        <template v-else-if="peutModifierDerniereMesure">
+          <input
+            v-model="formulaireDerniereMesure.rythmeCardiaque"
+            type="text"
+            inputmode="numeric"
+            class="min-w-0 appearance-none border-0 bg-transparent p-0 text-[30px] font-semibold leading-none text-slate-900 shadow-none outline-none ring-0 placeholder:text-slate-400 focus:outline-none focus:ring-0"
+            placeholder="--"
+            @blur="fermerEditionMesure"
+          />
+          <span class="text-[18px] font-medium leading-none text-slate-700">bpm</span>
+        </template>
+        <p v-else class="text-[30px] font-semibold leading-none text-slate-900">{{ latestHeartRate }} <span class="text-[18px] font-medium leading-none text-slate-700">bpm</span></p>
+      </div>
     </article>
 
     <article class="min-h-[162px] rounded-2xl border border-[#a8cdfb] bg-[#ebf6fe] px-6 py-6">
@@ -45,7 +54,41 @@
         <span class="rounded-full bg-[#dff6e4] px-3 py-1 text-[12px] leading-none text-[#08aa48]">Normal</span>
       </div>
       <p class="mt-4 text-[16px] leading-none text-slate-700">Tension artérielle</p>
-      <p class="mt-3 text-[40px] font-semibold leading-none text-slate-900">{{ latestPressure }} <span class="text-[34px] font-medium text-slate-700">mmHg</span></p>
+      <div class="mt-3 flex items-baseline gap-2">
+        <button
+          v-if="peutModifierDerniereMesure && mesureEnEdition !== 'tension'"
+          type="button"
+          class="group inline-flex items-end gap-2 text-left"
+          @click="activerEditionMesure('tension')"
+        >
+          <span class="text-[30px] font-semibold leading-none text-slate-900 transition group-hover:text-[#2c67f6]">
+            {{ formulaireDerniereMesure.tensionSystolique || props.latestVital?.systolic_pressure || "--" }}/{{ formulaireDerniereMesure.tensionDiastolique || props.latestVital?.diastolic_pressure || "--" }}
+          </span>
+          <span class="text-[18px] font-medium leading-none text-slate-700 transition group-hover:text-[#2c67f6]">mmHg</span>
+        </button>
+        <template v-else-if="peutModifierDerniereMesure">
+          <div class="flex min-w-0 items-baseline gap-2">
+            <input
+              v-model="formulaireDerniereMesure.tensionSystolique"
+              type="text"
+              inputmode="numeric"
+              class="w-[58px] appearance-none border-0 bg-transparent p-0 text-[30px] font-semibold leading-none text-slate-900 shadow-none outline-none ring-0 placeholder:text-slate-400 focus:outline-none focus:ring-0"
+              placeholder="--"
+            />
+            <span class="text-[30px] font-semibold leading-none text-slate-900">/</span>
+            <input
+              v-model="formulaireDerniereMesure.tensionDiastolique"
+              type="text"
+              inputmode="numeric"
+              class="w-[58px] appearance-none border-0 bg-transparent p-0 text-[30px] font-semibold leading-none text-slate-900 shadow-none outline-none ring-0 placeholder:text-slate-400 focus:outline-none focus:ring-0"
+              placeholder="--"
+              @blur="fermerEditionMesure"
+            />
+          </div>
+          <span class="text-[18px] font-medium leading-none text-slate-700">mmHg</span>
+        </template>
+        <p v-else class="text-[30px] font-semibold leading-none text-slate-900">{{ latestPressure }} <span class="text-[18px] font-medium leading-none text-slate-700">mmHg</span></p>
+      </div>
     </article>
 
     <article class="min-h-[162px] rounded-2xl border border-[#dbc6f7] bg-[#f6f0fc] px-6 py-6">
@@ -58,19 +101,76 @@
         <span class="rounded-full bg-[#dff6e4] px-3 py-1 text-[12px] leading-none text-[#08aa48]">Normal</span>
       </div>
       <p class="mt-4 text-[16px] leading-none text-slate-700">Saturation O₂</p>
-      <p class="mt-3 text-[40px] font-semibold leading-none text-slate-900">{{ latestOxygen }} <span class="text-[34px] font-medium text-slate-700">%</span></p>
+      <div class="mt-3 flex items-baseline gap-2">
+        <button
+          v-if="peutModifierDerniereMesure && mesureEnEdition !== 'saturation'"
+          type="button"
+          class="group inline-flex items-end gap-2 text-left"
+          @click="activerEditionMesure('saturation')"
+        >
+          <span class="text-[30px] font-semibold leading-none text-slate-900 transition group-hover:text-[#8a2cff]">{{ formulaireDerniereMesure.saturationOxygene || latestOxygen }}</span>
+          <span class="text-[18px] font-medium leading-none text-slate-700 transition group-hover:text-[#8a2cff]">%</span>
+        </button>
+        <template v-else-if="peutModifierDerniereMesure">
+          <input
+            v-model="formulaireDerniereMesure.saturationOxygene"
+            type="text"
+            inputmode="decimal"
+            class="min-w-0 appearance-none border-0 bg-transparent p-0 text-[30px] font-semibold leading-none text-slate-900 shadow-none outline-none ring-0 placeholder:text-slate-400 focus:outline-none focus:ring-0"
+            placeholder="--"
+            @blur="fermerEditionMesure"
+          />
+          <span class="text-[18px] font-medium leading-none text-slate-700">%</span>
+        </template>
+        <p v-else class="text-[30px] font-semibold leading-none text-slate-900">{{ latestOxygen }} <span class="text-[18px] font-medium leading-none text-slate-700">%</span></p>
+      </div>
     </article>
   </section>
 
+  <div v-if="peutModifierDerniereMesure" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <p class="text-[13px] text-slate-500">
+      Cliquez sur une valeur pour la modifier directement dans la carte.
+    </p>
+
+    <div class="flex items-center gap-2">
+      <button
+        v-if="editionDerniereMesureModifiee"
+        type="button"
+        class="inline-flex h-11 items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 text-[14px] font-semibold text-slate-700 shadow-sm transition hover:border-slate-400"
+        @click="reinitialiserEditionDerniereMesure"
+      >
+        Annuler
+      </button>
+      <button
+        type="button"
+        class="inline-flex h-11 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 text-[14px] font-semibold text-white shadow-[0_8px_16px_rgba(37,99,235,0.22)] disabled:cursor-not-allowed disabled:opacity-50"
+        :disabled="!editionDerniereMesureModifiee || enregistrementDerniereMesureEnCours"
+        @click="enregistrerDerniereMesureDepuisCartes"
+      >
+        {{ enregistrementDerniereMesureEnCours ? "Enregistrement..." : "Enregistrer la derniere entree" }}
+      </button>
+    </div>
+  </div>
+
   <section class="mt-8 rounded-2xl border border-slate-200 bg-[#f8f9fb] px-8 py-8">
-    <h2 class="text-[20px] font-semibold leading-none text-slate-900">Historique des mesures</h2>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <h2 class="text-[20px] font-semibold leading-none text-slate-900">Historique des mesures</h2>
+      <button
+        v-if="filtresSignesVitauxActifs"
+        type="button"
+        class="inline-flex h-11 items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 text-[14px] font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700"
+        @click="reinitialiserFiltresSignesVitaux"
+      >
+        Reinitialiser
+      </button>
+    </div>
 
     <div class="mt-8 grid gap-4 lg:grid-cols-2">
       <div>
         <label class="mb-3 block text-[14px] font-semibold text-slate-800">Filtrer par date</label>
         <div class="relative">
           <input
-            v-model="vitalFilterDate"
+            v-model="dateFiltreSignesVitaux"
             type="date"
             class="h-12 w-full rounded-2xl border border-slate-300 bg-white pl-5 pr-12 text-[16px] text-slate-900 outline-none focus:border-blue-500"
           />
@@ -83,7 +183,7 @@
       <div>
         <label class="mb-3 block text-[14px] font-semibold text-slate-800">Filtrer par type</label>
         <select
-          v-model="vitalFilterType"
+          v-model="typeFiltreSignesVitaux"
           class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-5 text-[16px] text-slate-900 outline-none focus:border-blue-500"
         >
           <option value="all">Tous les signes</option>
@@ -96,7 +196,7 @@
 
     <div class="mt-6 space-y-3.5">
       <article
-        v-for="day in filteredVitalHistory"
+        v-for="day in historiqueSignesVitauxFiltres"
         :key="day.dateKey"
         class="rounded-2xl border border-slate-200 bg-white px-5 py-5"
       >
@@ -108,7 +208,7 @@
         </div>
 
         <div class="grid gap-3 xl:grid-cols-3">
-          <article v-if="vitalFilterType === 'all' || vitalFilterType === 'heart'" class="rounded-xl border border-[#efc4cc] bg-[#fdf2f5] px-4 py-3">
+          <article v-if="typeFiltreSignesVitaux === 'all' || typeFiltreSignesVitaux === 'heart'" class="rounded-xl border border-[#efc4cc] bg-[#fdf2f5] px-4 py-3">
             <div class="flex items-center gap-3">
               <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f9e3e9] text-[#ff2458]">
                 <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9">
@@ -123,7 +223,7 @@
             </div>
           </article>
 
-          <article v-if="vitalFilterType === 'all' || vitalFilterType === 'pressure'" class="rounded-xl border border-[#a8cdfb] bg-[#ebf6fe] px-4 py-3">
+          <article v-if="typeFiltreSignesVitaux === 'all' || typeFiltreSignesVitaux === 'pressure'" class="rounded-xl border border-[#a8cdfb] bg-[#ebf6fe] px-4 py-3">
             <div class="flex items-center gap-3">
               <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#d5e7fd] text-[#2c67f6]">
                 <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9">
@@ -138,7 +238,7 @@
             </div>
           </article>
 
-          <article v-if="vitalFilterType === 'all' || vitalFilterType === 'oxygen'" class="rounded-xl border border-[#dbc6f7] bg-[#f6f0fc] px-4 py-3">
+          <article v-if="typeFiltreSignesVitaux === 'all' || typeFiltreSignesVitaux === 'oxygen'" class="rounded-xl border border-[#dbc6f7] bg-[#f6f0fc] px-4 py-3">
             <div class="flex items-center gap-3">
               <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eee2fc] text-[#8a2cff]">
                 <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9">
@@ -155,7 +255,7 @@
         </div>
       </article>
 
-      <div v-if="!filteredVitalHistory.length" class="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-[14px] text-slate-600">
+      <div v-if="!historiqueSignesVitauxFiltres.length" class="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-[14px] text-slate-600">
         Aucune mesure ne correspond aux filtres selectionnes.
       </div>
     </div>
@@ -267,7 +367,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
 
@@ -290,9 +390,18 @@ const notifications = useNotificationsStore();
 
 const showVitalsModal = ref(false);
 const vitalError = ref("");
-const vitalFilterDate = ref("");
-const vitalFilterType = ref("all");
+const dateFiltreSignesVitaux = ref("");
+const typeFiltreSignesVitaux = ref("all");
 const isEditingLatestVital = ref(false);
+const enregistrementDerniereMesureEnCours = ref(false);
+const mesureEnEdition = ref("");
+
+const formulaireDerniereMesure = reactive({
+  rythmeCardiaque: "",
+  tensionSystolique: "",
+  tensionDiastolique: "",
+  saturationOxygene: "",
+});
 
 const vitalForm = reactive({
   heartRate: "",
@@ -322,15 +431,20 @@ const latestPressure = computed(() => {
 const latestOxygen = computed(() => props.latestVital?.oxygen_saturation ?? "--");
 const latestVitalMeasuredDate = computed(() => convertirDateIso(props.latestVital?.measured_at));
 const latestVitalMeasuredAtLabel = computed(() => (props.latestVital?.measured_at ? formaterDate(latestVitalMeasuredDate.value) : ""));
-const canEditLatestVital = computed(() =>
-  Boolean(
-    props.latestVital?.measured_at &&
-    [props.latestVital?.heart_rate, props.latestVital?.systolic_pressure, props.latestVital?.diastolic_pressure, props.latestVital?.oxygen_saturation].some(estValeurMesuree)
-  )
-);
+const peutModifierDerniereMesure = computed(() => Boolean(props.latestVital?.measured_at));
 const vitalModalTitle = computed(() => (isEditingLatestVital.value ? "Modifier la derniere mesure" : "Ajouter une mesure"));
+const editionDerniereMesureModifiee = computed(() => {
+  if (!peutModifierDerniereMesure.value) return false;
 
-const filteredVitalHistory = computed(() => {
+  return (
+    String(formulaireDerniereMesure.rythmeCardiaque) !== String(props.latestVital?.heart_rate ?? "") ||
+    String(formulaireDerniereMesure.tensionSystolique) !== String(props.latestVital?.systolic_pressure ?? "") ||
+    String(formulaireDerniereMesure.tensionDiastolique) !== String(props.latestVital?.diastolic_pressure ?? "") ||
+    String(formulaireDerniereMesure.saturationOxygene) !== String(props.latestVital?.oxygen_saturation ?? "")
+  );
+});
+
+const historiqueSignesVitauxFiltres = computed(() => {
   const rows = props.vitalDateKeys
     .map((dateKey, index) => {
       const heartRate = props.historyHeartRate[index] ?? null;
@@ -353,9 +467,13 @@ const filteredVitalHistory = computed(() => {
     .filter((row) => row.hasAny)
     .reverse();
 
-  if (!vitalFilterDate.value) return rows;
-  return rows.filter((row) => row.dateKey === vitalFilterDate.value);
+  if (!dateFiltreSignesVitaux.value) return rows;
+  return rows.filter((row) => row.dateKey === dateFiltreSignesVitaux.value);
 });
+
+const filtresSignesVitauxActifs = computed(() =>
+  Boolean(dateFiltreSignesVitaux.value) || typeFiltreSignesVitaux.value !== "all"
+);
 
 const plottedSeries = computed(() => [
   { key: "heart", color: "#ef4444", values: props.chartHeartRate, points: construirePoints(props.chartHeartRate) },
@@ -382,8 +500,51 @@ const tooltipLeft = computed(() => {
 // Cette fonction convertit une valeur en nombre ou renvoie null.
 function convertirNombreOuNull(value) {
   if (value === null || value === undefined || value === "") return null;
-  const n = Number(value);
+  const n = Number(String(value).trim().replace(",", "."));
   return Number.isFinite(n) ? n : null;
+}
+
+function extraireMessageErreurApi(error, messageParDefaut) {
+  const messagePrincipal = error?.response?.data?.message;
+  const erreurs = error?.response?.data?.errors;
+
+  if (erreurs && typeof erreurs === "object") {
+    const premierChamp = Object.values(erreurs).find((messages) => Array.isArray(messages) && messages.length > 0);
+    if (premierChamp?.[0]) return String(premierChamp[0]);
+  }
+
+  return messagePrincipal || messageParDefaut;
+}
+
+function validerDerniereMesure(rythmeCardiaque, tensionSystolique, tensionDiastolique, saturationOxygene) {
+  if (rythmeCardiaque === null && tensionSystolique === null && tensionDiastolique === null && saturationOxygene === null) {
+    return "Veuillez renseigner au moins une valeur.";
+  }
+
+  if ((tensionSystolique === null) !== (tensionDiastolique === null)) {
+    return "Veuillez remplir les deux champs de tension.";
+  }
+
+  if (rythmeCardiaque !== null) {
+    if (!Number.isInteger(rythmeCardiaque)) return "Le rythme cardiaque doit etre un nombre entier.";
+    if (rythmeCardiaque < 20 || rythmeCardiaque > 260) return "Le rythme cardiaque doit etre compris entre 20 et 260 bpm.";
+  }
+
+  if (tensionSystolique !== null) {
+    if (!Number.isInteger(tensionSystolique)) return "La tension systolique doit etre un nombre entier.";
+    if (tensionSystolique < 50 || tensionSystolique > 300) return "La tension systolique doit etre comprise entre 50 et 300 mmHg.";
+  }
+
+  if (tensionDiastolique !== null) {
+    if (!Number.isInteger(tensionDiastolique)) return "La tension diastolique doit etre un nombre entier.";
+    if (tensionDiastolique < 30 || tensionDiastolique > 220) return "La tension diastolique doit etre comprise entre 30 et 220 mmHg.";
+  }
+
+  if (saturationOxygene !== null && (saturationOxygene < 0 || saturationOxygene > 100)) {
+    return "La saturation O2 doit etre comprise entre 0 et 100 %.";
+  }
+
+  return "";
 }
 
 // Cette fonction convertit une date en format ISO (YYYY-MM-DD).
@@ -449,6 +610,31 @@ function reinitialiserFormulaireVital() {
   vitalForm.skipPressure = false;
   vitalForm.skipOxygen = false;
   vitalForm.date = new Date().toISOString().slice(0, 10);
+}
+
+function synchroniserEditionDerniereMesure() {
+  formulaireDerniereMesure.rythmeCardiaque = String(props.latestVital?.heart_rate ?? "");
+  formulaireDerniereMesure.tensionSystolique = String(props.latestVital?.systolic_pressure ?? "");
+  formulaireDerniereMesure.tensionDiastolique = String(props.latestVital?.diastolic_pressure ?? "");
+  formulaireDerniereMesure.saturationOxygene = String(props.latestVital?.oxygen_saturation ?? "");
+}
+
+function activerEditionMesure(nomMesure) {
+  mesureEnEdition.value = nomMesure;
+}
+
+function fermerEditionMesure() {
+  mesureEnEdition.value = "";
+}
+
+function reinitialiserEditionDerniereMesure() {
+  synchroniserEditionDerniereMesure();
+  fermerEditionMesure();
+}
+
+function reinitialiserFiltresSignesVitaux() {
+  dateFiltreSignesVitaux.value = "";
+  typeFiltreSignesVitaux.value = "all";
 }
 
 // Cette fonction convertit un index de point en position X du graphique.
@@ -523,40 +709,72 @@ async function enregistrerMesure() {
       diastolic_pressure: diastolic,
       oxygen_saturation: oxygen,
     });
-    notifications.actionAdded();
+    notifications.actionAjoutee();
     reinitialiserFormulaireVital();
     showVitalsModal.value = false;
     emit("refresh");
   } catch (error) {
     const message = error?.response?.data?.message || "Erreur lors de l'enregistrement.";
-    notifications.error(message);
+    notifications.erreur(message);
+  }
+}
+
+async function enregistrerDerniereMesureDepuisCartes() {
+  if (!peutModifierDerniereMesure.value) {
+    notifications.avertissement("Aucune derniere mesure disponible a modifier.");
+    return;
+  }
+
+  const rythmeCardiaque = convertirNombreOuNull(formulaireDerniereMesure.rythmeCardiaque);
+  const tensionSystolique = convertirNombreOuNull(formulaireDerniereMesure.tensionSystolique);
+  const tensionDiastolique = convertirNombreOuNull(formulaireDerniereMesure.tensionDiastolique);
+  const saturationOxygene = convertirNombreOuNull(formulaireDerniereMesure.saturationOxygene);
+
+  const messageValidation = validerDerniereMesure(
+    rythmeCardiaque,
+    tensionSystolique,
+    tensionDiastolique,
+    saturationOxygene,
+  );
+  if (messageValidation) {
+    notifications.avertissement(messageValidation);
+    return;
+  }
+
+  enregistrementDerniereMesureEnCours.value = true;
+
+  try {
+    await api.post("/health-data/vitals", {
+      measured_at: latestVitalMeasuredDate.value,
+      heart_rate: rythmeCardiaque,
+      systolic_pressure: tensionSystolique,
+      diastolic_pressure: tensionDiastolique,
+      oxygen_saturation: saturationOxygene,
+    });
+    notifications.actionModifiee("Derniere entree modifiee avec succes.");
+    fermerEditionMesure();
+    emit("refresh");
+  } catch (error) {
+    const message = extraireMessageErreurApi(error, "Erreur lors de la modification.");
+    notifications.erreur(message);
+  } finally {
+    enregistrementDerniereMesureEnCours.value = false;
   }
 }
 
 // Cette methode est exposee pour que le parent puisse ouvrir la modale d'ajout.
-function openAddModal() {
+function ouvrirModalAjout() {
   reinitialiserFormulaireVital();
   showVitalsModal.value = true;
 }
 
-function openEditLatestModal() {
-  if (!canEditLatestVital.value) {
-    notifications.warning("Aucune derniere mesure disponible a modifier.");
-    return;
-  }
+watch(
+  () => props.latestVital,
+  () => {
+    synchroniserEditionDerniereMesure();
+  },
+  { immediate: true, deep: true }
+);
 
-  vitalError.value = "";
-  isEditingLatestVital.value = true;
-  vitalForm.heartRate = String(props.latestVital?.heart_rate ?? "");
-  vitalForm.systolic = String(props.latestVital?.systolic_pressure ?? "");
-  vitalForm.diastolic = String(props.latestVital?.diastolic_pressure ?? "");
-  vitalForm.oxygen = String(props.latestVital?.oxygen_saturation ?? "");
-  vitalForm.skipHeartRate = !estValeurMesuree(props.latestVital?.heart_rate);
-  vitalForm.skipPressure = !estValeurMesuree(props.latestVital?.systolic_pressure) && !estValeurMesuree(props.latestVital?.diastolic_pressure);
-  vitalForm.skipOxygen = !estValeurMesuree(props.latestVital?.oxygen_saturation);
-  vitalForm.date = latestVitalMeasuredDate.value;
-  showVitalsModal.value = true;
-}
-
-defineExpose({ openAddModal, openEditLatestModal });
+defineExpose({ ouvrirModalAjout });
 </script>

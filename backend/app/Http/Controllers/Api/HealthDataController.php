@@ -17,9 +17,9 @@ use Illuminate\Http\Request;
 
 class HealthDataController extends Controller
 {
-    public function __construct(private readonly HealthDataService $healthDataService) {}
+    public function __construct(private readonly HealthDataService $serviceDonneesSante) {}
 
-    public function overview(Request $request): JsonResponse
+    public function vueEnsemble(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
         $days = max(1, min((int) $request->query('days', 7), 30));
@@ -58,14 +58,14 @@ class HealthDataController extends Controller
             ->orderBy('medication_name')
             ->get();
 
-        $treatmentMedicines = $this->healthDataService->resolveTreatmentMedicines($userId);
+        $treatmentMedicines = $this->serviceDonneesSante->resoudreMedicamentsTraitement($userId);
 
         return response()->json([
-            'message' => 'Health data fetched successfully.',
+            'message' => 'Donnees de sante recuperees avec succes.',
             'data' => [
                 'latest_vitals' => $latestVitals,
                 'vitals' => $vitals,
-                'vitals_chart' => $this->healthDataService->buildVitalsChartSeries($vitals, $days),
+                'vitals_chart' => $this->serviceDonneesSante->construireSeriesGraphiqueSignesVitaux($vitals, $days),
                 'lab_results' => $labResults,
                 'treatment_medicines' => $treatmentMedicines,
                 'treatment_checks' => $treatmentChecks,
@@ -73,7 +73,7 @@ class HealthDataController extends Controller
         ]);
     }
 
-    public function listVitals(Request $request): JsonResponse
+    public function listerSignesVitaux(Request $request): JsonResponse
     {
         $days = max(1, min((int) $request->query('days', 30), 90));
         $startDate = Carbon::today()->subDays($days - 1);
@@ -85,12 +85,12 @@ class HealthDataController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Vitals fetched successfully.',
+            'message' => 'Signes vitaux recuperes avec succes.',
             'data' => $rows,
         ]);
     }
 
-    public function storeVital(StoreHealthVitalRequest $request): JsonResponse
+    public function enregistrerSigneVital(StoreHealthVitalRequest $request): JsonResponse
     {
         $payload = $request->validated();
         $userId = $request->user()->id;
@@ -115,7 +115,7 @@ class HealthDataController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Vital updated successfully.',
+                'message' => 'Signe vital mis a jour avec succes.',
                 'data' => $existing->fresh(),
             ]);
         }
@@ -130,12 +130,12 @@ class HealthDataController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Vital saved successfully.',
+            'message' => 'Signe vital enregistre avec succes.',
             'data' => $vital,
         ], 201);
     }
 
-    public function listLabResults(Request $request): JsonResponse
+    public function listerResultatsLaboratoire(Request $request): JsonResponse
     {
         $rows = HealthLabResult::query()
             ->where('user_id', $request->user()->id)
@@ -144,12 +144,12 @@ class HealthDataController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Lab results fetched successfully.',
+            'message' => 'Resultats de laboratoire recuperes avec succes.',
             'data' => $rows,
         ]);
     }
 
-    public function storeLabResult(StoreHealthLabResultRequest $request): JsonResponse
+    public function enregistrerResultatLaboratoire(StoreHealthLabResultRequest $request): JsonResponse
     {
         $payload = $request->validated();
         $payload['user_id'] = $request->user()->id;
@@ -157,35 +157,35 @@ class HealthDataController extends Controller
         $row = HealthLabResult::create($payload);
 
         return response()->json([
-            'message' => 'Lab result saved successfully.',
+            'message' => 'Resultat de laboratoire enregistre avec succes.',
             'data' => $row,
         ], 201);
     }
 
-    public function updateLabResult(UpdateHealthLabResultRequest $request, HealthLabResult $healthLabResult): JsonResponse
+    public function mettreAJourResultatLaboratoire(UpdateHealthLabResultRequest $request, HealthLabResult $healthLabResult): JsonResponse
     {
-        if ($error = $this->authorizeLabResult($healthLabResult, $request)) return $error;
+        if ($error = $this->autoriserResultatLaboratoire($healthLabResult, $request)) return $error;
 
         $healthLabResult->update($request->validated());
 
         return response()->json([
-            'message' => 'Lab result updated successfully.',
+            'message' => 'Resultat de laboratoire mis a jour avec succes.',
             'data' => $healthLabResult->fresh(),
         ]);
     }
 
-    public function destroyLabResult(Request $request, HealthLabResult $healthLabResult): JsonResponse
+    public function supprimerResultatLaboratoire(Request $request, HealthLabResult $healthLabResult): JsonResponse
     {
-        if ($error = $this->authorizeLabResult($healthLabResult, $request)) return $error;
+        if ($error = $this->autoriserResultatLaboratoire($healthLabResult, $request)) return $error;
 
         $healthLabResult->delete();
 
         return response()->json([
-            'message' => 'Lab result deleted successfully.',
+            'message' => 'Resultat de laboratoire supprime avec succes.',
         ]);
     }
 
-    public function listTreatmentChecks(Request $request): JsonResponse
+    public function listerControlesTraitement(Request $request): JsonResponse
     {
         $days = max(1, min((int) $request->query('days', 14), 90));
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
@@ -198,12 +198,12 @@ class HealthDataController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Treatment checks fetched successfully.',
+            'message' => 'Controles de traitement recuperes avec succes.',
             'data' => $rows,
         ]);
     }
 
-    public function syncTreatmentChecks(SyncHealthTreatmentChecksRequest $request): JsonResponse
+    public function synchroniserControlesTraitement(SyncHealthTreatmentChecksRequest $request): JsonResponse
     {
         $userId = $request->user()->id;
 
@@ -226,14 +226,14 @@ class HealthDataController extends Controller
         }
 
         return response()->json([
-            'message' => 'Treatment checks synchronized successfully.',
+            'message' => 'Controles de traitement synchronises avec succes.',
         ]);
     }
 
-    private function authorizeLabResult(HealthLabResult $labResult, Request $request): ?JsonResponse
+    private function autoriserResultatLaboratoire(HealthLabResult $labResult, Request $request): ?JsonResponse
     {
         if ($labResult->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized access to this lab result.'], 403);
+            return response()->json(['message' => 'Acces non autorise a ce resultat de laboratoire.'], 403);
         }
         return null;
     }
