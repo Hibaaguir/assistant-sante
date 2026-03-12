@@ -89,7 +89,7 @@ async function soumettre() {
       password: form.password,
     });
 
-    if (res?.data?.token) authStore.definirToken(res.data.token);
+    authStore.appliquerAuthentification(res?.data, "medecin");
 
     serverMessage.value = res?.data?.message || "Connexion medecin reussie.";
     messageType.value = "success";

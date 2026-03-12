@@ -17,7 +17,18 @@
         <p class="mt-3 text-[15px] font-medium text-[#5a6881]">Suivi en temps reel de vos patients</p>
       </div>
 
-      <div class="flex items-center gap-3 self-start">
+      <div class="flex flex-wrap items-center gap-3 self-start">
+        <button
+          type="button"
+          class="inline-flex h-[40px] items-center gap-2 rounded-[14px] border border-[#cfe3d8] bg-[#effaf3] px-5 text-[15px] font-medium text-[#167a45]"
+          @click="ouvrirEspacePersonnel"
+        >
+          <svg viewBox="0 0 24 24" class="h-[17px] w-[17px]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M6 20a6 6 0 0 1 12 0" />
+          </svg>
+          <span>{{ authStore.aProfilSante ? 'Mon espace personnel' : 'Completer mon espace personnel' }}</span>
+        </button>
         <button
           type="button"
           class="relative flex h-[40px] w-[50px] items-center justify-center rounded-[14px] border border-[#d7dce3] bg-[#f6f6f7] text-[#4b5568]"
@@ -224,5 +235,10 @@ onMounted(async () => {
 async function deconnexion() {
   await authStore.deconnexion()
   router.push({ name: 'connexion-medecin' })
+}
+
+function ouvrirEspacePersonnel() {
+  authStore.definirEspaceActif('personnel')
+  router.push({ name: authStore.aProfilSante ? 'tableau-de-bord' : 'profil-sante' })
 }
 </script>

@@ -130,7 +130,7 @@
           </p>
           <p class="text-xs text-center text-gray-500">
             Vous souhaitez creer un compte medecin ?
-            <RouterLink :to="{ name: 'inscription' }" class="text-sky-700 font-semibold hover:underline">Choisir un autre role</RouterLink>
+            <RouterLink :to="{ name: 'inscription-medecin' }" class="text-sky-700 font-semibold hover:underline">Acceder a l'inscription medecin</RouterLink>
           </p>
         </form>
       </div>
@@ -279,7 +279,7 @@ async function soumettre() {
       password_confirmation: form.password_confirmation,
     });
 
-    if (res?.data?.token) authStore.definirToken(res.data.token);
+    authStore.appliquerAuthentification(res?.data, "personnel");
 
     setTimeout(() => router.push(res?.data?.redirect_to || "/profil-sante"), 500);
   } catch (err) {

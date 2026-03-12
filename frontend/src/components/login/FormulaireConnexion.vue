@@ -55,19 +55,6 @@
             <p v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password }}</p>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Type de compte <span class="text-red-600">*</span></label>
-            <select
-              v-model="form.role"
-              class="h-12 px-4 rounded-xl border-2 bg-white text-gray-900 outline-none w-full"
-              :class="errors.role ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
-            >
-              <option value="user">Utilisateur</option>
-              <option value="medecin">Medecin</option>
-            </select>
-            <p v-if="errors.role" class="mt-2 text-sm text-red-600">{{ errors.role }}</p>
-          </div>
-
           <button
             type="submit"
             :disabled="loading"
@@ -90,7 +77,7 @@
           <p class="text-xs text-center text-gray-500">
             Vous n'avez pas de compte ?
             <RouterLink :to="{ name: 'inscription' }" class="text-teal-700 font-semibold hover:underline">
-              Choisir un type de compte
+              Creer un compte
             </RouterLink>
           </p>
         </form>
@@ -104,20 +91,20 @@
 <script setup>
 import api from "@/services/api";
 import { reactive, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 
+const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const espaceCible = String(route.query.space || "").trim().toLowerCase();
 
 const form = reactive({
-  role: "user",
-  email: "",
+  email: String(route.query.email || "").trim(),
   password: "",
 });
 
 const errors = reactive({
-  role: "",
   email: "",
   password: "",
 });
@@ -131,7 +118,6 @@ const INVALID_EMAIL_MESSAGE = "Format d'email invalide.";
 const INVALID_CREDENTIALS_MESSAGE = "Email ou mot de passe invalide.";
 
 function effacerErreurs() {
-  errors.role = "";
   errors.email = "";
   errors.password = "";
 }
@@ -147,7 +133,7 @@ function premierMessage(value) {
 }
 
 function mapFieldValidationErrors(validationErrors = {}) {
-  for (const key of ["role", "email", "password"]) {
+  for (const key of ["email", "password"]) {
     errors[key] = premierMessage(validationErrors[key]);
   }
 }
@@ -157,8 +143,7 @@ async function soumettre() {
   messageType.value = "success";
   effacerErreurs();
 
-  if (!form.role || !form.email || !form.password) {
-    if (!form.role) errors.role = "Le type de compte est obligatoire.";
+  if (!form.email || !form.password) {
     if (!form.email) errors.email = "L'adresse email est obligatoire.";
     if (!form.password) errors.password = "Le mot de passe est obligatoire.";
     serverMessage.value = REQUIRED_FORM_MESSAGE;
@@ -175,17 +160,29 @@ async function soumettre() {
 
   try {
     const res = await api.post("/auth/login", {
-      role: form.role,
       email: form.email,
       password: form.password,
     });
 
-    if (res?.data?.token) authStore.definirToken(res.data.token);
+    const estMedecin = res?.data?.user?.role === "medecin";
+    authStore.appliquerAuthentification(res?.data, estMedecin ? "medecin" : "personnel");
 
     serverMessage.value = res?.data?.message || "Connexion reussie.";
     messageType.value = "success";
 
-    setTimeout(() => router.push(res?.data?.redirect_to || "/main/dashboard"), 250);
+    setTimeout(() => {
+      if (estMedecin) {
+        if (espaceCible === "medecin") {
+          router.push({ name: "tableau-de-bord" });
+          return;
+        }
+
+        router.push({ name: "choix-espace" });
+        return;
+      }
+
+      router.push(res?.data?.redirect_to || "/main/dashboard");
+    }, 250);
   } catch (err) {
     messageType.value = "error";
 

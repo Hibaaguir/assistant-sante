@@ -3,7 +3,6 @@ import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import FormulaireInscription from "@/components/register/FormulaireInscription.vue";
 import FormulaireConnexion from "@/components/login/FormulaireConnexion.vue";
-import ChoixRoleInscriptionPage from "@/pages/auth/ChoixRoleInscriptionPage.vue";
 import ProfilSante from "@/components/profil-sante/ProfilSante.vue";
 import MiseEnPagePrincipale from "@/layouts/MiseEnPagePrincipale.vue";
 import JournalHome from "@/pages/journal/JournalHome.vue";
@@ -14,16 +13,18 @@ import DonneesSantePage from "@/pages/health/DonneesSantePage.vue";
 import TableauDeBordPage from "@/pages/TableauDeBordPage.vue";
 import ConnexionMedecinPage from "@/pages/doctor/ConnexionMedecinPage.vue";
 import InscriptionMedecinPage from "@/pages/doctor/InscriptionMedecinPage.vue";
+import ChoixEspacePage from "@/pages/doctor/ChoixEspacePage.vue";
 import PageTemporaire from "@/pages/PageTemporaire.vue";
 
 // Déclaration de toutes les routes de l'application avec leurs composants associés et certaines protections d'accès
 const routes = [
   { path: "/", redirect: "/login" },
   { path: "/login", name: "connexion", component: FormulaireConnexion },
-  { path: "/register", name: "inscription", component: ChoixRoleInscriptionPage },
-  { path: "/register/user", name: "inscription-utilisateur", component: FormulaireInscription },
+  { path: "/register", name: "inscription", component: FormulaireInscription },
+  { path: "/register/user", redirect: "/register" },
   { path: "/doctor-login", name: "connexion-medecin", component: ConnexionMedecinPage },
   { path: "/doctor-register", name: "inscription-medecin", component: InscriptionMedecinPage },
+  { path: "/choix-espace", name: "choix-espace", component: ChoixEspacePage, meta: { requiresAuth: true } },
   { path: "/profil-sante", name: "profil-sante", component: ProfilSante, meta: { requiresAuth: true } },
   {
     path: "/main",
@@ -52,25 +53,44 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const authStore = useAuthStore();
   const user = await authStore.chargerUtilisateur();
-
-  const role = authStore.roleUtilisateur;
-  const routeName = String(to.name || "");
-  const estPageAuthMedecin = ["connexion-medecin", "inscription-medecin"].includes(routeName);
-  const estPageAuthUtilisateur = ["inscription", "inscription-utilisateur", "connexion"].includes(routeName);
-
-  if ((estPageAuthMedecin || estPageAuthUtilisateur) && user) {
-    if ((estPageAuthMedecin && role === "medecin") || (estPageAuthUtilisateur && role !== "medecin")) {
+  const routeParDefautAuthentifie = () => {
+    if (authStore.estDansEspaceMedecin) {
       return { name: "tableau-de-bord" };
     }
-    authStore.supprimerToken();
-    return true;
+
+    return authStore.aProfilSante
+      ? { name: "tableau-de-bord" }
+      : { name: "profil-sante" };
+  };
+
+  const routeName = String(to.name || "");
+  const estPageAuthMedecin = ["connexion-medecin", "inscription-medecin"].includes(routeName);
+  const estPageAuthUtilisateur = ["inscription", "connexion"].includes(routeName);
+
+  if ((estPageAuthMedecin || estPageAuthUtilisateur) && user) {
+    return routeParDefautAuthentifie();
   }
 
   if (to.meta.requiresAuth && !user) {
     return { name: "connexion" };
   }
 
-  if (to.name === "profil-sante" && user && authStore.aProfilSante) {
+  if (
+    to.meta.requiresAuth &&
+    user &&
+    authStore.estDansEspacePersonnel &&
+    !authStore.aProfilSante &&
+    to.name !== "profil-sante" &&
+    to.name !== "choix-espace"
+  ) {
+    return { name: "profil-sante" };
+  }
+
+  if (to.name === "choix-espace" && user && !authStore.estMedecin) {
+    return routeParDefautAuthentifie();
+  }
+
+  if (to.name === "profil-sante" && user && authStore.aProfilSante && authStore.estDansEspacePersonnel) {
     return { name: "tableau-de-bord" };
   }
 

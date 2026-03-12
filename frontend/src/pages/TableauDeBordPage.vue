@@ -5,7 +5,7 @@
   l'utilisateur connecté. Aucune logique métier ici, juste l'aiguillage.
 -->
 <template>
-  <TableauDeBordMedecin v-if="authStore.resolved && authStore.estMedecin" />
+  <TableauDeBordMedecin v-if="authStore.resolved && authStore.estDansEspaceMedecin" />
   <TableauDeBordPatient v-else-if="authStore.resolved" />
 </template>
 

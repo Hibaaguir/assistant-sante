@@ -1,7 +1,7 @@
 <template>
   <!-- Structure principale du layout authentifié avec affichage conditionnel de la barre latérale et du contenu courant -->
-  <div v-if="authStore.resolved" class="min-h-screen text-slate-900 lg:flex" :class="authStore.estMedecin ? 'bg-[#f5f6f8]' : 'bg-[#EEF2F7]'">
-    <BarreLateraleApp v-if="!authStore.estMedecin" :active="routeActive" />
+  <div v-if="authStore.resolved" class="min-h-screen text-slate-900 lg:flex" :class="authStore.estDansEspaceMedecin ? 'bg-[#f5f6f8]' : 'bg-[#EEF2F7]'">
+    <BarreLateraleApp v-if="authStore.estDansEspacePersonnel" :active="routeActive" />
 
     <main class="w-full flex-1">
       <RouterView />

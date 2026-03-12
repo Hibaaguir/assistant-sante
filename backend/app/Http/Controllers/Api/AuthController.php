@@ -125,27 +125,27 @@ class AuthController extends Controller
                 'role' => ['nullable', Rule::in(['user', 'medecin', 'admin'])],
             ]);
 
-            $role = $credentials['role'] ?? 'user';
-            $user = $this->trouverUtilisateurPourConnexion(
-                strtolower(trim($credentials['email'])),
-                $credentials['password'],
-                $role,
-            );
+            $email = strtolower(trim($credentials['email']));
+            $role = $credentials['role'] ?? null;
+            $user = $role !== null
+                ? $this->trouverUtilisateurPourConnexion($email, $credentials['password'], $role)
+                : $this->trouverUtilisateurSansRole($email, $credentials['password']);
 
             if (! $user) {
                 return response()->json(['message' => 'Email ou mot de passe invalide.'], 401);
             }
 
             $user->tokens()->delete();
-            $linkedPendingInvitations = $role === 'medecin' ? $this->lieurInvitationMedecin->lierPourUtilisateur($user) : false;
-            $hasProfil = $role === 'user' ? $user->profilSante()->exists() : false;
-            $hasPendingDoctorInvitations = $role === 'medecin' && ($linkedPendingInvitations || $this->aInvitationsMedecinEnAttente($user));
+            $isDoctor = $user->role === 'medecin';
+            $linkedPendingInvitations = $isDoctor ? $this->lieurInvitationMedecin->lierPourUtilisateur($user) : false;
+            $hasProfil = $user->profilSante()->exists();
+            $hasPendingDoctorInvitations = $isDoctor && ($linkedPendingInvitations || $this->aInvitationsMedecinEnAttente($user));
 
             return $this->reponseAuthentifiee(
                 $user,
-                $user->createToken($role === 'medecin' ? 'doctor_auth_token' : 'auth_token')->plainTextToken,
+                $user->createToken($isDoctor ? 'doctor_auth_token' : 'auth_token')->plainTextToken,
                 $hasProfil,
-                $role === 'medecin' ? '/main/dashboard' : ($hasProfil ? '/main' : '/profil-sante'),
+                $isDoctor ? '/choix-espace' : ($hasProfil ? '/main' : '/profil-sante'),
                 $hasPendingDoctorInvitations,
                 200,
                 'Connexion reussie.'
@@ -187,10 +187,12 @@ class AuthController extends Controller
             $linkedPendingInvitations = $this->lieurInvitationMedecin->lierPourUtilisateur($user);
             $hasPendingDoctorInvitations = $linkedPendingInvitations || $this->aInvitationsMedecinEnAttente($user);
 
+            $hasProfil = $user->profilSante()->exists();
+
             return $this->reponseAuthentifiee(
                 $user,
                 $user->createToken('doctor_auth_token')->plainTextToken,
-                false,
+                $hasProfil,
                 '/main/dashboard',
                 $hasPendingDoctorInvitations,
                 200,
@@ -211,7 +213,7 @@ class AuthController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        $hasProfil = $user->role === 'user' ? $user->profilSante()->exists() : false;
+        $hasProfil = $user->profilSante()->exists();
 
         if ($user->role === 'medecin') {
             $this->lieurInvitationMedecin->lierPourUtilisateur($user);
@@ -293,6 +295,19 @@ class AuthController extends Controller
             ->first();
 
         return $user && Hash::check($password, $user->password) ? $user : null;
+    }
+
+    private function trouverUtilisateurSansRole(string $email, string $password): ?User
+    {
+        foreach (['medecin', 'user', 'admin'] as $role) {
+            $user = $this->trouverUtilisateurPourConnexion($email, $password, $role);
+
+            if ($user) {
+                return $user;
+            }
+        }
+
+        return null;
     }
 
     private function messagesDeBase(): array

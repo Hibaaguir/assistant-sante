@@ -166,7 +166,7 @@ const computedAge = computed(() => {
 });
 
 onMounted(async () => {
-  if (!authStore.isLoggedIn) {
+  if (!authStore.estConnecte) {
     router.replace({ name: "inscription" });
     return;
   }
@@ -177,6 +177,8 @@ onMounted(async () => {
     const user = response?.data?.user;
 
     userDateOfBirth.value = user?.date_of_birth ? String(user.date_of_birth) : "";
+
+    authStore.definirPresenceProfilSante(Boolean(profil));
 
     if (profil) {
       router.replace({ name: "mon-profil-sante" });
@@ -281,6 +283,7 @@ async function enregistrer() {
 
   try {
     await api.post("/profil-sante", payload);
+    authStore.definirPresenceProfilSante(true);
     saveSuccess.value = "Profil enregistre avec succes.";
     router.push({ name: "mon-profil-sante" });
   } catch (error) {

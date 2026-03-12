@@ -214,7 +214,7 @@ async function soumettre() {
       specialite: form.specialite,
     });
 
-    if (res?.data?.token) authStore.definirToken(res.data.token);
+    authStore.appliquerAuthentification(res?.data, "medecin");
 
     serverMessage.value = res?.data?.message || "Compte medecin cree avec succes.";
     messageType.value = "success";

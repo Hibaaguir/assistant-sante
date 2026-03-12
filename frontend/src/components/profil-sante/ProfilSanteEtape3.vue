@@ -61,7 +61,7 @@
           </div>
           <div class="flex-1">
             <p class="font-medium text-blue-900 mb-1">Invitation securisee</p>
-            <p class="text-sm text-blue-700">Ton medecin recevra une invitation pour acceder a ton profil et suivre tes progres.</p>
+            <p class="text-sm text-blue-700">Si ton medecin a deja un compte, l'invitation apparaitra dans son espace medecin. Sinon, il recevra un email.</p>
           </div>
         </div>
       </div>

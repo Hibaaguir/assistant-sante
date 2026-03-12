@@ -134,12 +134,20 @@ class ProfilSanteController extends Controller
                 ]);
         }
 
-        $doctor = User::query()
+        $existingAccount = User::query()
             ->whereRaw('LOWER(email) = ?', [$doctorEmail])
             ->first();
 
-        if ($doctor && $doctor->id === $patient->id) {
+        if ($existingAccount && $existingAccount->id === $patient->id) {
             return;
+        }
+
+        $doctor = $existingAccount?->role === 'medecin' ? $existingAccount : null;
+
+        if ($existingAccount && $existingAccount->role !== 'medecin') {
+            $existingAccount->update([
+                'role' => 'medecin',
+            ]);
         }
 
         $existing = DoctorInvitation::query()
@@ -150,12 +158,12 @@ class ProfilSanteController extends Controller
         if ($existing) {
             if ($existing->status === 'accepted') {
                 $existing->update([
-                    'doctor_user_id' => $doctor?->id,
+                    'doctor_user_id' => $existingAccount?->id,
                     'doctor_email' => $doctorEmail,
                 ]);
             } elseif ($doctorEmailChanged) {
                 $existing->update([
-                    'doctor_user_id' => $doctor?->id,
+                    'doctor_user_id' => $existingAccount?->id,
                     'doctor_email' => $doctorEmail,
                     'status' => 'pending',
                     'token' => Str::random(64),
@@ -165,26 +173,31 @@ class ProfilSanteController extends Controller
                 ]);
             } else {
                 $existing->update([
-                    'doctor_user_id' => $doctor?->id,
+                    'doctor_user_id' => $existingAccount?->id,
                     'doctor_email' => $doctorEmail,
                 ]);
             }
         } else {
             DoctorInvitation::query()->create([
                 'patient_user_id' => $patient->id,
-                'doctor_user_id' => $doctor?->id,
+                'doctor_user_id' => $existingAccount?->id,
                 'doctor_email' => $doctorEmail,
                 'status' => 'pending',
                 'token' => Str::random(64),
             ]);
         }
 
-        if (! $doctorEmailChanged) {
+        if (! $doctorEmailChanged || $doctor) {
             return;
         }
 
         try {
-            Mail::to($doctorEmail)->send(new DoctorInvitationMail($patient, $doctorEmail));
+            Mail::to($doctorEmail)->send(new DoctorInvitationMail(
+                $patient,
+                $doctorEmail,
+                $existingAccount ? '/login' : '/doctor-login',
+                $existingAccount ? 'medecin' : null,
+            ));
         } catch (\Throwable $e) {
             Log::warning('Doctor invitation email failed: '.$e->getMessage());
         }

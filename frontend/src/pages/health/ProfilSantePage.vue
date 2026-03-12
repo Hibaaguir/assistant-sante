@@ -908,6 +908,7 @@ async function enregistrerSection(section) {
     const response = await api.post("/profil-sante", construireChargeUtile());
     Object.assign(profil, response?.data?.data || {});
     Object.assign(user, response?.data?.user || user);
+    authStore.definirPresenceProfilSante(true);
     syncDraftFromProfil();
     editing[section] = false;
     notifications.actionModifiee();
@@ -984,6 +985,7 @@ onMounted(async () => {
     const response = await api.get("/profil-sante");
     Object.assign(profil, response?.data?.data || {});
     Object.assign(user, response?.data?.user || {});
+    authStore.definirPresenceProfilSante(Boolean(response?.data?.data));
     syncDraftFromProfil();
   } catch (e) {
     if (e?.response?.status === 401) {
