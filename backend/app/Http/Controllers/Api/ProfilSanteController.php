@@ -7,6 +7,7 @@ use App\Mail\DoctorInvitationMail;
 use App\Models\DoctorInvitation;
 use App\Models\ProfilSante;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -134,20 +135,41 @@ class ProfilSanteController extends Controller
                 ]);
         }
 
-        $existingAccount = User::query()
+        $doctorAccount = User::query()
             ->whereRaw('LOWER(email) = ?', [$doctorEmail])
+            ->where('role', 'medecin')
+            ->latest('id')
+            ->first();
+
+        $existingAccount = $doctorAccount ?: User::query()
+            ->whereRaw('LOWER(email) = ?', [$doctorEmail])
+            ->latest('id')
             ->first();
 
         if ($existingAccount && $existingAccount->id === $patient->id) {
             return;
         }
 
-        $doctor = $existingAccount?->role === 'medecin' ? $existingAccount : null;
+        $doctor = $doctorAccount;
 
-        if ($existingAccount && $existingAccount->role !== 'medecin') {
-            $existingAccount->update([
-                'role' => 'medecin',
-            ]);
+        if ($existingAccount && ! $doctorAccount && $existingAccount->role !== 'medecin') {
+            try {
+                $existingAccount->update([
+                    'role' => 'medecin',
+                ]);
+                $doctor = $existingAccount->fresh();
+            } catch (QueryException $exception) {
+                Log::warning('Doctor invitation role sync skipped: '.$exception->getMessage(), [
+                    'doctor_email' => $doctorEmail,
+                    'existing_account_id' => $existingAccount->id,
+                ]);
+
+                $doctor = User::query()
+                    ->whereRaw('LOWER(email) = ?', [$doctorEmail])
+                    ->where('role', 'medecin')
+                    ->latest('id')
+                    ->first();
+            }
         }
 
         $existing = DoctorInvitation::query()
@@ -158,12 +180,12 @@ class ProfilSanteController extends Controller
         if ($existing) {
             if ($existing->status === 'accepted') {
                 $existing->update([
-                    'doctor_user_id' => $existingAccount?->id,
+                    'doctor_user_id' => $doctor?->id,
                     'doctor_email' => $doctorEmail,
                 ]);
             } elseif ($doctorEmailChanged) {
                 $existing->update([
-                    'doctor_user_id' => $existingAccount?->id,
+                    'doctor_user_id' => $doctor?->id,
                     'doctor_email' => $doctorEmail,
                     'status' => 'pending',
                     'token' => Str::random(64),
@@ -173,14 +195,14 @@ class ProfilSanteController extends Controller
                 ]);
             } else {
                 $existing->update([
-                    'doctor_user_id' => $existingAccount?->id,
+                    'doctor_user_id' => $doctor?->id,
                     'doctor_email' => $doctorEmail,
                 ]);
             }
         } else {
             DoctorInvitation::query()->create([
                 'patient_user_id' => $patient->id,
-                'doctor_user_id' => $existingAccount?->id,
+                'doctor_user_id' => $doctor?->id,
                 'doctor_email' => $doctorEmail,
                 'status' => 'pending',
                 'token' => Str::random(64),

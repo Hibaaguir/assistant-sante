@@ -130,13 +130,17 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import api from '@/services/api'
 import NotificationsEnLigne from '@/components/ui/NotificationsEnLigne.vue'
 import CourbeRythmeCardiaque from '@/components/dashboards/userDashboard/CourbeRythmeCardiaque.vue'
 import CourbeTensionArterielle from '@/components/dashboards/userDashboard/CourbeTensionArterielle.vue'
 import CourbeSaturationO2 from '@/components/dashboards/userDashboard/CourbeSaturationO2.vue'
+import { useAuthStore } from '@/stores/auth'
 
 const chartRef = ref(null)
+const router = useRouter()
+const authStore = useAuthStore()
 const labels = ref([])
 const heartRateValues = ref([])
 const systolicValues = ref([])
@@ -171,6 +175,15 @@ const nombreNonLues = computed(() => listeNotifications.value.filter((notificati
 const notificationsVisibles = computed(() => listeNotifications.value.filter((notification) => !notification.read_at))
 const TOOLTIP_TOP = chart.top + 10
 
+async function gererErreurAuthentification(error) {
+  if (error?.response?.status !== 401) {
+    throw error
+  }
+
+  await authStore.deconnexion()
+  await router.replace({ name: 'connexion' })
+}
+
 function normaliserSerie(values, fallback = 0) {
   let last = fallback
   return (Array.isArray(values) ? values : []).map((v) => {
@@ -191,13 +204,17 @@ function formaterLibelle(label) {
 }
 
 async function chargerDonneesSante() {
-  const res = await api.get('/health-data/overview', { params: { days: 7 } })
-  const chartData = res?.data?.data?.vitals_chart ?? {}
-  const labelSource = Array.isArray(chartData.labels) ? chartData.labels : []
-  labels.value = labelSource.map(formaterLibelle)
-  heartRateValues.value = normaliserSerie(chartData.heart_rate, 70)
-  systolicValues.value = normaliserSerie(chartData.systolic_pressure, 120)
-  saturationValues.value = normaliserSerie(chartData.oxygen_saturation, 98)
+  try {
+    const res = await api.get('/health-data/overview', { params: { days: 7 } })
+    const chartData = res?.data?.data?.vitals_chart ?? {}
+    const labelSource = Array.isArray(chartData.labels) ? chartData.labels : []
+    labels.value = labelSource.map(formaterLibelle)
+    heartRateValues.value = normaliserSerie(chartData.heart_rate, 70)
+    systolicValues.value = normaliserSerie(chartData.systolic_pressure, 120)
+    saturationValues.value = normaliserSerie(chartData.oxygen_saturation, 98)
+  } catch (error) {
+    await gererErreurAuthentification(error)
+  }
 }
 
 function formaterDateHeureNotification(value) {
@@ -219,7 +236,12 @@ async function chargerListeNotifications({ silencieux = false } = {}) {
   try {
     const res = await api.get('/notifications')
     listeNotifications.value = Array.isArray(res?.data?.data) ? res.data.data : []
-  } catch (_) {
+  } catch (error) {
+    if (error?.response?.status === 401) {
+      await gererErreurAuthentification(error)
+      return
+    }
+
     erreurNotification.value = 'Impossible de charger les notifications pour le moment.'
   } finally {
     chargementNotifications.value = false

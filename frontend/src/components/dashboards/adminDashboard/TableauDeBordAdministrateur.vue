@@ -365,12 +365,14 @@ async function enregistrerEdition() {
       nom: formulaireEdition.nom,
       email: formulaireEdition.email,
       type: formulaireEdition.type,
-      statut: formulaireEdition.statut
+      statut: formulaireEdition.statut,
+      specialite: formulaireEdition.specialite || ''
     })
     await chargerUtilisateursAdministrateur()
     fermerEdition()
-  } catch (_) {
-    messageErreur.value = 'Impossible de modifier cet utilisateur pour le moment.'
+  } catch (error) {
+    console.error('Erreur modification utilisateur:', error?.response?.data || error?.message || error)
+    messageErreur.value = error?.response?.data?.message || 'Impossible de modifier cet utilisateur pour le moment.'
   }
 }
 
@@ -390,8 +392,9 @@ async function confirmerSuppression() {
     await supprimerUtilisateurAdministrateur(idUtilisateurSuppression.value)
     await chargerUtilisateursAdministrateur()
     fermerSuppression()
-  } catch (_) {
-    messageErreur.value = 'Impossible de supprimer cet utilisateur pour le moment.'
+  } catch (error) {
+    console.error('Erreur suppression utilisateur:', error?.response?.data || error?.message || error)
+    messageErreur.value = error?.response?.data?.message || 'Impossible de supprimer cet utilisateur pour le moment.'
   }
 }
 
@@ -408,8 +411,9 @@ async function basculerStatutUtilisateur(utilisateur) {
       specialite: utilisateur.specialite || ''
     })
     await chargerUtilisateursAdministrateur()
-  } catch (_) {
-    messageErreur.value = 'Impossible de changer le statut de cet utilisateur pour le moment.'
+  } catch (error) {
+    console.error('Erreur changement statut:', error?.response?.data || error?.message || error)
+    messageErreur.value = error?.response?.data?.message || 'Impossible de changer le statut de cet utilisateur pour le moment.'
   }
 }
 
@@ -419,9 +423,10 @@ async function chargerUtilisateursAdministrateur() {
 
   try {
     utilisateurs.value = await listerUtilisateursAdministrateur()
-  } catch (_) {
+  } catch (error) {
+    console.error('Erreur chargement utilisateurs:', error?.response?.data || error?.message || error)
     utilisateurs.value = []
-    messageErreur.value = 'Impossible de charger les utilisateurs administrateur.'
+    messageErreur.value = error?.response?.data?.message || 'Impossible de charger les utilisateurs administrateur.'
   } finally {
     chargementListe.value = false
   }
