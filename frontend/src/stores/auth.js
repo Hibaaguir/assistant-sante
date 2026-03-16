@@ -20,11 +20,12 @@ export const useAuthStore = defineStore('auth', () => {
   const estConnecte = computed(() => Boolean(localStorage.getItem('auth_token')))
   const nomUtilisateur = computed(() => user.value?.name || '')
   const roleUtilisateur = computed(() => user.value?.role?.toLowerCase() || null)
+  const estAdministrateur = computed(() => roleUtilisateur.value === 'administrateur' || roleUtilisateur.value === 'admin')
   const estMedecin = computed(() => roleUtilisateur.value === 'medecin' || roleUtilisateur.value === 'doctor')
   const aProfilSante = computed(() => Boolean(user.value?.has_profil_sante))
-  const espaceCourant = computed(() => (estMedecin.value ? espaceActif.value : 'personnel'))
+  const espaceCourant = computed(() => (estMedecin.value ? espaceActif.value : (estAdministrateur.value ? 'administrateur' : 'personnel')))
   const estDansEspaceMedecin = computed(() => estMedecin.value && espaceCourant.value === 'medecin')
-  const estDansEspacePersonnel = computed(() => !estMedecin.value || espaceCourant.value === 'personnel')
+  const estDansEspacePersonnel = computed(() => (!estMedecin.value && !estAdministrateur.value) || espaceCourant.value === 'personnel')
 
   function synchroniserEspaceActif() {
     if (!estMedecin.value) {
@@ -123,6 +124,7 @@ export const useAuthStore = defineStore('auth', () => {
     resolved,
     espaceCourant,
     estConnecte,
+    estAdministrateur,
     estMedecin,
     estDansEspaceMedecin,
     estDansEspacePersonnel,

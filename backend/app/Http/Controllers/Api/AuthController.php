@@ -80,14 +80,16 @@ class AuthController extends Controller
                 ],
                 'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
                 'specialite' => ['required', 'string', 'min:2', 'max:120'],
+                'date_of_birth' => ['nullable', 'date_format:Y-m-d'],
             ], array_merge($this->messagesDeBase(), [
                 'specialite.required' => 'La specialite est obligatoire.',
+                'date_of_birth.date_format' => 'La date doit etre au format YYYY-MM-DD.',
             ]));
 
             $user = User::create([
                 'name' => trim($request->input('name') ?: 'Medecin'),
                 'email' => strtolower(trim($validated['email'])),
-                'date_of_birth' => null,
+                'date_of_birth' => $validated['date_of_birth'] ?? null,
                 'password' => Hash::make($validated['password']),
                 'role' => 'medecin',
                 'specialite' => trim($validated['specialite']),
@@ -122,7 +124,7 @@ class AuthController extends Controller
             $credentials = $request->validate([
                 'email' => ['required', 'email'],
                 'password' => ['required', 'string'],
-                'role' => ['nullable', Rule::in(['user', 'medecin', 'admin'])],
+                'role' => ['nullable', Rule::in(['user', 'medecin', 'admin', 'administrateur'])],
             ]);
 
             $email = strtolower(trim($credentials['email']));
@@ -137,6 +139,7 @@ class AuthController extends Controller
 
             $user->tokens()->delete();
             $isDoctor = $user->role === 'medecin';
+            $isAdmin = in_array($user->role, ['admin', 'administrateur'], true);
             $linkedPendingInvitations = $isDoctor ? $this->lieurInvitationMedecin->lierPourUtilisateur($user) : false;
             $hasProfil = $user->profilSante()->exists();
             $hasPendingDoctorInvitations = $isDoctor && ($linkedPendingInvitations || $this->aInvitationsMedecinEnAttente($user));
@@ -145,7 +148,7 @@ class AuthController extends Controller
                 $user,
                 $user->createToken($isDoctor ? 'doctor_auth_token' : 'auth_token')->plainTextToken,
                 $hasProfil,
-                $isDoctor ? '/choix-espace' : ($hasProfil ? '/main' : '/profil-sante'),
+                $isAdmin ? '/main/dashboard' : ($isDoctor ? '/choix-espace' : ($hasProfil ? '/main' : '/profil-sante')),
                 $hasPendingDoctorInvitations,
                 200,
                 'Connexion reussie.'
@@ -223,7 +226,9 @@ class AuthController extends Controller
             'user' => $this->donneesUtilisateur($user),
             'has_profil_sante' => $hasProfil,
             'has_pending_doctor_invitations' => $user->role === 'medecin' ? $this->aInvitationsMedecinEnAttente($user) : false,
-            'redirect_to' => $user->role === 'medecin' ? '/main/dashboard' : ($hasProfil ? '/main' : '/profil-sante'),
+            'redirect_to' => in_array($user->role, ['admin', 'administrateur'], true)
+                ? '/main/dashboard'
+                : ($user->role === 'medecin' ? '/main/dashboard' : ($hasProfil ? '/main' : '/profil-sante')),
         ]);
     }
 
@@ -299,7 +304,7 @@ class AuthController extends Controller
 
     private function trouverUtilisateurSansRole(string $email, string $password): ?User
     {
-        foreach (['medecin', 'user', 'admin'] as $role) {
+        foreach (['administrateur', 'medecin', 'user'] as $role) {
             $user = $this->trouverUtilisateurPourConnexion($email, $password, $role);
 
             if ($user) {

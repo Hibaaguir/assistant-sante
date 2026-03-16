@@ -4,6 +4,7 @@ use App\Mail\DoctorInvitationMail;
 use App\Models\User;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('citation', function () {
     $this->comment(Inspiring::quote());
@@ -34,3 +35,6 @@ Artisan::command('mail:test-doctor-invitation {email : Recipient email address}'
 
     $this->info("Invitation e-mail envoyee a {$email}.");
 })->purpose('Envoyer une vraie invitation medecin avec le service SMTP configure');
+
+Schedule::command('treatments:notify --mode=reminder')->dailyAt('08:00');
+Schedule::command('treatments:notify --mode=missed')->dailyAt('21:00');

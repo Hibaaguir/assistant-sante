@@ -8,11 +8,70 @@
 -->
 <template>
   <div class="mx-auto max-w-[1320px] p-4 sm:p-6 lg:p-8">
-    <header>
-      <h1 class="text-[34px] font-semibold leading-none text-slate-900">Dashboard</h1>
-      <p class="mt-2 text-sm text-slate-600">Vue d'ensemble de votre santé</p>
+    <header class="flex items-start justify-between gap-3">
+      <div>
+        <h1 class="text-[34px] font-semibold leading-none text-slate-900">Dashboard</h1>
+        <p class="mt-2 text-sm text-slate-600">Vue d'ensemble de votre santé</p>
+      </div>
+      <span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+        {{ nombreNonLues }} non lue{{ nombreNonLues > 1 ? 's' : '' }}
+      </span>
     </header>
     <NotificationsEnLigne />
+
+    <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <h2 class="text-[22px] font-semibold leading-none text-slate-900">Notifications traitements</h2>
+          <p class="mt-1 text-sm text-slate-600">Rappels journaliers et oublis detectes</p>
+        </div>
+        <button
+          type="button"
+          class="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          :disabled="nombreNonLues === 0 || chargementNotifications"
+          @click="marquerToutLu"
+        >
+          Tout marquer lu
+        </button>
+      </div>
+
+      <div v-if="chargementNotifications" class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+        Chargement des notifications...
+      </div>
+
+      <div v-else-if="erreurNotification" class="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+        {{ erreurNotification }}
+      </div>
+
+      <ul v-else-if="notificationsVisibles.length > 0" class="space-y-3">
+        <li
+          v-for="notification in notificationsVisibles"
+          :key="notification.id"
+          class="rounded-xl border px-4 py-3"
+          :class="'border-blue-200 bg-blue-50'"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-slate-900">{{ notification.data?.title || 'Notification' }}</p>
+              <p class="mt-1 text-sm text-slate-700">{{ notification.data?.message || '' }}</p>
+              <p class="mt-2 text-xs text-slate-500">{{ formaterDateHeureNotification(notification.created_at) }}</p>
+            </div>
+
+            <button
+              type="button"
+              class="rounded-lg border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+              @click="marquerNotificationLue(notification.id)"
+            >
+              Marquer lue
+            </button>
+          </div>
+        </li>
+      </ul>
+
+      <div v-else class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+        Aucune notification pour le moment.
+      </div>
+    </section>
 
     <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div class="mb-3 flex items-center justify-between">
@@ -70,7 +129,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import api from '@/services/api'
 import NotificationsEnLigne from '@/components/ui/NotificationsEnLigne.vue'
 import CourbeRythmeCardiaque from '@/components/dashboards/userDashboard/CourbeRythmeCardiaque.vue'
@@ -83,6 +142,10 @@ const heartRateValues = ref([])
 const systolicValues = ref([])
 const saturationValues = ref([])
 const hoverIndex = ref(null)
+const listeNotifications = ref([])
+const chargementNotifications = ref(false)
+const erreurNotification = ref('')
+let minuterieRafraichissementNotifications = null
 const selectedSeries = reactive({
   rhythm: true,
   tension: true,
@@ -104,6 +167,8 @@ const yTicks = [0, 35, 70, 105, 140]
 const tooltipLeft = computed(() =>
   Math.max(8, Math.min(convertirXEnPx(hoverIndex.value) + 12, chart.width - 230))
 )
+const nombreNonLues = computed(() => listeNotifications.value.filter((notification) => !notification.read_at).length)
+const notificationsVisibles = computed(() => listeNotifications.value.filter((notification) => !notification.read_at))
 const TOOLTIP_TOP = chart.top + 10
 
 function normaliserSerie(values, fallback = 0) {
@@ -133,6 +198,58 @@ async function chargerDonneesSante() {
   heartRateValues.value = normaliserSerie(chartData.heart_rate, 70)
   systolicValues.value = normaliserSerie(chartData.systolic_pressure, 120)
   saturationValues.value = normaliserSerie(chartData.oxygen_saturation, 98)
+}
+
+function formaterDateHeureNotification(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+async function chargerListeNotifications({ silencieux = false } = {}) {
+  if (!silencieux) chargementNotifications.value = true
+  erreurNotification.value = ''
+
+  try {
+    const res = await api.get('/notifications')
+    listeNotifications.value = Array.isArray(res?.data?.data) ? res.data.data : []
+  } catch (_) {
+    erreurNotification.value = 'Impossible de charger les notifications pour le moment.'
+  } finally {
+    chargementNotifications.value = false
+  }
+}
+
+async function marquerNotificationLue(idNotification) {
+  try {
+    await api.post(`/notifications/${idNotification}/read`)
+    listeNotifications.value = listeNotifications.value.map((notification) => (
+      notification.id === idNotification
+        ? { ...notification, read_at: notification.read_at || new Date().toISOString() }
+        : notification
+    ))
+  } catch (_) {
+    erreurNotification.value = 'Impossible de marquer cette notification comme lue.'
+  }
+}
+
+async function marquerToutLu() {
+  try {
+    await api.post('/notifications/read-all')
+    const maintenant = new Date().toISOString()
+    listeNotifications.value = listeNotifications.value.map((notification) => ({
+      ...notification,
+      read_at: notification.read_at || maintenant
+    }))
+  } catch (_) {
+    erreurNotification.value = 'Impossible de marquer toutes les notifications comme lues.'
+  }
 }
 
 function convertirXEnPx(index) {
@@ -170,6 +287,20 @@ function basculerSerie(key) {
 }
 
 onMounted(async () => {
-  await chargerDonneesSante()
+  await Promise.all([
+    chargerDonneesSante(),
+    chargerListeNotifications()
+  ])
+
+  minuterieRafraichissementNotifications = window.setInterval(() => {
+    chargerListeNotifications({ silencieux: true })
+  }, 60000)
+})
+
+onUnmounted(() => {
+  if (minuterieRafraichissementNotifications !== null) {
+    window.clearInterval(minuterieRafraichissementNotifications)
+    minuterieRafraichissementNotifications = null
+  }
 })
 </script>

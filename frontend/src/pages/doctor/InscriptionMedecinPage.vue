@@ -66,6 +66,29 @@
           </div>
 
           <div>
+            <label class="mb-2 block text-base font-semibold text-[#162a55]">Date de naissance</label>
+            <div class="relative">
+              <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-[#94a0b8]">
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M6 4h12M6 4v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4M9 6v4M15 6v4M6 12h12" />
+                </svg>
+              </span>
+              <input
+                :value="form.date_of_birth"
+                type="text"
+                placeholder="JJ/MM/AAAA"
+                inputmode="numeric"
+                maxlength="10"
+                @beforeinput="gererAvantSaisieDate"
+                @input="gererSaisieDate"
+                @blur="validerFormatDate"
+                :class="[classeChamp(errors.date_of_birth), 'pl-12']"
+              />
+            </div>
+            <p v-if="errors.date_of_birth" class="mt-2 text-sm text-red-600">{{ errors.date_of_birth }}</p>
+          </div>
+
+          <div>
             <label class="mb-2 block text-base font-semibold text-[#162a55]">Email professionnel</label>
             <div class="relative">
               <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-[#94a0b8]">
@@ -97,7 +120,7 @@
               <input
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'"
-                placeholder="Minimum 8 caracteres"
+                placeholder="Minimum 8 caracteres avec lettres et chiffres"
                 autocomplete="new-password"
                 :class="[classeChamp(errors.password), 'pl-12 pr-14']"
               />
@@ -117,6 +140,23 @@
                   <path d="M6.6 6.6C4 8.3 2 12 2 12s3.5 7 10 7a9.8 9.8 0 0 0 3-.5" />
                 </svg>
               </button>
+            </div>
+            <div v-if="form.password" class="mt-3 rounded-[12px] bg-blue-50 p-3 text-[13px]">
+              <p class="mb-2 font-medium text-blue-900">Criteres du mot de passe:</p>
+              <div class="space-y-1">
+                <div :class="form.password.length >= 8 ? 'text-green-700' : 'text-gray-600'">
+                  <span :class="form.password.length >= 8 ? '✓' : '○'"></span>
+                  Minimum 8 caracteres
+                </div>
+                <div :class="/[a-zA-Z]/.test(form.password) ? 'text-green-700' : 'text-gray-600'">
+                  <span :class="/[a-zA-Z]/.test(form.password) ? '✓' : '○'"></span>
+                  Contient des lettres (a-z, A-Z)
+                </div>
+                <div :class="/[0-9]/.test(form.password) ? 'text-green-700' : 'text-gray-600'">
+                  <span :class="/[0-9]/.test(form.password) ? '✓' : '○'"></span>
+                  Contient des chiffres (0-9)
+                </div>
+              </div>
             </div>
             <p v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password }}</p>
           </div>
@@ -159,6 +199,7 @@ const form = reactive({
   email: String(route.query.email || "").trim(),
   password: "",
   specialite: "",
+  date_of_birth: "",
 });
 
 const errors = reactive({
@@ -166,6 +207,7 @@ const errors = reactive({
   email: "",
   password: "",
   specialite: "",
+  date_of_birth: "",
 });
 
 const loading = ref(false);
@@ -180,6 +222,7 @@ function effacerErreurs() {
   errors.email = "";
   errors.password = "";
   errors.specialite = "";
+  errors.date_of_birth = "";
 }
 
 function classeChamp(hasError) {
@@ -189,17 +232,111 @@ function classeChamp(hasError) {
   ];
 }
 
+function validerMotDePasse() {
+  if (!form.password) return null;
+  
+  const hasMinLength = form.password.length >= 8;
+  const hasLetters = /[a-zA-Z]/.test(form.password);
+  const hasNumbers = /[0-9]/.test(form.password);
+  
+  if (!hasMinLength || !hasLetters || !hasNumbers) {
+    const missing = [];
+    if (!hasMinLength) missing.push("minimum 8 caracteres");
+    if (!hasLetters) missing.push("des lettres");
+    if (!hasNumbers) missing.push("des chiffres");
+    return `Le mot de passe doit contenir: ${missing.join(", ")}`;
+  }
+  return null;
+}
+
+function gererAvantSaisieDate(e) {
+  const char = e.data;
+  if (char && !/[0-9/]/.test(char)) {
+    e.preventDefault();
+  }
+}
+
+function gererSaisieDate(e) {
+  let value = e.target.value.replace(/\D/g, "");
+  
+  if (value.length > 8) {
+    value = value.slice(0, 8);
+  }
+  
+  let formatted = "";
+  if (value.length > 0) formatted = value.slice(0, 2);
+  if (value.length > 2) formatted += "/" + value.slice(2, 4);
+  if (value.length > 4) formatted += "/" + value.slice(4, 8);
+  
+  form.date_of_birth = formatted;
+}
+
+function validerFormatDate() {
+  if (!form.date_of_birth) return;
+  
+  const parts = form.date_of_birth.split("/");
+  if (parts.length !== 3) {
+    errors.date_of_birth = "Format invalide. Utilisez JJ/MM/AAAA";
+    return;
+  }
+  
+  const [day, month, year] = parts.map(Number);
+  
+  if (isNaN(day) || isNaN(month) || isNaN(year) || day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > new Date().getFullYear()) {
+    errors.date_of_birth = "Date invalide. Verifie le jour, mois ou annee.";
+    return;
+  }
+  
+  const dateObj = new Date(year, month - 1, day);
+  if (dateObj.getDate() !== day || dateObj.getMonth() !== month - 1) {
+    errors.date_of_birth = "Date invalide (ex: 31 fevrier n'existe pas).";
+    return;
+  }
+  
+  const age = new Date().getFullYear() - year;
+  if (age < 25) {
+    errors.date_of_birth = "Vous devez avoir au moins 25 ans pour exercer.";
+    return;
+  }
+  
+  errors.date_of_birth = "";
+}
+
+function convertirDatePourAPI(dateStr) {
+  if (!dateStr) return null;
+  const [day, month, year] = dateStr.split("/");
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
 async function soumettre() {
   serverMessage.value = "";
   messageType.value = "success";
   effacerErreurs();
 
-  if (!form.name || !form.email || !form.password || !form.specialite) {
+  if (!form.name || !form.email || !form.password || !form.specialite || !form.date_of_birth) {
     if (!form.name) errors.name = "Le nom complet est obligatoire.";
     if (!form.email) errors.email = "L'adresse email est obligatoire.";
     if (!form.password) errors.password = "Le mot de passe est obligatoire.";
     if (!form.specialite) errors.specialite = "La specialite est obligatoire.";
+    if (!form.date_of_birth) errors.date_of_birth = "La date de naissance est obligatoire.";
     serverMessage.value = "Veuillez remplir les champs obligatoires.";
+    return;
+  }
+
+  // Validation du mot de passe côté client
+  const passwordError = validerMotDePasse();
+  if (passwordError) {
+    errors.password = passwordError;
+    serverMessage.value = passwordError;
+    messageType.value = "error";
+    return;
+  }
+
+  // Validation de la date de naissance
+  validerFormatDate();
+  if (errors.date_of_birth) {
+    serverMessage.value = errors.date_of_birth;
+    messageType.value = "error";
     return;
   }
 
@@ -212,6 +349,7 @@ async function soumettre() {
       password: form.password,
       password_confirmation: form.password,
       specialite: form.specialite,
+      date_of_birth: convertirDatePourAPI(form.date_of_birth),
     });
 
     authStore.appliquerAuthentification(res?.data, "medecin");
@@ -228,6 +366,7 @@ async function soumettre() {
       errors.email = Array.isArray(data.errors.email) ? data.errors.email[0] : "";
       errors.password = Array.isArray(data.errors.password) ? data.errors.password[0] : "";
       errors.specialite = Array.isArray(data.errors.specialite) ? data.errors.specialite[0] : "";
+      errors.date_of_birth = Array.isArray(data.errors.date_of_birth) ? data.errors.date_of_birth[0] : "";
       serverMessage.value = "Veuillez corriger les erreurs du formulaire medecin.";
     } else {
       serverMessage.value = data?.message || "Erreur lors de la creation du compte medecin.";

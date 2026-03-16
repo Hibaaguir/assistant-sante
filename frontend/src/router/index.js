@@ -54,6 +54,10 @@ router.beforeEach(async (to) => {
   const authStore = useAuthStore();
   const user = await authStore.chargerUtilisateur();
   const routeParDefautAuthentifie = () => {
+    if (authStore.estAdministrateur) {
+      return { name: "tableau-de-bord" };
+    }
+
     if (authStore.estDansEspaceMedecin) {
       return { name: "tableau-de-bord" };
     }
@@ -79,11 +83,16 @@ router.beforeEach(async (to) => {
     to.meta.requiresAuth &&
     user &&
     authStore.estDansEspacePersonnel &&
+    !authStore.estAdministrateur &&
     !authStore.aProfilSante &&
     to.name !== "profil-sante" &&
     to.name !== "choix-espace"
   ) {
     return { name: "profil-sante" };
+  }
+
+  if (to.name === "profil-sante" && user && authStore.estAdministrateur) {
+    return { name: "tableau-de-bord" };
   }
 
   if (to.name === "choix-espace" && user && !authStore.estMedecin) {

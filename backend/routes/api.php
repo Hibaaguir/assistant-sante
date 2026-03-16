@@ -4,7 +4,9 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DoctorInvitationController;
 use App\Http\Controllers\Api\HealthDataController;
 use App\Http\Controllers\Api\JournalEntryController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ProfilSanteController;
+use App\Http\Controllers\Api\UtilisateurAdminController;
 use Illuminate\Support\Facades\Route;
 
 $routesAuthentification = function () {
@@ -78,6 +80,16 @@ Route::middleware('auth:sanctum')->group(function () use ($routesDonneesSante, $
 
     Route::post('/profil-sante', [ProfilSanteController::class, 'enregistrer']);
     Route::get('/profil-sante', [ProfilSanteController::class, 'afficher']);
+
+    Route::get('/notifications', [NotificationController::class, 'lister']);
+    Route::post('/notifications/{idNotification}/read', [NotificationController::class, 'marquerLue']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'toutMarquerLu']);
+
+    Route::prefix('admin/utilisateurs')->group(function () {
+        Route::get('/', [UtilisateurAdminController::class, 'lister']);
+        Route::put('/{user}', [UtilisateurAdminController::class, 'mettreAJour']);
+        Route::delete('/{user}', [UtilisateurAdminController::class, 'supprimer']);
+    });
 
     Route::prefix('journal')->group(function () {
         Route::get('/', [JournalEntryController::class, 'lister']);
