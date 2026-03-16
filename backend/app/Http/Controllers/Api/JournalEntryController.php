@@ -11,10 +11,12 @@ use Illuminate\Http\Request;
 
 class JournalEntryController extends Controller
 {
+    // Récupérer toutes les entrées du journal de l'utilisateur connecté
     public function lister(Request $request): JsonResponse
     {
-        $entries = JournalEntry::query()
-            ->where('user_id', $request->user()->id)
+        $userId = $request->user()->id;
+
+        $entries = JournalEntry::where('user_id', $userId)
             ->orderByDesc('entry_date')
             ->orderByDesc('id')
             ->get();
@@ -25,13 +27,17 @@ class JournalEntryController extends Controller
         ]);
     }
 
+    // Enregistrer une nouvelle entrée ou mettre à jour celle du même jour
     public function enregistrer(StoreJournalEntryRequest $request): JsonResponse
     {
         $payload = $request->validated();
         $payload['user_id'] = $request->user()->id;
 
         $entry = JournalEntry::updateOrCreate(
-            ['user_id' => $payload['user_id'], 'entry_date' => $payload['entry_date']],
+            [
+                'user_id' => $payload['user_id'],
+                'entry_date' => $payload['entry_date'],
+            ],
             $payload
         );
 
@@ -41,9 +47,13 @@ class JournalEntryController extends Controller
         ], 201);
     }
 
+    // Afficher une entrée spécifique du journal
     public function afficher(Request $request, JournalEntry $journalEntry): JsonResponse
     {
-        if ($error = $this->autoriserEntree($journalEntry, $request)) return $error;
+        $error = $this->autoriserEntree($journalEntry, $request);
+        if ($error) {
+            return $error;
+        }
 
         return response()->json([
             'message' => 'Entree du journal recuperee avec succes.',
@@ -51,9 +61,13 @@ class JournalEntryController extends Controller
         ]);
     }
 
+    // Mettre à jour une entrée existante du journal
     public function mettreAJour(UpdateJournalEntryRequest $request, JournalEntry $journalEntry): JsonResponse
     {
-        if ($error = $this->autoriserEntree($journalEntry, $request)) return $error;
+        $error = $this->autoriserEntree($journalEntry, $request);
+        if ($error) {
+            return $error;
+        }
 
         $journalEntry->update($request->validated());
 
@@ -63,9 +77,13 @@ class JournalEntryController extends Controller
         ]);
     }
 
+    // Supprimer une entrée du journal
     public function supprimer(Request $request, JournalEntry $journalEntry): JsonResponse
     {
-        if ($error = $this->autoriserEntree($journalEntry, $request)) return $error;
+        $error = $this->autoriserEntree($journalEntry, $request);
+        if ($error) {
+            return $error;
+        }
 
         $journalEntry->delete();
 
@@ -74,11 +92,15 @@ class JournalEntryController extends Controller
         ]);
     }
 
+    // Vérifier que l'entrée appartient bien à l'utilisateur connecté
     private function autoriserEntree(JournalEntry $entry, Request $request): ?JsonResponse
     {
         if ($entry->user_id !== $request->user()->id) {
-            return response()->json(['message' => "Acces non autorise a cette entree du journal."], 403);
+            return response()->json([
+                'message' => 'Acces non autorise a cette entree du journal.',
+            ], 403);
         }
+
         return null;
     }
 }
