@@ -15,10 +15,11 @@ import ConnexionMedecinPage from "@/pages/doctor/ConnexionMedecinPage.vue";
 import InscriptionMedecinPage from "@/pages/doctor/InscriptionMedecinPage.vue";
 import ChoixEspacePage from "@/pages/doctor/ChoixEspacePage.vue";
 import PageTemporaire from "@/pages/PageTemporaire.vue";
+import PageAccueilPublique from "@/pages/accueil/PageAccueilPublique.vue";
 
 // Déclaration de toutes les routes de l'application avec leurs composants associés et certaines protections d'accès
 const routes = [
-  { path: "/", redirect: "/login" },
+  { path: "/", name: "accueil-publique", component: PageAccueilPublique },
   { path: "/login", name: "connexion", component: FormulaireConnexion },
   { path: "/register", name: "inscription", component: FormulaireInscription },
   { path: "/register/user", redirect: "/register" },
@@ -69,7 +70,7 @@ router.beforeEach(async (to) => {
 
   const routeName = String(to.name || "");
   const estPageAuthMedecin = ["connexion-medecin", "inscription-medecin"].includes(routeName);
-  const estPageAuthUtilisateur = ["inscription", "connexion"].includes(routeName);
+  const estPageAuthUtilisateur = ["inscription", "connexion", "accueil-publique"].includes(routeName);
 
   if ((estPageAuthMedecin || estPageAuthUtilisateur) && user) {
     return routeParDefautAuthentifie();

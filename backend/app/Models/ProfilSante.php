@@ -4,6 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property bool $consulte_medecin
+ * @property bool $medecin_peut_consulter
+ * @property string|null $medecin_email
+ */
 class ProfilSante extends Model
 {
     protected $table = 'profils_sante';
