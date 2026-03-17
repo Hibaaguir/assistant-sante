@@ -1,89 +1,155 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50/50 via-white to-teal-50/50">
-    <div class="bg-white/80 border-b border-slate-200 backdrop-blur-sm sticky top-0 z-10">
-      <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6">
-        <div class="text-center">
-          <h1 class="text-2xl font-bold text-gray-900 mb-1">Connectez-vous</h1>
-          <p class="text-sm text-gray-500">Accedez a votre espace Assistant Sante</p>
-        </div>
-      </div>
-    </div>
+  <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
+    <!-- Contenu Connexion avec Retour -->
+    <div class="w-full max-w-lg">
+      <!-- Bouton Retour -->
+      <button
+        @click="$router.back()"
+        class="flex items-center gap-1 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors mb-6 ml-6"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Retour
+      </button>
 
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-10">
-        <div class="mb-6">
-          <h2 class="text-xl font-semibold text-gray-900">Connexion</h2>
-          <p class="text-sm text-gray-500 mt-1">Entrez vos identifiants pour continuer.</p>
+      <div class="bg-white rounded-3xl shadow-lg p-10">
+        <!-- Logo et Titre -->
+        <div class="text-center mb-8">
+          <!-- Logo et nom HealthFlow -->
+          <div class="flex justify-center items-center gap-3 mb-6">
+            <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-blue-600">HealthFlow</h1>
+          </div>
+          
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Bon retour !</h2>
+          <p class="text-base text-gray-600">Connectez-vous à votre compte</p>
         </div>
 
+        <!-- Messages d'erreur/succès -->
+        <div
+          v-if="serverMessage"
+          class="rounded-lg border px-4 py-3 text-sm mb-6"
+          :class="messageType === 'success'
+            ? 'border-purple-200 bg-purple-50 text-purple-700'
+            : 'border-red-200 bg-red-50 text-red-700'"
+        >
+          {{ serverMessage }}
+        </div>
+
+        <!-- Formulaire -->
         <form @submit.prevent="soumettre" class="space-y-5">
+          <!-- Champ Email -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Email <span class="text-red-600">*</span></label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
             <div class="relative">
-              <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none">
-                <path d="M4 6h16v12H4V6Z" stroke="currentColor" stroke-width="1.7" />
-                <path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+              <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
               </svg>
               <input
                 v-model.trim="form.email"
                 type="email"
-                placeholder="votrenom@exemple.com"
+                placeholder="votre@email.com"
                 autocomplete="email"
-                class="h-12 pl-12 pr-4 rounded-xl border-2 bg-white text-gray-900 placeholder:text-gray-400 outline-none w-full"
-                :class="errors.email ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
+                class="w-full h-12 pl-12 pr-4 rounded-lg border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-colors"
+                :class="errors.email ? 'border-red-300 focus:border-red-500 focus:bg-white' : 'border-gray-200 focus:border-blue-500 focus:bg-white'"
               />
             </div>
-            <p v-if="errors.email" class="mt-2 text-sm text-red-600">{{ errors.email }}</p>
+            <p v-if="errors.email" class="mt-1.5 text-sm text-red-600">{{ errors.email }}</p>
           </div>
 
+          <!-- Champ Mot de passe -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe <span class="text-red-600">*</span></label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
             <div class="relative">
-              <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none">
-                <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
-                <path d="M6 11h12v10H6V11Z" stroke="currentColor" stroke-width="1.7" />
+              <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
               </svg>
               <input
                 v-model="form.password"
-                type="password"
-                placeholder="Votre mot de passe"
+                :type="mostrarPassword ? 'text' : 'password'"
+                placeholder="••••••••"
                 autocomplete="current-password"
-                class="h-12 pl-12 pr-4 rounded-xl border-2 bg-white text-gray-900 placeholder:text-gray-400 outline-none w-full"
-                :class="errors.password ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
+                class="w-full h-12 pl-12 pr-12 rounded-lg border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-colors"
+                :class="errors.password ? 'border-red-300 focus:border-red-500 focus:bg-white' : 'border-gray-200 focus:border-blue-500 focus:bg-white'"
               />
+              <button
+                type="button"
+                @click="mostrarPassword = !mostrarPassword"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg v-if="!mostrarPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-4.753 4.753m4.753-4.753L3 3m9.621 9.621L3 21m12.621-12.621l4.243-4.243m0 0a9 9 0 10-12.728 12.728m12.728-12.728L21 3"></path>
+                </svg>
+              </button>
             </div>
-            <p v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password }}</p>
+            <p v-if="errors.password" class="mt-1.5 text-sm text-red-600">{{ errors.password }}</p>
           </div>
 
+          <!-- Checkbox et lien mot de passe oublié -->
+          <div class="flex items-center justify-between pt-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                v-model="form.rememberMe"
+                type="checkbox"
+                class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span class="text-sm text-gray-700">Se souvenir de moi</span>
+            </label>
+            <button
+              type="button"
+              class="text-sm text-blue-600 hover:text-blue-700 transition cursor-pointer font-semibold"
+              @click="$router.push({ name: 'oublier-mot-de-passe' })"
+            >
+              Mot de passe oublié ?
+            </button>
+          </div>
+
+          <!-- Bouton Se connecter -->
           <button
             type="submit"
             :disabled="loading"
-            class="w-full rounded-xl h-12 px-8 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full h-12 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-6"
           >
             <span v-if="!loading">Se connecter</span>
             <span v-else>Connexion...</span>
           </button>
 
-          <div
-            v-if="serverMessage"
-            class="rounded-xl border px-4 py-3 text-sm"
-            :class="messageType === 'success'
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-              : 'border-red-200 bg-red-50 text-red-700'"
-          >
-            {{ serverMessage }}
+          <!-- Séparateur -->
+          <div class="flex items-center gap-3 my-5">
+            <div class="flex-1 h-px bg-gray-200"></div>
+            <span class="text-sm text-gray-500">ou</span>
+            <div class="flex-1 h-px bg-gray-200"></div>
           </div>
 
-          <p class="text-xs text-center text-gray-500">
-            Vous n'avez pas de compte ?
-            <RouterLink :to="{ name: 'inscription' }" class="text-teal-700 font-semibold hover:underline">
-              Creer un compte
+          <!-- Bouton Google -->
+          <button
+            type="button"
+            class="w-full h-12 rounded-lg border border-gray-200 hover:border-gray-300 bg-white text-gray-700 font-medium text-base transition-colors flex items-center justify-center gap-2"
+          >
+            <svg class="w-5 h-5" viewBox="0 0 24 24">
+              <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="10" fill="currentColor" font-weight="bold">G</text>
+            </svg>
+            Continuer avec Google
+          </button>
+
+          <!-- Lien inscription -->
+          <p class="text-center text-sm text-gray-600 pt-4">
+            Pas encore de compte ?
+            <RouterLink :to="{ name: 'inscription' }" class="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
+              Créer un compte
             </RouterLink>
           </p>
         </form>
       </div>
-
-      <p class="text-center text-xs text-gray-400 mt-6">Copyright {{ new Date().getFullYear() }} Assistant Sante</p>
     </div>
   </div>
 </template>
@@ -102,6 +168,7 @@ const espaceCible = String(route.query.space || "").trim().toLowerCase();
 const form = reactive({
   email: String(route.query.email || "").trim(),
   password: "",
+  rememberMe: false,
 });
 
 const errors = reactive({
@@ -112,6 +179,7 @@ const errors = reactive({
 const loading = ref(false);
 const serverMessage = ref("");
 const messageType = ref("success");
+const mostrarPassword = ref(false);
 
 const REQUIRED_FORM_MESSAGE = "Veuillez remplir les champs obligatoires.";
 const INVALID_EMAIL_MESSAGE = "Format d'email invalide.";

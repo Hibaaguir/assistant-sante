@@ -1,65 +1,81 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50/50 via-white to-teal-50/50">
-    <div class="bg-white/80 border-b border-slate-200 backdrop-blur-sm sticky top-0 z-10">
-      <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6">
-        <div class="text-center">
-          <h1 class="text-2xl font-bold text-gray-900 mb-1">Creez votre compte</h1>
-          <p class="text-sm text-gray-500">Rejoignez Assistant Sante en quelques secondes</p>
-        </div>
-      </div>
-    </div>
+  <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
+    <!-- Contenu Inscription avec Retour -->
+    <div class="w-full max-w-2xl">
+      <!-- Bouton Retour -->
+      <button
+        @click="$router.back()"
+        class="flex items-center gap-1 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors mb-6 ml-6"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Retour
+      </button>
 
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-10">
-        <div class="mb-6">
-          <h2 class="text-xl font-semibold text-gray-900">Informations personnelles</h2>
-          <p class="text-sm text-gray-500 mt-1">Completez les champs pour creer votre espace sante.</p>
+      <div class="bg-white rounded-3xl shadow-lg p-10">
+        <!-- Logo et Titre -->
+        <div class="text-center mb-8">
+          <!-- Logo et nom HealthFlow -->
+          <div class="flex justify-center items-center gap-3 mb-6">
+            <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-blue-600">HealthFlow</h1>
+          </div>
+          
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Créer un compte</h2>
+          <p class="text-base text-gray-600">Commencez votre parcours santé gratuitement</p>
         </div>
 
+        <!-- Formulaire -->
         <form @submit.prevent="soumettre" class="space-y-5">
+          <!-- Champ Nom complet -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Nom d'utilisateur <span class="text-red-600">*</span></label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Nom complet</label>
             <div class="relative">
-              <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none">
-                <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
-                <path d="M12 13a5 5 0 1 0-5-5 5 5 0 0 0 5 5Z" stroke="currentColor" stroke-width="1.7" />
+              <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
               </svg>
               <input
                 v-model.trim="form.name"
                 type="text"
-                placeholder="Entrez votre nom d'utilisateur"
+                placeholder="Votre nom"
                 autocomplete="name"
-                class="h-12 pl-12 pr-4 rounded-xl border-2 bg-white text-gray-900 placeholder:text-gray-400 outline-none w-full"
-                :class="errors.name ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
+                class="w-full h-12 pl-12 pr-4 rounded-lg border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-colors"
+                :class="errors.name ? 'border-red-300 focus:border-red-500 focus:bg-white' : 'border-gray-200 focus:border-blue-500 focus:bg-white'"
               />
             </div>
-            <p v-if="errors.name" class="mt-2 text-sm text-red-600">{{ errors.name }}</p>
+            <p v-if="errors.name" class="mt-1.5 text-sm text-red-600">{{ errors.name }}</p>
           </div>
 
+          <!-- Champ Email -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Email <span class="text-red-600">*</span></label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
             <div class="relative">
-              <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none">
-                <path d="M4 6h16v12H4V6Z" stroke="currentColor" stroke-width="1.7" />
-                <path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+              <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
               </svg>
               <input
                 v-model.trim="form.email"
                 type="email"
-                placeholder="votrenom@exemple.com"
+                placeholder="votre@email.com"
                 autocomplete="email"
-                class="h-12 pl-12 pr-4 rounded-xl border-2 bg-white text-gray-900 placeholder:text-gray-400 outline-none w-full"
-                :class="errors.email ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
+                class="w-full h-12 pl-12 pr-4 rounded-lg border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-colors"
+                :class="errors.email ? 'border-red-300 focus:border-red-500 focus:bg-white' : 'border-gray-200 focus:border-blue-500 focus:bg-white'"
               />
             </div>
-            <p v-if="errors.email" class="mt-2 text-sm text-red-600">{{ errors.email }}</p>
+            <p v-if="errors.email" class="mt-1.5 text-sm text-red-600">{{ errors.email }}</p>
           </div>
 
+          <!-- Champ Date de naissance -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Date de naissance <span class="text-red-600">*</span></label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
             <div class="relative">
-              <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none">
-                <path d="M6 4h12M6 4v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4M9 6v4M15 6v4M6 12h12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+              <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
               <input
                 :value="form.date_of_birth"
@@ -70,67 +86,113 @@
                 @beforeinput="gererAvantSaisieDate"
                 @input="gererSaisieDate"
                 @blur="validerFormatDate"
-                class="h-12 pl-12 pr-4 rounded-xl border-2 bg-white text-gray-900 placeholder:text-gray-400 outline-none w-full"
-                :class="errors.date_of_birth ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
+                class="w-full h-12 pl-12 pr-4 rounded-lg border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-colors"
+                :class="errors.date_of_birth ? 'border-red-300 focus:border-red-500 focus:bg-white' : 'border-gray-200 focus:border-blue-500 focus:bg-white'"
               />
             </div>
-            <p v-if="errors.date_of_birth" class="mt-2 text-sm text-red-600">{{ errors.date_of_birth }}</p>
+            <p v-if="errors.date_of_birth" class="mt-1.5 text-sm text-red-600">{{ errors.date_of_birth }}</p>
           </div>
 
+          <!-- Champ Mot de passe -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe <span class="text-red-600">*</span></label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
             <div class="relative">
-              <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none">
-                <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
-                <path d="M6 11h12v10H6V11Z" stroke="currentColor" stroke-width="1.7" />
+              <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
               </svg>
               <input
                 v-model="form.password"
                 type="password"
-                placeholder="Min 8 caracteres (lettres + chiffres)"
+                placeholder="••••••••"
                 autocomplete="new-password"
                 @input="validerReglesMotDePasse"
-                class="h-12 pl-12 pr-4 rounded-xl border-2 bg-white text-gray-900 placeholder:text-gray-400 outline-none w-full"
-                :class="errors.password ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
+                class="w-full h-12 pl-12 pr-4 rounded-lg border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-colors"
+                :class="errors.password ? 'border-red-300 focus:border-red-500 focus:bg-white' : 'border-gray-200 focus:border-blue-500 focus:bg-white'"
               />
             </div>
-            <div class="mt-2 space-y-1 text-sm">
-              <p :class="motDePasseAlaBonneLongueur ? 'text-emerald-600' : 'text-gray-400'">Au moins 8 caracteres</p>
-              <p :class="motDePasseContientLettre ? 'text-emerald-600' : 'text-gray-400'">Au moins une lettre</p>
-              <p :class="motDePasseContientNombre ? 'text-emerald-600' : 'text-gray-400'">Au moins un chiffre</p>
+            
+            <!-- Critères de validation - Au dessous du champ -->
+            <div class="mt-3 space-y-1.5">
+              <p :class="motDePasseAlaBonneLongueur ? 'text-purple-600 font-medium' : 'text-gray-400'" class="text-xs transition-colors">
+                Au moins 8 caractères
+              </p>
+              <p :class="motDePasseContientLettre ? 'text-purple-600 font-medium' : 'text-gray-400'" class="text-xs transition-colors">
+                Au moins une lettre
+              </p>
+              <p :class="motDePasseContientNombre ? 'text-purple-600 font-medium' : 'text-gray-400'" class="text-xs transition-colors">
+                Au moins un chiffre
+              </p>
             </div>
+            
             <p v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password }}</p>
           </div>
 
+          <!-- Champ Confirmer le mot de passe -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Confirmer le mot de passe</label>
-            <input
-              v-model="form.password_confirmation"
-              type="password"
-              placeholder="Repetez le mot de passe"
-              autocomplete="new-password"
-              class="h-12 px-4 rounded-xl border-2 bg-white text-gray-900 placeholder:text-gray-400 outline-none w-full"
-              :class="errors.password ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20'"
-            />
+            <div class="relative">
+              <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+              <input
+                v-model="form.password_confirmation"
+                type="password"
+                placeholder="••••••••"
+                autocomplete="new-password"
+                class="w-full h-12 pl-12 pr-4 rounded-lg border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-colors"
+                :class="errors.password ? 'border-red-300 focus:border-red-500 focus:bg-white' : 'border-gray-200 focus:border-blue-500 focus:bg-white'"
+              />
+            </div>
           </div>
 
+          <!-- Checkbox Conditions -->
+          <label class="flex items-start gap-3 cursor-pointer pt-2">
+            <input
+              type="checkbox"
+              class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-0.5 flex-shrink-0"
+            />
+            <span class="text-sm text-gray-700">
+              J'accepte les
+              <a href="#" class="text-blue-600 font-semibold hover:text-blue-700">conditions d'utilisation</a>
+              et la
+              <a href="#" class="text-blue-600 font-semibold hover:text-blue-700">politique de confidentialité</a>
+            </span>
+          </label>
+
+          <!-- Bouton Créer mon compte -->
           <button
             type="submit"
             :disabled="loading"
-            class="w-full rounded-xl h-12 px-8 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full h-12 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-6"
           >
-            <span v-if="!loading">Creer un compte</span>
-            <span v-else>Creation...</span>
+            <span v-if="!loading">Créer mon compte</span>
+            <span v-else>Création...</span>
           </button>
 
-          <p class="text-xs text-center text-gray-500">Vous pourrez completer votre profil sante juste apres.</p>
-          <p class="text-xs text-center text-gray-500">
-            Vous avez deja un compte ?
-            <RouterLink :to="{ name: 'connexion' }" class="text-teal-700 font-semibold hover:underline">Se connecter</RouterLink>
-          </p>
-          <p class="text-xs text-center text-gray-500">
-            Vous souhaitez creer un compte medecin ?
-            <RouterLink :to="{ name: 'inscription-medecin' }" class="text-sky-700 font-semibold hover:underline">Acceder a l'inscription medecin</RouterLink>
+          <!-- Séparateur -->
+          <div class="flex items-center gap-3 my-5">
+            <div class="flex-1 h-px bg-gray-200"></div>
+            <span class="text-sm text-gray-500">ou</span>
+            <div class="flex-1 h-px bg-gray-200"></div>
+          </div>
+
+          <!-- Bouton Google -->
+          <button
+            type="button"
+            class="w-full h-12 rounded-lg border border-gray-200 hover:border-gray-300 bg-white text-gray-700 font-medium text-base transition-colors flex items-center justify-center gap-2"
+          >
+            <svg class="w-5 h-5" viewBox="0 0 24 24">
+              <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="10" fill="currentColor" font-weight="bold">G</text>
+            </svg>
+            Continuer avec Google
+          </button>
+
+          <!-- Lien connexion -->
+          <p class="text-center text-sm text-gray-600 pt-4">
+            Vous avez déjà un compte ?
+            <RouterLink :to="{ name: 'connexion' }" class="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
+              Se connecter
+            </RouterLink>
           </p>
         </form>
       </div>

@@ -4,8 +4,10 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DoctorInvitationController;
 use App\Http\Controllers\Api\HealthDataController;
 use App\Http\Controllers\Api\JournalEntryController;
+use App\Http\Controllers\Api\MotDePasseOubliController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ProfilSanteController;
+use App\Http\Controllers\Api\ProfilUtilisateurController;
 use App\Http\Controllers\Api\UtilisateurAdminController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +16,8 @@ $routesAuthentification = function () {
     Route::post('/connexion', [AuthController::class, 'connecter']);
     Route::post('/medecin/inscription', [AuthController::class, 'inscrireMedecin']);
     Route::post('/medecin/connexion', [AuthController::class, 'connecterMedecin']);
+    Route::post('/oublier-mot-de-passe', [MotDePasseOubliController::class, 'demanderReinit']);
+    Route::post('/reinitialiser-mot-de-passe', [MotDePasseOubliController::class, 'reinitialiserMotDePasse']);
 
     // Alias anglais conserves pour les anciens clients.
     Route::post('/register', [AuthController::class, 'inscrire']);
@@ -77,6 +81,12 @@ Route::middleware('auth:sanctum')->group(function () use ($routesDonneesSante, $
     // Alias anglais conserves pour les anciens clients.
     Route::get('/auth/me', [AuthController::class, 'utilisateurConnecte']);
     Route::post('/auth/logout', [AuthController::class, 'deconnexion']);
+
+    Route::prefix('profil-utilisateur')->group(function () {
+        Route::get('/', [ProfilUtilisateurController::class, 'obtenirProfil']);
+        Route::put('/nom', [ProfilUtilisateurController::class, 'mettreAJourNom']);
+        Route::post('/changer-mot-de-passe', [ProfilUtilisateurController::class, 'changerMotDePasse']);
+    });
 
     Route::post('/profil-sante', [ProfilSanteController::class, 'enregistrer']);
     Route::get('/profil-sante', [ProfilSanteController::class, 'afficher']);

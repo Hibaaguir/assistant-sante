@@ -1,7 +1,7 @@
 ﻿<template>
   <RouterLink :to="to" class="block">
     <div
-      class="flex items-center gap-3 rounded-[14px] px-4 py-3 text-[15px] font-semibold transition"
+      class="flex items-center gap-3 rounded-[14px] px-5 py-3.5 text-[16px] font-semibold transition"
       :class="active
         ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_10px_24px_rgba(59,130,246,0.35)]'
         : 'text-slate-600 hover:bg-white'"

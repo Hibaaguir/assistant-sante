@@ -1,26 +1,26 @@
 <template>
-  <div class="min-h-screen bg-[radial-gradient(circle_at_top,_#eef4ff,_#f8fafc_45%,_#eef2f7)] px-4 py-10 sm:px-6 lg:py-16">
-    <div class="mx-auto max-w-5xl">
-      <div class="rounded-[32px] border border-white/70 bg-white/85 p-6 shadow-[0_24px_70px_rgba(37,99,235,0.12)] backdrop-blur md:p-10">
-        <div class="mx-auto max-w-2xl text-center">
-          <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-indigo-500 via-blue-600 to-indigo-700 text-white shadow-[0_16px_35px_rgba(59,130,246,0.35)]">
-            <svg viewBox="0 0 24 24" class="h-9 w-9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <div class="min-h-screen bg-[radial-gradient(circle_at_top,_#eef4ff,_#f8fafc_45%,_#eef2f7)] px-4 py-8 sm:px-6 lg:py-12">
+    <div class="mx-auto max-w-4xl">
+      <div class="rounded-[32px] border border-white/70 bg-white/85 p-6 shadow-[0_24px_70px_rgba(37,99,235,0.12)] backdrop-blur sm:p-8">
+        <div class="mx-auto max-w-xl text-center">
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-[28px] bg-gradient-to-br from-indigo-500 via-blue-600 to-indigo-700 text-white shadow-[0_16px_35px_rgba(59,130,246,0.35)]">
+            <svg viewBox="0 0 24 24" class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M12 21s-6.5-4.5-9-8.5C.7 8.4 3 4 7.3 4c2 0 3.6 1 4.7 2.6C13.1 5 14.7 4 16.7 4 21 4 23.3 8.4 21 12.5 18.5 16.5 12 21 12 21z" />
             </svg>
           </div>
 
-          <h1 class="mt-8 text-3xl font-bold tracking-[-0.03em] text-slate-950 sm:text-5xl">
+          <h1 class="mt-6 text-2xl font-bold tracking-[-0.03em] text-slate-950 sm:text-3xl">
             {{ titreBienvenue }}
           </h1>
-          <p class="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
+          <p class="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
             Choisissez l’espace que vous souhaitez ouvrir maintenant. Vous pourrez changer d’espace à tout moment.
           </p>
         </div>
 
-        <div class="mt-12 grid gap-6 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
-          <section class="group flex h-full flex-col rounded-[30px] border border-indigo-100 bg-[linear-gradient(180deg,_#f9fbff,_#ffffff)] p-7 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(59,130,246,0.18)]">
-            <div class="flex h-24 w-24 items-center justify-center rounded-[28px] bg-indigo-100 text-indigo-600">
-              <svg viewBox="0 0 24 24" class="h-11 w-11" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <div class="mt-10 grid gap-5 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
+          <section class="group flex h-full flex-col rounded-[30px] border border-indigo-100 bg-[linear-gradient(180deg,_#f9fbff,_#ffffff)] p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(59,130,246,0.18)]">
+            <div class="flex h-20 w-20 items-center justify-center rounded-[28px] bg-indigo-100 text-indigo-600">
+              <svg viewBox="0 0 24 24" class="h-10 w-10" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
                 <path d="M6.5 2H20v19H6.5A2.5 2.5 0 0 1 4 18.5z" />
                 <path d="M8 8h8" />
@@ -29,17 +29,17 @@
               </svg>
             </div>
 
-            <div class="mt-7">
-              <h2 class="text-3xl font-bold tracking-[-0.02em] text-slate-950">Espace Médecin</h2>
-              <p class="mt-3 text-[17px] leading-8 text-slate-600">
+            <div class="mt-5">
+              <h2 class="text-2xl font-bold tracking-[-0.02em] text-slate-950">Espace Médecin</h2>
+              <p class="mt-2 text-sm leading-6 text-slate-600">
                 Consultez vos patients, traitez leurs invitations et accédez au suivi clinique.
               </p>
             </div>
 
-            <ul class="mt-8 space-y-4 text-[15px] text-slate-700">
-              <li class="flex items-start gap-3">
-                <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
-                  <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <ul class="mt-6 space-y-3 text-sm text-slate-700">
+              <li class="flex items-start gap-2">
+                <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+                  <svg viewBox="0 0 24 24" class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </span>
                 Gestion des patients et des invitations
               </li>

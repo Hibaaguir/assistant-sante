@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import FormulaireInscription from "@/components/register/FormulaireInscription.vue";
 import FormulaireConnexion from "@/components/login/FormulaireConnexion.vue";
+import OublierMotDePassePage from "@/pages/auth/OublierMotDePassePage.vue";
+import ReinitialiserMotDePassePage from "@/pages/auth/ReinitialiserMotDePassePage.vue";
 import ProfilSante from "@/components/profil-sante/ProfilSante.vue";
 import MiseEnPagePrincipale from "@/layouts/MiseEnPagePrincipale.vue";
 import JournalHome from "@/pages/journal/JournalHome.vue";
@@ -11,7 +13,6 @@ import JournalHistory from "@/pages/journal/JournalHistory.vue";
 import ProfilSantePage from "@/pages/health/ProfilSantePage.vue";
 import DonneesSantePage from "@/pages/health/DonneesSantePage.vue";
 import TableauDeBordPage from "@/pages/TableauDeBordPage.vue";
-import ConnexionMedecinPage from "@/pages/doctor/ConnexionMedecinPage.vue";
 import InscriptionMedecinPage from "@/pages/doctor/InscriptionMedecinPage.vue";
 import ChoixEspacePage from "@/pages/doctor/ChoixEspacePage.vue";
 import PageTemporaire from "@/pages/PageTemporaire.vue";
@@ -22,9 +23,11 @@ const routes = [
   { path: "/", name: "accueil-publique", component: PageAccueilPublique },
   { path: "/login", name: "connexion", component: FormulaireConnexion },
   { path: "/register", name: "inscription", component: FormulaireInscription },
+  { path: "/oublier-mot-de-passe", name: "oublier-mot-de-passe", component: OublierMotDePassePage },
+  { path: "/reinitialiser-mot-de-passe", name: "reinitialiser-mot-de-passe", component: ReinitialiserMotDePassePage },
   { path: "/register/user", redirect: "/register" },
-  { path: "/doctor-login", name: "connexion-medecin", component: ConnexionMedecinPage },
   { path: "/doctor-register", name: "inscription-medecin", component: InscriptionMedecinPage },
+  { path: "/doctor-login", redirect: "/login" },
   { path: "/choix-espace", name: "choix-espace", component: ChoixEspacePage, meta: { requiresAuth: true } },
   { path: "/profil-sante", name: "profil-sante", component: ProfilSante, meta: { requiresAuth: true } },
   {

@@ -1,11 +1,11 @@
 <template>
-  <aside class="hidden h-screen w-[266px] shrink-0 self-start border-r border-slate-300 bg-slate-100 lg:sticky lg:top-0 lg:flex lg:flex-col">
-    <div class="border-b border-slate-300 px-6 py-7">
-      <h1 class="text-[38px] font-medium leading-none tracking-tight text-slate-700">HealthTrack</h1>
-      <p class="mt-2 text-[14px] text-slate-600">Votre assistant santé</p>
+  <aside class="hidden h-screen w-[300px] shrink-0 self-start border-r border-slate-300 bg-slate-100 lg:sticky lg:top-0 lg:flex lg:flex-col">
+    <div class="border-b border-slate-300 px-8 py-9">
+      <h1 class="text-[44px] font-medium leading-none tracking-tight text-slate-700">HealthTrack</h1>
+      <p class="mt-3 text-[15px] text-slate-600">Votre assistant santé</p>
     </div>
 
-    <nav class="flex-1 space-y-2 overflow-y-auto px-5 py-6">
+    <nav class="flex-1 space-y-3 overflow-y-auto px-6 py-8">
       <ElementNavLaterale
         v-for="item in navItems"
         :key="item.name"
@@ -15,48 +15,6 @@
         :active="item.name === active"
       />
     </nav>
-
-    <div class="space-y-4 border-t border-slate-300 px-5 py-6">
-      <div class="flex items-center gap-3">
-        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white">
-          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M6 20a6 6 0 0 1 12 0" />
-          </svg>
-        </div>
-        <div>
-          <p class="text-[18px] font-semibold leading-none text-slate-800">{{ authStore.nomUtilisateur }}</p>
-          <p class="mt-1 text-[14px] text-slate-500">{{ libelleRoleUtilisateur }}</p>
-        </div>
-      </div>
-
-      <button
-        v-if="authStore.estMedecin"
-        type="button"
-        class="flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-[14px] font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100"
-        @click="ouvrirEspaceMedecin"
-      >
-        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M12 3l7 4v10l-7 4-7-4V7l7-4z" />
-          <path d="M9 12h6" />
-          <path d="M12 9v6" />
-        </svg>
-        Retour a l'espace medecin
-      </button>
-
-      <button
-        type="button"
-        class="flex items-center gap-2 text-[14px] font-semibold text-slate-600 hover:text-slate-800"
-        @click="deconnexion"
-      >
-        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-          <path d="M16 17l5-5-5-5" />
-          <path d="M21 12H9" />
-        </svg>
-        Déconnexion
-      </button>
-    </div>
   </aside>
 </template>
 
