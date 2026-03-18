@@ -100,7 +100,7 @@ const libelleRoleUtilisateur = computed(() => {
 
 async function deconnexion() {
   await authStore.deconnexion()
-  router.push({ name: 'connexion' })
+  router.push({ name: 'accueil-publique' })
 }
 
 function ouvrirEspaceMedecin() {

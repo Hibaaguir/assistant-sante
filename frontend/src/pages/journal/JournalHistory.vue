@@ -1,12 +1,16 @@
 <template>
   <div class="mx-auto max-w-[1320px] p-4 sm:p-6 lg:p-8">
-    <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+    <div class="relative mb-4 overflow-hidden rounded-3xl border border-[#d6e2ff] bg-gradient-to-br from-[#edf4ff] via-[#f8f4ff] to-[#eefaf4] p-5 shadow-sm sm:p-6">
+      <div class="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#7c3aed]/15 blur-2xl"></div>
+      <div class="pointer-events-none absolute -bottom-10 left-8 h-24 w-24 rounded-full bg-[#2563eb]/15 blur-2xl"></div>
+      <div class="flex flex-wrap items-start justify-between gap-3">
       <div>
-        <h2 class="text-4xl font-bold tracking-tight text-slate-900">Historique du journal</h2>
-        <p class="mt-1 text-xs text-slate-600">Consultez et modifiez vos entrées passées</p>
+        <p class="inline-flex items-center rounded-full border border-[#d2ddff] bg-white/85 px-3 py-1 text-xs font-semibold text-[#3b5ac8]">HealthFlow Journal</p>
+        <h2 class="mt-3 text-4xl font-bold tracking-tight text-slate-900">🗂️ Historique du journal</h2>
+        <p class="mt-1 text-sm text-slate-600">Consultez, filtrez et mettez a jour vos entrees precedentes en toute clarte.</p>
       </div>
       <div class="flex gap-2">
-        <button type="button" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50" @click="showFilter = true">
+        <button type="button" class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-500/20" @click="showFilter = true">
           <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M3 5h18l-7 8v5l-4 2v-7z" />
           </svg>
@@ -15,6 +19,7 @@
         <button type="button" class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50" @click="router.push({ name: 'journal' })">
           Retour
         </button>
+      </div>
       </div>
     </div>
     <NotificationsEnLigne />
@@ -29,7 +34,7 @@
 
     <div v-if="store.filter.type !== 'all'" class="mb-4 flex items-center gap-2 text-sm">
       <span class="text-slate-500">Filtre actif :</span>
-      <span class="rounded-full bg-blue-600 px-3 py-1 font-semibold text-white">{{ libelleFiltreActif }}</span>
+      <span class="rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-3 py-1 font-semibold text-white">{{ libelleFiltreActif }}</span>
       <button type="button" class="font-semibold text-slate-500 underline" @click="store.reinitialiserFiltre()">Réinitialiser filtre</button>
     </div>
 
@@ -45,23 +50,23 @@
       />
     </div>
 
-    <div v-if="showNoResults" class="mt-4 rounded-2xl border border-slate-300 bg-white p-6 text-center">
+    <div v-if="showNoResults" class="mt-4 rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
       <p class="text-sm font-semibold text-slate-800">Aucune entrée trouvée avec ce filtre.</p>
       <p class="mt-1 text-sm text-slate-500">Réinitialise le filtre pour afficher tout l’historique.</p>
       <button
         type="button"
-        class="mt-4 rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-300"
+        class="mt-4 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 py-2 text-sm font-semibold text-white"
         @click="reinitialiserFiltre"
       >
         Réinitialiser le filtre
       </button>
     </div>
 
-    <div v-else-if="!hasEntries" class="mt-4 rounded-2xl border border-slate-300 bg-white p-6 text-center">
+    <div v-else-if="!hasEntries" class="mt-4 rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
       <p class="text-sm font-semibold text-slate-800">Aucune entrée enregistrée pour le moment.</p>
       <button
         type="button"
-        class="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+        class="mt-4 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 py-2 text-sm font-semibold text-white"
         @click="router.push({ name: 'assistant-journal' })"
       >
         Ajouter une entrée

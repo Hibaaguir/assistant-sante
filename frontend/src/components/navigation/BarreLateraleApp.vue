@@ -1,7 +1,9 @@
 <template>
   <aside class="hidden h-screen w-[300px] shrink-0 self-start border-r border-slate-300 bg-slate-100 lg:sticky lg:top-0 lg:flex lg:flex-col">
     <div class="border-b border-slate-300 px-8 py-9">
-      <h1 class="text-[44px] font-medium leading-none tracking-tight text-slate-700">HealthTrack</h1>
+      <h1 class="text-[44px] font-semibold leading-none tracking-tight">
+        <span class="bg-gradient-to-r from-[#2563eb] to-[#7c3aed] bg-clip-text text-transparent">HealthFlow</span>
+      </h1>
       <p class="mt-3 text-[15px] text-slate-600">Votre assistant santé</p>
     </div>
 
@@ -43,7 +45,7 @@ const libelleRoleUtilisateur = computed(() => {
 
 async function deconnexion() {
   await authStore.deconnexion()
-  router.push({ name: 'connexion' })
+  router.push({ name: 'accueil-publique' })
 }
 
 function ouvrirEspaceMedecin() {

@@ -1,5 +1,5 @@
 ﻿<template>
-  <article class="rounded-2xl border border-slate-300 bg-slate-50 px-4 py-4 shadow-[0_1px_0_rgba(15,23,42,0.04)] sm:px-5">
+  <article class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:px-5">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div class="min-w-0 flex-1">
         <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-slate-600">
@@ -31,13 +31,13 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <button type="button" class="rounded-md p-1 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700" @click="$emit('edit')">
+        <button type="button" class="rounded-lg border border-indigo-200 bg-indigo-50 p-1.5 text-indigo-600 transition-colors hover:bg-indigo-100" @click="$emit('edit')">
           <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 20h9" />
             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
           </svg>
         </button>
-        <button type="button" class="rounded-md p-1 text-pink-500 transition-colors hover:bg-pink-50 hover:text-pink-700" @click="$emit('request-delete')">
+        <button type="button" class="rounded-lg border border-pink-200 bg-pink-50 p-1.5 text-pink-600 transition-colors hover:bg-pink-100" @click="$emit('request-delete')">
           <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M3 6h18" />
             <path d="M8 6V4h8v2" />

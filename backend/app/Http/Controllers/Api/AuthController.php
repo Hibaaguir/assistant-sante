@@ -304,7 +304,7 @@ class AuthController extends Controller
 
     private function trouverUtilisateurSansRole(string $email, string $password): ?User
     {
-        foreach (['administrateur', 'medecin', 'user'] as $role) {
+        foreach (['admin', 'administrateur', 'medecin', 'user'] as $role) {
             $user = $this->trouverUtilisateurPourConnexion($email, $password, $role);
 
             if ($user) {

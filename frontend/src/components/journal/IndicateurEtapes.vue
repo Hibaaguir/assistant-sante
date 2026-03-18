@@ -4,7 +4,7 @@
       <div class="flex min-w-0 items-center gap-2 sm:gap-3">
         <div
           class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold sm:h-9 sm:w-9 sm:text-xs"
-          :class="current >= step.id ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'"
+          :class="current >= step.id ? 'bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white' : 'bg-slate-200 text-slate-500'"
         >
           <span>{{ step.id }}</span>
         </div>
@@ -13,7 +13,7 @@
       <div
         v-if="index < steps.length - 1"
         class="hidden h-[2px] max-w-40 flex-1 rounded sm:block"
-        :class="current > step.id ? 'bg-blue-600' : 'bg-slate-300'"
+        :class="current > step.id ? 'bg-gradient-to-r from-[#2563eb] to-[#7c3aed]' : 'bg-slate-300'"
       />
     </template>
   </div>

@@ -18,18 +18,6 @@
             <p class="mt-1 text-sm text-slate-600">Gestion des comptes utilisateurs</p>
           </div>
         </div>
-        <button
-          type="button"
-          class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-          @click="deconnexion"
-        >
-          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <path d="M16 17l5-5-5-5" />
-            <path d="M21 12H9" />
-          </svg>
-          Déconnexion
-        </button>
       </div>
     </header>
 
@@ -275,8 +263,6 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
 import ModalEditionUtilisateur from '@/components/dashboards/adminDashboard/ModalEditionUtilisateur.vue'
 import ModalSuppressionUtilisateur from '@/components/dashboards/adminDashboard/ModalSuppressionUtilisateur.vue'
 import {
@@ -285,8 +271,6 @@ import {
   supprimerUtilisateurAdministrateur
 } from '@/services/administrateur'
 
-const router = useRouter()
-const authStore = useAuthStore()
 const utilisateurs = ref([])
 const chargementListe = ref(false)
 const messageErreur = ref('')
@@ -430,11 +414,6 @@ async function chargerUtilisateursAdministrateur() {
   } finally {
     chargementListe.value = false
   }
-}
-
-async function deconnexion() {
-  await authStore.deconnexion()
-  await router.push({ name: 'connexion' })
 }
 
 onMounted(() => {

@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto max-w-[1460px] px-4 py-4 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-[1460px] rounded-3xl border border-slate-200 bg-gradient-to-br from-[#edf3ff] via-[#f6f2ff] to-[#f1faf5] px-4 py-4 sm:px-6 lg:px-8">
     <header class="mb-4 flex items-start gap-3 sm:gap-4">
       <div class="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-md shadow-indigo-200/80 sm:h-12 sm:w-12">
         <svg viewBox="0 0 24 24" class="h-6 w-6 text-white" fill="none" stroke="currentColor" stroke-width="2">
@@ -14,16 +14,16 @@
 
     <NotificationsEnLigne />
 
-    <div v-if="loading" class="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+    <div v-if="loading" class="rounded-3xl border border-[#d8e6ff] bg-white/85 p-6 text-sm text-slate-600">
       Chargement du profil...
     </div>
 
-    <div v-else-if="loadError" class="rounded-3xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+    <div v-else-if="loadError" class="rounded-3xl border border-red-200 bg-red-50/90 p-6 text-sm text-red-700">
       {{ loadError }}
     </div>
 
     <div v-else class="grid gap-4 lg:grid-cols-2">
-      <section class="min-h-[250px] rounded-[12px] border border-[#d8e9ff] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,0.04)] sm:p-5">
+      <section class="min-h-[250px] rounded-[14px] border border-[#cfe0ff] bg-gradient-to-br from-[#edf4ff] via-white to-[#f7fbff] p-4 shadow-[0_2px_8px_rgba(59,130,246,0.08)] sm:p-5">
         <div class="mb-5 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#ecf4ff] text-[#3b82f6]">
@@ -31,7 +31,7 @@
             </span>
             <h2 class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]">Informations de base</h2>
           </div>
-          <button v-if="!editing.base" type="button" class="text-slate-800 transition-colors hover:text-blue-600" @click="startEdit('base')">
+          <button v-if="!editing.base" type="button" class="text-slate-800 transition-colors hover:text-[#2563eb]" @click="startEdit('base')">
             <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 5 5-11 11H5v-5L16 3z" /></svg>
           </button>
         </div>
@@ -99,7 +99,7 @@
         </form>
       </section>
 
-      <section class="min-h-[250px] rounded-[12px] border border-[#f2d9e4] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,0.04)] sm:p-5">
+      <section class="min-h-[250px] rounded-[14px] border border-[#f2d9e4] bg-gradient-to-br from-[#fff1f6] via-white to-[#fff7fa] p-4 shadow-[0_2px_8px_rgba(244,114,182,0.08)] sm:p-5">
         <div class="mb-5 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#ffeef2] text-[#ef4566]">
@@ -107,7 +107,7 @@
             </span>
             <h2 class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]">Santé</h2>
           </div>
-          <button v-if="!editing.health" type="button" class="text-slate-800 transition-colors hover:text-blue-600" @click="startEdit('health')">
+          <button v-if="!editing.health" type="button" class="text-slate-800 transition-colors hover:text-[#ef4566]" @click="startEdit('health')">
             <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 5 5-11 11H5v-5L16 3z" /></svg>
           </button>
         </div>
@@ -206,7 +206,7 @@
         </form>
       </section>
 
-      <section class="min-h-[250px] rounded-[12px] border border-[#d4f3df] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,0.04)] sm:p-5">
+      <section class="min-h-[250px] rounded-[14px] border border-[#d4f3df] bg-gradient-to-br from-[#effcf4] via-white to-[#f7fff9] p-4 shadow-[0_2px_8px_rgba(34,197,94,0.08)] sm:p-5">
         <div class="mb-5 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#e9fff0] text-[#18b05b]">
@@ -214,7 +214,7 @@
             </span>
             <h2 class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]">Habitudes</h2>
           </div>
-          <button v-if="!editing.habits" type="button" class="text-slate-800 transition-colors hover:text-blue-600" @click="startEdit('habits')">
+          <button v-if="!editing.habits" type="button" class="text-slate-800 transition-colors hover:text-[#18b05b]" @click="startEdit('habits')">
             <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 5 5-11 11H5v-5L16 3z" /></svg>
           </button>
         </div>
@@ -343,7 +343,7 @@
         </form>
       </section>
 
-      <section class="min-h-[250px] rounded-[12px] border border-[#e7dcff] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,0.04)] sm:p-5">
+      <section class="min-h-[250px] rounded-[14px] border border-[#e7dcff] bg-gradient-to-br from-[#f5efff] via-white to-[#faf7ff] p-4 shadow-[0_2px_8px_rgba(147,51,234,0.08)] sm:p-5">
         <div class="mb-5 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f3edff] text-[#9333ea]">
@@ -351,7 +351,7 @@
             </span>
             <h2 class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]">Suivi médecin</h2>
           </div>
-          <button v-if="!editing.doctor" type="button" class="text-slate-800 transition-colors hover:text-blue-600" @click="startEdit('doctor')">
+          <button v-if="!editing.doctor" type="button" class="text-slate-800 transition-colors hover:text-[#9333ea]" @click="startEdit('doctor')">
             <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 5 5-11 11H5v-5L16 3z" /></svg>
           </button>
         </div>

@@ -13,31 +13,6 @@
         <h1 class="text-[34px] font-semibold leading-none text-slate-900">Dashboard</h1>
         <p class="mt-2 text-sm text-slate-600">Vue d'ensemble de votre santé</p>
       </div>
-      <div class="flex items-center gap-3">
-        <button
-          type="button"
-          class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
-          @click="deconnexion"
-        >
-          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <path d="M16 17l5-5-5-5" />
-            <path d="M21 12H9" />
-          </svg>
-          Déconnexion
-        </button>
-        <button
-          type="button"
-          class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white transition hover:bg-blue-700"
-          @click="ouvrirModificationProfil"
-          :title="`Cliquez pour modifier le profil de ${authStore.nomUtilisateur}`"
-        >
-          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M6 20a6 6 0 0 1 12 0" />
-          </svg>
-        </button>
-      </div>
     </header>
     <NotificationsEnLigne />
 
@@ -208,15 +183,6 @@ async function gererErreurAuthentification(error) {
 
   await authStore.deconnexion()
   await router.replace({ name: 'connexion' })
-}
-
-async function deconnexion() {
-  await authStore.deconnexion()
-  await router.push({ name: 'connexion' })
-}
-
-function ouvrirModificationProfil() {
-  modalProfilOuvert.value = true
 }
 
 function normaliserSerie(values, fallback = 0) {

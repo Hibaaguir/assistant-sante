@@ -156,7 +156,7 @@
 
 <script setup>
 import api from "@/services/api";
-import { reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 
@@ -184,6 +184,14 @@ const mostrarPassword = ref(false);
 const REQUIRED_FORM_MESSAGE = "Veuillez remplir les champs obligatoires.";
 const INVALID_EMAIL_MESSAGE = "Format d'email invalide.";
 const INVALID_CREDENTIALS_MESSAGE = "Email ou mot de passe invalide.";
+
+onMounted(() => {
+  const notice = String(route.query.notice || "").trim().toLowerCase();
+  if (notice === "inscription-reussie") {
+    serverMessage.value = "Compte cree avec succes. Vous pouvez vous connecter.";
+    messageType.value = "success";
+  }
+});
 
 function effacerErreurs() {
   errors.email = "";

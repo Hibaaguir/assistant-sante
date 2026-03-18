@@ -30,6 +30,17 @@
           <p class="text-base text-gray-600">Commencez votre parcours santé gratuitement</p>
         </div>
 
+        <!-- Messages d'erreur/succès -->
+        <div
+          v-if="serverMessage"
+          class="rounded-lg border px-4 py-3 text-sm mb-6"
+          :class="messageType === 'success'
+            ? 'border-purple-200 bg-purple-50 text-purple-700'
+            : 'border-red-200 bg-red-50 text-red-700'"
+        >
+          {{ serverMessage }}
+        </div>
+
         <!-- Formulaire -->
         <form @submit.prevent="soumettre" class="space-y-5">
           <!-- Champ Nom complet -->
@@ -225,6 +236,8 @@ const errors = reactive({
 });
 
 const loading = ref(false);
+const serverMessage = ref("");
+const messageType = ref("success");
 const motDePasseAlaBonneLongueur = computed(() => form.password.length >= 8);
 const motDePasseContientLettre = computed(() => /[a-zA-Z]/.test(form.password));
 const motDePasseContientNombre = computed(() => /[0-9]/.test(form.password));
@@ -307,6 +320,8 @@ function convertirFormatDate(dateStr) {
 }
 
 async function soumettre() {
+  serverMessage.value = "";
+  messageType.value = "success";
   effacerErreurs();
 
   if (!form.name || !form.email || !form.date_of_birth || !form.password) {
@@ -343,24 +358,37 @@ async function soumettre() {
 
     authStore.appliquerAuthentification(res?.data, "personnel");
 
-    setTimeout(() => router.push(res?.data?.redirect_to || "/profil-sante"), 500);
+    serverMessage.value = res?.data?.message || "Compte créé avec succès.";
+    messageType.value = "success";
+
+    setTimeout(() => router.push(res?.data?.redirect_to || "/profil-sante"), 900);
   } catch (err) {
+    messageType.value = "error";
     const status = err?.response?.status;
     const data = err?.response?.data || {};
+
+    if (!err?.response) {
+      serverMessage.value = "Probleme reseau. Reessayez.";
+      return;
+    }
 
     if (status === 422 && data?.errors) {
       errors.name = premierMessage(data.errors.name);
       errors.email = premierMessage(data.errors.email);
       errors.date_of_birth = premierMessage(data.errors.date_of_birth);
       errors.password = premierMessage(data.errors.password);
+      serverMessage.value = "Veuillez corriger les erreurs du formulaire.";
 
       return;
     }
 
     if (status === 409 && data?.errors?.email) {
       errors.email = premierMessage(data.errors.email);
+      serverMessage.value = data?.message || premierMessage(data.errors.email) || "Cet email est deja utilise.";
       return;
     }
+
+    serverMessage.value = data?.message || "Erreur lors de la creation du compte.";
   } finally {
     loading.value = false;
   }

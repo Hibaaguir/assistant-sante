@@ -37,14 +37,6 @@
           <IconeCloche class="h-[18px] w-[18px]" />
           <span class="absolute right-[-6px] top-[-7px] flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-[#ef0808] px-1 text-[12px] font-bold leading-none text-white">{{ totalAlerts }}</span>
         </button>
-        <button
-          type="button"
-          class="inline-flex h-[40px] items-center gap-2 rounded-[14px] border border-[#b9d4ff] bg-[#edf4ff] px-5 text-[16px] font-medium text-[#1454ff]"
-          @click="deconnexion"
-        >
-          <IconeDeconnexion class="h-[17px] w-[17px]" />
-          <span>Deconnexion</span>
-        </button>
       </div>
     </header>
     <NotificationsEnLigne />
@@ -103,7 +95,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import api from '@/services/api'
-import { IconeCloche, IconeDeconnexion, IconeAjoutUtilisateur, IconeUtilisateurs } from '@/components/doctor/IconesMedecin.js'
+import { IconeCloche, IconeAjoutUtilisateur, IconeUtilisateurs } from '@/components/doctor/IconesMedecin.js'
 import { mapperInvitation, mapperPatient, mapperDetailPatient } from '@/components/doctor/utilitairesMedecin.js'
 import NotificationsEnLigne from '@/components/ui/NotificationsEnLigne.vue'
 import InvitationsMedecin from '@/components/doctor/InvitationsMedecin.vue'
@@ -231,11 +223,6 @@ async function refuserInvitation(invitationId) {
 onMounted(async () => {
   await chargerDonneesMedecin()
 })
-
-async function deconnexion() {
-  await authStore.deconnexion()
-  router.push({ name: 'connexion-medecin' })
-}
 
 function ouvrirEspacePersonnel() {
   authStore.definirEspaceActif('personnel')

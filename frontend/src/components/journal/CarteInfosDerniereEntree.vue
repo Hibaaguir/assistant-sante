@@ -1,7 +1,7 @@
 ﻿<template>
-  <div class="rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-    <h3 class="text-3xl font-bold text-slate-900">Autres informations</h3>
-    <p class="mt-2 text-sm text-slate-500">Details supplementaires de la derniere entree</p>
+  <div class="rounded-[28px] border border-[#ddd2ff] bg-gradient-to-br from-[#f5f0ff] via-white to-[#eef4ff] p-8 shadow-sm shadow-violet-200/50 transition hover:-translate-y-0.5 hover:shadow-md">
+    <h3 class="text-3xl font-bold text-slate-900">📋 Autres informations</h3>
+    <p class="mt-2 text-sm text-slate-600">Indicateurs complementaires associes a votre derniere entree.</p>
 
     <div v-if="!entree" class="mt-8 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
       Aucune donnee
@@ -10,7 +10,7 @@
     <div v-else class="mt-6 space-y-4 text-sm text-slate-700">
       <div class="flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
         <span class="inline-flex items-center gap-2">
-          <svg viewBox="0 0 20 20" class="h-4 w-4 text-slate-400" fill="currentColor" aria-hidden="true"><path d="M10 1.5c-.7 1.8-5 5.5-5 9a5 5 0 0 0 10 0c0-3.5-4.3-7.2-5-9Z" /></svg>
+          <svg viewBox="0 0 20 20" class="h-4 w-4 text-sky-500" fill="currentColor" aria-hidden="true"><path d="M10 1.5c-.7 1.8-5 5.5-5 9a5 5 0 0 0 10 0c0-3.5-4.3-7.2-5-9Z" /></svg>
           Hydratation
         </span>
         <span class="font-semibold text-slate-900">{{ hydrationText }}</span>
@@ -18,7 +18,7 @@
 
       <div class="flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
         <span class="inline-flex items-center gap-2">
-          <svg viewBox="0 0 20 20" class="h-4 w-4 text-slate-400" fill="currentColor" aria-hidden="true"><path d="M3 4h14v2H3V4Zm0 4h14v8H3V8Z" /></svg>
+          <svg viewBox="0 0 20 20" class="h-4 w-4 text-emerald-500" fill="currentColor" aria-hidden="true"><path d="M3 4h14v2H3V4Zm0 4h14v8H3V8Z" /></svg>
           Repas
         </span>
         <span class="text-right font-semibold text-slate-900">{{ mealsText }}</span>
@@ -26,7 +26,7 @@
 
       <div class="flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
         <span class="inline-flex items-center gap-2">
-          <svg viewBox="0 0 20 20" class="h-4 w-4 text-slate-400" fill="currentColor" aria-hidden="true"><path d="M11 3h6v2h-4v4h4v2h-4v6h-2V3ZM3 11l4-8 2 1-2 4h3l-4 8-2-1 2-4H3v-2Z" /></svg>
+          <svg viewBox="0 0 20 20" class="h-4 w-4 text-orange-500" fill="currentColor" aria-hidden="true"><path d="M11 3h6v2h-4v4h4v2h-4v6h-2V3ZM3 11l4-8 2 1-2 4h3l-4 8-2-1 2-4H3v-2Z" /></svg>
           Activite
         </span>
         <span class="font-semibold text-slate-900">{{ activityText }}</span>
@@ -34,7 +34,7 @@
 
       <div class="flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
         <span class="inline-flex items-center gap-2">
-          <svg viewBox="0 0 20 20" class="h-4 w-4 text-slate-400" fill="currentColor" aria-hidden="true"><path d="m9 2 6 8h-4l2 8-6-8h4L9 2Z" /></svg>
+          <svg viewBox="0 0 20 20" class="h-4 w-4 text-violet-500" fill="currentColor" aria-hidden="true"><path d="m9 2 6 8h-4l2 8-6-8h4L9 2Z" /></svg>
           Intensite
         </span>
         <span class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold" :class="intensityBadgeClass">
@@ -44,7 +44,7 @@
 
       <div class="flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
         <span class="inline-flex items-center gap-2">
-          <svg viewBox="0 0 20 20" class="h-4 w-4 text-slate-400" fill="currentColor" aria-hidden="true"><path d="M6 2h8v6h-2V4H8v6h4v8H8v-6H6V2Z" /></svg>
+          <svg viewBox="0 0 20 20" class="h-4 w-4 text-pink-500" fill="currentColor" aria-hidden="true"><path d="M6 2h8v6h-2V4H8v6h4v8H8v-6H6V2Z" /></svg>
           Tabac
         </span>
         <span class="font-semibold text-slate-900">{{ tobaccoText }}</span>
@@ -52,7 +52,7 @@
 
       <div class="flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
         <span class="inline-flex items-center gap-2">
-          <svg viewBox="0 0 20 20" class="h-4 w-4 text-slate-400" fill="currentColor" aria-hidden="true"><path d="M4 3h12v14H4V3Zm2 2v2h8V5H6Z" /></svg>
+          <svg viewBox="0 0 20 20" class="h-4 w-4 text-orange-500" fill="currentColor" aria-hidden="true"><path d="M4 3h12v14H4V3Zm2 2v2h8V5H6Z" /></svg>
           Alcool
         </span>
         <span class="font-semibold text-slate-900">{{ alcoholText }}</span>
@@ -60,7 +60,7 @@
 
       <div class="flex items-center justify-between gap-3">
         <span class="inline-flex items-center gap-2">
-          <svg viewBox="0 0 20 20" class="h-4 w-4 text-slate-400" fill="currentColor" aria-hidden="true"><path d="M5 5h10v4H5V5Zm-1 6h12v6H4v-6Z" /></svg>
+          <svg viewBox="0 0 20 20" class="h-4 w-4 text-violet-500" fill="currentColor" aria-hidden="true"><path d="M5 5h10v4H5V5Zm-1 6h12v6H4v-6Z" /></svg>
           Apport en sucre
         </span>
         <span class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold" :class="sugarBadgeClass">
