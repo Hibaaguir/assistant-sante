@@ -1,5 +1,8 @@
 <template>
   <div class="relative">
+    <!-- Modal modification profil -->
+    <ModificationProfilModal :est-ouvert="modalProfilOuvert" @fermer="modalProfilOuvert = false" />
+
     <!-- Bouton circulaire de profil -->
     <button
       @click="menuOpen = !menuOpen"
@@ -44,30 +47,14 @@
         <!-- Actions -->
         <div class="py-2">
           <button
-            v-if="authStore.estMedecin"
-            @click="ouvrirEspaceMedecin"
+            @click="ouvrirModalProfil"
             type="button"
             class="w-full px-6 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5"
           >
             <svg viewBox="0 0 24 24" class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3l7 4v10l-7 4-7-4V7l7-4z" />
-              <path d="M9 12h6" />
-              <path d="M12 9v6" />
+              <path d="m16 3 5 5-11 11H5v-5L16 3z" />
             </svg>
-            Espace médecin
-          </button>
-
-          <button
-            @click="deconnexion"
-            type="button"
-            class="w-full px-6 py-3 text-left text-sm text-red-700 hover:bg-red-50 transition-colors flex items-center gap-2.5 border-t border-gray-100"
-          >
-            <svg viewBox="0 0 24 24" class="h-4 w-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <path d="M16 17l5-5-5-5" />
-              <path d="M21 12H9" />
-            </svg>
-            Déconnexion
+            Modifier mon profil
           </button>
         </div>
       </div>
@@ -86,10 +73,12 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import ModificationProfilModal from '@/components/profil/ModificationProfilModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const menuOpen = ref(false)
+const modalProfilOuvert = ref(false)
 
 const libelleRoleUtilisateur = computed(() => {
   const role = authStore.roleUtilisateur
@@ -97,6 +86,11 @@ const libelleRoleUtilisateur = computed(() => {
   if (role === 'user') return 'Patient'
   return ''
 })
+
+function ouvrirModalProfil() {
+  modalProfilOuvert.value = true
+  menuOpen.value = false
+}
 
 async function deconnexion() {
   await authStore.deconnexion()
