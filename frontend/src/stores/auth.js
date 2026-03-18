@@ -16,6 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
   const espaceActif = ref(localStorage.getItem(ACTIVE_SPACE_KEY) || 'personnel')
 
   let fetchInFlight = null
+  let deconnexionInFlight = null
 
   const estConnecte = computed(() => Boolean(localStorage.getItem('auth_token')))
   const nomUtilisateur = computed(() => user.value?.name || '')
@@ -96,16 +97,34 @@ export const useAuthStore = defineStore('auth', () => {
     return fetchInFlight
   }
 
-  async function deconnexion() {
-    try {
-      await api.post('/auth/logout')
-    } catch (_) {
-      // La déconnexion locale doit toujours fonctionner même si l'API échoue.
-    } finally {
+  async function deconnexion(options = {}) {
+    const { appelerApi = true } = options
+
+    if (deconnexionInFlight) {
+      return deconnexionInFlight
+    }
+
+    deconnexionInFlight = (async () => {
+      const tokenPresent = Boolean(localStorage.getItem('auth_token'))
+
+      if (appelerApi && tokenPresent) {
+        try {
+          await api.post('/auth/logout')
+        } catch (_) {
+          // La déconnexion locale doit toujours fonctionner même si l'API échoue.
+        }
+      }
+
       supprimerToken()
       user.value = null
       resolved.value = false
       espaceActif.value = 'personnel'
+    })()
+
+    try {
+      await deconnexionInFlight
+    } finally {
+      deconnexionInFlight = null
     }
   }
 

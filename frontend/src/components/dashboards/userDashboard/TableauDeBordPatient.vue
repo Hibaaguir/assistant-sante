@@ -181,7 +181,8 @@ async function gererErreurAuthentification(error) {
     throw error
   }
 
-  await authStore.deconnexion()
+  // Le backend a deja repondu 401, on nettoie localement sans rappeler /auth/logout.
+  await authStore.deconnexion({ appelerApi: false })
   await router.replace({ name: 'connexion' })
 }
 

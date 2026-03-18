@@ -8,8 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $creerSiAbsente = function (string $table, callable $callback): void {
+            if (! Schema::hasTable($table)) {
+                Schema::create($table, $callback);
+            }
+        };
+
         // Users
-        Schema::create('users', function (Blueprint $table) {
+        $creerSiAbsente('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('email');
@@ -23,7 +29,7 @@ return new class extends Migration
         });
 
         // Sessions
-        Schema::create('sessions', function (Blueprint $table) {
+        $creerSiAbsente('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
             $table->string('ip_address', 45)->nullable();
@@ -33,14 +39,14 @@ return new class extends Migration
         });
 
         // Password Reset Tokens
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
+        $creerSiAbsente('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
         // Personal Access Tokens
-        Schema::create('personal_access_tokens', function (Blueprint $table) {
+        $creerSiAbsente('personal_access_tokens', function (Blueprint $table) {
             $table->id();
             $table->morphs('tokenable');
             $table->string('name');
@@ -52,7 +58,7 @@ return new class extends Migration
         });
 
         // Profils Santé
-        Schema::create('profils_sante', function (Blueprint $table) {
+        $creerSiAbsente('profils_sante', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->enum('sexe', ['homme', 'femme'])->nullable();
@@ -75,7 +81,7 @@ return new class extends Migration
         });
 
         // Invitations Medecin
-        Schema::create('invitations_medecin', function (Blueprint $table) {
+        $creerSiAbsente('invitations_medecin', function (Blueprint $table) {
             $table->id();
             $table->string('email');
             $table->string('token')->unique();
@@ -87,7 +93,7 @@ return new class extends Migration
         });
 
         // Signes Vitaux
-        Schema::create('signes_vitaux', function (Blueprint $table) {
+        $creerSiAbsente('signes_vitaux', function (Blueprint $table) {
             $table->id();
             $table->foreignId('profil_sante_id')->constrained('profils_sante')->onDelete('cascade');
             $table->float('tension_systolique')->nullable();
@@ -100,7 +106,7 @@ return new class extends Migration
         });
 
         // Résultats Laboratoire
-        Schema::create('resultats_laboratoire', function (Blueprint $table) {
+        $creerSiAbsente('resultats_laboratoire', function (Blueprint $table) {
             $table->id();
             $table->foreignId('profil_sante_id')->constrained('profils_sante')->onDelete('cascade');
             $table->string('nom_analyse');
@@ -111,7 +117,7 @@ return new class extends Migration
         });
 
         // Entrées Journal
-        Schema::create('entrees_journal', function (Blueprint $table) {
+        $creerSiAbsente('entrees_journal', function (Blueprint $table) {
             $table->id();
             $table->foreignId('profil_sante_id')->constrained('profils_sante')->onDelete('cascade');
             $table->text('contenu');
@@ -120,7 +126,7 @@ return new class extends Migration
         });
 
         // Notifications
-        Schema::create('notifications', function (Blueprint $table) {
+        $creerSiAbsente('notifications', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('type');
             $table->morphs('notifiable');
