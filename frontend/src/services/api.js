@@ -18,5 +18,22 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Intercepteur de reponse pour eviter les boucles de requetes 401.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+    const requeteUrl = String(error?.config?.url || "");
+    const estTentativeConnexion = /\/auth\/(login|connexion|register|inscription)/.test(requeteUrl);
+
+    if (status === 401 && !estTentativeConnexion) {
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("active_space");
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 // Export de l'instance Axios configurée pour être utilisée dans toute l'application
 export default api;

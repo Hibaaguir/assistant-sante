@@ -30,7 +30,7 @@ class DoctorInvitationMail extends Mailable
 
     public function content(): Content
     {
-        $url = rtrim((string) env('FRONTEND_URL', 'http://localhost:5174'), '/') . $this->applicationPath;
+        $url = rtrim((string) config('app.frontend_url', 'http://localhost:5173'), '/') . $this->applicationPath;
         
         $url .= '?email=' . urlencode($this->doctorEmail);
 
