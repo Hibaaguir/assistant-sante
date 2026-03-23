@@ -4,7 +4,7 @@
   Responsable: Affichage, chargement, refresh et marquer comme lue.
 -->
 <template>
-  <section v-if="chargementNotifications || erreurNotification || notificationsVisibles.length > 0" class="mt-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
+  <section class="mt-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
     <div v-if="chargementNotifications" class="px-4 py-3 text-sm text-slate-600">
       Chargement des notifications...
     </div>
@@ -53,6 +53,10 @@
         </li>
       </ul>
     </div>
+
+    <div v-else class="px-4 py-3 text-sm text-slate-500 text-center">
+      Aucune notification pour le moment
+    </div>
   </section>
 </template>
 
@@ -70,7 +74,7 @@ const erreurNotification = ref('')
 let minuterieRafraichissementNotifications = null
 
 const nombreNonLues = computed(() => listeNotifications.value.filter((notification) => !notification.read_at).length)
-const notificationsVisibles = computed(() => listeNotifications.value.filter((notification) => !notification.read_at))
+const notificationsVisibles = computed(() => listeNotifications.value)
 
 async function gererErreurAuthentification(error) {
   if (error?.response?.status !== 401) {

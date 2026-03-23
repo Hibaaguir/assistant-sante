@@ -46,23 +46,18 @@ class UtilisateurAdminController extends Controller
         $donneesValidees = $request->validate([
             'nom' => ['required', 'string', 'min:2', 'max:120'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'type' => ['required', Rule::in(['Patient', 'Médecin'])],
             'statut' => ['required', Rule::in(['Actif', 'Inactif'])],
-            'specialite' => ['nullable', 'string', 'max:120'],
         ], [
             'nom.required' => 'Le nom est obligatoire.',
             'email.required' => "L'email est obligatoire.",
-            'type.required' => 'Le type est obligatoire.',
             'statut.required' => 'Le statut est obligatoire.',
         ]);
 
         $user->name = trim($donneesValidees['nom']);
         $user->email = strtolower(trim($donneesValidees['email']));
-        $user->role = $donneesValidees['type'] === 'Médecin' ? 'medecin' : 'user';
+        $user->role = 'user';
         $user->statut_admin = $donneesValidees['statut'];
-        $user->specialite = $donneesValidees['type'] === 'Médecin'
-            ? trim((string) ($donneesValidees['specialite'] ?? $user->specialite ?? 'Médecine générale'))
-            : null;
+        $user->specialite = null;
         $user->save();
 
         return response()->json([
@@ -96,12 +91,6 @@ class UtilisateurAdminController extends Controller
 
     private function convertirRoleEnType(?string $role): string
     {
-        $roleNormalise = strtolower((string) $role);
-
-        if ($roleNormalise === 'medecin' || $roleNormalise === 'doctor') {
-            return 'Médecin';
-        }
-
         return 'Patient';
     }
 }

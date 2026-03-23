@@ -4,14 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProfilSante;
-use App\Models\User;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ProfilSanteController extends Controller
@@ -71,28 +66,11 @@ class ProfilSanteController extends Controller
             }
 
             $validated['user_id'] = Auth::id();
-            
-            // Gérer l'email du médecin s'il est fourni
-            if (isset($validated['medecin_email'])) {
-                $validated['medecin_email'] = $validated['medecin_email'] !== null
-                    ? strtolower(trim($validated['medecin_email']))
-                    : null;
-            }
-
-            $existingProfil = ProfilSante::query()
-                ->where('user_id', Auth::id())
-                ->first();
-
-            $previousDoctorEmail = $existingProfil?->medecin_email !== null
-                ? strtolower(trim((string) $existingProfil->medecin_email))
-                : null;
 
             $profil = ProfilSante::updateOrCreate(
                 ['user_id' => Auth::id()],
                 $validated
             );
-
-            $this->synchroniserInvitationMedecin($profil, $previousDoctorEmail);
 
             return response()->json([
                 'message' => 'Profil sante enregistre avec succes.',
@@ -120,141 +98,5 @@ class ProfilSanteController extends Controller
         ]);
     }
 
-    private function synchroniserInvitationMedecin(ProfilSante $profil, ?string $previousDoctorEmail = null): void
-    {
-        $doctorInvitationModel = 'App\\Models\\DoctorInvitation';
 
-        if (! class_exists($doctorInvitationModel) || ! Schema::hasTable('doctor_invitations')) {
-            return;
-        }
-
-        $patient = Auth::user();
-        if (! $patient) {
-            return;
-        }
-
-        // Vérifier si le patient veut consulter un médecin (optionnel)
-        $shouldInvite = (bool) ($profil->consulte_medecin ?? false)
-            && (bool) ($profil->medecin_peut_consulter ?? false)
-            && ! empty($profil->medecin_email);
-
-        if (! $shouldInvite) {
-            $doctorInvitationModel::query()
-                ->where('patient_user_id', $patient->id)
-                ->where('status', 'pending')
-                ->update([
-                    'status' => 'revoked',
-                    'revoked_at' => now(),
-                ]);
-            return;
-        }
-
-        $doctorEmail = strtolower(trim((string) $profil->medecin_email));
-        $doctorEmailChanged = $doctorEmail !== ($previousDoctorEmail !== null ? strtolower(trim($previousDoctorEmail)) : null);
-
-        if ($doctorEmailChanged) {
-            $doctorInvitationModel::query()
-                ->where('patient_user_id', $patient->id)
-                ->where('status', 'pending')
-                ->where('doctor_email', '!=', $doctorEmail)
-                ->update([
-                    'status' => 'revoked',
-                    'revoked_at' => now(),
-                ]);
-        }
-
-        $doctorAccount = User::query()
-            ->whereRaw('LOWER(email) = ?', [$doctorEmail])
-            ->where('role', 'medecin')
-            ->latest('id')
-            ->first();
-
-        $existingAccount = $doctorAccount ?: User::query()
-            ->whereRaw('LOWER(email) = ?', [$doctorEmail])
-            ->latest('id')
-            ->first();
-
-        if ($existingAccount && $existingAccount->id === $patient->id) {
-            return;
-        }
-
-        $doctor = $doctorAccount;
-
-        if ($existingAccount && ! $doctorAccount && $existingAccount->role !== 'medecin') {
-            try {
-                $existingAccount->update([
-                    'role' => 'medecin',
-                ]);
-                $doctor = $existingAccount->fresh();
-            } catch (QueryException $exception) {
-                Log::warning('Doctor invitation role sync skipped: '.$exception->getMessage(), [
-                    'doctor_email' => $doctorEmail,
-                    'existing_account_id' => $existingAccount->id,
-                ]);
-
-                $doctor = User::query()
-                    ->whereRaw('LOWER(email) = ?', [$doctorEmail])
-                    ->where('role', 'medecin')
-                    ->latest('id')
-                    ->first();
-            }
-        }
-
-        $existing = $doctorInvitationModel::query()
-            ->where('patient_user_id', $patient->id)
-            ->where('doctor_email', $doctorEmail)
-            ->first();
-
-        if ($existing) {
-            if ($existing->status === 'accepted') {
-                $existing->update([
-                    'doctor_user_id' => $doctor?->id,
-                    'doctor_email' => $doctorEmail,
-                ]);
-            } elseif ($doctorEmailChanged) {
-                $existing->update([
-                    'doctor_user_id' => $doctor?->id,
-                    'doctor_email' => $doctorEmail,
-                    'status' => 'pending',
-                    'token' => Str::random(64),
-                    'accepted_at' => null,
-                    'rejected_at' => null,
-                    'revoked_at' => null,
-                ]);
-            } else {
-                $existing->update([
-                    'doctor_user_id' => $doctor?->id,
-                    'doctor_email' => $doctorEmail,
-                ]);
-            }
-        } else {
-            $doctorInvitationModel::query()->create([
-                'patient_user_id' => $patient->id,
-                'doctor_user_id' => $doctor?->id,
-                'doctor_email' => $doctorEmail,
-                'status' => 'pending',
-                'token' => Str::random(64),
-            ]);
-        }
-
-        if (! $doctorEmailChanged || $doctor) {
-            return;
-        }
-
-        $doctorInvitationMailClass = 'App\\Mail\\DoctorInvitationMail';
-        if (! class_exists($doctorInvitationMailClass)) {
-            return;
-        }
-
-        try {
-            Mail::to($doctorEmail)->send(new $doctorInvitationMailClass(
-                $patient,
-                $doctorEmail,
-                $existingAccount ? '/login' : '/doctor-login',
-                $existingAccount ? 'medecin' : null,
-            ));
-        } catch (\Throwable $e) {
-            Log::warning('Doctor invitation email failed: '.$e->getMessage());
-        }
-    }
 }

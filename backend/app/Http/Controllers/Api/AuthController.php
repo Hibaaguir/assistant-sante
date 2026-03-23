@@ -149,11 +149,6 @@ class AuthController extends Controller
         ];
     }
 
-    private function aInvitationsMedecinEnAttente(User $user): bool
-    {
-        return false;
-    }
-
     private function gererExceptionRequeteInscription(QueryException $e): JsonResponse
     {
         $sqlState = $e->errorInfo[0] ?? null;
