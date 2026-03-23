@@ -29,6 +29,9 @@ class ProfilSante extends Model
         'nom_medicament',
         'fumeur',
         'alcool',
+        'activite_physique',
+        'activites_physiques',
+        'frequence_activite_physique',
         'consulte_medecin',
         'medecin_email',
         'medecin_peut_consulter',
@@ -44,5 +47,7 @@ class ProfilSante extends Model
         'medecin_peut_consulter' => 'boolean',
         'fumeur' => 'boolean',
         'alcool' => 'boolean',
+        'activite_physique' => 'boolean',
+        'activites_physiques' => 'array',
     ];
 }

@@ -23,81 +23,81 @@
     </div>
 
     <div v-else class="grid gap-4 lg:grid-cols-2">
-      <section class="min-h-[250px] rounded-[14px] border border-[#cfe0ff] bg-gradient-to-br from-[#edf4ff] via-white to-[#f7fbff] p-4 shadow-[0_2px_8px_rgba(59,130,246,0.08)] sm:p-5">
-        <div class="mb-5 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#ecf4ff] text-[#3b82f6]">
-              <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" /></svg>
-            </span>
-            <h2 class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]">Informations de base</h2>
+        <section class="min-h-[250px] rounded-[14px] border border-[#cfe0ff] bg-gradient-to-br from-[#edf4ff] via-white to-[#f7fbff] p-4 shadow-[0_2px_8px_rgba(59,130,246,0.08)] sm:p-5">
+          <div class="mb-5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#ecf4ff] text-[#3b82f6]">
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" /></svg>
+              </span>
+              <h2 class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]">Informations de base</h2>
+            </div>
+            <button v-if="!editing.base" type="button" class="text-slate-800 transition-colors hover:text-[#2563eb]" @click="startEdit('base')">
+              <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 5 5-11 11H5v-5L16 3z" /></svg>
+            </button>
           </div>
-          <button v-if="!editing.base" type="button" class="text-slate-800 transition-colors hover:text-[#2563eb]" @click="startEdit('base')">
-            <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 5 5-11 11H5v-5L16 3z" /></svg>
-          </button>
-        </div>
 
-        <div v-if="!editing.base" class="space-y-2">
-          <LigneChampSante label="Nom" :value="user.name || '-'" icon="user" />
-          <LigneChampSante label="Âge" :value="computedAge || '-'" icon="calendar" />
-          <LigneChampSante label="Sexe" :value="profil.sexe || '-'" icon="users" />
-          <LigneChampSante label="Taille" :value="profil.taille ? `${profil.taille} cm` : '-'" icon="ruler" />
-          <LigneChampSante label="Poids" :value="profil.poids ? `${profil.poids} kg` : '-'" icon="weight" />
-        </div>
+          <div v-if="!editing.base" class="space-y-2">
+            <LigneChampSante label="Nom" :value="user.name || '-'" icon="user" />
+            <LigneChampSante label="Âge" :value="computedAge || '-'" icon="calendar" />
+            <LigneChampSante label="Sexe" :value="profil.sexe || '-'" icon="users" />
+            <LigneChampSante label="Taille" :value="profil.taille ? `${profil.taille} cm` : '-'" icon="ruler" />
+            <LigneChampSante label="Poids" :value="profil.poids ? `${profil.poids} kg` : '-'" icon="weight" />
+          </div>
 
-        <form v-else class="space-y-4" novalidate @submit.prevent="enregistrerSection('base')">
-          <div v-if="sectionErrors.base.form.length" class="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            <p v-for="(message, idx) in sectionErrors.base.form" :key="`base-form-error-${idx}`">
-              {{ message }}
-            </p>
-          </div>
-          <div>
-            <label class="mb-1 block text-sm font-semibold text-slate-900">Nom</label>
-            <input :value="user.name || ''" disabled class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base text-slate-700" />
-          </div>
-          <div class="grid gap-3 md:grid-cols-2">
-            <div>
-              <label class="mb-1 block text-sm font-semibold text-slate-900">Sexe</label>
-              <select
-                v-model="draft.sexe"
-                class="h-11 w-full rounded-xl border bg-slate-100 px-4 text-base"
-                :class="sectionErrors.base.sexe ? 'border-red-400 focus:border-red-500' : 'border-slate-200'"
-              >
-                <option value="femme">Femme</option>
-                <option value="homme">Homme</option>
-              </select>
-              <p v-if="sectionErrors.base.sexe" class="mt-1 text-xs font-medium text-red-600">{{ sectionErrors.base.sexe }}</p>
+          <form v-else class="space-y-4" novalidate @submit.prevent="enregistrerSection('base')">
+            <div v-if="sectionErrors.base.form.length" class="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <p v-for="(message, idx) in sectionErrors.base.form" :key="`base-form-error-${idx}`">
+                {{ message }}
+              </p>
             </div>
             <div>
-              <label class="mb-1 block text-sm font-semibold text-slate-900">Taille (cm)</label>
+              <label class="mb-1 block text-sm font-semibold text-slate-900">Nom</label>
+              <input :value="user.name || ''" disabled class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base text-slate-700" />
+            </div>
+            <div class="grid gap-3 md:grid-cols-2">
+              <div>
+                <label class="mb-1 block text-sm font-semibold text-slate-900">Sexe</label>
+                <select
+                  v-model="draft.sexe"
+                  class="h-11 w-full rounded-xl border bg-slate-100 px-4 text-base"
+                  :class="sectionErrors.base.sexe ? 'border-red-400 focus:border-red-500' : 'border-slate-200'"
+                >
+                  <option value="femme">Femme</option>
+                  <option value="homme">Homme</option>
+                </select>
+                <p v-if="sectionErrors.base.sexe" class="mt-1 text-xs font-medium text-red-600">{{ sectionErrors.base.sexe }}</p>
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-semibold text-slate-900">Taille (cm)</label>
+                <input
+                  v-model="draft.taille"
+                  type="number"
+                  min="80"
+                  max="250"
+                  class="h-11 w-full rounded-xl border bg-slate-100 px-4 text-base"
+                  :class="sectionErrors.base.taille ? 'border-red-400 focus:border-red-500' : 'border-slate-200'"
+                />
+                <p v-if="sectionErrors.base.taille" class="mt-1 text-xs font-medium text-red-600">{{ sectionErrors.base.taille }}</p>
+              </div>
+            </div>
+            <div>
+              <label class="mb-1 block text-sm font-semibold text-slate-900">Poids (kg)</label>
               <input
-                v-model="draft.taille"
+                v-model="draft.poids"
                 type="number"
-                min="80"
+                min="35"
                 max="250"
                 class="h-11 w-full rounded-xl border bg-slate-100 px-4 text-base"
-                :class="sectionErrors.base.taille ? 'border-red-400 focus:border-red-500' : 'border-slate-200'"
+                :class="sectionErrors.base.poids ? 'border-red-400 focus:border-red-500' : 'border-slate-200'"
               />
-              <p v-if="sectionErrors.base.taille" class="mt-1 text-xs font-medium text-red-600">{{ sectionErrors.base.taille }}</p>
+              <p v-if="sectionErrors.base.poids" class="mt-1 text-xs font-medium text-red-600">{{ sectionErrors.base.poids }}</p>
             </div>
-          </div>
-          <div>
-            <label class="mb-1 block text-sm font-semibold text-slate-900">Poids (kg)</label>
-            <input
-              v-model="draft.poids"
-              type="number"
-              min="35"
-              max="250"
-              class="h-11 w-full rounded-xl border bg-slate-100 px-4 text-base"
-              :class="sectionErrors.base.poids ? 'border-red-400 focus:border-red-500' : 'border-slate-200'"
-            />
-            <p v-if="sectionErrors.base.poids" class="mt-1 text-xs font-medium text-red-600">{{ sectionErrors.base.poids }}</p>
-          </div>
-          <div class="grid gap-3 md:grid-cols-2">
-            <button type="submit" :disabled="savingSection==='base'" class="h-11 rounded-xl bg-[#2563eb] px-5 text-sm font-bold text-white disabled:opacity-60">Enregistrer</button>
-            <button type="button" class="h-11 rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-900" @click="cancelEdit('base')">Annuler</button>
-          </div>
-        </form>
-      </section>
+            <div class="grid gap-3 md:grid-cols-2">
+              <button type="submit" :disabled="savingSection==='base'" class="h-11 rounded-xl bg-[#2563eb] px-5 text-sm font-bold text-white disabled:opacity-60">Enregistrer</button>
+              <button type="button" class="h-11 rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-900" @click="cancelEdit('base')">Annuler</button>
+            </div>
+          </form>
+        </section>
 
       <section class="min-h-[250px] rounded-[14px] border border-[#f2d9e4] bg-gradient-to-br from-[#fff1f6] via-white to-[#fff7fa] p-4 shadow-[0_2px_8px_rgba(244,114,182,0.08)] sm:p-5">
         <div class="mb-5 flex items-center justify-between">
@@ -206,76 +206,218 @@
         </form>
       </section>
 
-      <section class="min-h-[250px] rounded-[14px] border border-[#d4f3df] bg-gradient-to-br from-[#effcf4] via-white to-[#f7fff9] p-4 shadow-[0_2px_8px_rgba(34,197,94,0.08)] sm:p-5">
+        <section class="min-h-[250px] rounded-[14px] border border-[#d4f3df] bg-gradient-to-br from-[#effcf4] via-white to-[#f7fff9] p-4 shadow-[0_2px_8px_rgba(34,197,94,0.08)] sm:p-5">
+          <div class="mb-5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#e9fff0] text-[#18b05b]">
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l2-6 4 12 2-6h6" /></svg>
+              </span>
+              <h2 class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]">Habitudes</h2>
+            </div>
+            <button v-if="!editing.habits" type="button" class="text-slate-800 transition-colors hover:text-[#18b05b]" @click="startEdit('habits')">
+              <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 5 5-11 11H5v-5L16 3z" /></svg>
+            </button>
+          </div>
+
+          <div v-if="!editing.habits" class="space-y-2">
+            <LigneChampSante label="Fumeur" :value="ouiNon(profil.fumeur)" icon="smoke" />
+            <LigneChampSante label="Alcool" :value="ouiNon(profil.alcool)" icon="wine" />
+            <LigneChampSante label="Activité physique" :value="ouiNon(profil.activite_physique)" icon="activity" />
+            <LigneChampSante
+              v-if="profil.activite_physique"
+              label="Activités pratiquées"
+              :value="joindreListe(profil.activites_physiques)"
+              icon="target"
+            />
+            <LigneChampSante
+              v-if="profil.activite_physique && profil.frequence_activite_physique"
+              label="Fréquence / semaine"
+              :value="profil.frequence_activite_physique"
+              icon="calendar"
+            />
+          </div>
+
+          <form v-else class="space-y-4" novalidate @submit.prevent="enregistrerSection('habits')">
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex h-14 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3">
+                <label class="text-sm font-semibold text-slate-900">Fumeur</label>
+                <button
+                  type="button"
+                  :aria-pressed="draft.fumeur"
+                  class="relative h-8 w-14 rounded-full bg-[#c7d2e0] transition-colors"
+                  @click="draft.fumeur = !draft.fumeur"
+                >
+                  <span
+                    class="absolute left-1 top-1 h-6 w-6 rounded-full bg-white transition-transform"
+                    :class="draft.fumeur ? 'translate-x-6' : 'translate-x-0'"
+                  />
+                </button>
+              </div>
+              <div class="flex h-14 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3">
+                <label class="text-sm font-semibold text-slate-900">Alcool</label>
+                <button
+                  type="button"
+                  :aria-pressed="draft.alcool"
+                  class="relative h-8 w-14 rounded-full bg-[#c7d2e0] transition-colors"
+                  @click="draft.alcool = !draft.alcool"
+                >
+                  <span
+                    class="absolute left-1 top-1 h-6 w-6 rounded-full bg-white transition-transform"
+                    :class="draft.alcool ? 'translate-x-6' : 'translate-x-0'"
+                  />
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div class="flex items-center justify-between gap-3">
+                <label class="text-sm font-semibold text-slate-900">Activité physique</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    class="h-9 rounded-lg px-4 text-sm font-semibold"
+                    :class="draft.activite_physique ? 'bg-emerald-600 text-white' : 'border border-slate-300 bg-white text-slate-700'"
+                    @click="draft.activite_physique = true"
+                  >
+                    Oui
+                  </button>
+                  <button
+                    type="button"
+                    class="h-9 rounded-lg px-4 text-sm font-semibold"
+                    :class="!draft.activite_physique ? 'bg-slate-700 text-white' : 'border border-slate-300 bg-white text-slate-700'"
+                    @click="draft.activite_physique = false; draft.activites_physiques = []; draft.frequence_activite_physique = ''; customInputs.activites_physiques = ''"
+                  >
+                    Non
+                  </button>
+                </div>
+              </div>
+
+              <div v-if="draft.activite_physique" class="space-y-3">
+                <div>
+                  <label class="mb-1 block text-xs font-medium text-slate-600">Quelle activité pratiques-tu ?</label>
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      v-for="activity in physicalActivityOptions"
+                      :key="activity"
+                      type="button"
+                      class="rounded-lg border px-3 py-1.5 text-sm"
+                      :class="isSelected('activites_physiques', activity) ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-700'"
+                      @click="togglePhysicalActivity(activity)"
+                    >
+                      {{ activity }}
+                    </button>
+                  </div>
+                </div>
+
+                <div class="flex gap-2">
+                  <input
+                    v-model="customInputs.activites_physiques"
+                    class="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm"
+                    placeholder="Ajouter une activité si absente..."
+                  />
+                  <button
+                    type="button"
+                    class="h-10 rounded-lg bg-emerald-600 px-3 text-sm font-medium text-white"
+                    @click="addCustom('activites_physiques', customInputs.activites_physiques)"
+                  >
+                    Ajouter
+                  </button>
+                </div>
+
+                <div v-if="draft.activites_physiques.length" class="flex flex-wrap gap-2">
+                  <span
+                    v-for="item in draft.activites_physiques"
+                    :key="`activity-selected-${item}`"
+                    class="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs text-emerald-800"
+                  >
+                    {{ item }}
+                    <button type="button" @click="togglePhysicalActivity(item)">x</button>
+                  </span>
+                </div>
+
+                <div v-if="draft.activites_physiques.length" class="space-y-2">
+                  <label class="mb-1 block text-xs font-medium text-slate-600">Combien de fois par semaine ?</label>
+                  <div class="grid grid-cols-3 gap-2">
+                    <button
+                      v-for="item in physicalActivityFrequencies"
+                      :key="item"
+                      type="button"
+                      class="h-9 rounded-lg border text-xs font-semibold"
+                      :class="draft.frequence_activite_physique === item ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-200 bg-white text-slate-700'"
+                      @click="draft.frequence_activite_physique = item"
+                    >
+                      {{ item }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid gap-3 md:grid-cols-2">
+              <button type="submit" :disabled="savingSection==='habits'" class="h-11 rounded-xl bg-[#16a34a] px-5 text-sm font-bold text-white disabled:opacity-60">Enregistrer</button>
+              <button type="button" class="h-11 rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-900" @click="cancelEdit('habits')">Annuler</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="min-h-[250px] rounded-[14px] border border-[#0284c7] bg-gradient-to-br from-[#ecf4ff] via-white to-[#f7fbff] p-4 shadow-[0_2px_8px_rgba(2,132,199,0.08)] sm:p-5">
         <div class="mb-5 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#e9fff0] text-[#18b05b]">
-              <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l2-6 4 12 2-6h6" /></svg>
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#dbeafe] text-[#0284c7]">
+              <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
             </span>
-            <h2 class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]">Habitudes</h2>
+            <h2 class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]">Traitements</h2>
           </div>
-          <button v-if="!editing.habits" type="button" class="text-slate-800 transition-colors hover:text-[#18b05b]" @click="startEdit('habits')">
+          <button v-if="!editing.treatments" type="button" class="text-slate-800 transition-colors hover:text-[#0284c7]" @click="startEdit('treatments')">
             <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 5 5-11 11H5v-5L16 3z" /></svg>
           </button>
         </div>
 
-        <div v-if="!editing.habits" class="space-y-2">
-          <LigneChampSante label="Fumeur" :value="ouiNon(profil.fumeur)" icon="smoke" />
-          <LigneChampSante label="Alcool" :value="ouiNon(profil.alcool)" icon="wine" />
-          <LigneChampSante label="Traitements" :value="treatmentsSummary(profil.traitements)" icon="pill" />
-        </div>
-
-        <form v-else class="space-y-4" novalidate @submit.prevent="enregistrerSection('habits')">
-          <div class="grid grid-cols-2 gap-3">
-            <div class="flex h-14 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3">
-              <label class="text-sm font-semibold text-slate-900">Fumeur</label>
-              <button
-                type="button"
-                :aria-pressed="draft.fumeur"
-                class="relative h-8 w-14 rounded-full bg-[#c7d2e0] transition-colors"
-                @click="draft.fumeur = !draft.fumeur"
-              >
-                <span
-                  class="absolute left-1 top-1 h-6 w-6 rounded-full bg-white transition-transform"
-                  :class="draft.fumeur ? 'translate-x-6' : 'translate-x-0'"
-                />
-              </button>
-            </div>
-            <div class="flex h-14 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3">
-              <label class="text-sm font-semibold text-slate-900">Alcool</label>
-              <button
-                type="button"
-                :aria-pressed="draft.alcool"
-                class="relative h-8 w-14 rounded-full bg-[#c7d2e0] transition-colors"
-                @click="draft.alcool = !draft.alcool"
-              >
-                <span
-                  class="absolute left-1 top-1 h-6 w-6 rounded-full bg-white transition-transform"
-                  :class="draft.alcool ? 'translate-x-6' : 'translate-x-0'"
-                />
-              </button>
+        <div v-if="!editing.treatments" class="space-y-2">
+          <div v-if="profil.traitements && profil.traitements.length" class="space-y-2">
+            <div v-for="(item, index) in profil.traitements" :key="`profil-treatment-${index}`" class="rounded-lg border border-slate-200 bg-white px-3 py-2.5">
+              <p class="text-sm font-medium text-slate-900">{{ item.name || 'Traitement' }}</p>
+              <p class="mt-0.5 text-xs text-slate-500">
+                {{ item.type || '-' }}<span v-if="item.dose"> | {{ item.dose }}</span><span v-if="item.frequency_count && item.frequency_unit"> | {{ item.frequency_count }}/{{ item.frequency_unit }}</span>
+              </p>
             </div>
           </div>
+          <p v-else class="text-sm text-slate-500">Aucun traitement enregistré.</p>
+        </div>
+
+        <form v-else class="space-y-4" novalidate @submit.prevent="enregistrerSection('treatments')">
           <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
             <div class="mb-3 flex items-center justify-between">
-              <p class="text-sm font-semibold text-slate-900">Traitements</p>
-              <button type="button" class="h-9 rounded-lg bg-emerald-600 px-3 text-sm font-medium text-white" @click="openTreatmentEditor()">Ajouter</button>
+              <p class="text-sm font-semibold text-slate-900">Gérer les traitements</p>
+              <button type="button" class="h-9 rounded-lg bg-emerald-600 px-3 text-sm font-medium text-white disabled:opacity-60" :disabled="showTreatmentEditor" @click="openTreatmentEditor()">Ajouter</button>
             </div>
 
             <div v-if="showTreatmentEditor" class="space-y-3 rounded-lg border border-slate-200 bg-white p-3">
               <div class="grid gap-3 md:grid-cols-2">
                 <div>
                   <label class="mb-1 block text-xs font-medium text-slate-600">Type</label>
-                  <input v-model="treatmentDraft.type" list="treatment-types" class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm" placeholder="Type de traitement" />
+                  <input
+                    :value="treatmentDraft.type"
+                    list="treatment-types"
+                    class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm"
+                    placeholder="Type de traitement"
+                    @input="(event) => handleTreatmentTypeInput(event)"
+                  />
                   <datalist id="treatment-types">
                     <option v-for="type in treatmentTypes" :key="type" :value="type" />
                   </datalist>
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium text-slate-600">Nom</label>
-                  <input v-model="treatmentDraft.name" list="treatment-names" class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm" placeholder="Nom du traitement" />
+                  <input
+                    v-model="treatmentDraft.name"
+                    list="treatment-names"
+                    class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm disabled:cursor-not-allowed disabled:opacity-70"
+                    :placeholder="treatmentDraft.type ? 'Nom du traitement' : 'Sélectionner d\'abord un type'"
+                    :disabled="!treatmentDraft.type"
+                  />
                   <datalist id="treatment-names">
-                    <option v-for="name in treatmentNames" :key="name" :value="name" />
+                    <option v-for="name in filteredTreatmentNames" :key="name" :value="name" />
                   </datalist>
                 </div>
               </div>
@@ -313,14 +455,14 @@
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-2">
-                <button type="button" class="h-10 rounded-lg bg-emerald-600 text-sm font-medium text-white" @click="saveTreatmentDraft">
+                <button type="button" class="h-10 rounded-lg bg-emerald-600 text-sm font-medium text-white hover:bg-emerald-700" @click="saveTreatmentDraft">
                   {{ editingTreatmentIndex > -1 ? "Mettre à jour" : "Ajouter" }}
                 </button>
-                <button type="button" class="h-10 rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-800" @click="cancelTreatmentEditWithNotice">Annuler</button>
+                <button type="button" class="h-10 rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-800 hover:bg-slate-50" @click="cancelTreatmentEditWithNotice">Annuler</button>
               </div>
             </div>
 
-            <div v-if="draft.traitements.length" class="mt-3 space-y-2">
+            <div v-if="draft.traitements && draft.traitements.length" class="mt-3 space-y-2">
               <div v-for="(item, index) in draft.traitements" :key="`draft-treatment-${index}-${item.type}-${item.name}`" class="flex items-start justify-between rounded-lg border border-slate-200 bg-white px-3 py-2.5">
                 <div class="min-w-0">
                   <p class="truncate text-sm font-medium text-slate-900">{{ item.name || 'Traitement' }}</p>
@@ -329,69 +471,16 @@
                   </p>
                 </div>
                 <div class="ml-3 flex items-center gap-3">
-                  <button type="button" class="text-xs font-medium text-blue-700" @click="openTreatmentEditor(index)">Modifier</button>
-                  <button type="button" class="text-xs font-medium text-red-600" @click="requestRemoveTreatment(index)">Retirer</button>
+                  <button type="button" class="text-xs font-medium text-blue-700 hover:text-blue-900" @click="openTreatmentEditor(index)">Modifier</button>
+                  <button type="button" class="text-xs font-medium text-red-600 hover:text-red-900" @click="requestRemoveTreatment(index)">Retirer</button>
                 </div>
               </div>
             </div>
-            <p v-else class="text-xs text-slate-500">Aucun traitement ajouté.</p>
+            <p v-else class="mt-3 text-xs text-slate-500">Aucun traitement ajouté.</p>
           </div>
           <div class="grid gap-3 md:grid-cols-2">
-            <button type="submit" :disabled="savingSection==='habits'" class="h-11 rounded-xl bg-[#16a34a] px-5 text-sm font-bold text-white disabled:opacity-60">Enregistrer</button>
-            <button type="button" class="h-11 rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-900" @click="cancelEdit('habits')">Annuler</button>
-          </div>
-        </form>
-      </section>
-
-      <section class="min-h-[250px] rounded-[14px] border border-[#e7dcff] bg-gradient-to-br from-[#f5efff] via-white to-[#faf7ff] p-4 shadow-[0_2px_8px_rgba(147,51,234,0.08)] sm:p-5">
-        <div class="mb-5 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f3edff] text-[#9333ea]">
-              <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 4v5a4 4 0 1 0 8 0V4M12 13v3a4 4 0 0 0 8 0v-1a2 2 0 1 0-4 0v1" /></svg>
-            </span>
-            <h2 class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]">Suivi médecin</h2>
-          </div>
-          <button v-if="!editing.doctor" type="button" class="text-slate-800 transition-colors hover:text-[#9333ea]" @click="startEdit('doctor')">
-            <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 5 5-11 11H5v-5L16 3z" /></svg>
-          </button>
-        </div>
-
-        <div v-if="!editing.doctor" class="space-y-2">
-          <LigneChampSante label="Consulte médecin" :value="ouiNon(profil.consulte_medecin)" icon="stetho" />
-          <LigneChampSante label="Autorise accès médecin" :value="ouiNon(profil.medecin_peut_consulter)" icon="shield" />
-          <LigneChampSante label="Email médecin" :value="profil.medecin_email || '-'" icon="stetho" />
-        </div>
-
-        <form v-else class="space-y-4" novalidate @submit.prevent="enregistrerSection('doctor')">
-          <div>
-            <label class="mb-1 block text-sm font-semibold text-slate-900">Consulte médecin</label>
-            <select v-model="draft.consulte_medecin" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base" @change="validerEmailMedecin">
-              <option :value="true">Oui</option><option :value="false">Non</option>
-            </select>
-          </div>
-          <div>
-            <label class="mb-1 block text-sm font-semibold text-slate-900">Autorise accès médecin</label>
-            <select v-model="draft.medecin_peut_consulter" :disabled="!draft.consulte_medecin" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base disabled:opacity-60" @change="validerEmailMedecin">
-              <option :value="true">Oui</option><option :value="false">Non</option>
-            </select>
-          </div>
-          <div>
-            <label class="mb-1 block text-sm font-semibold text-slate-900">Email médecin</label>
-            <input
-              v-model.trim="draft.medecin_email"
-              :disabled="!(draft.consulte_medecin && draft.medecin_peut_consulter)"
-              class="h-11 w-full rounded-xl border bg-slate-100 px-4 text-base disabled:opacity-60"
-              :class="doctorEmailError ? 'border-red-400 focus:border-red-500' : 'border-slate-200'"
-              @input="validerEmailMedecin"
-              @blur="validerEmailMedecin"
-            />
-            <p v-if="doctorEmailError" class="mt-1 text-xs font-medium text-red-600">
-              {{ doctorEmailError }}
-            </p>
-          </div>
-          <div class="grid gap-3 md:grid-cols-2">
-            <button type="submit" :disabled="savingSection==='doctor'" class="h-11 rounded-xl bg-[#a21caf] px-5 text-sm font-bold text-white disabled:opacity-60">Enregistrer</button>
-            <button type="button" class="h-11 rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-900" @click="cancelEdit('doctor')">Annuler</button>
+            <button type="submit" :disabled="savingSection==='treatments'" class="h-11 rounded-xl bg-[#0284c7] px-5 text-sm font-bold text-white disabled:opacity-60">Enregistrer</button>
+            <button type="button" class="h-11 rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-900" @click="cancelEdit('treatments')">Annuler</button>
           </div>
         </form>
       </section>
@@ -432,7 +521,6 @@ const authStore = useAuthStore();
 const notifications = useNotificationsStore();
 const loading = ref(true);
 const loadError = ref("");
-const doctorEmailError = ref("");
 const savingSection = ref("");
 const profil = reactive({});
 const user = reactive({});
@@ -453,7 +541,7 @@ const editing = reactive({
   base: false,
   health: false,
   habits: false,
-  doctor: false,
+  treatments: false,
 });
 
 // Draft edite dans les formulaires avant sauvegarde.
@@ -468,10 +556,23 @@ const draft = reactive({
   traitements: [],
   fumeur: false,
   alcool: false,
-  consulte_medecin: false,
-  medecin_peut_consulter: false,
-  medecin_email: "",
+  activite_physique: false,
+  activites_physiques: [],
+  frequence_activite_physique: "",
 });
+
+const physicalActivityOptions = [
+  "Course à pied",
+  "Vélo",
+  "Natation",
+  "Salle de sport",
+  "Yoga",
+  "Football",
+  "Basketball",
+  "Arts martiaux",
+];
+
+const physicalActivityFrequencies = ["1-2 fois", "3-4 fois", "5+ fois"];
 
 const goalOptions = [
   "Maintenir mon poids",
@@ -525,11 +626,25 @@ const treatmentTypes = ref([
   "Supplement vitaminique",
   "Inhalateur respiratoire",
 ]);
-const treatmentNames = ref(["Paracetamol", "Ibuprofene", "Insuline", "Metformine", "Amlodipine", "Ventoline"]);
+const treatmentNameOptionsByType = reactive({
+  "Anti-inflammatoire": ["Ibuprofene", "Naproxene", "Diclofenac", "Ketoprofene", "Celecoxib"],
+  Antibiotique: ["Amoxicilline", "Azithromycine", "Doxycycline", "Ciprofloxacine", "Cefuroxime"],
+  Antidouleur: ["Paracetamol", "Tramadol", "Codeine", "Morphine", "Nefopam"],
+  Antihypertenseur: ["Amlodipine", "Ramipril", "Losartan", "Bisoprolol", "Hydrochlorothiazide"],
+  Antidiabetique: ["Metformine", "Gliclazide", "Empagliflozine", "Sitagliptine", "Insuline glargine"],
+  Anticoagulant: ["Apixaban", "Rivaroxaban", "Warfarine", "Enoxaparine", "Dabigatran"],
+  Antiallergique: ["Cetirizine", "Loratadine", "Desloratadine", "Fexofenadine", "Bilastine"],
+  Antidepresseur: ["Sertraline", "Escitalopram", "Fluoxetine", "Venlafaxine", "Mirtazapine"],
+  Corticoide: ["Prednisone", "Prednisolone", "Dexamethasone", "Budesonide", "Methylprednisolone"],
+  "Traitement hormonal": ["Levothyroxine", "Estradiol", "Progesterone", "Testosterone", "Insuline"],
+  "Supplement vitaminique": ["Vitamine D3", "Vitamine B12", "Acide folique", "Multivitamines", "Vitamine C"],
+  "Inhalateur respiratoire": ["Salbutamol", "Budesonide/Formoterol", "Fluticasone/Salmeterol", "Tiotropium", "Ipratropium"],
+});
 
 const customInputs = reactive({
   allergies: "",
   maladies_chroniques: "",
+  activites_physiques: "",
 });
 const selectedAllergyOption = ref("");
 const selectedDiseaseOption = ref("");
@@ -558,6 +673,13 @@ const computedAge = computed(() => {
   const monthDiff = today.getMonth() - dob.getMonth();
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age -= 1;
   return age >= 0 ? `${age} ans` : "";
+});
+
+const filteredTreatmentNames = computed(() => {
+  if (!treatmentDraft.type) return [];
+  return Array.isArray(treatmentNameOptionsByType[treatmentDraft.type])
+    ? treatmentNameOptionsByType[treatmentDraft.type]
+    : [];
 });
 
 // Helpers d'affichage simples.
@@ -606,6 +728,13 @@ function addSelectedOption(key, value, kind) {
   if (kind === "disease") selectedDiseaseOption.value = "";
 }
 
+function togglePhysicalActivity(activity) {
+  toggleSelected('activites_physiques', activity);
+  if (!draft.activites_physiques.length) {
+    draft.frequence_activite_physique = "";
+  }
+}
+
 // Resume lisible des traitements pour le mode lecture.
 function treatmentsSummary(value) {
   if (!Array.isArray(value) || value.length === 0) return "-";
@@ -628,27 +757,18 @@ function handleTreatmentDateInput(event, key) {
   treatmentDraft[key] = formatDateWithSlashes(raw);
 }
 
-// Validation locale de l'email medecin avant envoi serveur.
-function validerEmailMedecin() {
-  if (!(draft.consulte_medecin && draft.medecin_peut_consulter)) {
-    doctorEmailError.value = "";
-    return true;
+function handleTreatmentTypeInput(event) {
+  const nextType = String(event?.target?.value || "").trim();
+  treatmentDraft.type = nextType;
+  if (!nextType) {
+    treatmentDraft.name = "";
+    return;
   }
 
-  const email = String(draft.medecin_email || "").trim();
-  if (!email) {
-    doctorEmailError.value = "Veuillez renseigner l'email du medecin.";
-    return false;
+  const names = Array.isArray(treatmentNameOptionsByType[nextType]) ? treatmentNameOptionsByType[nextType] : [];
+  if (treatmentDraft.name && !names.includes(treatmentDraft.name)) {
+    treatmentDraft.name = "";
   }
-
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailPattern.test(email)) {
-    doctorEmailError.value = "Format invalide: utilisez un email de type nom@domaine.com.";
-    return false;
-  }
-
-  doctorEmailError.value = "";
-  return true;
 }
 
 // Gestion du mini-editeur de traitements.
@@ -726,8 +846,14 @@ function saveTreatmentDraft() {
   if (nextTreatment.type && !treatmentTypes.value.includes(nextTreatment.type)) {
     treatmentTypes.value = [...treatmentTypes.value, nextTreatment.type];
   }
-  if (nextTreatment.name && !treatmentNames.value.includes(nextTreatment.name)) {
-    treatmentNames.value = [...treatmentNames.value, nextTreatment.name];
+  if (!Array.isArray(treatmentNameOptionsByType[nextTreatment.type])) {
+    treatmentNameOptionsByType[nextTreatment.type] = [];
+  }
+  if (nextTreatment.name && !treatmentNameOptionsByType[nextTreatment.type].includes(nextTreatment.name)) {
+    treatmentNameOptionsByType[nextTreatment.type] = [
+      ...treatmentNameOptionsByType[nextTreatment.type],
+      nextTreatment.name,
+    ];
   }
 
   cancelTreatmentEdit();
@@ -772,12 +898,12 @@ function syncDraftFromProfil() {
   draft.traitements = Array.isArray(profil.traitements) ? [...profil.traitements] : [];
   draft.fumeur = Boolean(profil.fumeur);
   draft.alcool = Boolean(profil.alcool);
-  draft.consulte_medecin = Boolean(profil.consulte_medecin);
-  draft.medecin_peut_consulter = Boolean(profil.medecin_peut_consulter);
-  draft.medecin_email = profil.medecin_email || "";
-  doctorEmailError.value = "";
+  draft.activite_physique = Boolean(profil.activite_physique);
+  draft.activites_physiques = normaliserListe(profil.activites_physiques);
+  draft.frequence_activite_physique = profil.frequence_activite_physique || "";
   customInputs.allergies = "";
   customInputs.maladies_chroniques = "";
+  customInputs.activites_physiques = "";
   selectedAllergyOption.value = "";
   selectedDiseaseOption.value = "";
   cancelTreatmentEdit();
@@ -787,7 +913,6 @@ function resetEditFlags() {
   editing.base = false;
   editing.health = false;
   editing.habits = false;
-  editing.doctor = false;
 }
 
 function startEdit(section) {
@@ -862,8 +987,10 @@ function construireChargeUtile() {
   const objectifs = normaliserListe(draft.objectifs);
   const allergies = normaliserListe(draft.allergies);
   const maladiesChroniques = normaliserListe(draft.maladies_chroniques);
+  const activitesPhysiques = normaliserListe(draft.activites_physiques);
   const traitements = Array.isArray(draft.traitements) ? draft.traitements : [];
   const prendMedicament = traitements.length > 0;
+  const activitePhysique = Boolean(draft.activite_physique);
   const consulteMedecin = Boolean(draft.consulte_medecin);
   const medecinPeutConsulter = Boolean(consulteMedecin && draft.medecin_peut_consulter);
 
@@ -880,6 +1007,9 @@ function construireChargeUtile() {
     nom_medicament: prendMedicament ? (traitements[0]?.name || null) : null,
     fumeur: Boolean(draft.fumeur),
     alcool: Boolean(draft.alcool),
+    activite_physique: activitePhysique,
+    activites_physiques: activitePhysique ? activitesPhysiques : [],
+    frequence_activite_physique: activitePhysique && activitesPhysiques.length > 0 ? (draft.frequence_activite_physique || null) : null,
     consulte_medecin: consulteMedecin,
     medecin_peut_consulter: medecinPeutConsulter,
     medecin_email: medecinPeutConsulter ? draft.medecin_email || null : null,

@@ -12,9 +12,8 @@ import JournalAssistant from "@/pages/journal/JournalAssistant.vue";
 import JournalHistory from "@/pages/journal/JournalHistory.vue";
 import ProfilSantePage from "@/pages/health/ProfilSantePage.vue";
 import DonneesSantePage from "@/pages/health/DonneesSantePage.vue";
-import TableauDeBordPage from "@/pages/TableauDeBordPage.vue";
-import InscriptionMedecinPage from "@/pages/doctor/InscriptionMedecinPage.vue";
-import ChoixEspacePage from "@/pages/doctor/ChoixEspacePage.vue";
+import MesTachesPage from "@/pages/taches/MesTachesPage.vue";
+import DashboardPage from "@/pages/userDashboard/DashboardPage.vue";
 import PageTemporaire from "@/pages/PageTemporaire.vue";
 import PageAccueilPublique from "@/pages/accueil/PageAccueilPublique.vue";
 
@@ -26,9 +25,6 @@ const routes = [
   { path: "/oublier-mot-de-passe", name: "oublier-mot-de-passe", component: OublierMotDePassePage },
   { path: "/reinitialiser-mot-de-passe", name: "reinitialiser-mot-de-passe", component: ReinitialiserMotDePassePage },
   { path: "/register/user", redirect: "/register" },
-  { path: "/doctor-register", name: "inscription-medecin", component: InscriptionMedecinPage },
-  { path: "/doctor-login", redirect: "/login" },
-  { path: "/choix-espace", name: "choix-espace", component: ChoixEspacePage, meta: { requiresAuth: true } },
   { path: "/profil-sante", name: "profil-sante", component: ProfilSante, meta: { requiresAuth: true } },
   {
     path: "/main",
@@ -36,13 +32,14 @@ const routes = [
     meta: { requiresAuth: true },
     children: [
       { path: "", name: "accueil", redirect: { name: "tableau-de-bord" } },
-      { path: "dashboard", name: "tableau-de-bord", component: TableauDeBordPage },
+      { path: "dashboard", name: "tableau-de-bord", component: DashboardPage },
       { path: "journal", name: "journal", component: JournalHome },
       { path: "health-data", name: "donnees-sante", component: DonneesSantePage },
       { path: "journal/new", name: "assistant-journal", component: JournalAssistant },
       { path: "journal/history", name: "historique-journal", component: JournalHistory },
       { path: "health", name: "mon-profil-sante", component: ProfilSantePage },
       { path: "ai", name: "recommandations-ia", component: PageTemporaire, props: { title: "Recommandations IA" } },
+      { path: "tasks", name: "mes-taches", component: MesTachesPage },
     ],
   },
 ];
@@ -62,20 +59,15 @@ router.beforeEach(async (to) => {
       return { name: "tableau-de-bord" };
     }
 
-    if (authStore.estDansEspaceMedecin) {
-      return { name: "tableau-de-bord" };
-    }
-
     return authStore.aProfilSante
       ? { name: "tableau-de-bord" }
       : { name: "profil-sante" };
   };
 
   const routeName = String(to.name || "");
-  const estPageAuthMedecin = ["connexion-medecin", "inscription-medecin"].includes(routeName);
   const estPageAuthUtilisateur = ["inscription", "connexion", "accueil-publique"].includes(routeName);
 
-  if ((estPageAuthMedecin || estPageAuthUtilisateur) && user) {
+  if (estPageAuthUtilisateur && user) {
     return routeParDefautAuthentifie();
   }
 
@@ -89,18 +81,13 @@ router.beforeEach(async (to) => {
     authStore.estDansEspacePersonnel &&
     !authStore.estAdministrateur &&
     !authStore.aProfilSante &&
-    to.name !== "profil-sante" &&
-    to.name !== "choix-espace"
+    to.name !== "profil-sante"
   ) {
     return { name: "profil-sante" };
   }
 
   if (to.name === "profil-sante" && user && authStore.estAdministrateur) {
     return { name: "tableau-de-bord" };
-  }
-
-  if (to.name === "choix-espace" && user && !authStore.estMedecin) {
-    return routeParDefautAuthentifie();
   }
 
   if (to.name === "profil-sante" && user && authStore.aProfilSante && authStore.estDansEspacePersonnel) {

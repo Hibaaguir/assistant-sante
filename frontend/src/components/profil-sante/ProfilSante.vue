@@ -48,23 +48,36 @@
         <p class="text-slate-900 font-semibold">Chargement du profil...</p>
       </div>
 
-      <div v-else class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12 mb-8">
+      <div v-else-if="!saveSuccess" class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12 mb-8">
         <p v-if="saveError" class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {{ saveError }}
-        </p>
-        <p v-if="saveSuccess" class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          {{ saveSuccess }}
         </p>
         <p v-if="stepError && currentStep !== 1" class="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
           {{ stepError }}
         </p>
 
         <Etape1 v-if="currentStep === 1" :form="form" :computed-age="computedAge" :errors="step1Errors" :show-errors="step1HasTriedContinue" />
-        <Etape2 v-else-if="currentStep === 2" :form="form" />
+        <EtapeHabitude v-else-if="currentStep === 2" :form="form" />
+        <Etape2 v-else-if="currentStep === 3" :form="form" />
         <Etape3 v-else :form="form" />
       </div>
 
-      <div v-if="!loading" class="flex justify-end items-center">
+      <!-- Message de félicitation après enregistrement réussi -->
+      <div v-else class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12 mb-8">
+        <div class="text-center max-w-2xl mx-auto rounded-3xl bg-emerald-50 border border-emerald-200 p-12">
+          <div class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-emerald-200 text-emerald-600 mb-4">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <h2 class="text-3xl font-semibold text-gray-900 mb-3">Profil complétés</h2>
+          <p class="text-gray-700 mb-6">Votre profil de santé a été configuré avec succès</p>
+          <p class="text-gray-600 font-medium">Félicitations !</p>
+          <p class="text-gray-600 mt-3">Vous pouvez maintenant commencer à enregistrer vos données de santé.</p>
+        </div>
+      </div>
+
+      <div v-if="!loading && !saveSuccess" class="flex justify-end items-center">
         <button
           v-if="currentStep < totalSteps"
           type="button"
@@ -101,6 +114,7 @@ import api from "@/services/api";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import Etape1 from "./ProfilSanteEtape1.vue";
+import EtapeHabitude from "./ProfilSanteEtapeHabitude.vue";
 import Etape2 from "./ProfilSanteEtape2.vue";
 import Etape3 from "./ProfilSanteEtape3.vue";
 
@@ -108,7 +122,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const currentStep = ref(1);
-const totalSteps = 3;
+const totalSteps = 4;
 const loading = ref(true);
 const saving = ref(false);
 const saveError = ref("");
@@ -124,8 +138,9 @@ const step1Errors = reactive({
 const userDateOfBirth = ref("");
 const steps = [
   { number: 1, label: "Informations de base" },
-  { number: 2, label: "Sante" },
-  { number: 3, label: "Medecin" },
+  { number: 2, label: "Habitudes" },
+  { number: 3, label: "Sante" },
+  { number: 4, label: "Traitements" },
 ];
 
 const form = reactive({
@@ -141,9 +156,9 @@ const form = reactive({
   nom_medicament: "",
   fumeur: false,
   alcool: false,
-  consulte_medecin: false,
-  medecin_peut_consulter: false,
-  medecin_email: "",
+  activite_physique: false,
+  activites_physiques: [],
+  frequence_activite_physique: "",
 });
 
 const progress = computed(() => (currentStep.value / totalSteps) * 100);
@@ -203,23 +218,6 @@ watch(
   }
 );
 
-watch(
-  () => form.consulte_medecin,
-  (value) => {
-    if (!value) {
-      form.medecin_peut_consulter = false;
-      form.medecin_email = "";
-    }
-  }
-);
-
-watch(
-  () => form.medecin_peut_consulter,
-  (value) => {
-    if (!value) form.medecin_email = "";
-  }
-);
-
 function normalizeArray(value) {
   return Array.isArray(value) ? value.filter((item) => typeof item === "string" && item.trim() !== "") : [];
 }
@@ -265,15 +263,13 @@ function construireChargeUtile() {
     nom_medicament: form.prend_medicament ? form.nom_medicament : null,
     fumeur: form.fumeur,
     alcool: form.alcool,
-    consulte_medecin: form.consulte_medecin,
-    medecin_peut_consulter: form.consulte_medecin && form.medecin_peut_consulter,
-    medecin_email: form.consulte_medecin && form.medecin_peut_consulter ? form.medecin_email : null,
+    activite_physique: Boolean(form.activite_physique),
+    activites_physiques: form.activite_physique ? normalizeArray(form.activites_physiques) : [],
+    frequence_activite_physique: form.activite_physique ? (form.frequence_activite_physique || null) : null,
   };
 }
 
 async function enregistrer() {
-  if (!validateStep3()) return;
-
   stepError.value = "";
   saveError.value = "";
   saveSuccess.value = "";
@@ -285,7 +281,11 @@ async function enregistrer() {
     await api.post("/profil-sante", payload);
     authStore.definirPresenceProfilSante(true);
     saveSuccess.value = "Profil enregistre avec succes.";
-    router.push({ name: "mon-profil-sante" });
+    
+    // Afficher le message de félicitation pendant 3 secondes avant la redirection
+    setTimeout(() => {
+      router.push({ name: "mon-profil-sante" });
+    }, 3000);
   } catch (error) {
     if (error.response?.status === 401) {
       authStore.supprimerToken();
@@ -341,7 +341,7 @@ function goNext() {
     step1HasTriedContinue.value = true;
     if (!validateStep1()) return;
   }
-  if (currentStep.value === 2 && !validateStep2()) return;
+  if (currentStep.value === 3 && !validateStep2()) return;
   step1HasTriedContinue.value = false;
   currentStep.value += 1;
 }
@@ -396,19 +396,4 @@ function validateStep2() {
   return true;
 }
 
-function validateStep3() {
-  if (form.prend_medicament && !form.nom_medicament) {
-    stepError.value = "Veuillez renseigner le nom du medicament.";
-    return false;
-  }
-  if (form.consulte_medecin && form.medecin_peut_consulter && !form.medecin_email) {
-    stepError.value = "Veuillez renseigner l'email du medecin.";
-    return false;
-  }
-  if (form.medecin_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.medecin_email)) {
-    stepError.value = "L'email du medecin est invalide.";
-    return false;
-  }
-  return true;
-}
 </script>

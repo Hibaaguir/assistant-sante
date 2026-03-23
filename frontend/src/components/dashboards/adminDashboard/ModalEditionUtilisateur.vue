@@ -39,19 +39,7 @@
               @change="$emit('mettre-a-jour', { champ: 'type', valeur: $event.target.value })"
             >
               <option value="Patient">Patient</option>
-              <option value="Médecin">Médecin</option>
             </select>
-          </label>
-
-          <label v-if="formulaire.type === 'Médecin'" class="grid grid-cols-[80px_1fr] items-center gap-3">
-            <span class="text-base font-semibold text-slate-700">Spécialité</span>
-            <input
-              :value="formulaire.specialite || ''"
-              type="text"
-              placeholder="Ex: Cardiologie"
-              class="h-11 rounded-2xl border border-slate-300 px-4 text-base outline-none focus:border-slate-400"
-              @input="$emit('mettre-a-jour', { champ: 'specialite', valeur: $event.target.value })"
-            >
           </label>
 
           <label class="grid grid-cols-[80px_1fr] items-center gap-3">

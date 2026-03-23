@@ -12,16 +12,6 @@ export function creerUtilisateursDepart() {
       derniereActivite: '10/03/2024',
     },
     {
-      id: 2,
-      nom: 'Dr. Jean Martin',
-      email: 'jean.martin@hopital.com',
-      type: 'Médecin',
-      specialite: 'Cardiologie',
-      statut: 'Actif',
-      inscription: '20/11/2023',
-      derniereActivite: '14/03/2024',
-    },
-    {
       id: 3,
       nom: 'Sophie Laurent',
       email: 'sophie.laurent@email.com',
@@ -32,16 +22,6 @@ export function creerUtilisateursDepart() {
       derniereActivite: '20/02/2024',
     },
     {
-      id: 4,
-      nom: 'Dr. Claire Rousseau',
-      email: 'claire.rousseau@clinique.com',
-      type: 'Médecin',
-      specialite: 'Médecine générale',
-      statut: 'Actif',
-      inscription: '01/02/2024',
-      derniereActivite: '13/03/2024',
-    },
-    {
       id: 5,
       nom: 'Pierre Lefebvre',
       email: 'pierre.lefebvre@email.com',
@@ -50,16 +30,6 @@ export function creerUtilisateursDepart() {
       statut: 'Actif',
       inscription: '20/02/2024',
       derniereActivite: '14/03/2024',
-    },
-    {
-      id: 6,
-      nom: 'Dr. Nadia Benali',
-      email: 'nadia.benali@hopital.com',
-      type: 'Médecin',
-      specialite: 'Pédiatrie',
-      statut: 'Actif',
-      inscription: '28/01/2024',
-      derniereActivite: '15/03/2024',
     },
   ]
 }

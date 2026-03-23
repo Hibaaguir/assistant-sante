@@ -22,28 +22,18 @@ export const useAuthStore = defineStore('auth', () => {
   const nomUtilisateur = computed(() => user.value?.name || '')
   const roleUtilisateur = computed(() => user.value?.role?.toLowerCase() || null)
   const estAdministrateur = computed(() => roleUtilisateur.value === 'administrateur' || roleUtilisateur.value === 'admin')
-  const estMedecin = computed(() => roleUtilisateur.value === 'medecin' || roleUtilisateur.value === 'doctor')
   const aProfilSante = computed(() => Boolean(user.value?.has_profil_sante))
-  const espaceCourant = computed(() => (estMedecin.value ? espaceActif.value : (estAdministrateur.value ? 'administrateur' : 'personnel')))
-  const estDansEspaceMedecin = computed(() => estMedecin.value && espaceCourant.value === 'medecin')
-  const estDansEspacePersonnel = computed(() => (!estMedecin.value && !estAdministrateur.value) || espaceCourant.value === 'personnel')
+  const espaceCourant = computed(() => (estAdministrateur.value ? 'administrateur' : 'personnel'))
+  const estDansEspacePersonnel = computed(() => !estAdministrateur.value || espaceCourant.value === 'personnel')
 
   function synchroniserEspaceActif() {
-    if (!estMedecin.value) {
-      espaceActif.value = 'personnel'
-      localStorage.setItem(ACTIVE_SPACE_KEY, 'personnel')
-      return
-    }
-
-    const memorise = localStorage.getItem(ACTIVE_SPACE_KEY)
-    espaceActif.value = memorise === 'personnel' ? 'personnel' : 'medecin'
-    localStorage.setItem(ACTIVE_SPACE_KEY, espaceActif.value)
+    espaceActif.value = 'personnel'
+    localStorage.setItem(ACTIVE_SPACE_KEY, 'personnel')
   }
 
   function definirEspaceActif(space) {
-    const prochainEspace = space === 'medecin' && estMedecin.value ? 'medecin' : 'personnel'
-    espaceActif.value = prochainEspace
-    localStorage.setItem(ACTIVE_SPACE_KEY, prochainEspace)
+    espaceActif.value = 'personnel'
+    localStorage.setItem(ACTIVE_SPACE_KEY, 'personnel')
   }
 
   function definirPresenceProfilSante(hasProfile) {
@@ -144,8 +134,6 @@ export const useAuthStore = defineStore('auth', () => {
     espaceCourant,
     estConnecte,
     estAdministrateur,
-    estMedecin,
-    estDansEspaceMedecin,
     estDansEspacePersonnel,
     nomUtilisateur,
     roleUtilisateur,

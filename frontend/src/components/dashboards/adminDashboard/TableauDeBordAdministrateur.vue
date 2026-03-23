@@ -74,23 +74,6 @@
             <path d="M10 7h7v7" />
           </svg>
         </div>
-        <p class="mt-4 text-4xl font-bold text-slate-900">{{ statistiques.medecins }}</p>
-        <p class="mt-1 text-lg text-slate-600">Médecins</p>
-      </article>
-
-      <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
-            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="8" r="4" />
-              <path d="M6 20a6 6 0 0 1 12 0" />
-            </svg>
-          </div>
-          <svg viewBox="0 0 24 24" class="h-5 w-5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="m7 17 10-10" />
-            <path d="M10 7h7v7" />
-          </svg>
-        </div>
         <p class="mt-4 text-4xl font-bold text-slate-900">{{ statistiques.actifs }}</p>
         <p class="mt-1 text-lg text-slate-600">Actifs</p>
       </article>
@@ -129,7 +112,6 @@
           <select v-model="filtreType" class="h-11 w-full rounded-xl border border-slate-300 px-3 text-base outline-none focus:border-slate-400">
             <option value="Tous">Tous</option>
             <option value="Patient">Patient</option>
-            <option value="Médecin">Médecin</option>
           </select>
         </label>
 
@@ -161,7 +143,7 @@
             <tr v-for="utilisateur in utilisateursFiltres" :key="utilisateur.id">
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                  <div class="inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white" :class="utilisateur.type === 'Médecin' ? 'bg-indigo-500' : 'bg-emerald-500'">
+                  <div class="inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white bg-emerald-500">
                     {{ initialesNom(utilisateur.nom) }}
                   </div>
                   <div>
@@ -173,10 +155,9 @@
 
               <td class="px-6 py-4">
                 <div>
-                  <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold" :class="utilisateur.type === 'Médecin' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'">
+                  <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold bg-emerald-100 text-emerald-700">
                     {{ utilisateur.type }}
                   </span>
-                  <p v-if="utilisateur.specialite" class="mt-1 text-sm text-slate-500">{{ utilisateur.specialite }}</p>
                 </div>
               </td>
 
@@ -294,10 +275,9 @@ const formulaireEdition = reactive({
 const statistiques = computed(() => {
   const total = utilisateurs.value.length
   const patients = utilisateurs.value.filter((item) => item.type === 'Patient').length
-  const medecins = utilisateurs.value.filter((item) => item.type === 'Médecin').length
   const actifs = utilisateurs.value.filter((item) => item.statut === 'Actif').length
 
-  return { total, patients, medecins, actifs }
+  return { total, patients, actifs }
 })
 
 const utilisateursFiltres = computed(() => {

@@ -377,18 +377,24 @@ async function soumettre() {
       errors.email = premierMessage(data.errors.email);
       errors.date_of_birth = premierMessage(data.errors.date_of_birth);
       errors.password = premierMessage(data.errors.password);
-      serverMessage.value = "Veuillez corriger les erreurs du formulaire.";
+      
+      // Message spécifique si l'email existe déjà
+      if (data.errors.email?.some(msg => msg.toLowerCase().includes('exist') || msg.toLowerCase().includes('already') || msg.toLowerCase().includes('deja'))) {
+        serverMessage.value = "Cet email est déjà utilisé. Veuillez en utiliser un autre.";
+      } else {
+        serverMessage.value = "Veuillez corriger les erreurs du formulaire.";
+      }
 
       return;
     }
 
     if (status === 409 && data?.errors?.email) {
       errors.email = premierMessage(data.errors.email);
-      serverMessage.value = data?.message || premierMessage(data.errors.email) || "Cet email est deja utilise.";
+      serverMessage.value = "Cet email est déjà utilisé. Veuillez en utiliser un autre.";
       return;
     }
 
-    serverMessage.value = data?.message || "Erreur lors de la creation du compte.";
+    serverMessage.value = data?.message || "Erreur lors de la création du compte.";
   } finally {
     loading.value = false;
   }

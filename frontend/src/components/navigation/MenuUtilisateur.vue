@@ -82,8 +82,8 @@ const modalProfilOuvert = ref(false)
 
 const libelleRoleUtilisateur = computed(() => {
   const role = authStore.roleUtilisateur
-  if (role === 'medecin') return authStore.estDansEspacePersonnel ? 'Médecin · espace personnel' : 'Médecin'
   if (role === 'user') return 'Patient'
+  if (role === 'admin' || role === 'administrateur') return 'Administrateur'
   return ''
 })
 
@@ -95,11 +95,5 @@ function ouvrirModalProfil() {
 async function deconnexion() {
   await authStore.deconnexion()
   router.push({ name: 'accueil-publique' })
-}
-
-function ouvrirEspaceMedecin() {
-  authStore.definirEspaceActif('medecin')
-  router.push({ name: 'tableau-de-bord' })
-  menuOpen.value = false
 }
 </script>

@@ -163,7 +163,6 @@ import { useAuthStore } from "@/stores/auth";
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const espaceCible = String(route.query.space || "").trim().toLowerCase();
 
 const form = reactive({
   email: String(route.query.email || "").trim(),
@@ -240,23 +239,12 @@ async function soumettre() {
       password: form.password,
     });
 
-    const estMedecin = res?.data?.user?.role === "medecin";
-    authStore.appliquerAuthentification(res?.data, estMedecin ? "medecin" : "personnel");
+    authStore.appliquerAuthentification(res?.data, "personnel");
 
     serverMessage.value = res?.data?.message || "Connexion reussie.";
     messageType.value = "success";
 
     setTimeout(() => {
-      if (estMedecin) {
-        if (espaceCible === "medecin") {
-          router.push({ name: "tableau-de-bord" });
-          return;
-        }
-
-        router.push({ name: "choix-espace" });
-        return;
-      }
-
       router.push(res?.data?.redirect_to || "/main/dashboard");
     }, 250);
   } catch (err) {

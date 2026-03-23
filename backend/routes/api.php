@@ -1,29 +1,25 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\DoctorInvitationController;
 use App\Http\Controllers\Api\HealthDataController;
 use App\Http\Controllers\Api\JournalEntryController;
 use App\Http\Controllers\Api\MotDePasseOubliController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ProfilSanteController;
 use App\Http\Controllers\Api\ProfilUtilisateurController;
+use App\Http\Controllers\Api\TacheBienEtreController;
 use App\Http\Controllers\Api\UtilisateurAdminController;
 use Illuminate\Support\Facades\Route;
 
 $routesAuthentification = function () {
     Route::post('/inscription', [AuthController::class, 'inscrire']);
     Route::post('/connexion', [AuthController::class, 'connecter']);
-    Route::post('/medecin/inscription', [AuthController::class, 'inscrireMedecin']);
-    Route::post('/medecin/connexion', [AuthController::class, 'connecterMedecin']);
     Route::post('/oublier-mot-de-passe', [MotDePasseOubliController::class, 'demanderReinit']);
     Route::post('/reinitialiser-mot-de-passe', [MotDePasseOubliController::class, 'reinitialiserMotDePasse']);
 
     // Alias anglais conserves pour les anciens clients.
     Route::post('/register', [AuthController::class, 'inscrire']);
     Route::post('/login', [AuthController::class, 'connecter']);
-    Route::post('/doctor/register', [AuthController::class, 'inscrireMedecin']);
-    Route::post('/doctor/login', [AuthController::class, 'connecterMedecin']);
 };
 
 $routesDonneesSante = function () {
@@ -52,17 +48,7 @@ $routesDonneesSante = function () {
     Route::post('/treatment-checks/sync', [HealthDataController::class, 'synchroniserControlesTraitement']);
 };
 
-$routesInvitationsMedecins = function () {
-    Route::get('/', [DoctorInvitationController::class, 'lister']);
-    Route::post('/{doctorInvitation}/accepter', [DoctorInvitationController::class, 'accepter']);
-    Route::post('/{doctorInvitation}/refuser', [DoctorInvitationController::class, 'refuser']);
-    Route::get('/patients', [DoctorInvitationController::class, 'listerPatients']);
-    Route::get('/patients/{patient}', [DoctorInvitationController::class, 'detailPatient']);
 
-    // Alias anglais conserves pour les anciens clients.
-    Route::post('/{doctorInvitation}/accept', [DoctorInvitationController::class, 'accepter']);
-    Route::post('/{doctorInvitation}/reject', [DoctorInvitationController::class, 'refuser']);
-};
 
 // Routes publiques liees a l'authentification.
 Route::prefix('auth')->group(function () use ($routesAuthentification) {
@@ -74,7 +60,7 @@ Route::post('/inscription', [AuthController::class, 'inscrire']);
 Route::post('/register', [AuthController::class, 'inscrire']);
 
 // Routes protegees necessitant Laravel Sanctum.
-Route::middleware('auth:sanctum')->group(function () use ($routesDonneesSante, $routesInvitationsMedecins) {
+Route::middleware('auth:sanctum')->group(function () use ($routesDonneesSante) {
     Route::get('/auth/profil', [AuthController::class, 'utilisateurConnecte']);
     Route::post('/auth/deconnexion', [AuthController::class, 'deconnexion']);
 
@@ -109,9 +95,14 @@ Route::middleware('auth:sanctum')->group(function () use ($routesDonneesSante, $
         Route::delete('/{journalEntry}', [JournalEntryController::class, 'supprimer']);
     });
 
+    Route::prefix('taches-bien-etre')->group(function () {
+        Route::get('/', [TacheBienEtreController::class, 'lister']);
+        Route::post('/', [TacheBienEtreController::class, 'creer']);
+        Route::put('/{tacheBienEtre}', [TacheBienEtreController::class, 'mettreAJour']);
+        Route::patch('/{tacheBienEtre}/statut', [TacheBienEtreController::class, 'basculerStatut']);
+        Route::delete('/{tacheBienEtre}', [TacheBienEtreController::class, 'supprimer']);
+    });
+
     Route::prefix('donnees-sante')->group($routesDonneesSante);
     Route::prefix('health-data')->group($routesDonneesSante);
-
-    Route::prefix('invitations-medecins')->group($routesInvitationsMedecins);
-    Route::prefix('doctor-invitations')->group($routesInvitationsMedecins);
 });

@@ -66,14 +66,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(HealthTreatmentCheck::class);
     }
-
-    public function doctorInvitationsReceived()
-    {
-        return $this->hasMany(DoctorInvitation::class, 'doctor_user_id');
-    }
-
-    public function doctorInvitationsSent()
-    {
-        return $this->hasMany(DoctorInvitation::class, 'patient_user_id');
-    }
 }
