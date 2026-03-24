@@ -12,7 +12,7 @@ import JournalAssistant from "@/pages/journal/JournalAssistant.vue";
 import JournalHistory from "@/pages/journal/JournalHistory.vue";
 import ProfilSantePage from "@/pages/health/ProfilSantePage.vue";
 import DonneesSantePage from "@/pages/health/DonneesSantePage.vue";
-import TableauDeBordPage from "@/pages/TableauDeBordPage.vue";
+import DashboardPage from "@/pages/userDashboard/DashboardPage.vue";
 import InscriptionMedecinPage from "@/pages/doctor/InscriptionMedecinPage.vue";
 import ChoixEspacePage from "@/pages/doctor/ChoixEspacePage.vue";
 import PageTemporaire from "@/pages/PageTemporaire.vue";
@@ -36,7 +36,7 @@ const routes = [
     meta: { requiresAuth: true },
     children: [
       { path: "", name: "accueil", redirect: { name: "tableau-de-bord" } },
-      { path: "dashboard", name: "tableau-de-bord", component: TableauDeBordPage },
+      { path: "dashboard", name: "tableau-de-bord", component: DashboardPage },
       { path: "journal", name: "journal", component: JournalHome },
       { path: "health-data", name: "donnees-sante", component: DonneesSantePage },
       { path: "journal/new", name: "assistant-journal", component: JournalAssistant },
