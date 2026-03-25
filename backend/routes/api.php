@@ -100,7 +100,7 @@ Route::middleware('auth:sanctum')->group(function () use ($routesDonneesSante, $
 
     Route::prefix('admin/utilisateurs')->group(function () {
         Route::get('/', [UtilisateurAdminController::class, 'lister']);
-        Route::put('/{user}', [UtilisateurAdminController::class, 'mettreAJour']);
+        Route::put('/{user}/statut', [UtilisateurAdminController::class, 'mettreAJourStatut']);
         Route::delete('/{user}', [UtilisateurAdminController::class, 'supprimer']);
     });
 

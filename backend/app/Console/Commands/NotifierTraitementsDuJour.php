@@ -25,123 +25,99 @@ class NotifierTraitementsDuJour extends Command
 
     public function handle(): int
     {
-        $modeNotification = strtolower((string) $this->option('mode'));
-        if (! in_array($modeNotification, ['all', 'reminder', 'missed'], true)) {
+        $mode = strtolower((string) $this->option('mode'));
+
+        if (! in_array($mode, ['all', 'reminder', 'missed'], true)) {
             $this->error('Option --mode invalide. Valeurs autorisees: all, reminder, missed.');
             return self::FAILURE;
         }
 
-        $dateCible = $this->resoudreDateCible();
-        $utilisateurs = User::query()->whereHas('profilSante')->get();
+        $date = $this->resolveDate();
+        $counts = ['reminder' => 0, 'missed' => 0];
 
-        $rappelsEnvoyes = 0;
-        $oublisEnvoyes = 0;
+        User::whereHas('profilSante')->get()->each(function (User $user) use ($mode, $date, &$counts) {
+            $medicaments = collect($this->serviceDonneesSante->resoudreMedicamentsTraitement($user->id));
 
-        foreach ($utilisateurs as $utilisateur) {
-            $medicaments = collect($this->serviceDonneesSante->resoudreMedicamentsTraitement($utilisateur->id));
-            if ($medicaments->isEmpty()) {
-                continue;
-            }
+            if ($medicaments->isEmpty()) return;
 
-            $statistiques = $this->construireStatistiquesPourDate($utilisateur->id, $dateCible, $medicaments);
+            $stats = $this->buildStats($user->id, $date, $medicaments);
 
-            if (in_array($modeNotification, ['all', 'reminder'], true)
-                && $statistiques['expected_total'] > 0
-                && ! $this->notificationDejaEnvoyee($utilisateur, 'reminder', $dateCible)) {
-                $utilisateur->notify(new TraitementJournalierNotification(
-                    typeNotification: 'reminder',
-                    dateCible: $dateCible,
-                    elements: $statistiques['items'],
-                    totalPrevu: $statistiques['expected_total'],
-                    totalPris: $statistiques['taken_total'],
-                    totalManquant: $statistiques['missing_total'],
-                ));
-                $rappelsEnvoyes++;
-            }
+            $this->maybeNotify($user, 'reminder', $mode, $date, $stats, $counts);
+            $this->maybeNotify($user, 'missed',   $mode, $date, $stats, $counts);
+        });
 
-            if (in_array($modeNotification, ['all', 'missed'], true)
-                && $statistiques['missing_total'] > 0
-                && ! $this->notificationDejaEnvoyee($utilisateur, 'missed', $dateCible)) {
-                $utilisateur->notify(new TraitementJournalierNotification(
-                    typeNotification: 'missed',
-                    dateCible: $dateCible,
-                    elements: $statistiques['items'],
-                    totalPrevu: $statistiques['expected_total'],
-                    totalPris: $statistiques['taken_total'],
-                    totalManquant: $statistiques['missing_total'],
-                ));
-                $oublisEnvoyes++;
-            }
-        }
-
-        $this->info("Notifications rappel envoyees: {$rappelsEnvoyes}");
-        $this->info("Notifications oubli envoyees: {$oublisEnvoyes}");
+        $this->info("Notifications rappel envoyees: {$counts['reminder']}");
+        $this->info("Notifications oubli envoyees: {$counts['missed']}");
 
         return self::SUCCESS;
     }
 
-    private function resoudreDateCible(): Carbon
+    private function maybeNotify(User $user, string $type, string $mode, Carbon $date, array $stats, array &$counts): void
     {
-        $dateBrute = $this->option('date');
-        if (is_string($dateBrute) && trim($dateBrute) !== '') {
-            return Carbon::parse($dateBrute)->startOfDay();
+        $guard = $type === 'reminder' ? $stats['expected_total'] > 0 : $stats['missing_total'] > 0;
+
+        if (! in_array($mode, ['all', $type], true) || ! $guard || $this->alreadyNotified($user, $type, $date)) {
+            return;
         }
 
-        return Carbon::today();
+        $user->notify(new TraitementJournalierNotification(
+            typeNotification: $type,
+            dateCible:        $date,
+            elements:         $stats['items'],
+            totalPrevu:       $stats['expected_total'],
+            totalPris:        $stats['taken_total'],
+            totalManquant:    $stats['missing_total'],
+        ));
+
+        $counts[$type]++;
     }
 
-    private function construireStatistiquesPourDate(int $idUtilisateur, Carbon $dateCible, Collection $medicaments): array
+    private function resolveDate(): Carbon
     {
-        $cleDate = $dateCible->toDateString();
-        $controles = HealthTreatmentCheck::query()
-            ->where('user_id', $idUtilisateur)
-            ->whereDate('check_date', $cleDate)
+        $raw = $this->option('date');
+        return is_string($raw) && trim($raw) !== '' ? Carbon::parse($raw)->startOfDay() : Carbon::today();
+    }
+
+    private function buildStats(int $userId, Carbon $date, Collection $medicaments): array
+    {
+        $checks = HealthTreatmentCheck::query()
+            ->where('user_id', $userId)
+            ->whereDate('check_date', $date->toDateString())
             ->get();
 
-        $elements = [];
-        $totalPrevu = 0;
-        $totalPris = 0;
+        $items = $medicaments->map(function (array $med) use ($checks) {
+            $id       = (string) ($med['id'] ?? '');
+            $expected = max(1, (int) ($med['doses_per_day'] ?? 1));
+            $taken    = min($expected, $checks->filter(
+                fn (HealthTreatmentCheck $c) => str_starts_with((string) $c->medication_key, $id.'__dose_') && (bool) $c->taken
+            )->count());
 
-        foreach ($medicaments as $medicament) {
-            $idMedicament = (string) ($medicament['id'] ?? '');
-            $nomMedicament = (string) ($medicament['name'] ?? 'Traitement');
-            $prisesPrevues = max(1, (int) ($medicament['doses_per_day'] ?? 1));
-
-            $prisesFaitesPourMedicament = $controles
-                ->filter(function (HealthTreatmentCheck $controle) use ($idMedicament) {
-                    return str_starts_with((string) $controle->medication_key, $idMedicament.'__dose_') && (bool) $controle->taken;
-                })
-                ->count();
-
-            $prisesFaitesPourMedicament = min($prisesFaitesPourMedicament, $prisesPrevues);
-            $prisesManquantesPourMedicament = max(0, $prisesPrevues - $prisesFaitesPourMedicament);
-
-            $elements[] = [
-                'medication_id' => $idMedicament,
-                'medication_name' => $nomMedicament,
-                'expected' => $prisesPrevues,
-                'taken' => $prisesFaitesPourMedicament,
-                'missing' => $prisesManquantesPourMedicament,
+            return [
+                'medication_id'   => $id,
+                'medication_name' => (string) ($med['name'] ?? 'Traitement'),
+                'expected'        => $expected,
+                'taken'           => $taken,
+                'missing'         => $expected - $taken,
             ];
+        })->values()->all();
 
-            $totalPrevu += $prisesPrevues;
-            $totalPris += $prisesFaitesPourMedicament;
-        }
+        $expectedTotal = array_sum(array_column($items, 'expected'));
+        $takenTotal    = array_sum(array_column($items, 'taken'));
 
         return [
-            'items' => $elements,
-            'expected_total' => $totalPrevu,
-            'taken_total' => $totalPris,
-            'missing_total' => max(0, $totalPrevu - $totalPris),
+            'items'          => $items,
+            'expected_total' => $expectedTotal,
+            'taken_total'    => $takenTotal,
+            'missing_total'  => $expectedTotal - $takenTotal,
         ];
     }
 
-    private function notificationDejaEnvoyee(User $utilisateur, string $typeNotification, Carbon $dateCible): bool
+    private function alreadyNotified(User $user, string $type, Carbon $date): bool
     {
-        return $utilisateur->notifications()
+        return $user->notifications()
             ->where('type', TraitementJournalierNotification::class)
-            ->where('data->notification_kind', $typeNotification)
-            ->where('data->target_date', $dateCible->toDateString())
+            ->where('data->notification_kind', $type)
+            ->where('data->target_date', $date->toDateString())
             ->exists();
     }
 }

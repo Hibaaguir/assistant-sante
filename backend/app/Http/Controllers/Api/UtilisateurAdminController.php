@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class UtilisateurAdminController extends Controller
 {
@@ -39,34 +38,19 @@ class UtilisateurAdminController extends Controller
         ]);
     }
 
-    public function mettreAJour(Request $request, User $user): JsonResponse
+    public function mettreAJourStatut(Request $request, User $user): JsonResponse
     {
         $this->verifierAccesAdministrateur($request);
 
         $donneesValidees = $request->validate([
-            'nom' => ['required', 'string', 'min:2', 'max:120'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'type' => ['required', Rule::in(['Patient', 'Médecin'])],
-            'statut' => ['required', Rule::in(['Actif', 'Inactif'])],
-            'specialite' => ['nullable', 'string', 'max:120'],
-        ], [
-            'nom.required' => 'Le nom est obligatoire.',
-            'email.required' => "L'email est obligatoire.",
-            'type.required' => 'Le type est obligatoire.',
-            'statut.required' => 'Le statut est obligatoire.',
+            'statut' => ['required', 'in:Actif,Inactif'],
         ]);
 
-        $user->name = trim($donneesValidees['nom']);
-        $user->email = strtolower(trim($donneesValidees['email']));
-        $user->role = $donneesValidees['type'] === 'Médecin' ? 'medecin' : 'user';
         $user->statut_admin = $donneesValidees['statut'];
-        $user->specialite = $donneesValidees['type'] === 'Médecin'
-            ? trim((string) ($donneesValidees['specialite'] ?? $user->specialite ?? 'Médecine générale'))
-            : null;
         $user->save();
 
         return response()->json([
-            'message' => 'Utilisateur mis a jour avec succes.',
+            'message' => 'Statut utilisateur mis a jour avec succes.',
         ]);
     }
 

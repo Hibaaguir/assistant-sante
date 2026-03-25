@@ -23,7 +23,7 @@ class HealthDataController extends Controller
     public function vueEnsemble(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
-        $days = max(1, min((int) $request->query('days', 7), 30));
+        $days = max(1, min((int) $request->query( 'days', 7), 30));
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
 
         $vitals = HealthVital::query()

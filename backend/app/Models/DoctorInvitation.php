@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DoctorInvitation extends Model
 {
+
+//protected $guarded = [];
     protected $fillable = [
         'patient_user_id',
         'doctor_user_id',
