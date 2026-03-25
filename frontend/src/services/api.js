@@ -28,7 +28,6 @@ api.interceptors.response.use(
 
     if (status === 401 && !estTentativeConnexion) {
       localStorage.removeItem("auth_token");
-      localStorage.removeItem("active_space");
     }
 
     return Promise.reject(error);

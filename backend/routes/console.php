@@ -36,5 +36,9 @@ Artisan::command('mail:test-doctor-invitation {email : Recipient email address}'
     $this->info("Invitation e-mail envoyee a {$email}.");
 })->purpose('Envoyer une vraie invitation medecin avec le service SMTP configure');
 
-Schedule::command('treatments:notify --mode=reminder')->dailyAt('08:00');
-Schedule::command('treatments:notify --mode=missed')->dailyAt('21:00');
+Schedule::command('treatments:notify --mode=reminder')
+    ->timezone(config('app.timezone'))
+    ->dailyAt('08:00');
+Schedule::command('treatments:notify --mode=missed')
+    ->timezone(config('app.timezone'))
+    ->dailyAt('21:00');

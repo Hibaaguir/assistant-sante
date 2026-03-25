@@ -266,16 +266,28 @@
               <div class="grid gap-3 md:grid-cols-2">
                 <div>
                   <label class="mb-1 block text-xs font-medium text-slate-600">Type</label>
-                  <input v-model="treatmentDraft.type" list="treatment-types" class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm" placeholder="Type de traitement" />
+                  <input
+                    v-model="treatmentDraft.type"
+                    list="treatment-types"
+                    class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm"
+                    placeholder="Type de traitement"
+                    @input="handleTreatmentTypeInput"
+                  />
                   <datalist id="treatment-types">
                     <option v-for="type in treatmentTypes" :key="type" :value="type" />
                   </datalist>
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium text-slate-600">Nom</label>
-                  <input v-model="treatmentDraft.name" list="treatment-names" class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm" placeholder="Nom du traitement" />
+                  <input
+                    v-model="treatmentDraft.name"
+                    list="treatment-names"
+                    :disabled="!treatmentDraft.type"
+                    class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm disabled:cursor-not-allowed disabled:bg-slate-100"
+                    :placeholder="treatmentDraft.type ? 'Nom du traitement' : 'Sélectionnez d\'abord un type'"
+                  />
                   <datalist id="treatment-names">
-                    <option v-for="name in treatmentNames" :key="name" :value="name" />
+                    <option v-for="name in treatmentNamesForSelectedType" :key="name" :value="name" />
                   </datalist>
                 </div>
               </div>
@@ -525,7 +537,20 @@ const treatmentTypes = ref([
   "Supplement vitaminique",
   "Inhalateur respiratoire",
 ]);
-const treatmentNames = ref(["Paracetamol", "Ibuprofene", "Insuline", "Metformine", "Amlodipine", "Ventoline"]);
+const treatmentNamesByType = reactive({
+  "Anti-inflammatoire": ["Ibuprofene", "Diclofenac", "Ketoprofene", "Naproxene"],
+  "Antibiotique": ["Amoxicilline", "Azithromycine", "Cefixime", "Ciprofloxacine"],
+  "Antidouleur": ["Paracetamol", "Tramadol", "Codeine"],
+  "Antihypertenseur": ["Amlodipine", "Ramipril", "Losartan", "Bisoprolol"],
+  "Antidiabetique": ["Metformine", "Insuline", "Gliclazide"],
+  "Anticoagulant": ["Heparine", "Warfarine", "Rivaroxaban"],
+  "Antiallergique": ["Cetirizine", "Loratadine", "Desloratadine"],
+  "Antidepresseur": ["Sertraline", "Fluoxetine", "Escitalopram"],
+  Corticoide: ["Prednisone", "Dexamethasone", "Hydrocortisone"],
+  "Traitement hormonal": ["Levothyrox", "Estradiol", "Progesterone"],
+  "Supplement vitaminique": ["Vitamine D", "Vitamine C", "Fer"],
+  "Inhalateur respiratoire": ["Ventoline", "Symbicort", "Seretide"],
+});
 
 const customInputs = reactive({
   allergies: "",
@@ -547,6 +572,17 @@ const treatmentDraft = reactive({
   start_date: "",
   end_date: "",
 });
+
+function getTreatmentNamesByType(type) {
+  const normalizedType = String(type || "").trim();
+  if (!normalizedType) return [];
+  if (!Array.isArray(treatmentNamesByType[normalizedType])) {
+    treatmentNamesByType[normalizedType] = [];
+  }
+  return treatmentNamesByType[normalizedType];
+}
+
+const treatmentNamesForSelectedType = computed(() => getTreatmentNamesByType(treatmentDraft.type));
 
 // Age affiche dans la section "Informations de base".
 const computedAge = computed(() => {
@@ -628,6 +664,23 @@ function handleTreatmentDateInput(event, key) {
   treatmentDraft[key] = formatDateWithSlashes(raw);
 }
 
+function handleTreatmentTypeInput() {
+  const normalizedType = String(treatmentDraft.type || "").trim();
+  if (!normalizedType) {
+    treatmentDraft.name = "";
+    return;
+  }
+
+  if (!treatmentTypes.value.includes(normalizedType)) {
+    treatmentTypes.value = [...treatmentTypes.value, normalizedType];
+  }
+
+  const availableNames = getTreatmentNamesByType(normalizedType);
+  if (treatmentDraft.name && !availableNames.includes(treatmentDraft.name)) {
+    treatmentDraft.name = "";
+  }
+}
+
 // Validation locale de l'email medecin avant envoi serveur.
 function validerEmailMedecin() {
   if (!(draft.consulte_medecin && draft.medecin_peut_consulter)) {
@@ -684,6 +737,7 @@ function openTreatmentEditor(index = -1) {
   treatmentDraft.frequency_count = Number(item.frequency_count || 1);
   treatmentDraft.start_date = item.start_date || "";
   treatmentDraft.end_date = item.end_date || "";
+  handleTreatmentTypeInput();
 }
 
 function cancelTreatmentEdit() {
@@ -726,8 +780,9 @@ function saveTreatmentDraft() {
   if (nextTreatment.type && !treatmentTypes.value.includes(nextTreatment.type)) {
     treatmentTypes.value = [...treatmentTypes.value, nextTreatment.type];
   }
-  if (nextTreatment.name && !treatmentNames.value.includes(nextTreatment.name)) {
-    treatmentNames.value = [...treatmentNames.value, nextTreatment.name];
+  const namesForType = getTreatmentNamesByType(nextTreatment.type);
+  if (nextTreatment.name && !namesForType.includes(nextTreatment.name)) {
+    namesForType.push(nextTreatment.name);
   }
 
   cancelTreatmentEdit();
@@ -770,6 +825,22 @@ function syncDraftFromProfil() {
   draft.allergies = normaliserListe(profil.allergies);
   draft.maladies_chroniques = normaliserListe(profil.maladies_chroniques);
   draft.traitements = Array.isArray(profil.traitements) ? [...profil.traitements] : [];
+  draft.traitements.forEach((item) => {
+    if (!item || typeof item !== "object") return;
+
+    const type = String(item.type || "").trim();
+    const name = String(item.name || "").trim();
+
+    if (type && !treatmentTypes.value.includes(type)) {
+      treatmentTypes.value = [...treatmentTypes.value, type];
+    }
+    if (type && name) {
+      const namesForType = getTreatmentNamesByType(type);
+      if (!namesForType.includes(name)) {
+        namesForType.push(name);
+      }
+    }
+  });
   draft.fumeur = Boolean(profil.fumeur);
   draft.alcool = Boolean(profil.alcool);
   draft.consulte_medecin = Boolean(profil.consulte_medecin);

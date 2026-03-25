@@ -1,9 +1,8 @@
 <template>
   <div class="mx-auto max-w-[1320px] p-4 sm:p-6 lg:p-8">
-    <div class="rounded-3xl border border-[#bfd2ff] bg-gradient-to-r from-[#e8f0ff] via-[#eff3ff] to-[#f4edff] p-6 shadow-sm sm:p-8">
-      <p class="inline-flex items-center rounded-full border border-[#bfd2ff] bg-white px-3 py-1 text-xs font-semibold text-[#2f55c7]">HealthFlow Journal</p>
-      <h2 class="mt-3 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">Nouvelle entrée</h2>
-      <p class="mt-2 text-base text-slate-600">Renseignez vos indicateurs quotidiens dans un format clair et professionnel pour un suivi régulier et fiable.</p>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <h2 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Nouvelle entrée</h2>
+      <p class="mt-2 text-sm text-slate-600 sm:text-base">Renseignez vos indicateurs quotidiens pour un suivi simple, clair et régulier.</p>
     </div>
     <NotificationsEnLigne />
 

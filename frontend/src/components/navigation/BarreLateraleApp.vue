@@ -22,7 +22,6 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import ElementNavLaterale from './ElementNavLaterale.vue'
 
@@ -33,25 +32,14 @@ defineProps({
   }
 })
 
-const router = useRouter()
 const authStore = useAuthStore()
 
 const libelleRoleUtilisateur = computed(() => {
   const role = authStore.roleUtilisateur
-  if (role === 'medecin') return authStore.estDansEspacePersonnel ? 'Médecin · espace personnel' : 'Médecin'
+  if (role === 'medecin') return 'Médecin'
   if (role === 'user') return 'Patient'
   return ''
 })
-
-async function deconnexion() {
-  await authStore.deconnexion()
-  router.push({ name: 'accueil-publique' })
-}
-
-function ouvrirEspaceMedecin() {
-  authStore.definirEspaceActif('medecin')
-  router.push({ name: 'tableau-de-bord' })
-}
 
 const navItem = (name, label, icon) => ({ name, label, to: { name }, icon })
 

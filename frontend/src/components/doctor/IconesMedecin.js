@@ -24,11 +24,6 @@ export function creerIcone(nodes, filled = false) {
   })
 }
 
-export const IconeCloche = creerIcone([
-  ['path', { d: 'M15 17h5l-1.4-1.4c-.38-.38-.6-.9-.6-1.44V11a6 6 0 1 0-12 0v3.16c0 .54-.21 1.06-.59 1.44L4 17h5' }],
-  ['path', { d: 'M10 19a2 2 0 0 0 4 0' }]
-])
-
 export const IconeDeconnexion = creerIcone([
   ['path', { d: 'M10 17 15 12 10 7' }],
   ['path', { d: 'M15 12H4' }],

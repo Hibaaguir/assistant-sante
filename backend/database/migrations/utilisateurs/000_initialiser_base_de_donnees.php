@@ -24,6 +24,7 @@ return new class extends Migration
             $table->rememberToken();
             $table->string('role')->default('user'); // user, medecin, administrateur
             $table->string('specialite')->nullable();
+            $table->longText('profile_photo')->nullable();
             $table->string('statut_admin')->default('Actif')->nullable();
             $table->timestamps();
         });
@@ -80,18 +81,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Invitations Medecin
-        $creerSiAbsente('invitations_medecin', function (Blueprint $table) {
-            $table->id();
-            $table->string('email');
-            $table->string('token')->unique();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
-            $table->foreignId('profil_sante_id')->nullable()->constrained('profils_sante')->onDelete('cascade');
-            $table->timestamp('expires_at')->nullable();
-            $table->boolean('accepted')->default(false);
-            $table->timestamps();
-        });
-
         // Signes Vitaux
         $creerSiAbsente('signes_vitaux', function (Blueprint $table) {
             $table->id();
@@ -141,7 +130,6 @@ return new class extends Migration
         Schema::dropIfExists('entrees_journal');
         Schema::dropIfExists('resultats_laboratoire');
         Schema::dropIfExists('signes_vitaux');
-        Schema::dropIfExists('invitations_medecin');
         Schema::dropIfExists('profils_sante');
         Schema::dropIfExists('personal_access_tokens');
         Schema::dropIfExists('password_reset_tokens');

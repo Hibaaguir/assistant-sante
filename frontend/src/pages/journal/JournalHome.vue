@@ -42,14 +42,6 @@
       </div>
     </section>
 
-    <section class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-      <article v-for="section in sectionsJournal" :key="section.id" class="rounded-2xl border bg-white p-4 shadow-sm transition hover:-translate-y-0.5" :class="section.bordure">
-        <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl text-white" :class="section.fondIcone" v-html="section.icone"></div>
-        <h3 class="mt-4 text-sm font-bold text-slate-900">{{ section.titre }}</h3>
-        <p class="mt-1 text-xs text-slate-600">{{ section.description }}</p>
-      </article>
-    </section>
-
     <section class="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
       <div class="rounded-[28px] border border-[#cfe0ff] bg-gradient-to-br from-[#edf4ff] via-white to-[#f8fbff] p-8 shadow-sm shadow-blue-200/50 transition hover:-translate-y-0.5 hover:shadow-md">
         <h3 class="text-3xl font-bold text-slate-900">🗓️ Derniere entree</h3>
@@ -106,49 +98,6 @@ import { useJournalStore } from '@/stores/journal'
 const router = useRouter()
 const store = useJournalStore()
 const { derniereEntree: latest } = storeToRefs(store)
-
-const sectionsJournal = [
-  {
-    id: 'sommeil-stress',
-    titre: '😴 Sommeil & Stress',
-    description: 'Renseignez vos heures de sommeil et votre niveau de stress.',
-    bordure: 'border-violet-200',
-    fondIcone: 'bg-violet-500',
-    icone: '<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 14c1.2 1.2 2.2 2 4 2s2.8-.8 4-2"/><path d="M9 10h.01"/><path d="M15 10h.01"/></svg>'
-  },
-  {
-    id: 'nutrition-repas',
-    titre: '🥗 Nutrition & Repas',
-    description: 'Ajoutez vos repas, calories, cafeine et apport en sucre.',
-    bordure: 'border-emerald-200',
-    fondIcone: 'bg-emerald-500',
-    icone: '<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3v7a4 4 0 0 0 4 4V3"/><path d="M8 3v7"/><path d="M14 3v18"/><path d="M14 11h4a3 3 0 0 0 0-6h-4"/></svg>'
-  },
-  {
-    id: 'hydratation',
-    titre: '💧 Hydratation',
-    description: 'Suivez verres, bouteilles et total en litres.',
-    bordure: 'border-sky-200',
-    fondIcone: 'bg-sky-500',
-    icone: '<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3s-5 5-5 9a5 5 0 0 0 10 0c0-4-5-9-5-9z"/></svg>'
-  },
-  {
-    id: 'activite',
-    titre: '🏃 Activite Physique',
-    description: 'Choisissez le type d activite, la duree et l intensite.',
-    bordure: 'border-orange-200',
-    fondIcone: 'bg-orange-500',
-    icone: '<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 3L4 14h7l-1 7 10-13h-7z"/></svg>'
-  },
-  {
-    id: 'habitudes',
-    titre: '🧭 Habitudes Quotidiennes',
-    description: 'Suivez tabac, alcool et indicateurs de mode de vie.',
-    bordure: 'border-pink-200',
-    fondIcone: 'bg-pink-500',
-    icone: '<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v14H4z"/><path d="M8 9h8"/><path d="M8 13h6"/></svg>'
-  }
-]
 
 onMounted(async () => {
   await store.initialiser();

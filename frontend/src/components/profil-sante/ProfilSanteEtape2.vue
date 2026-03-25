@@ -263,10 +263,11 @@
             <button
               type="button"
               class="h-12 w-full rounded-lg border px-4 bg-white outline-none focus:border-teal-500 text-left text-sm flex items-center justify-between"
+              :disabled="!treatment.type.trim()"
               :class="treatmentErrors.name ? 'border-red-300' : 'border-gray-200'"
-              @click="openTreatmentNames = !openTreatmentNames"
+              @click="toggleTreatmentNames"
             >
-              <span>{{ treatment.name || "Selectionner ou ajouter un traitement" }}</span>
+              <span>{{ treatment.name || (treatment.type ? "Selectionner ou ajouter un traitement" : "Selectionner d'abord un type") }}</span>
               <svg class="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M8 10l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
@@ -292,6 +293,9 @@
                 >
                   {{ item }}
                 </button>
+                <p v-if="!filteredTreatmentNames.length" class="px-3 py-2 text-sm text-slate-500">
+                  Aucun traitement propose pour ce type.
+                </p>
               </div>
               <div class="p-3 border-t bg-slate-50 flex gap-2">
                 <input
@@ -487,14 +491,20 @@ const treatmentTypes = ref([
   "Inhalateur respiratoire",
 ]);
 
-const treatmentNameOptions = ref([
-  "Paracetamol",
-  "Ibuprofene",
-  "Insuline",
-  "Metformine",
-  "Amlodipine",
-  "Ventoline",
-]);
+const treatmentNamesByType = reactive({
+  "Anti-inflammatoire": ["Ibuprofene", "Diclofenac", "Ketoprofene", "Naproxene"],
+  "Antibiotique": ["Amoxicilline", "Azithromycine", "Cefixime", "Ciprofloxacine"],
+  "Antidouleur": ["Paracetamol", "Tramadol", "Codeine"],
+  "Antihypertenseur": ["Amlodipine", "Ramipril", "Losartan", "Bisoprolol"],
+  "Antidiabetique": ["Metformine", "Insuline", "Gliclazide"],
+  "Anticoagulant": ["Heparine", "Warfarine", "Rivaroxaban"],
+  "Antiallergique": ["Cetirizine", "Loratadine", "Desloratadine"],
+  "Antidepresseur": ["Sertraline", "Fluoxetine", "Escitalopram"],
+  Corticoide: ["Prednisone", "Dexamethasone", "Hydrocortisone"],
+  "Traitement hormonal": ["Levothyrox", "Estradiol", "Progesterone"],
+  "Supplement vitaminique": ["Vitamine D", "Vitamine C", "Fer"],
+  "Inhalateur respiratoire": ["Ventoline", "Symbicort", "Seretide"],
+});
 
 const openAllergies = ref(false);
 const openDiseases = ref(false);
@@ -545,8 +555,10 @@ const filteredTreatmentTypes = computed(() => {
 });
 
 const filteredTreatmentNames = computed(() => {
+  const selectedType = treatment.type.trim();
+  const options = selectedType ? treatmentNamesByType[selectedType] || [] : [];
   const q = queryTreatmentNames.value.trim().toLowerCase();
-  return q ? treatmentNameOptions.value.filter((item) => item.toLowerCase().includes(q)) : treatmentNameOptions.value;
+  return q ? options.filter((item) => item.toLowerCase().includes(q)) : options;
 });
 
 // Helpers communs pour les listes multi-selection (allergies/maladies).
@@ -574,8 +586,19 @@ function addCustom(key, value) {
 
 // Gestion des options de traitement (type/nom) avec ajout personnalise.
 function selectTreatmentType(value) {
+  const previousType = treatment.type;
   treatment.type = value;
+  if (previousType !== value) {
+    treatment.name = "";
+  }
+  if (!Array.isArray(treatmentNamesByType[value])) {
+    treatmentNamesByType[value] = [];
+  }
   treatmentErrors.type = "";
+  treatmentErrors.name = "";
+  queryTreatmentNames.value = "";
+  customTreatmentName.value = "";
+  openTreatmentNames.value = false;
   openTreatmentTypes.value = false;
 }
 
@@ -583,10 +606,27 @@ function addCustomTreatmentType() {
   const value = customTreatmentType.value.trim();
   if (!value) return;
   if (!treatmentTypes.value.includes(value)) treatmentTypes.value = [...treatmentTypes.value, value];
+  if (!Array.isArray(treatmentNamesByType[value])) {
+    treatmentNamesByType[value] = [];
+  }
   treatment.type = value;
+  treatment.name = "";
   treatmentErrors.type = "";
+  treatmentErrors.name = "";
   customTreatmentType.value = "";
+  queryTreatmentNames.value = "";
+  customTreatmentName.value = "";
+  openTreatmentNames.value = false;
   openTreatmentTypes.value = false;
+}
+
+function toggleTreatmentNames() {
+  if (!treatment.type.trim()) {
+    treatmentErrors.type = "Choisissez d'abord un type de traitement.";
+    return;
+  }
+  treatmentErrors.type = "";
+  openTreatmentNames.value = !openTreatmentNames.value;
 }
 
 function selectTreatmentName(value) {
@@ -596,9 +636,22 @@ function selectTreatmentName(value) {
 }
 
 function addCustomTreatmentName() {
+  const selectedType = treatment.type.trim();
+  if (!selectedType) {
+    treatmentErrors.type = "Choisissez d'abord un type de traitement.";
+    return;
+  }
+
   const value = customTreatmentName.value.trim();
   if (!value) return;
-  if (!treatmentNameOptions.value.includes(value)) treatmentNameOptions.value = [...treatmentNameOptions.value, value];
+
+  if (!Array.isArray(treatmentNamesByType[selectedType])) {
+    treatmentNamesByType[selectedType] = [];
+  }
+  if (!treatmentNamesByType[selectedType].includes(value)) {
+    treatmentNamesByType[selectedType].push(value);
+  }
+
   treatment.name = value;
   treatmentErrors.name = "";
   customTreatmentName.value = "";

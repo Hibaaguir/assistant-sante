@@ -133,7 +133,7 @@
           <button
             type="button"
             class="h-12 w-full rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 font-semibold text-white transition hover:shadow-lg"
-            @click="$router.push({ name: roleUtilisateur === 'medecin' ? 'connexion-medecin' : 'connexion' })"
+            @click="$router.push({ name: 'connexion' })"
           >
             Aller à la connexion
           </button>

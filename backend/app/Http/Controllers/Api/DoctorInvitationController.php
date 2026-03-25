@@ -139,16 +139,8 @@ class DoctorInvitationController extends Controller
             ], 403);
         }
 
-        $days = max(1, min((int) $request->query('days', 7), 30));
         $vitalsDays = max(1, min((int) $request->query('vitals_days', 30), 90));
-        $startDate = Carbon::today()->subDays($days - 1)->toDateString();
         $vitalsStart = Carbon::today()->subDays($vitalsDays - 1)->startOfDay();
-
-        $vitals = HealthVital::query()
-            ->where('user_id', $patient->id)
-            ->whereDate('measured_at', '>=', $startDate)
-            ->orderBy('measured_at')
-            ->get();
 
         $vitalsHistory = HealthVital::query()
             ->where('user_id', $patient->id)
@@ -193,11 +185,48 @@ class DoctorInvitationController extends Controller
                 'profile' => $profile,
                 'latest_vitals' => $latestVitals,
                 'vitals' => $vitalsHistory,
-                'vitals_chart' => $this->serviceDonneesSante->construireSeriesGraphiqueSignesVitaux($vitals, $days),
                 'lab_results' => $labResults,
                 'treatment_medicines' => $this->serviceDonneesSante->resoudreMedicamentsTraitement($patient->id),
                 'treatment_checks' => $treatmentChecks,
-                'alerts' => $this->construireAlertesPatient($patient, $latestVitals, $labResults),
+                'general_observation' => [
+                    'text' => $invitation->general_observation,
+                    'updated_at' => optional($invitation->general_observation_updated_at)?->toISOString(),
+                ],
+            ],
+        ]);
+    }
+
+    public function enregistrerObservationGenerale(Request $request, User $patient): JsonResponse
+    {
+        $invitation = $this->trouverInvitationAutorisee($request, $patient);
+        if (! $invitation) {
+            return response()->json([
+                'message' => 'Acces non autorise a ce patient.',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'observation' => ['nullable', 'string', 'max:3000'],
+        ], [
+            'observation.max' => "L'observation generale ne doit pas depasser 3000 caracteres.",
+        ]);
+
+        $observation = trim((string) ($validated['observation'] ?? ''));
+
+        $invitation->update([
+            'general_observation' => $observation !== '' ? $observation : null,
+            'general_observation_updated_at' => $observation !== '' ? now() : null,
+        ]);
+
+        $invitation->refresh();
+
+        return response()->json([
+            'message' => $observation !== '' ? 'Observation generale enregistree.' : 'Observation generale effacee.',
+            'data' => [
+                'general_observation' => [
+                    'text' => $invitation->general_observation,
+                    'updated_at' => optional($invitation->general_observation_updated_at)?->toISOString(),
+                ],
             ],
         ]);
     }

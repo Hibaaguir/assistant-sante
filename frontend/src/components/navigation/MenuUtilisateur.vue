@@ -9,7 +9,13 @@
       class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-shadow"
       :class="menuOpen ? 'ring-2 ring-purple-400' : ''"
     >
-      <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <img
+        v-if="authStore.photoProfil"
+        :src="authStore.photoProfil"
+        alt="Photo de profil"
+        class="h-10 w-10 rounded-full object-cover"
+      />
+      <svg v-else viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="8" r="4" />
         <path d="M6 20a6 6 0 0 1 12 0" />
       </svg>
@@ -31,8 +37,14 @@
         <!-- Profil utilisateur -->
         <div class="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-5 border-b border-gray-100">
           <div class="flex items-center gap-3">
-            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex-shrink-0">
-              <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex-shrink-0 overflow-hidden">
+              <img
+                v-if="authStore.photoProfil"
+                :src="authStore.photoProfil"
+                alt="Photo de profil"
+                class="h-12 w-12 rounded-full object-cover"
+              />
+              <svg v-else viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="8" r="4" />
                 <path d="M6 20a6 6 0 0 1 12 0" />
               </svg>
@@ -71,18 +83,16 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import ModificationProfilModal from '@/components/profil/ModificationProfilModal.vue'
 
-const router = useRouter()
 const authStore = useAuthStore()
 const menuOpen = ref(false)
 const modalProfilOuvert = ref(false)
 
 const libelleRoleUtilisateur = computed(() => {
   const role = authStore.roleUtilisateur
-  if (role === 'medecin') return authStore.estDansEspacePersonnel ? 'Médecin · espace personnel' : 'Médecin'
+  if (role === 'medecin') return 'Médecin'
   if (role === 'user') return 'Patient'
   return ''
 })
@@ -92,14 +102,4 @@ function ouvrirModalProfil() {
   menuOpen.value = false
 }
 
-async function deconnexion() {
-  await authStore.deconnexion()
-  router.push({ name: 'accueil-publique' })
-}
-
-function ouvrirEspaceMedecin() {
-  authStore.definirEspaceActif('medecin')
-  router.push({ name: 'tableau-de-bord' })
-  menuOpen.value = false
-}
 </script>

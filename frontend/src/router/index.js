@@ -14,7 +14,6 @@ import ProfilSantePage from "@/pages/health/ProfilSantePage.vue";
 import DonneesSantePage from "@/pages/health/DonneesSantePage.vue";
 import DashboardPage from "@/pages/userDashboard/DashboardPage.vue";
 import InscriptionMedecinPage from "@/pages/doctor/InscriptionMedecinPage.vue";
-import ChoixEspacePage from "@/pages/doctor/ChoixEspacePage.vue";
 import PageTemporaire from "@/pages/PageTemporaire.vue";
 import PageAccueilPublique from "@/pages/accueil/PageAccueilPublique.vue";
 
@@ -28,7 +27,6 @@ const routes = [
   { path: "/register/user", redirect: "/register" },
   { path: "/doctor-register", name: "inscription-medecin", component: InscriptionMedecinPage },
   { path: "/doctor-login", redirect: "/login" },
-  { path: "/choix-espace", name: "choix-espace", component: ChoixEspacePage, meta: { requiresAuth: true } },
   { path: "/profil-sante", name: "profil-sante", component: ProfilSante, meta: { requiresAuth: true } },
   {
     path: "/main",
@@ -72,10 +70,9 @@ router.beforeEach(async (to) => {
   };
 
   const routeName = String(to.name || "");
-  const estPageAuthMedecin = ["connexion-medecin", "inscription-medecin"].includes(routeName);
-  const estPageAuthUtilisateur = ["inscription", "connexion", "accueil-publique"].includes(routeName);
+  const estPageAuthUtilisateur = ["inscription", "inscription-medecin", "connexion", "accueil-publique"].includes(routeName);
 
-  if ((estPageAuthMedecin || estPageAuthUtilisateur) && user) {
+  if (estPageAuthUtilisateur && user) {
     return routeParDefautAuthentifie();
   }
 
@@ -89,18 +86,13 @@ router.beforeEach(async (to) => {
     authStore.estDansEspacePersonnel &&
     !authStore.estAdministrateur &&
     !authStore.aProfilSante &&
-    to.name !== "profil-sante" &&
-    to.name !== "choix-espace"
+    to.name !== "profil-sante"
   ) {
     return { name: "profil-sante" };
   }
 
   if (to.name === "profil-sante" && user && authStore.estAdministrateur) {
     return { name: "tableau-de-bord" };
-  }
-
-  if (to.name === "choix-espace" && user && !authStore.estMedecin) {
-    return routeParDefautAuthentifie();
   }
 
   if (to.name === "profil-sante" && user && authStore.aProfilSante && authStore.estDansEspacePersonnel) {

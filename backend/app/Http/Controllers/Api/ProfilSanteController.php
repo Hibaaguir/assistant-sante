@@ -217,8 +217,6 @@ class ProfilSanteController extends Controller
             Mail::to($doctorEmail)->send(new DoctorInvitationMail(
                 $patient,
                 $doctorEmail,
-                $existingAccount ? '/login' : '/doctor-login',
-                $existingAccount ? 'medecin' : null,
             ));
         } catch (\Throwable $e) {
             Log::warning('Doctor invitation email failed: '.$e->getMessage());

@@ -1,5 +1,3 @@
-import { IconeGoutte, IconeCoeur, IconeOnde } from '@/components/doctor/IconesMedecin.js'
-
 // ---------------------------------------------------------------------------
 // Formatting helpers
 // ---------------------------------------------------------------------------
@@ -48,13 +46,6 @@ export function formaterDateNumerique(dateString) {
   return date.toLocaleDateString('fr-FR')
 }
 
-export function formaterHeureAlerteAbsolue(dateString) {
-  if (!dateString) return "Aujourd'hui"
-  const date = new Date(dateString)
-  if (Number.isNaN(date.getTime())) return "Aujourd'hui"
-  return date.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
-}
-
 export function mettreEnPhrase(value) {
   const text = String(value || '').trim()
   if (!text) return '-'
@@ -79,9 +70,17 @@ export function resoudreCouleurPoint(status) {
   return '#08c44e'
 }
 
-export function resoudreStatutPatient(alertsList) {
-  if (alertsList.some((alert) => alert.severity === 'critical')) return 'critical'
-  if (alertsList.length) return 'watch'
+export function resoudreStatutPatient(latestVitals) {
+  const heartRate = Number(latestVitals?.heart_rate || 0)
+  const systolic = Number(latestVitals?.systolic_pressure || 0)
+  const oxygen = Number(latestVitals?.oxygen_saturation || 0)
+
+  const critical = heartRate >= 100 || systolic >= 140 || (oxygen > 0 && oxygen < 93)
+  if (critical) return 'critical'
+
+  const watch = heartRate >= 90 || systolic >= 130 || (oxygen > 0 && oxygen < 95)
+  if (watch) return 'watch'
+
   return 'stable'
 }
 
@@ -121,52 +120,6 @@ export function construireInitiales(name) {
   )
 }
 
-export function obtenirDerniereValeurGlucose(alertsSource) {
-  const glucoseAlert = (Array.isArray(alertsSource) ? alertsSource : []).find((item) =>
-    String(item?.message || '').toLowerCase().includes('glyc')
-  )
-  if (!glucoseAlert) return ''
-  const match = String(glucoseAlert.message).match(/([0-9]+(?:[.,][0-9]+)?\s*[A-Za-z/0-9%]+)/)
-  return match ? match[1].replace(',', '.') : ''
-}
-
-// ---------------------------------------------------------------------------
-// Alert normalizers
-// ---------------------------------------------------------------------------
-
-export function normaliserAlertesListe(list, patientName) {
-  return (Array.isArray(list) ? list : []).map((alert, index) => {
-    const critical = String(alert?.severity || '').toLowerCase() === 'critical'
-    return {
-      id: `${patientName}-${index + 1}`,
-      patient: patientName,
-      message: alert?.message || 'Alerte patient.',
-      time: formaterHeureAlerteAbsolue(alert?.measured_at),
-      isoTime: alert?.measured_at || null,
-      rowClass: critical ? 'border-[#ffb9bc] bg-[#fff5f5]' : 'border-[#f2cc4e] bg-[#fffdf3]',
-      iconWrapClass: critical ? 'bg-[#ffe5e5]' : 'bg-[#fff1c5]',
-      iconClass: critical ? 'text-[#ff2f35]' : 'text-[#ef8a00]',
-      severity: critical ? 'critical' : 'warning'
-    }
-  })
-}
-
-export function normaliserAlertesDetail(list) {
-  return (Array.isArray(list) ? list : []).map((alert, index) => {
-    const isCritical = String(alert?.severity || '').toLowerCase() === 'critical'
-    return {
-      id: index + 1,
-      title: alert?.title || (isCritical ? 'Alerte critique' : 'Alerte'),
-      time: formaterHeureAlerteAbsolue(alert?.measured_at),
-      message: alert?.message || 'Alerte patient.',
-      recommendation: alert?.recommendation || 'Verifier rapidement la situation du patient.',
-      containerClass: isCritical ? 'border-[#ff9e9e] bg-[#fff4f4]' : 'border-[#f1c338] bg-[#fffdf0]',
-      iconWrapClass: isCritical ? 'bg-[#ffe1e1]' : 'bg-[#fff0bf]',
-      iconClass: isCritical ? 'text-[#ff3c3c]' : 'text-[#f0a400]'
-    }
-  })
-}
-
 // ---------------------------------------------------------------------------
 // Data mappers – patient list
 // ---------------------------------------------------------------------------
@@ -175,9 +128,7 @@ export function mapperPatient(item) {
   const patient = item?.patient || {}
   const profile = item?.profile || {}
   const latestVitals = item?.latest_vitals || {}
-  const patientAlerts = normaliserAlertesListe(item?.alerts, patient.name)
-  const glucose = obtenirDerniereValeurGlucose(item?.alerts)
-  const status = resoudreStatutPatient(patientAlerts)
+  const status = resoudreStatutPatient(latestVitals)
 
   return {
     id: patient.id,
@@ -192,21 +143,11 @@ export function mapperPatient(item) {
     bloodPressure: latestVitals?.systolic_pressure
       ? `${Math.round(Number(latestVitals.systolic_pressure))}/${Math.round(Number(latestVitals.diastolic_pressure || 0))}`
       : '--',
-    glucose,
+    glucose: '',
     status,
     tags: construireEtiquettesListe(profile),
     avatarColor: resoudreCouleurAvatar(status, patient.name),
-    dotColor: resoudreCouleurPoint(status),
-    alertCount: patientAlerts.length,
-    alertBadgeClass:
-      status === 'critical'
-        ? 'border-[#f5b1b3] bg-[#fff5f5] text-[#ff2f35]'
-        : status === 'watch'
-          ? 'border-[#f2cc4e] bg-[#fffdf3] text-[#ef7a00]'
-          : '',
-    alertLabel: status === 'critical' ? 'Action requise' : '',
-    alertLabelClass: 'text-[#ff2f35]',
-    alerts: patientAlerts
+    dotColor: resoudreCouleurPoint(status)
   }
 }
 
@@ -233,10 +174,10 @@ export function mapperDetailPatient(data, fallbackPatient) {
   const latestVitals = data?.latest_vitals || {}
   const labs = Array.isArray(data?.lab_results) ? data.lab_results : []
   const vitals = Array.isArray(data?.vitals) ? data.vitals : []
-  const vitalsChart = data?.vitals_chart || {}
   const treatments = Array.isArray(data?.treatment_medicines) ? data.treatment_medicines : []
   const treatmentChecks = Array.isArray(data?.treatment_checks) ? data.treatment_checks : []
   const patient = data?.patient || {}
+  const generalObservation = data?.general_observation || {}
 
   return {
     ...fallbackPatient,
@@ -245,55 +186,15 @@ export function mapperDetailPatient(data, fallbackPatient) {
     gender: mettreEnPhrase(profile.sexe || ''),
     lastSeen: formaterTempsRelatif(latestVitals.measured_at || patient.updated_at || patient.created_at),
     detailTags: construireEtiquettesDetail(profile),
-    detailAlerts: normaliserAlertesDetail(data?.alerts),
-    overviewStats: construireStatistiquesResume(latestVitals, profile),
-    vitalsChart: mapperGraphiqueSignesVitaux(vitalsChart),
+    generalObservation: {
+      text: String(generalObservation?.text || ''),
+      updatedAt: generalObservation?.updated_at || null,
+    },
     vitalsHistory: grouperHistoriqueSignesVitaux(vitals),
     analyses: labs.map(mapperAnalyse),
     treatments: construireTraitements(treatments, treatmentChecks),
     treatmentHistoryRows: construireLignesHistoriqueTraitements(treatments, treatmentChecks)
   }
-}
-
-export function construireStatistiquesResume(latestVitals, profile) {
-  const heartRate = Number(latestVitals?.heart_rate || 0)
-  const systolic = Number(latestVitals?.systolic_pressure || 0)
-  const oxygen = Number(latestVitals?.oxygen_saturation || 0)
-
-  return [
-    {
-      label: 'Rythme cardiaque',
-      value: heartRate ? `${Math.round(heartRate)} bpm` : '--',
-      badge: heartRate >= 90 ? 'Legerement eleve' : 'Normal',
-      badgeClass: heartRate >= 90 ? 'bg-[#ffe6b8] text-[#d47b00]' : 'bg-[#d7f5df] text-[#11a84d]',
-      icon: IconeCoeur,
-      iconWrapClass: 'bg-[#ffe3e8]',
-      iconClass: 'text-[#ff2143]',
-      cardClass: 'border-[#f4bac3] bg-[#fff7f8]'
-    },
-    {
-      label: 'Tension',
-      value: systolic
-        ? `${Math.round(systolic)}/${Math.round(Number(latestVitals?.diastolic_pressure || 0))}`
-        : '--',
-      badge: systolic >= 135 ? 'Elevee' : 'Normal',
-      badgeClass: systolic >= 135 ? 'bg-[#ffe6b8] text-[#d47b00]' : 'bg-[#d7f5df] text-[#11a84d]',
-      icon: IconeOnde,
-      iconWrapClass: 'bg-[#d8e9ff]',
-      iconClass: 'text-[#2454ff]',
-      cardClass: 'border-[#aed0ff] bg-[#f4fbff]'
-    },
-    {
-      label: 'Saturation O2',
-      value: oxygen ? `${Math.round(oxygen)} %` : '--',
-      badge: oxygen >= 95 ? 'Normal' : 'Basse',
-      badgeClass: oxygen >= 95 ? 'bg-[#d7f5df] text-[#11a84d]' : 'bg-[#ffe6b8] text-[#d47b00]',
-      icon: IconeGoutte,
-      iconWrapClass: 'bg-[#efe1ff]',
-      iconClass: 'text-[#8c30ff]',
-      cardClass: 'border-[#dbc1ff] bg-[#fbf7ff]'
-    }
-  ]
 }
 
 export function grouperHistoriqueSignesVitaux(rows) {
@@ -314,18 +215,6 @@ export function grouperHistoriqueSignesVitaux(rows) {
         : '--',
       saturation: row?.oxygen_saturation ? `${Math.round(Number(row.oxygen_saturation))}%` : '--'
     }))
-}
-
-export function mapperGraphiqueSignesVitaux(chartData) {
-  const labelSource = Array.isArray(chartData?.labels) ? chartData.labels : []
-
-  return {
-    labels: labelSource.map((label) => formaterDateCourte(label)),
-    heartRate: propagerSerie(conserverSerieNumerique(chartData?.heart_rate, labelSource.length)),
-    systolicPressure: propagerSerie(conserverSerieNumerique(chartData?.systolic_pressure, labelSource.length)),
-    diastolicPressure: propagerSerie(conserverSerieNumerique(chartData?.diastolic_pressure, labelSource.length)),
-    oxygenSaturation: propagerSerie(conserverSerieNumerique(chartData?.oxygen_saturation, labelSource.length)),
-  }
 }
 
 export function mapperAnalyse(item) {
@@ -358,32 +247,6 @@ export function mapperAnalyse(item) {
     isoDate: String(item?.analysis_date || '').slice(0, 10),
     date: formaterDateNumerique(item?.analysis_date)
   }
-}
-
-function conserverSerieNumerique(values, expectedLength = 0) {
-  const source = Array.isArray(values) ? values : []
-  const size = Math.max(expectedLength, source.length)
-
-  return Array.from({ length: size }, (_, index) => {
-    const value = source[index]
-    if (value === null || value === undefined || value === '') return null
-
-    const numeric = Number(value)
-    return Number.isFinite(numeric) ? numeric : null
-  })
-}
-
-function propagerSerie(values) {
-  let previousValue = null
-
-  return (Array.isArray(values) ? values : []).map((value) => {
-    if (Number.isFinite(value)) {
-      previousValue = value
-      return value
-    }
-
-    return previousValue
-  })
 }
 
 export function construireTraitements(medicines, checks) {

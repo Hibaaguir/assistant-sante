@@ -86,9 +86,20 @@ class AuthController extends Controller
                 'date_of_birth.date_format' => 'La date doit etre au format YYYY-MM-DD.',
             ]));
 
+            $doctorEmail = strtolower(trim($validated['email']));
+
+            if (! $this->aInvitationEnAttentePourEmail($doctorEmail)) {
+                return response()->json([
+                    'message' => "Inscription medecin non autorisee sans invitation en attente.",
+                    'errors' => [
+                        'email' => ["Aucune invitation en attente n'a ete trouvee pour cet email."],
+                    ],
+                ], 403);
+            }
+
             $user = User::create([
                 'name' => trim($request->input('name') ?: 'Medecin'),
-                'email' => strtolower(trim($validated['email'])),
+                'email' => $doctorEmail,
                 'date_of_birth' => $validated['date_of_birth'] ?? null,
                 'password' => Hash::make($validated['password']),
                 'role' => 'medecin',
@@ -148,7 +159,7 @@ class AuthController extends Controller
                 $user,
                 $user->createToken($isDoctor ? 'doctor_auth_token' : 'auth_token')->plainTextToken,
                 $hasProfil,
-                $isAdmin ? '/main/dashboard' : ($isDoctor ? '/choix-espace' : ($hasProfil ? '/main' : '/profil-sante')),
+                $isAdmin ? '/main/dashboard' : ($isDoctor ? '/main/dashboard' : ($hasProfil ? '/main' : '/profil-sante')),
                 $hasPendingDoctorInvitations,
                 200,
                 'Connexion reussie.'
@@ -262,6 +273,7 @@ class AuthController extends Controller
             'date_of_birth' => $user->date_of_birth,
             'role' => $user->role,
             'specialite' => $user->specialite,
+            'profile_photo' => $user->profile_photo,
         ];
     }
 
@@ -269,6 +281,14 @@ class AuthController extends Controller
     {
         return DoctorInvitation::query()
             ->where('doctor_user_id', $user->id)
+            ->where('status', 'pending')
+            ->exists();
+    }
+
+    private function aInvitationEnAttentePourEmail(string $email): bool
+    {
+        return DoctorInvitation::query()
+            ->whereRaw('LOWER(doctor_email) = ?', [strtolower($email)])
             ->where('status', 'pending')
             ->exists();
     }

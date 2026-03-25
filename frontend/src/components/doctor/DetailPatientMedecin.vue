@@ -33,36 +33,71 @@
               {{ tag.label }}
             </span>
           </div>
+
+          <div class="mt-3 rounded-[10px] border border-[#dde3ee] bg-[#f8faff] px-3 py-2">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.04em] text-[#5f7190]">Observation</p>
+            <p class="mt-0.5 text-[13px] leading-5 text-[#1f345c]">{{ observationResume }}</p>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="mt-8 space-y-4">
-      <article
-        v-for="alert in patient.detailAlerts"
-        :key="alert.id"
-        class="rounded-[22px] border p-6"
-        :class="alert.containerClass"
-      >
-        <div class="flex flex-col gap-4 md:flex-row md:items-start">
-          <div class="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[14px]" :class="alert.iconWrapClass">
-            <IconeTriangleAlerte class="h-[22px] w-[22px]" :class="alert.iconClass" />
+    <section class="mt-6 rounded-[16px] border border-[#d4d9e1] bg-white p-3 shadow-[0_1px_3px_rgba(15,23,42,0.05)]">
+      <article class="rounded-[12px] border border-[#d4d9e1] bg-[#fcfdff] p-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <p class="text-[15px] font-bold text-[#041c49]">Observation generale du patient</p>
+            <span class="rounded-full bg-[#f3f6fb] px-2 py-0.5 text-[11px] text-[#5c6d89]">Interne</span>
           </div>
-          <div class="w-full">
-            <div class="flex flex-wrap items-center gap-3">
-              <h3 class="text-[18px] font-bold text-[#0a1737]">{{ alert.title }}</h3>
-              <span class="text-[14px] font-medium text-[#4e5c73]">{{ alert.time }}</span>
-            </div>
-            <p class="mt-3 text-[16px] text-[#14264c]">{{ alert.message }}</p>
 
-            <div class="mt-4 rounded-[14px] border border-[#d7dce6] bg-white px-4 py-3">
-              <p class="text-[15px] font-semibold text-[#263b67]">Recommandation :</p>
-              <p class="mt-1 text-[15px] text-[#31405e]">{{ alert.recommendation }}</p>
-            </div>
+          <button
+            type="button"
+            class="inline-flex h-[34px] items-center justify-center rounded-[12px] border border-[#d4d9e1] px-3 text-[13px] font-semibold text-[#40506a] transition hover:border-[#aeb9ca] hover:text-[#1a2c52]"
+            @click="analysisObservationOpen = !analysisObservationOpen"
+          >
+            {{ analysisObservationOpen ? "Fermer" : "Ajouter" }}
+          </button>
+        </div>
+
+        <div class="mt-1.5 flex items-center justify-end">
+          <p v-if="analysisObservationSavedAt" class="text-[11px] text-[#6a7891]">Sauvegardee le {{ analysisObservationSavedAt }}</p>
+        </div>
+
+        <div v-if="analysisObservationOpen" class="mt-3 space-y-2.5">
+          <textarea
+            v-model.trim="analysisObservation"
+            rows="2"
+            placeholder="Exemple : etat general stable, surveillance clinique recommandee."
+            class="w-full rounded-[12px] border border-[#d7dce6] bg-white px-3 py-2.5 text-[14px] leading-5 text-[#061a45] outline-none transition placeholder:text-[#9aa5ba] focus:border-[#4a55f5]"
+          />
+
+          <div class="flex flex-wrap justify-end gap-2">
+            <button
+              type="button"
+              class="inline-flex h-[34px] items-center justify-center rounded-[12px] border border-[#d4d9e1] px-3 text-[13px] font-semibold text-[#40506a] transition hover:border-[#aeb9ca] hover:text-[#1a2c52]"
+              @click="effacerObservationAnalyse"
+            >
+              Effacer
+            </button>
+            <button
+              type="button"
+              class="inline-flex h-[34px] items-center justify-center rounded-[12px] bg-[#3f49f4] px-3 text-[13px] font-semibold text-white transition hover:bg-[#3140ef]"
+              @click="enregistrerObservationAnalyse"
+            >
+              Enregistrer
+            </button>
           </div>
         </div>
+
+        <div
+          v-if="analysisObservationMessage"
+          class="mt-2.5 rounded-[12px] border px-3 py-2 text-[12px]"
+          :class="analysisObservationMessageType === 'success' ? 'border-[#c6ead0] bg-[#f2fcf4] text-[#118445]' : 'border-[#f1d4ae] bg-[#fff8ef] text-[#b46910]'"
+        >
+          {{ analysisObservationMessage }}
+        </div>
       </article>
-    </div>
+    </section>
 
     <section class="mt-8 rounded-[18px] border border-[#d4d9e1] bg-white p-[10px] shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
       <div class="flex flex-wrap gap-2">
@@ -80,243 +115,7 @@
       </div>
     </section>
 
-    <section v-if="detailTab === 'overview'" class="mt-8 space-y-6">
-      <div class="grid gap-4 lg:grid-cols-3">
-        <article v-for="item in patient.overviewStats" :key="item.label" class="rounded-[20px] border p-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)]" :class="item.cardClass">
-          <div class="flex items-start justify-between gap-4">
-            <div class="flex h-[40px] w-[40px] items-center justify-center rounded-[14px]" :class="item.iconWrapClass">
-              <component :is="item.icon" class="h-[18px] w-[18px]" :class="item.iconClass" />
-            </div>
-            <span class="inline-flex rounded-full px-3 py-1 text-[13px] font-medium" :class="item.badgeClass">{{ item.badge }}</span>
-          </div>
-          <p class="mt-4 text-[22px] font-bold text-[#031a46]">{{ item.value }}</p>
-          <p class="mt-4 text-[16px] font-medium text-[#455572]">{{ item.label }}</p>
-        </article>
-      </div>
-
-      <div class="grid gap-6 xl:grid-cols-3">
-        <article class="rounded-[20px] border border-[#d4d9e1] bg-white p-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
-          <h3 class="text-[18px] font-bold text-[#041c49]">Evolution du rythme cardiaque</h3>
-          <svg viewBox="0 0 520 220" class="mt-5 h-[240px] w-full">
-            <g stroke="#e5e9f0" stroke-dasharray="4 4">
-              <line v-for="tick in heartRateChart.ticks" :key="`heart-y-${tick.value}`" :x1="chartFrame.left" :y1="tick.y" :x2="chartFrame.width - chartFrame.right" :y2="tick.y" />
-              <line v-for="(x, index) in heartRateChart.xPositions" :key="`heart-x-${index}`" :x1="x" :y1="chartFrame.top" :x2="x" :y2="chartFrame.height - chartFrame.bottom" />
-            </g>
-            <polyline
-              v-if="heartRateChart.series[0]?.points"
-              fill="none"
-              stroke="#f24864"
-              stroke-width="3"
-              :points="heartRateChart.series[0].points"
-            />
-            <g v-if="heartRateChart.series[0]" fill="#f24864">
-              <circle
-                v-for="dot in heartRateChart.series[0].dots"
-                :key="`heart-dot-${dot.index}`"
-                :cx="dot.x"
-                :cy="dot.y"
-                r="5"
-              />
-            </g>
-            <g fill="#97a3b6" font-size="13">
-              <text
-                v-for="tick in heartRateChart.ticks"
-                :key="`heart-label-${tick.value}`"
-                :x="chartFrame.left - 18"
-                :y="tick.y + 4"
-                text-anchor="end"
-              >
-                {{ formatChartTick(tick.value) }}
-              </text>
-            </g>
-            <g fill="#97a3b6" font-size="13">
-              <text
-                v-for="(label, index) in heartRateChart.labels"
-                :key="`heart-date-${label}-${index}`"
-                :x="heartRateChart.xPositions[index]"
-                :y="chartFrame.height - 12"
-                text-anchor="middle"
-              >
-                {{ label }}
-              </text>
-            </g>
-          </svg>
-          <p v-if="!heartRateChart.hasData" class="mt-3 text-[14px] text-[#6a7891]">Aucune mesure de rythme cardiaque disponible sur la periode.</p>
-        </article>
-
-        <article class="rounded-[20px] border border-[#d4d9e1] bg-white p-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
-          <h3 class="text-[18px] font-bold text-[#041c49]">Evolution de la tension</h3>
-          <svg viewBox="0 0 520 220" class="mt-5 h-[240px] w-full">
-            <g stroke="#e5e9f0" stroke-dasharray="4 4">
-              <line v-for="tick in pressureChart.ticks" :key="`pressure-y-${tick.value}`" :x1="chartFrame.left" :y1="tick.y" :x2="chartFrame.width - chartFrame.right" :y2="tick.y" />
-              <line v-for="(x, index) in pressureChart.xPositions" :key="`pressure-x-${index}`" :x1="x" :y1="chartFrame.top" :x2="x" :y2="chartFrame.height - chartFrame.bottom" />
-            </g>
-            <template v-for="series in pressureChart.series" :key="`pressure-line-${series.key}`">
-              <polyline
-                v-if="series.points"
-                fill="none"
-                :stroke="series.color"
-                stroke-width="3"
-                :points="series.points"
-              />
-            </template>
-            <g v-for="series in pressureChart.series" :key="`pressure-dots-${series.key}`" :fill="series.color">
-              <circle
-                v-for="dot in series.dots"
-                :key="`pressure-dot-${series.key}-${dot.index}`"
-                :cx="dot.x"
-                :cy="dot.y"
-                r="5"
-              />
-            </g>
-            <g fill="#97a3b6" font-size="13">
-              <text
-                v-for="tick in pressureChart.ticks"
-                :key="`pressure-label-${tick.value}`"
-                :x="chartFrame.left - 18"
-                :y="tick.y + 4"
-                text-anchor="end"
-              >
-                {{ formatChartTick(tick.value) }}
-              </text>
-            </g>
-            <g fill="#97a3b6" font-size="13">
-              <text
-                v-for="(label, index) in pressureChart.labels"
-                :key="`pressure-date-${label}-${index}`"
-                :x="pressureChart.xPositions[index]"
-                :y="chartFrame.height - 12"
-                text-anchor="middle"
-              >
-                {{ label }}
-              </text>
-            </g>
-          </svg>
-          <div class="mt-3 flex flex-wrap items-center gap-4 text-[13px] font-medium">
-            <span class="inline-flex items-center gap-2 text-[#4a80eb]">
-              <span class="h-2.5 w-2.5 rounded-full bg-[#4a80eb]" />
-              Systolique
-            </span>
-            <span class="inline-flex items-center gap-2 text-[#1db8d6]">
-              <span class="h-2.5 w-2.5 rounded-full bg-[#1db8d6]" />
-              Diastolique
-            </span>
-          </div>
-          <p v-if="!pressureChart.hasData" class="mt-3 text-[14px] text-[#6a7891]">Aucune mesure de tension disponible sur la periode.</p>
-        </article>
-
-        <article class="rounded-[20px] border border-[#d4d9e1] bg-white p-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
-          <h3 class="text-[18px] font-bold text-[#041c49]">Evolution de la saturation O2</h3>
-          <svg viewBox="0 0 520 220" class="mt-5 h-[240px] w-full">
-            <g stroke="#e5e9f0" stroke-dasharray="4 4">
-              <line v-for="tick in oxygenChart.ticks" :key="`oxygen-y-${tick.value}`" :x1="chartFrame.left" :y1="tick.y" :x2="chartFrame.width - chartFrame.right" :y2="tick.y" />
-              <line v-for="(x, index) in oxygenChart.xPositions" :key="`oxygen-x-${index}`" :x1="x" :y1="chartFrame.top" :x2="x" :y2="chartFrame.height - chartFrame.bottom" />
-            </g>
-            <polyline
-              v-if="oxygenChart.series[0]?.points"
-              fill="none"
-              stroke="#8c30ff"
-              stroke-width="3"
-              :points="oxygenChart.series[0].points"
-            />
-            <g v-if="oxygenChart.series[0]" fill="#8c30ff">
-              <circle
-                v-for="dot in oxygenChart.series[0].dots"
-                :key="`oxygen-dot-${dot.index}`"
-                :cx="dot.x"
-                :cy="dot.y"
-                r="5"
-              />
-            </g>
-            <g fill="#97a3b6" font-size="13">
-              <text
-                v-for="tick in oxygenChart.ticks"
-                :key="`oxygen-label-${tick.value}`"
-                :x="chartFrame.left - 18"
-                :y="tick.y + 4"
-                text-anchor="end"
-              >
-                {{ formatChartTick(tick.value) }}
-              </text>
-            </g>
-            <g fill="#97a3b6" font-size="13">
-              <text
-                v-for="(label, index) in oxygenChart.labels"
-                :key="`oxygen-date-${label}-${index}`"
-                :x="oxygenChart.xPositions[index]"
-                :y="chartFrame.height - 12"
-                text-anchor="middle"
-              >
-                {{ label }}
-              </text>
-            </g>
-          </svg>
-          <div class="mt-3 flex flex-wrap items-center gap-4 text-[13px] font-medium">
-            <span class="inline-flex items-center gap-2 text-[#8c30ff]">
-              <span class="h-2.5 w-2.5 rounded-full bg-[#8c30ff]" />
-              Saturation O2
-            </span>
-          </div>
-          <p v-if="!oxygenChart.hasData" class="mt-3 text-[14px] text-[#6a7891]">Aucune mesure de saturation O2 disponible sur la periode.</p>
-        </article>
-      </div>
-
-      <CourbeObservanceTraitement :patient="patient" />
-
-      <HistogrammeAnalyses :patient="patient" />
-
-      <article class="overflow-hidden rounded-[20px] border border-[#d6e3ea] bg-[linear-gradient(135deg,#f8fcff_0%,#ffffff_65%,#f9fcfb_100%)] shadow-[0_8px_18px_rgba(35,84,126,0.06)]">
-        <div class="border-b border-[#e2ebf0] bg-[linear-gradient(90deg,rgba(46,144,250,0.05)_0%,rgba(22,163,74,0.03)_100%)] px-5 py-4">
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div class="flex items-start gap-4">
-              <div class="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[linear-gradient(135deg,#2f80ed_0%,#27b3a7_100%)] text-white shadow-[0_8px_18px_rgba(47,128,237,0.18)]">
-                <svg viewBox="0 0 24 24" class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M8 4h8" />
-                  <path d="M9 4v3" />
-                  <path d="M15 4v3" />
-                  <path d="M6 8h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" />
-                  <path d="M8 12h8" />
-                  <path d="M8 16h5" />
-                </svg>
-              </div>
-
-              <div>
-                <div class="flex flex-wrap items-center gap-2">
-                  <h3 class="text-[17px] font-bold text-[#082b4b]">Observation generale</h3>
-                  <span class="rounded-full border border-[#d7e6ed] bg-white/85 px-2.5 py-0.5 text-[11px] font-semibold text-[#5d7890]">Interne</span>
-                </div>
-                <p class="mt-1 text-[12px] text-[#688299]">Synthese clinique du medecin sur les analyses biologiques.</p>
-                <p v-if="analysisObservationSavedAt" class="mt-1.5 text-[11px] font-medium text-[#75899a]">Sauvegardee le {{ analysisObservationSavedAt }}</p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              class="inline-flex h-[36px] items-center justify-center rounded-[12px] border border-[#c4dbe7] bg-white/90 px-3.5 text-[13px] font-semibold text-[#1e567a] transition hover:border-[#a7cadc] hover:bg-white"
-              @click="detailTab = 'analyses'"
-            >
-              Modifier dans Analyses
-            </button>
-          </div>
-        </div>
-
-        <div class="px-5 py-4">
-          <div v-if="analysisObservation" class="rounded-[16px] border border-[#deebf1] bg-white/92 px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
-            <div class="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#3a7a86]">
-              <span class="h-2 w-2 rounded-full bg-[#2bb3a8]" />
-              Observation enregistree
-            </div>
-            <p class="text-[14px] leading-7 text-[#23415d]">{{ analysisObservation }}</p>
-          </div>
-
-          <div v-else class="rounded-[16px] border border-dashed border-[#d7e4eb] bg-white/70 px-4 py-4 text-[13px] text-[#648097]">
-            Aucune observation generale n'a encore ete saisie pour les analyses de ce patient.
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <section v-else-if="detailTab === 'vitals'" class="mt-8 space-y-4">
+    <section v-if="detailTab === 'vitals'" class="mt-8 space-y-4">
       <article class="rounded-[20px] border border-[#d4d9e1] bg-white p-5 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -424,60 +223,6 @@
               <option v-for="type in analysisTypes" :key="type" :value="type">{{ type }}</option>
             </select>
           </div>
-        </div>
-      </article>
-
-      <article class="rounded-[20px] border border-[#d4d9e1] bg-white p-4 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div class="flex items-center gap-2">
-              <p class="text-[16px] font-bold text-[#041c49]">Observation generale</p>
-              <span class="rounded-full bg-[#f3f6fb] px-2.5 py-1 text-[12px] text-[#5c6d89]">Interne</span>
-            </div>
-            <p v-if="analysisObservationSavedAt" class="mt-1 text-[12px] text-[#6a7891]">Sauvegardee le {{ analysisObservationSavedAt }}</p>
-          </div>
-
-          <button
-            type="button"
-            class="inline-flex h-[40px] items-center justify-center rounded-[14px] border border-[#d4d9e1] px-4 text-[14px] font-semibold text-[#40506a] transition hover:border-[#aeb9ca] hover:text-[#1a2c52]"
-            @click="analysisObservationOpen = !analysisObservationOpen"
-          >
-            {{ analysisObservationOpen ? "Fermer" : "Ajouter une observation" }}
-          </button>
-        </div>
-
-        <div v-if="analysisObservationOpen" class="mt-4 space-y-3">
-          <textarea
-            v-model.trim="analysisObservation"
-            rows="3"
-            placeholder="Exemple : bilan rassurant, surveillance conseillee."
-            class="w-full rounded-[16px] border border-[#d7dce6] bg-[#fbfcfd] px-4 py-3 text-[14px] leading-6 text-[#061a45] outline-none transition placeholder:text-[#9aa5ba] focus:border-[#4a55f5]"
-          />
-
-          <div class="flex flex-wrap justify-end gap-3">
-            <button
-              type="button"
-              class="inline-flex h-[40px] items-center justify-center rounded-[14px] border border-[#d4d9e1] px-4 text-[14px] font-semibold text-[#40506a] transition hover:border-[#aeb9ca] hover:text-[#1a2c52]"
-              @click="effacerObservationAnalyse"
-            >
-              Effacer
-            </button>
-            <button
-              type="button"
-              class="inline-flex h-[40px] items-center justify-center rounded-[14px] bg-[#3f49f4] px-4 text-[14px] font-semibold text-white transition hover:bg-[#3140ef]"
-              @click="enregistrerObservationAnalyse"
-            >
-              Enregistrer
-            </button>
-          </div>
-        </div>
-
-        <div
-          v-if="analysisObservationMessage"
-          class="mt-3 rounded-[14px] border px-3 py-2 text-[13px]"
-          :class="analysisObservationMessageType === 'success' ? 'border-[#c6ead0] bg-[#f2fcf4] text-[#118445]' : 'border-[#f1d4ae] bg-[#fff8ef] text-[#b46910]'"
-        >
-          {{ analysisObservationMessage }}
         </div>
       </article>
 
@@ -630,18 +375,15 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import api from '@/services/api'
 import {
-  IconeTriangleAlerte,
   IconeFlecheGauche,
   IconeCalendrier,
   IconeHorloge,
-  IconeOeil,
   IconeCoeur,
   IconeLien,
   IconeOnde
 } from '@/components/doctor/IconesMedecin.js'
-import CourbeObservanceTraitement from '@/components/dashboards/doctorDashboard/CourbeObservanceTraitement.vue'
-import HistogrammeAnalyses from '@/components/dashboards/doctorDashboard/HistogrammeAnalyses.vue'
 
 const props = defineProps({
   patient: {
@@ -652,10 +394,9 @@ const props = defineProps({
 
 defineEmits(['back'])
 
-const detailTab = ref('overview')
+const detailTab = ref('vitals')
 
 const detailTabs = [
-  { key: 'overview', label: "Vue d'ensemble", icon: IconeOeil },
   { key: 'vitals', label: 'Signes vitaux', icon: IconeCoeur },
   { key: 'analyses', label: 'Analyses', icon: IconeOnde },
   { key: 'treatments', label: 'Traitements', icon: IconeLien }
@@ -673,15 +414,6 @@ const analysisObservationOpen = ref(false)
 const analysisObservationSavedAt = ref('')
 const analysisObservationMessage = ref('')
 const analysisObservationMessageType = ref('success')
-const chartFrame = {
-  width: 520,
-  height: 220,
-  left: 60,
-  right: 20,
-  top: 30,
-  bottom: 40,
-}
-
 function construireCartesSignesVitaux(entree) {
   return [
     {
@@ -775,166 +507,30 @@ const filteredTreatmentHistoryRows = computed(() => {
     })
 })
 
-const heartRateChart = computed(() =>
-  construireGraphiqueTendance(
-    props.patient?.vitalsChart?.labels,
-    [
-      {
-        key: 'heart-rate',
-        color: '#f24864',
-        values: props.patient?.vitalsChart?.heartRate,
-      },
-    ],
-    { fallbackMin: 60, fallbackMax: 100, minSpread: 12, padding: 6 }
-  )
-)
-
-const pressureChart = computed(() =>
-  construireGraphiqueTendance(
-    props.patient?.vitalsChart?.labels,
-    [
-      {
-        key: 'systolic',
-        color: '#4a80eb',
-        values: props.patient?.vitalsChart?.systolicPressure,
-      },
-      {
-        key: 'diastolic',
-        color: '#1db8d6',
-        values: props.patient?.vitalsChart?.diastolicPressure,
-      },
-    ],
-    { fallbackMin: 60, fallbackMax: 150, minSpread: 20, padding: 10 }
-  )
-)
-
-const oxygenChart = computed(() =>
-  construireGraphiqueTendance(
-    props.patient?.vitalsChart?.labels,
-    [
-      {
-        key: 'oxygen',
-        color: '#8c30ff',
-        values: props.patient?.vitalsChart?.oxygenSaturation,
-      },
-    ],
-    { fallbackMin: 88, fallbackMax: 100, minSpread: 8, padding: 3 }
-  )
-)
-
-const analysisObservationStorageKey = computed(() => {
-  const patientId = props.patient?.id ?? 'unknown'
-  return `doctor-analysis-observation-${patientId}`
+const observationResume = computed(() => {
+  const text = String(analysisObservation.value || '').trim()
+  if (!text) return 'Aucune observation generale pour le moment.'
+  return text.length > 140 ? `${text.slice(0, 140).trim()}…` : text
 })
+
+function formaterDateObservation(dateString) {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 
 function chargerObservationAnalyse() {
   analysisObservationMessage.value = ''
-  if (typeof window === 'undefined') return
-
-  const raw = window.localStorage.getItem(analysisObservationStorageKey.value)
-  if (!raw) {
-    analysisObservation.value = ''
-    analysisObservationSavedAt.value = ''
-    return
-  }
-
-  try {
-    const parsed = JSON.parse(raw)
-    analysisObservation.value = String(parsed?.text || '')
-    analysisObservationSavedAt.value = String(parsed?.savedAtLabel || '')
-    analysisObservationOpen.value = false
-  } catch {
-    analysisObservation.value = ''
-    analysisObservationSavedAt.value = ''
-    analysisObservationOpen.value = false
-  }
-}
-
-function construireGraphiqueTendance(labelsInput, seriesInput, options = {}) {
-  const labels = Array.isArray(labelsInput) ? labelsInput : []
-  const xPositions = buildXPositions(labels.length)
-  const series = Array.isArray(seriesInput) ? seriesInput : []
-  const numericValues = series.flatMap((serie) => (Array.isArray(serie.values) ? serie.values : [])).filter((value) => Number.isFinite(value))
-  const hasData = numericValues.length > 0
-
-  let minValue = options.fallbackMin ?? 0
-  let maxValue = options.fallbackMax ?? 100
-
-  if (hasData) {
-    const rawMin = Math.min(...numericValues)
-    const rawMax = Math.max(...numericValues)
-    const padding = Math.max(options.padding ?? 5, (rawMax - rawMin) * 0.15)
-    minValue = Math.floor(rawMin - padding)
-    maxValue = Math.ceil(rawMax + padding)
-  }
-
-  if (maxValue - minValue < (options.minSpread ?? 10)) {
-    const diff = options.minSpread ?? 10
-    const center = (maxValue + minValue) / 2
-    minValue = Math.floor(center - diff / 2)
-    maxValue = Math.ceil(center + diff / 2)
-  }
-
-  const ticks = buildTickValues(minValue, maxValue, 4).map((value) => ({
-    value,
-    y: convertValueToY(value, minValue, maxValue),
-  }))
-
-  return {
-    labels,
-    xPositions,
-    ticks,
-    hasData,
-    series: series.map((serie) => buildSeriesGeometry(serie, xPositions, minValue, maxValue)),
-  }
-}
-
-function buildSeriesGeometry(serie, xPositions, minValue, maxValue) {
-  const source = Array.isArray(serie?.values) ? serie.values : []
-  const dots = source
-    .map((value, index) => {
-      if (!Number.isFinite(value) || xPositions[index] === undefined) return null
-      return {
-        index,
-        x: xPositions[index],
-        y: convertValueToY(value, minValue, maxValue),
-      }
-    })
-    .filter(Boolean)
-
-  return {
-    key: serie?.key || 'series',
-    color: serie?.color || '#031a46',
-    dots,
-    points: dots.map((dot) => `${dot.x},${dot.y}`).join(' '),
-  }
-}
-
-function buildXPositions(length) {
-  if (length <= 0) return []
-  if (length === 1) return [chartFrame.left]
-
-  const usableWidth = chartFrame.width - chartFrame.left - chartFrame.right
-  const step = usableWidth / (length - 1)
-  return Array.from({ length }, (_, index) => chartFrame.left + step * index)
-}
-
-function convertValueToY(value, minValue, maxValue) {
-  if (!Number.isFinite(value)) return chartFrame.height - chartFrame.bottom
-
-  const usableHeight = chartFrame.height - chartFrame.top - chartFrame.bottom
-  const ratio = (value - minValue) / Math.max(maxValue - minValue, 1)
-  return chartFrame.height - chartFrame.bottom - ratio * usableHeight
-}
-
-function buildTickValues(minValue, maxValue, tickCount) {
-  if (tickCount <= 1) return [minValue, maxValue]
-  const step = (maxValue - minValue) / (tickCount - 1)
-  return Array.from({ length: tickCount }, (_, index) => Number((minValue + step * index).toFixed(1)))
-}
-
-function formatChartTick(value) {
-  return Number.isInteger(value) ? value : value.toFixed(1)
+  analysisObservation.value = String(props.patient?.generalObservation?.text || '')
+  analysisObservationSavedAt.value = formaterDateObservation(props.patient?.generalObservation?.updatedAt)
+  analysisObservationOpen.value = false
 }
 
 function formatTreatmentHistoryDate(dateIso) {
@@ -965,7 +561,7 @@ function resetTreatmentFilters() {
   treatmentStatusFilter.value = 'all'
 }
 
-function enregistrerObservationAnalyse() {
+async function enregistrerObservationAnalyse() {
   const text = String(analysisObservation.value || '').trim()
 
   if (!text) {
@@ -974,48 +570,42 @@ function enregistrerObservationAnalyse() {
     return
   }
 
-  const now = new Date()
-  const savedAtLabel = now.toLocaleString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  try {
+    const response = await api.put(`/doctor-invitations/patients/${props.patient.id}/observation-generale`, {
+      observation: text,
+    })
 
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem(
-      analysisObservationStorageKey.value,
-      JSON.stringify({
-        text,
-        savedAt: now.toISOString(),
-        savedAtLabel
-      })
-    )
+    const payload = response?.data?.data?.general_observation || {}
+    analysisObservation.value = String(payload?.text || text)
+    analysisObservationSavedAt.value = formaterDateObservation(payload?.updated_at)
+    analysisObservationMessageType.value = 'success'
+    analysisObservationMessage.value = response?.data?.message || 'Observation generale enregistree.'
+    analysisObservationOpen.value = false
+  } catch {
+    analysisObservationMessageType.value = 'warning'
+    analysisObservationMessage.value = "Impossible d'enregistrer l'observation generale pour le moment."
   }
-
-  analysisObservation.value = text
-  analysisObservationSavedAt.value = savedAtLabel
-  analysisObservationMessageType.value = 'success'
-  analysisObservationMessage.value = 'Observation generale enregistree.'
-  analysisObservationOpen.value = false
 }
 
-function effacerObservationAnalyse() {
-  analysisObservation.value = ''
-  analysisObservationSavedAt.value = ''
+async function effacerObservationAnalyse() {
+  try {
+    const response = await api.put(`/doctor-invitations/patients/${props.patient.id}/observation-generale`, {
+      observation: null,
+    })
 
-  if (typeof window !== 'undefined') {
-    window.localStorage.removeItem(analysisObservationStorageKey.value)
+    analysisObservation.value = ''
+    analysisObservationSavedAt.value = ''
+    analysisObservationMessageType.value = 'success'
+    analysisObservationMessage.value = response?.data?.message || 'Observation generale effacee.'
+    analysisObservationOpen.value = false
+  } catch {
+    analysisObservationMessageType.value = 'warning'
+    analysisObservationMessage.value = "Impossible d'effacer l'observation generale pour le moment."
   }
-
-  analysisObservationMessageType.value = 'success'
-  analysisObservationMessage.value = 'Observation effacee.'
-  analysisObservationOpen.value = false
 }
 
 watch(
-  () => props.patient?.id,
+  () => [props.patient?.id, props.patient?.generalObservation?.updatedAt, props.patient?.generalObservation?.text],
   () => {
     chargerObservationAnalyse()
   },

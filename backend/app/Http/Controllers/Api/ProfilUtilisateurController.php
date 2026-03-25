@@ -20,6 +20,7 @@ class ProfilUtilisateurController extends Controller
                 'nom' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
+                'photo_profil' => $user->profile_photo,
             ],
         ]);
     }
@@ -69,6 +70,49 @@ class ProfilUtilisateurController extends Controller
 
         return response()->json([
             'message' => 'Mot de passe changé avec succès.',
+        ]);
+    }
+
+    public function mettreAJourPhoto(Request $request): JsonResponse
+    {
+        $request->validate([
+            'photo' => [
+                'required',
+                'string',
+                'max:3000000',
+                'regex:/^data:image\/(png|jpe?g|webp);base64,/i',
+            ],
+        ], [
+            'photo.required' => 'La photo est requise.',
+            'photo.max' => 'La photo est trop volumineuse.',
+            'photo.regex' => 'Format de photo non supporte.',
+        ]);
+
+        $user = $request->user();
+        $user->update([
+            'profile_photo' => $request->input('photo'),
+        ]);
+
+        return response()->json([
+            'message' => 'Photo de profil mise a jour avec succes.',
+            'data' => [
+                'photo_profil' => $user->profile_photo,
+            ],
+        ]);
+    }
+
+    public function supprimerPhoto(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->update([
+            'profile_photo' => null,
+        ]);
+
+        return response()->json([
+            'message' => 'Photo de profil supprimee avec succes.',
+            'data' => [
+                'photo_profil' => null,
+            ],
         ]);
     }
 }

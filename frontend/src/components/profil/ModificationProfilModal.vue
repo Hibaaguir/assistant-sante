@@ -46,6 +46,49 @@
             <!-- Tab Informations -->
             <div v-if="ongletActif === 'nom'" class="space-y-4">
               <div>
+                <p class="block text-sm font-semibold text-slate-700">Photo de profil</p>
+                <div class="mt-2 flex items-center gap-4">
+                  <div class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                    <img v-if="photoApercu" :src="photoApercu" alt="Photo de profil" class="h-16 w-16 rounded-full object-cover" />
+                    <svg v-else viewBox="0 0 24 24" class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="8" r="4" />
+                      <path d="M6 20a6 6 0 0 1 12 0" />
+                    </svg>
+                  </div>
+
+                  <div class="flex flex-wrap gap-2">
+                    <input
+                      ref="inputPhoto"
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      class="hidden"
+                      @change="selectionnerPhoto"
+                    />
+
+                    <button
+                      type="button"
+                      class="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                      :disabled="chargement.photo"
+                      @click="ouvrirSelecteurPhoto"
+                    >
+                      {{ photoApercu ? 'Modifier la photo' : 'Ajouter une photo' }}
+                    </button>
+
+                    <button
+                      v-if="photoApercu"
+                      type="button"
+                      class="inline-flex h-10 items-center justify-center rounded-xl border border-rose-200 px-3 text-xs font-semibold text-rose-600 transition hover:bg-rose-50"
+                      :disabled="chargement.photo"
+                      @click="supprimerPhoto"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+                <p v-if="erreurs.photo" class="mt-2 text-xs text-rose-600">{{ erreurs.photo }}</p>
+              </div>
+
+              <div>
                 <label for="nom" class="block text-sm font-semibold text-slate-700">Nom d'utilisateur</label>
                 <input
                   id="nom"
@@ -195,6 +238,8 @@ const notifications = useNotificationsStore()
 const ongletActif = ref('nom')
 const nomOriginal = ref(authStore.nomUtilisateur)
 const messageSucces = ref('')
+const inputPhoto = ref(null)
+const photoApercu = ref(authStore.photoProfil || '')
 
 const formulaire = reactive({
   nom: authStore.nomUtilisateur,
@@ -211,6 +256,7 @@ const afficherMotDePasse = reactive({
 
 const erreurs = reactive({
   nom: '',
+  photo: '',
   motDePasseActuel: '',
   nouveauMotDePasse: '',
   confirmationMotDePasse: ''
@@ -218,6 +264,7 @@ const erreurs = reactive({
 
 const chargement = reactive({
   nom: false,
+  photo: false,
   mdp: false
 })
 
@@ -261,7 +308,7 @@ async function mettreAJourNom() {
     })
 
     if (response?.data) {
-      authStore.nomUtilisateur = formulaire.nom
+      authStore.mettreAJourUtilisateur({ name: formulaire.nom })
       nomOriginal.value = formulaire.nom
       messageSucces.value = 'Nom mis à jour avec succès!'
       notifications.succes('Votre profil a été mis à jour.')
@@ -281,6 +328,95 @@ async function mettreAJourNom() {
     chargement.nom = false
   }
 }
+
+function ouvrirSelecteurPhoto() {
+  erreurs.photo = ''
+  inputPhoto.value?.click()
+}
+
+function convertirFichierEnBase64(fichier) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(new Error('Impossible de lire le fichier.'))
+    reader.readAsDataURL(fichier)
+  })
+}
+
+async function selectionnerPhoto(event) {
+  const fichier = event?.target?.files?.[0]
+  if (!fichier) return
+
+  erreurs.photo = ''
+
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(fichier.type)) {
+    erreurs.photo = 'Format non supporté. Utilisez PNG, JPG ou WEBP.'
+    return
+  }
+
+  if (fichier.size > 2 * 1024 * 1024) {
+    erreurs.photo = 'La photo ne doit pas dépasser 2 Mo.'
+    return
+  }
+
+  chargement.photo = true
+  try {
+    const base64 = await convertirFichierEnBase64(fichier)
+    const response = await api.put('/profil-utilisateur/photo', {
+      photo: base64,
+    })
+
+    const photo = response?.data?.data?.photo_profil || base64
+    photoApercu.value = photo
+    authStore.mettreAJourUtilisateur({ profile_photo: photo })
+    messageSucces.value = 'Photo de profil mise à jour avec succès!'
+    notifications.succes('Photo de profil mise à jour.')
+    emit('profil-mis-a-jour')
+  } catch (error) {
+    if (error?.response?.data?.errors?.photo) {
+      erreurs.photo = error.response.data.errors.photo[0]
+    } else if (error?.response?.data?.message) {
+      erreurs.photo = error.response.data.message
+    } else {
+      erreurs.photo = 'Une erreur est survenue lors de la mise à jour de la photo.'
+    }
+    notifications.erreur(erreurs.photo)
+  } finally {
+    chargement.photo = false
+    if (event?.target) event.target.value = ''
+  }
+}
+
+async function supprimerPhoto() {
+  erreurs.photo = ''
+  chargement.photo = true
+
+  try {
+    await api.delete('/profil-utilisateur/photo')
+    photoApercu.value = ''
+    authStore.mettreAJourUtilisateur({ profile_photo: null })
+    messageSucces.value = 'Photo de profil supprimée avec succès!'
+    notifications.succes('Photo de profil supprimée.')
+    emit('profil-mis-a-jour')
+  } catch (error) {
+    if (error?.response?.data?.message) {
+      erreurs.photo = error.response.data.message
+    } else {
+      erreurs.photo = 'Une erreur est survenue lors de la suppression de la photo.'
+    }
+    notifications.erreur(erreurs.photo)
+  } finally {
+    chargement.photo = false
+  }
+}
+
+watch(
+  () => authStore.photoProfil,
+  (valeur) => {
+    photoApercu.value = valeur || ''
+  },
+  { immediate: true }
+)
 
 async function changerMotDePasse() {
   if (!formulaire.motDePasseActuel) {

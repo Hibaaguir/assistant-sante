@@ -1,57 +1,45 @@
 /*
   Store d'authentification centralisé.
   Source unique de vérité pour l'utilisateur connecté, son rôle, son
-  espace actif, et la gestion du token.
+  niveau d'accès, et la gestion du token.
 */
 
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import api from '@/services/api'
 
-const ACTIVE_SPACE_KEY = 'active_space'
-
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
   const resolved = ref(false)
-  const espaceActif = ref(localStorage.getItem(ACTIVE_SPACE_KEY) || 'personnel')
 
   let fetchInFlight = null
   let deconnexionInFlight = null
 
   const estConnecte = computed(() => Boolean(localStorage.getItem('auth_token')))
   const nomUtilisateur = computed(() => user.value?.name || '')
+  const photoProfil = computed(() => user.value?.profile_photo || '')
   const roleUtilisateur = computed(() => user.value?.role?.toLowerCase() || null)
   const estAdministrateur = computed(() => roleUtilisateur.value === 'administrateur' || roleUtilisateur.value === 'admin')
   const estMedecin = computed(() => roleUtilisateur.value === 'medecin' || roleUtilisateur.value === 'doctor')
   const aProfilSante = computed(() => Boolean(user.value?.has_profil_sante))
-  const espaceCourant = computed(() => (estMedecin.value ? espaceActif.value : (estAdministrateur.value ? 'administrateur' : 'personnel')))
-  const estDansEspaceMedecin = computed(() => estMedecin.value && espaceCourant.value === 'medecin')
-  const estDansEspacePersonnel = computed(() => (!estMedecin.value && !estAdministrateur.value) || espaceCourant.value === 'personnel')
-
-  function synchroniserEspaceActif() {
-    if (!estMedecin.value) {
-      espaceActif.value = 'personnel'
-      localStorage.setItem(ACTIVE_SPACE_KEY, 'personnel')
-      return
-    }
-
-    const memorise = localStorage.getItem(ACTIVE_SPACE_KEY)
-    espaceActif.value = memorise === 'personnel' ? 'personnel' : 'medecin'
-    localStorage.setItem(ACTIVE_SPACE_KEY, espaceActif.value)
-  }
-
-  function definirEspaceActif(space) {
-    const prochainEspace = space === 'medecin' && estMedecin.value ? 'medecin' : 'personnel'
-    espaceActif.value = prochainEspace
-    localStorage.setItem(ACTIVE_SPACE_KEY, prochainEspace)
-  }
+  const espaceCourant = computed(() => (estMedecin.value ? 'medecin' : (estAdministrateur.value ? 'administrateur' : 'personnel')))
+  const estDansEspaceMedecin = computed(() => estMedecin.value)
+  const estDansEspacePersonnel = computed(() => !estMedecin.value && !estAdministrateur.value)
 
   function definirPresenceProfilSante(hasProfile) {
     if (!user.value) return
     user.value.has_profil_sante = Boolean(hasProfile)
   }
 
-  function appliquerAuthentification(data, preferredSpace = null) {
+  function mettreAJourUtilisateur(changements = {}) {
+    if (!user.value) return
+    user.value = {
+      ...user.value,
+      ...changements,
+    }
+  }
+
+  function appliquerAuthentification(data) {
     if (data?.token) {
       definirToken(data.token)
     }
@@ -62,12 +50,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     resolved.value = true
-
-    if (preferredSpace) {
-      definirEspaceActif(preferredSpace)
-    } else {
-      synchroniserEspaceActif()
-    }
 
     return user.value
   }
@@ -118,7 +100,6 @@ export const useAuthStore = defineStore('auth', () => {
       supprimerToken()
       user.value = null
       resolved.value = false
-      espaceActif.value = 'personnel'
     })()
 
     try {
@@ -130,7 +111,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   function supprimerToken() {
     localStorage.removeItem('auth_token')
-    localStorage.removeItem(ACTIVE_SPACE_KEY)
     delete api.defaults.headers.common.Authorization
   }
 
@@ -148,13 +128,14 @@ export const useAuthStore = defineStore('auth', () => {
     estDansEspaceMedecin,
     estDansEspacePersonnel,
     nomUtilisateur,
+    photoProfil,
     roleUtilisateur,
     aProfilSante,
     appliquerAuthentification,
     chargerUtilisateur,
     deconnexion,
-    definirEspaceActif,
     definirPresenceProfilSante,
+    mettreAJourUtilisateur,
     supprimerToken,
     definirToken,
   }

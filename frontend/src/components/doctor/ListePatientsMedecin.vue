@@ -19,33 +19,6 @@
       </article>
     </section>
 
-    <section v-if="afficherAlertes" class="mt-8 rounded-[18px] border border-[#d4d9e1] bg-white p-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
-      <div class="flex items-center justify-between gap-3">
-        <h2 class="text-[18px] font-bold text-[#06214d]">Alertes actives ({{ alertes.length }})</h2>
-        <button type="button" class="text-[14px] font-medium text-[#30466e]" @click="$emit('update:afficherAlertes', false)">Masquer</button>
-      </div>
-
-      <div class="mt-6 space-y-4">
-        <article
-          v-for="alert in alertes"
-          :key="alert.id"
-          class="flex flex-col gap-4 rounded-[17px] border px-4 py-4 md:flex-row md:items-start md:justify-between md:px-5"
-          :class="alert.rowClass"
-        >
-          <div class="flex items-start gap-4">
-            <div class="mt-[2px] flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full" :class="alert.iconWrapClass">
-              <IconeTriangleAlerte class="h-[20px] w-[20px]" :class="alert.iconClass" />
-            </div>
-            <div>
-              <p class="text-[16px] font-semibold text-[#031a46]">{{ alert.patient }}</p>
-              <p class="mt-1 text-[14px] text-[#31405e]">{{ alert.message }}</p>
-            </div>
-          </div>
-          <p class="shrink-0 pt-1 text-[14px] font-medium text-[#5f6d85] md:text-right">{{ alert.time }}</p>
-        </article>
-      </div>
-    </section>
-
     <section class="mt-8 rounded-[18px] border border-[#d4d9e1] bg-white p-4 shadow-[0_1px_4px_rgba(15,23,42,0.05)] sm:p-6">
       <div class="flex flex-col gap-4 xl:flex-row xl:items-center">
         <label class="relative block xl:flex-1">
@@ -133,13 +106,6 @@
             </div>
           </div>
 
-          <div v-if="patient.alertCount" class="flex shrink-0 flex-col items-end gap-2 xl:min-w-[160px]">
-            <div class="inline-flex h-[40px] items-center gap-2 rounded-[12px] border px-4 text-[14px] font-semibold" :class="patient.alertBadgeClass">
-              <IconeTriangleAlerte class="h-[16px] w-[16px]" />
-              {{ patient.alertCount }} alerte<span v-if="patient.alertCount > 1">s</span>
-            </div>
-            <p v-if="patient.alertLabel" class="text-[14px] font-medium" :class="patient.alertLabelClass">{{ patient.alertLabel }}</p>
-          </div>
         </div>
       </article>
     </section>
@@ -164,14 +130,10 @@ const props = defineProps({
   patients: {
     type: Array,
     default: () => []
-  },
-  afficherAlertes: {
-    type: Boolean,
-    default: true
   }
 })
 
-defineEmits(['open-patient', 'update:afficherAlertes'])
+defineEmits(['open-patient'])
 
 const search = ref('')
 const ongletPatientActif = ref('all')
@@ -182,15 +144,6 @@ const patientTabs = [
   { key: 'watch', label: 'Surveillance', activeClass: 'bg-[#eb7b00] text-white shadow-[0_6px_16px_rgba(235,123,0,0.2)]' },
   { key: 'stable', label: 'Stables', activeClass: 'bg-[#08b33b] text-white shadow-[0_6px_16px_rgba(8,179,59,0.2)]' }
 ]
-
-const alertes = computed(() =>
-  props.patients
-    .flatMap((patient) => (Array.isArray(patient.alerts) ? patient.alerts : []).map((alert) => ({
-      ...alert,
-      patient: patient.name
-    })))
-    .sort((a, b) => new Date(b.isoTime || 0).getTime() - new Date(a.isoTime || 0).getTime())
-)
 
 const cartesStatistiques = computed(() => {
   const counts = {

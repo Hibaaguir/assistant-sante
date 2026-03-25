@@ -215,7 +215,7 @@ const showPassword = ref(false);
 const serverMessage = ref("");
 const messageType = ref("success");
 
-const lienConnexion = computed(() => ({ name: "connexion-medecin", query: { email: form.email } }));
+const lienConnexion = computed(() => ({ name: "connexion", query: { email: form.email } }));
 
 function effacerErreurs() {
   errors.name = "";

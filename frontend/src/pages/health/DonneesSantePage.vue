@@ -159,15 +159,22 @@ function normaliserSerie(values, fallback = 0) {
 }
 
 function construire7DerniersJours() {
+  const today = new Date();
+  const todayKey = today.toISOString().slice(0, 10);
+  const monday = new Date(today);
+  const dayOffset = (today.getDay() + 6) % 7;
+  monday.setDate(today.getDate() - dayOffset);
+
   return Array.from({ length: 7 }).map((_, idx) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (6 - idx));
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + idx);
     const key = date.toISOString().slice(0, 10);
     return {
       key,
       shortLabel: date.toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", ""),
       fullLabel: date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }),
       day: date.getDate(),
+      isFuture: key > todayKey,
     };
   });
 }

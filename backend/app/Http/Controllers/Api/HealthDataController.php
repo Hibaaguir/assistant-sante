@@ -7,6 +7,7 @@ use App\Http\Requests\Api\StoreHealthLabResultRequest;
 use App\Http\Requests\Api\StoreHealthVitalRequest;
 use App\Http\Requests\Api\SyncHealthTreatmentChecksRequest;
 use App\Http\Requests\Api\UpdateHealthLabResultRequest;
+use App\Models\DoctorInvitation;
 use App\Models\HealthLabResult;
 use App\Models\HealthTreatmentCheck;
 use App\Models\HealthVital;
@@ -58,6 +59,16 @@ class HealthDataController extends Controller
             ->orderBy('medication_name')
             ->get();
 
+        $latestDoctorObservation = DoctorInvitation::query()
+            ->with('doctor:id,name,email')
+            ->where('patient_user_id', $userId)
+            ->where('status', 'accepted')
+            ->whereNotNull('general_observation')
+            ->orderByDesc('general_observation_updated_at')
+            ->orderByDesc('accepted_at')
+            ->orderByDesc('id')
+            ->first();
+
         $treatmentMedicines = $this->serviceDonneesSante->resoudreMedicamentsTraitement($userId);
 
         return response()->json([
@@ -69,6 +80,12 @@ class HealthDataController extends Controller
                 'lab_results' => $labResults,
                 'treatment_medicines' => $treatmentMedicines,
                 'treatment_checks' => $treatmentChecks,
+                'doctor_observation' => [
+                    'text' => $latestDoctorObservation?->general_observation,
+                    'updated_at' => optional($latestDoctorObservation?->general_observation_updated_at)?->toISOString(),
+                    'doctor_name' => $latestDoctorObservation?->doctor?->name,
+                    'doctor_email' => $latestDoctorObservation?->doctor?->email,
+                ],
             ],
         ]);
     }

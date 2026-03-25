@@ -16,7 +16,7 @@ class DoctorInvitationMail extends Mailable
     public function __construct(
         public User $patient,
         public string $doctorEmail,
-        public string $applicationPath = '/doctor-login',
+        public string $applicationPath = '/doctor-register',
         public ?string $role = null,
     ) {
     }

@@ -16,28 +16,6 @@
         <h1 class="text-[28px] font-bold leading-none tracking-[-0.03em] text-[#001b44] sm:text-[33px]">Espace Medecin</h1>
         <p class="mt-3 text-[15px] font-medium text-[#5a6881]">Suivi en temps reel de vos patients</p>
       </div>
-
-      <div class="flex flex-wrap items-center gap-3 self-start">
-        <button
-          type="button"
-          class="inline-flex h-[40px] items-center gap-2 rounded-[14px] border border-[#cfe3d8] bg-[#effaf3] px-5 text-[15px] font-medium text-[#167a45]"
-          @click="ouvrirEspacePersonnel"
-        >
-          <svg viewBox="0 0 24 24" class="h-[17px] w-[17px]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M6 20a6 6 0 0 1 12 0" />
-          </svg>
-          <span>{{ authStore.aProfilSante ? 'Mon espace personnel' : 'Completer mon espace personnel' }}</span>
-        </button>
-        <button
-          type="button"
-          class="relative flex h-[40px] w-[50px] items-center justify-center rounded-[14px] border border-[#d7dce3] bg-[#f6f6f7] text-[#4b5568]"
-          @click="afficherAlertes = !afficherAlertes"
-        >
-          <IconeCloche class="h-[18px] w-[18px]" />
-          <span class="absolute right-[-6px] top-[-7px] flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-[#ef0808] px-1 text-[12px] font-bold leading-none text-white">{{ totalAlerts }}</span>
-        </button>
-      </div>
     </header>
     <NotificationsEnLigne />
 
@@ -67,7 +45,6 @@
       <ListePatientsMedecin
         v-if="!patientSelectionne"
         :patients="patients"
-        v-model:afficher-alertes="afficherAlertes"
         @open-patient="ouvrirPatient"
       />
       <DetailPatientMedecin
@@ -91,19 +68,15 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import api from '@/services/api'
-import { IconeCloche, IconeAjoutUtilisateur, IconeUtilisateurs } from '@/components/doctor/IconesMedecin.js'
+import { IconeAjoutUtilisateur, IconeUtilisateurs } from '@/components/doctor/IconesMedecin.js'
 import { mapperInvitation, mapperPatient, mapperDetailPatient } from '@/components/doctor/utilitairesMedecin.js'
 import NotificationsEnLigne from '@/components/ui/NotificationsEnLigne.vue'
 import InvitationsMedecin from '@/components/doctor/InvitationsMedecin.vue'
 import DetailPatientMedecin from '@/components/doctor/DetailPatientMedecin.vue'
 import ListePatientsMedecin from '@/components/doctor/ListePatientsMedecin.vue'
 
-const router = useRouter()
-const authStore = useAuthStore()
 const notifications = useNotificationsStore()
 
 // ---------------------------------------------------------------------------
@@ -111,7 +84,6 @@ const notifications = useNotificationsStore()
 // ---------------------------------------------------------------------------
 
 const ongletEnteteActif = ref('patients')
-const afficherAlertes = ref(true)
 const errorMessage = ref('')
 const patients = ref([])
 const invitations = ref([])
@@ -128,10 +100,6 @@ const ongletsEntete = computed(() => [
   { key: 'patients', label: 'Mes Patients', count: patients.value.length, icon: IconeUtilisateurs },
   { key: 'invitations', label: "Invitations d'ajout", count: invitations.value.length, icon: IconeAjoutUtilisateur }
 ])
-
-const totalAlerts = computed(() =>
-  patients.value.reduce((sum, patient) => sum + (Array.isArray(patient.alerts) ? patient.alerts.length : 0), 0)
-)
 
 // ---------------------------------------------------------------------------
 // Data loading
@@ -223,9 +191,4 @@ async function refuserInvitation(invitationId) {
 onMounted(async () => {
   await chargerDonneesMedecin()
 })
-
-function ouvrirEspacePersonnel() {
-  authStore.definirEspaceActif('personnel')
-  router.push({ name: authStore.aProfilSante ? 'tableau-de-bord' : 'profil-sante' })
-}
 </script>

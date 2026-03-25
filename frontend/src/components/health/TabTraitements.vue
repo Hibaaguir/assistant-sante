@@ -138,7 +138,10 @@
           <button
             type="button"
             class="h-[92px] w-full rounded-xl border px-2 pb-2 pt-2 transition"
-            :class="estJourComplet(day.key) ? 'border-[#08a84a] bg-[#cfddd6]' : 'border-slate-300 bg-slate-50 hover:bg-slate-100'"
+            :disabled="Boolean(day.isFuture)"
+            :class="day.isFuture
+              ? 'cursor-not-allowed border-slate-200 bg-slate-100 opacity-60'
+              : (estJourComplet(day.key) ? 'border-[#08a84a] bg-[#cfddd6]' : 'border-slate-300 bg-slate-50 hover:bg-slate-100')"
             @click="ouvrirJourTraitement(day)"
           >
             <p class="text-[32px] font-medium leading-none text-slate-900">{{ day.day }}</p>
@@ -192,8 +195,8 @@
             <div>
               <p class="text-[24px] font-semibold leading-none text-slate-900">{{ med.name }}</p>
               <p class="mt-1 text-[13px] leading-none text-slate-600">{{ med.dose }}</p>
-              <p v-if="obtenirNombrePrises(med) > 1" class="mt-2 text-[13px] text-slate-500">
-                {{ compterPrisesCompletees(selectedTreatmentDay.key, med) }}/{{ obtenirNombrePrises(med) }} prises effectuées
+              <p v-if="obtenirNombrePrisesPourJour(selectedTreatmentDay.key, med) > 1" class="mt-2 text-[13px] text-slate-500">
+                {{ compterPrisesCompletees(selectedTreatmentDay.key, med) }}/{{ obtenirNombrePrisesPourJour(selectedTreatmentDay.key, med) }} prises effectuées
               </p>
             </div>
             <svg
@@ -206,9 +209,9 @@
             ><path d="m5 13 4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
           </div>
 
-          <div class="mt-3 flex flex-wrap gap-2">
+          <div v-if="obtenirNombrePrisesPourJour(selectedTreatmentDay.key, med) > 0" class="mt-3 flex flex-wrap gap-2">
             <button
-              v-for="doseIndex in obtenirIndexPrises(med)"
+              v-for="doseIndex in obtenirIndexPrises(selectedTreatmentDay.key, med)"
               :key="`${med.id}-dose-${doseIndex}`"
               type="button"
               class="inline-flex h-10 items-center gap-2 rounded-xl border px-3.5 text-[14px] font-semibold transition"
@@ -224,6 +227,9 @@
               <span>Prise {{ doseIndex }}</span>
             </button>
           </div>
+          <p v-else class="mt-3 text-[13px] text-slate-500">
+            Aucune prise prévue pour ce jour.
+          </p>
         </article>
       </div>
       <p v-else class="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-600">
@@ -288,7 +294,7 @@ const treatmentHistoryRows = computed(() => {
       const meds = props.treatmentMedicines
         .filter((med) => selectedTreatmentHistoryMed.value === "all" || med.id === selectedTreatmentHistoryMed.value)
         .map((med) => {
-          const total = obtenirNombrePrises(med);
+          const total = obtenirNombrePrisesPourJour(dateKey, med);
           const taken = compterPrisesCompletees(dateKey, med);
           const progress = total > 0 ? Math.round((taken / total) * 100) : 0;
 
@@ -351,16 +357,77 @@ function formaterDateHistoriqueTraitement(dateIso) {
   });
 }
 
-// Cette fonction retourne le nombre de prises quotidien pour un medicament.
-function obtenirNombrePrises(med) {
-  const count = Number(med?.doses_per_day ?? 1);
-  if (!Number.isFinite(count)) return 1;
-  return Math.max(1, Math.min(Math.round(count), 12));
+function resoudreFrequenceTraitement(med) {
+  const rawUnit = String(med?.frequency_unit || "").trim().toLowerCase();
+  let frequencyUnit = rawUnit;
+
+  let frequencyCount = Number(med?.frequency_count ?? NaN);
+  if (!Number.isFinite(frequencyCount)) {
+    const match = String(med?.freq || "").match(/(\d+)\s*fois\s*\/\s*(jour|semaine|mois)/i);
+    if (match) {
+      frequencyCount = Number(match[1]);
+      frequencyUnit = String(match[2]).toLowerCase();
+    }
+  }
+
+  if (!["jour", "semaine", "mois"].includes(frequencyUnit)) {
+    frequencyUnit = "jour";
+  }
+
+  if (!Number.isFinite(frequencyCount) || frequencyCount < 1) {
+    frequencyCount = Number(med?.doses_per_day ?? 1);
+  }
+
+  return {
+    unit: frequencyUnit,
+    count: Math.max(1, Math.min(Math.round(frequencyCount), 31)),
+  };
 }
 
-// Cette fonction genere la liste des numeros de prises.
-function obtenirIndexPrises(med) {
-  return Array.from({ length: obtenirNombrePrises(med) }, (_, idx) => idx + 1);
+function obtenirJoursRepartis(totalSlots, periodLength) {
+  const slots = Math.max(1, Math.min(Math.round(totalSlots), periodLength));
+  const indices = new Set();
+
+  for (let i = 0; i < slots; i += 1) {
+    const value = Math.floor((i * periodLength) / slots) + 1;
+    indices.add(Math.max(1, Math.min(value, periodLength)));
+  }
+
+  return Array.from(indices).sort((a, b) => a - b);
+}
+
+function estPrisePrevueCeJour(dayKey, med) {
+  const { unit, count } = resoudreFrequenceTraitement(med);
+
+  if (unit === "jour") return true;
+
+  const date = new Date(`${dayKey}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return true;
+
+  if (unit === "semaine") {
+    const weekDay = ((date.getDay() + 6) % 7) + 1;
+    const plannedDays = obtenirJoursRepartis(Math.min(count, 7), 7);
+    return plannedDays.includes(weekDay);
+  }
+
+  const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const plannedMonthDays = obtenirJoursRepartis(Math.min(count, daysInMonth), daysInMonth);
+  return plannedMonthDays.includes(date.getDate());
+}
+
+function obtenirNombrePrisesPourJour(dayKey, med) {
+  const { unit, count } = resoudreFrequenceTraitement(med);
+
+  if (unit === "jour") {
+    return Math.max(1, Math.min(count, 12));
+  }
+
+  return estPrisePrevueCeJour(dayKey, med) ? 1 : 0;
+}
+
+// Cette fonction genere la liste des numeros de prises pour un jour donne.
+function obtenirIndexPrises(dayKey, med) {
+  return Array.from({ length: obtenirNombrePrisesPourJour(dayKey, med) }, (_, idx) => idx + 1);
 }
 
 // Cette fonction cree une cle unique pour une prise de medicament.
@@ -372,7 +439,16 @@ function construireClePrise(medId, doseIndex) {
 function assurerSuiviJour(dayKey) {
   if (!props.treatmentChecks[dayKey]) props.treatmentChecks[dayKey] = {};
   for (const med of props.treatmentMedicines) {
-    const doses = obtenirNombrePrises(med);
+    const doses = obtenirNombrePrisesPourJour(dayKey, med);
+
+    const maxDoses = resoudreFrequenceTraitement(med).unit === "jour" ? 12 : 1;
+    for (let i = doses + 1; i <= maxDoses; i += 1) {
+      const key = construireClePrise(med.id, i);
+      if (key in props.treatmentChecks[dayKey]) {
+        delete props.treatmentChecks[dayKey][key];
+      }
+    }
+
     for (let i = 1; i <= doses; i += 1) {
       const key = construireClePrise(med.id, i);
       if (typeof props.treatmentChecks[dayKey][key] !== "boolean") {
@@ -389,7 +465,7 @@ function estPriseCochee(dayKey, medId, doseIndex) {
 
 // Cette fonction compte le nombre de prises cochees pour un jour.
 function compterPrisesCompletees(dayKey, med) {
-  const doses = obtenirNombrePrises(med);
+  const doses = obtenirNombrePrisesPourJour(dayKey, med);
   let completed = 0;
   for (let i = 1; i <= doses; i += 1) {
     if (estPriseCochee(dayKey, med.id, i)) completed += 1;
@@ -399,15 +475,28 @@ function compterPrisesCompletees(dayKey, med) {
 
 // Cette fonction verifie si toutes les prises du medicament sont faites.
 function estMedicamentComplet(dayKey, med) {
-  return compterPrisesCompletees(dayKey, med) >= obtenirNombrePrises(med);
+  const expectedDoses = obtenirNombrePrisesPourJour(dayKey, med);
+  if (expectedDoses <= 0) return true;
+  return compterPrisesCompletees(dayKey, med) >= expectedDoses;
 }
 
 // Cette fonction verifie si tous les medicaments du jour sont complets.
 function estJourComplet(dayKey) {
+  if (estJourFutur(dayKey)) return false;
+
   const dayChecks = props.treatmentChecks[dayKey];
   if (!dayChecks) return false;
   if (!props.treatmentMedicines.length) return false;
+
+  const hasPlannedDose = props.treatmentMedicines.some((med) => obtenirNombrePrisesPourJour(dayKey, med) > 0);
+  if (!hasPlannedDose) return false;
+
   return props.treatmentMedicines.every((med) => estMedicamentComplet(dayKey, med));
+}
+
+function estJourFutur(dayKey) {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  return String(dayKey || "") > todayKey;
 }
 
 // Cette fonction envoie l'etat des prises de traitement au serveur.
@@ -416,9 +505,11 @@ async function synchroniserSuiviTraitements() {
 
   const checks = [];
   for (const day of props.treatmentDays) {
+    if (estJourFutur(day.key)) continue;
+
     assurerSuiviJour(day.key);
     for (const med of props.treatmentMedicines) {
-      const doses = obtenirNombrePrises(med);
+      const doses = obtenirNombrePrisesPourJour(day.key, med);
       for (let i = 1; i <= doses; i += 1) {
         const doseKey = construireClePrise(med.id, i);
         checks.push({
@@ -436,7 +527,12 @@ async function synchroniserSuiviTraitements() {
 
 // Cette fonction coche ou decoche une prise puis synchronise le suivi.
 async function basculerPrise(dayKey, med, doseIndex) {
+  if (estJourFutur(dayKey)) return;
+
   assurerSuiviJour(dayKey);
+  const maxDosesForDay = obtenirNombrePrisesPourJour(dayKey, med);
+  if (doseIndex < 1 || doseIndex > maxDosesForDay) return;
+
   const key = construireClePrise(med.id, doseIndex);
   const previousValue = Boolean(props.treatmentChecks[dayKey][key]);
   props.treatmentChecks[dayKey][key] = !props.treatmentChecks[dayKey][key];
@@ -452,6 +548,8 @@ async function basculerPrise(dayKey, med, doseIndex) {
 
 // Cette fonction ouvre la modale de suivi pour un jour precis.
 function ouvrirJourTraitement(day) {
+  if (!day || day.isFuture || estJourFutur(day.key)) return;
+
   assurerSuiviJour(day.key);
   selectedTreatmentDayKey.value = day.key;
   showTreatmentModal.value = true;

@@ -16,12 +16,15 @@ class DoctorInvitation extends Model
         'accepted_at',
         'rejected_at',
         'revoked_at',
+        'general_observation',
+        'general_observation_updated_at',
     ];
 
     protected $casts = [
         'accepted_at' => 'datetime',
         'rejected_at' => 'datetime',
         'revoked_at' => 'datetime',
+        'general_observation_updated_at' => 'datetime',
     ];
 
     public function patient(): BelongsTo

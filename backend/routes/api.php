@@ -58,6 +58,7 @@ $routesInvitationsMedecins = function () {
     Route::post('/{doctorInvitation}/refuser', [DoctorInvitationController::class, 'refuser']);
     Route::get('/patients', [DoctorInvitationController::class, 'listerPatients']);
     Route::get('/patients/{patient}', [DoctorInvitationController::class, 'detailPatient']);
+    Route::put('/patients/{patient}/observation-generale', [DoctorInvitationController::class, 'enregistrerObservationGenerale']);
 
     // Alias anglais conserves pour les anciens clients.
     Route::post('/{doctorInvitation}/accept', [DoctorInvitationController::class, 'accepter']);
@@ -85,6 +86,8 @@ Route::middleware('auth:sanctum')->group(function () use ($routesDonneesSante, $
     Route::prefix('profil-utilisateur')->group(function () {
         Route::get('/', [ProfilUtilisateurController::class, 'obtenirProfil']);
         Route::put('/nom', [ProfilUtilisateurController::class, 'mettreAJourNom']);
+        Route::put('/photo', [ProfilUtilisateurController::class, 'mettreAJourPhoto']);
+        Route::delete('/photo', [ProfilUtilisateurController::class, 'supprimerPhoto']);
         Route::post('/changer-mot-de-passe', [ProfilUtilisateurController::class, 'changerMotDePasse']);
     });
 
