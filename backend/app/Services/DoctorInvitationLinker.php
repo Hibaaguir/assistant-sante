@@ -13,17 +13,9 @@ class DoctorInvitationLinker
             return false;
         }
 
-        $updated = DoctorInvitation::query()
+        return DoctorInvitation::query()
             ->whereRaw('LOWER(doctor_email) = ?', [strtolower($user->email)])
-            ->where(function ($query) use ($user) {
-                $query
-                    ->whereNull('doctor_user_id')
-                    ->orWhere('doctor_user_id', '!=', $user->id);
-            })
-            ->update([
-                'doctor_user_id' => $user->id,
-            ]);
-
-        return $updated > 0;
+            ->where(fn ($q) => $q->whereNull('doctor_user_id')->orWhere('doctor_user_id', '!=', $user->id))
+            ->update(['doctor_user_id' => $user->id]) > 0;
     }
 }

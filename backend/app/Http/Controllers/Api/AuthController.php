@@ -136,39 +136,6 @@ class AuthController extends Controller
         }
     }
 
-    public function connecterMedecin(Request $request): JsonResponse
-    {
-        try {
-            $validated = $request->validate([
-                'email'    => ['required', 'email'],
-                'password' => ['required', 'string'],
-            ], [
-                'email.required'    => "L'adresse email est obligatoire.",
-                'password.required' => 'Le mot de passe est obligatoire.',
-            ]);
-
-            $email = strtolower(trim($validated['email']));
-            $user  = $this->trouverUtilisateurPourConnexion($email, $validated['password'], 'medecin');
-
-            if (! $user) {
-                return response()->json(['message' => 'Email ou mot de passe invalide.'], 401);
-            }
-
-            $user->tokens()->delete();
-
-            $hasPending = $this->lieurInvitationMedecin->lierPourUtilisateur($user) || $this->aInvitationsMedecinEnAttente($user);
-            $hasProfil  = $user->profilSante()->exists();
-
-            return $this->reponseAuthentifiee($user, $user->createToken('doctor_auth_token')->plainTextToken, $hasProfil, '/main/dashboard', $hasPending, 200, 'Connexion medecin reussie.');
-
-        } catch (ValidationException $e) {
-            return $this->erreurValidation($e, 'Veuillez corriger les erreurs du formulaire medecin.');
-        } catch (\Throwable $e) {
-            Log::error('Doctor login error: ' . $e->getMessage());
-            return response()->json(['message' => 'Erreur lors de la connexion medecin.'], 500);
-        }
-    }
-
     public function utilisateurConnecte(Request $request): JsonResponse
     {
         /** @var User $user */

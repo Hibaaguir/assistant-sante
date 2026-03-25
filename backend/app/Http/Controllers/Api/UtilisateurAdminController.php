@@ -46,8 +46,7 @@ class UtilisateurAdminController extends Controller
             'statut' => ['required', 'in:Actif,Inactif'],
         ]);
 
-        $user->statut_admin = $donneesValidees['statut'];
-        $user->save();
+        $user->update(['statut_admin' => $donneesValidees['statut']]);
 
         return response()->json([
             'message' => 'Statut utilisateur mis a jour avec succes.',
@@ -58,18 +57,12 @@ class UtilisateurAdminController extends Controller
     {
         $this->verifierAccesAdministrateur($request);
 
-        if ($request->user()?->id === $user->id) {
-            return response()->json([
-                'message' => 'Vous ne pouvez pas supprimer votre propre compte administrateur.',
-            ], 422);
-        }
+        abort_if($request->user()?->id === $user->id, 422, 'Vous ne pouvez pas supprimer votre propre compte.');
 
         $user->tokens()->delete();
         $user->delete();
 
-        return response()->json([
-            'message' => 'Utilisateur supprime avec succes.',
-        ]);
+        return response()->json(['message' => 'Utilisateur supprime avec succes.']);
     }
 
     private function verifierAccesAdministrateur(Request $request): void

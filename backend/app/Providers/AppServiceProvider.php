@@ -19,16 +19,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Charger les migrations organisées par sous-dossiers.
+        // Charger les migrations organisées par priorité (001-008).
         $this->loadMigrationsFrom([
-            database_path('migrations/authentification'),
-            database_path('migrations/utilisateurs'),
-            database_path('migrations/medecins'),
-            database_path('migrations/profil_sante'),
-            database_path('migrations/journal_sante'),
-            database_path('migrations/donnees_sante'),
-            database_path('migrations/notifications'),
-            database_path('migrations/utilitaires'),
+            database_path('migrations/001_authentification'),
+            database_path('migrations/002_utilisateurs'),
+            database_path('migrations/003_profil_sante'),
+            database_path('migrations/004_donnees_sante'),
+            database_path('migrations/005_medecins'),
+            database_path('migrations/006_journal_sante'),
+            database_path('migrations/007_notifications'),
+            database_path('migrations/008_utilitaires'),
         ]);
     }
 }

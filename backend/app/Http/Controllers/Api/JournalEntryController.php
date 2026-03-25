@@ -41,10 +41,12 @@ class JournalEntryController extends Controller
             $payload
         );
 
+        $isNew = $entry->wasRecentlyCreated;
+
         return response()->json([
-            'message' => 'Entree du journal enregistree avec succes.',
+            'message' => 'Entree du journal ' . ($isNew ? 'enregistree' : 'mise a jour') . ' avec succes.',
             'data' => $entry,
-        ], 201);
+        ], $isNew ? 201 : 200);
     }
 
     // Afficher une entrée spécifique du journal

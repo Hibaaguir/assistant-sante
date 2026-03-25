@@ -26,33 +26,19 @@ class TraitementJournalierNotification extends Notification
 
     public function toArray(object $notifiable): array
     {
+        $isMissed = $this->typeNotification === 'missed';
+
         return [
             'notification_kind' => $this->typeNotification,
             'target_date' => $this->dateCible->toDateString(),
-            'title' => $this->construireTitre(),
-            'message' => $this->construireMessage(),
+            'title' => $isMissed ? 'Traitements oublies aujourd\'hui' : 'Rappel traitements du jour',
+            'message' => $isMissed 
+                ? "Vous avez oublie {$this->totalManquant} prise(s) sur {$this->totalPrevu} prevue(s)."
+                : "Vous avez {$this->totalPrevu} prise(s) prevue(s) aujourd'hui.",
             'expected_total' => $this->totalPrevu,
             'taken_total' => $this->totalPris,
             'missing_total' => $this->totalManquant,
             'items' => $this->elements,
         ];
-    }
-
-    private function construireTitre(): string
-    {
-        if ($this->typeNotification === 'missed') {
-            return 'Traitements oublies aujourd\'hui';
-        }
-
-        return 'Rappel traitements du jour';
-    }
-
-    private function construireMessage(): string
-    {
-        if ($this->typeNotification === 'missed') {
-            return "Vous avez oublie {$this->totalManquant} prise(s) sur {$this->totalPrevu} prevue(s).";
-        }
-
-        return "Vous avez {$this->totalPrevu} prise(s) prevue(s) aujourd'hui.";
     }
 }

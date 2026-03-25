@@ -6,43 +6,27 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class ProfilUtilisateurController extends Controller
 {
-    public function obtenirProfil(Request $request): JsonResponse
-    {
-        $user = $request->user();
-
-        return response()->json([
-            'message' => 'Profil obtenu avec succès.',
-            'data' => [
-                'id' => $user->id,
-                'nom' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'photo_profil' => $user->profile_photo,
-            ],
-        ]);
-    }
-
     public function mettreAJourNom(Request $request): JsonResponse
     {
         $request->validate([
-            'nom' => 'required|string|min:2|max:120',
+            'nom' => 'required|string|min:2|max:120|not_regex:/^\s+$/',
         ], [
             'nom.required' => 'Le nom est requis.',
             'nom.min' => 'Le nom doit contenir au moins 2 caractères.',
             'nom.max' => 'Le nom ne peut pas dépasser 120 caractères.',
+            'nom.not_regex' => 'Le nom ne peut pas contenir seulement des espaces.',
         ]);
 
         $user = $request->user();
-        $user->update(['name' => $request->input('nom')]);
+        $user->update(['name' => trim($request->input('nom'))]);
 
         return response()->json([
             'message' => 'Nom mis à jour avec succès.',
-            'data' => [
-                'nom' => $user->name,
-            ],
+            'data' => ['nom' => $user->name],
         ]);
     }
 
@@ -50,27 +34,22 @@ class ProfilUtilisateurController extends Controller
     {
         $request->validate([
             'mot_de_passe_actuel' => 'required|string',
-            'nouveau_mot_de_passe' => 'required|string|min:8|confirmed',
+            'nouveau_mot_de_passe' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
         ], [
             'mot_de_passe_actuel.required' => 'Le mot de passe actuel est requis.',
             'nouveau_mot_de_passe.required' => 'Le nouveau mot de passe est requis.',
-            'nouveau_mot_de_passe.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
             'nouveau_mot_de_passe.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
         ]);
 
         $user = $request->user();
 
         if (!Hash::check($request->input('mot_de_passe_actuel'), $user->password)) {
-            return response()->json([
-                'message' => 'Le mot de passe actuel est incorrect.',
-            ], 422);
+            return response()->json(['message' => 'Le mot de passe actuel est incorrect.'], 422);
         }
 
         $user->update(['password' => Hash::make($request->input('nouveau_mot_de_passe'))]);
 
-        return response()->json([
-            'message' => 'Mot de passe changé avec succès.',
-        ]);
+        return response()->json(['message' => 'Mot de passe changé avec succès.']);
     }
 
     public function mettreAJourPhoto(Request $request): JsonResponse
@@ -79,40 +58,32 @@ class ProfilUtilisateurController extends Controller
             'photo' => [
                 'required',
                 'string',
-                'max:3000000',
+                'max:5000000',
                 'regex:/^data:image\/(png|jpe?g|webp);base64,/i',
             ],
         ], [
             'photo.required' => 'La photo est requise.',
-            'photo.max' => 'La photo est trop volumineuse.',
-            'photo.regex' => 'Format de photo non supporte.',
+            'photo.max' => 'La photo est trop volumineuse (max 5MB).',
+            'photo.regex' => 'Format de photo non supporté.',
         ]);
 
         $user = $request->user();
-        $user->update([
-            'profile_photo' => $request->input('photo'),
-        ]);
+        $user->update(['profile_photo' => $request->input('photo')]);
 
         return response()->json([
-            'message' => 'Photo de profil mise a jour avec succes.',
-            'data' => [
-                'photo_profil' => $user->profile_photo,
-            ],
+            'message' => 'Photo de profil mise à jour avec succès.',
+            'data' => ['photo_profil' => $user->profile_photo],
         ]);
     }
 
     public function supprimerPhoto(Request $request): JsonResponse
     {
         $user = $request->user();
-        $user->update([
-            'profile_photo' => null,
-        ]);
+        $user->update(['profile_photo' => null]);
 
         return response()->json([
-            'message' => 'Photo de profil supprimee avec succes.',
-            'data' => [
-                'photo_profil' => null,
-            ],
+            'message' => 'Photo de profil supprimée avec succès.',
+            'data' => ['photo_profil' => null],
         ]);
     }
 }
