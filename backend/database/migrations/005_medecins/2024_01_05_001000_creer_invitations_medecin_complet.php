@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('doctor_invitations')) {
+        if (!Schema::hasTable('doctor_invitations')) {
             Schema::create('doctor_invitations', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('patient_user_id')->constrained('users')->cascadeOnDelete();
@@ -23,9 +23,11 @@ return new class extends Migration
                 $table->timestamp('general_observation_updated_at')->nullable();
                 $table->timestamps();
 
-                $table->unique(['patient_user_id', 'doctor_user_id'], 'doctor_invites_unique_pair');
+                // Index et contraintes spécifiques au flux email-first
+                $table->unique(['patient_user_id', 'doctor_email'], 'doctor_invites_unique_patient_email');
                 $table->index(['doctor_user_id', 'status']);
                 $table->index(['patient_user_id', 'status']);
+                $table->index(['doctor_email', 'status']);
             });
         }
     }

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -8,23 +8,35 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('profils_sante')) {
+        if (!Schema::hasTable('profils_sante')) {
             Schema::create('profils_sante', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('user_id')->constrained()->onDelete('cascade');
-                $table->integer('age');
+                
+                // Colonnes de base
                 $table->enum('sexe', ['homme', 'femme']);
                 $table->float('taille');
                 $table->float('poids');
                 $table->string('groupe_sanguin');
-                $table->string('objectif');
+                $table->string('objectif')->nullable();
+                $table->json('objectifs')->nullable();
                 $table->json('allergies')->nullable();
                 $table->json('maladies_chroniques')->nullable();
                 $table->json('traitements')->nullable();
+                
+                // Prise de médicaments
                 $table->boolean('prend_medicament')->default(false);
                 $table->string('nom_medicament')->nullable();
+                
+                // Style de vie
                 $table->boolean('fumeur')->default(false);
                 $table->boolean('alcool')->default(false);
+                
+                // Consultation avec médecin (ajoutée en 005)
+                $table->boolean('consulte_medecin')->default(false);
+                $table->string('medecin_email')->nullable();
+                $table->boolean('medecin_peut_consulter')->default(false);
+                
                 $table->timestamps();
             });
         }
