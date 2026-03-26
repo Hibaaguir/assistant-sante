@@ -1,38 +1,43 @@
 <template>
   <section class="mt-4 space-y-3">
+    <!-- Filtres -->
     <div v-if="showLabsFilters" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div class="grid gap-3 md:grid-cols-3">
-        <div>
-          <label class="mb-1 block text-[12px] font-semibold text-slate-600">Type</label>
-          <select v-model="labsFilterType" class="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-[13px] text-slate-800 outline-none focus:border-blue-500">
-            <option value="">Tous</option>
-            <option v-for="type in labTypeOptions" :key="type" :value="type">{{ type }}</option>
-          </select>
-        </div>
-        <div>
-          <label class="mb-1 block text-[12px] font-semibold text-slate-600">Date</label>
-          <input v-model="labsFilterDate" type="date" class="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-[13px] text-slate-800 outline-none focus:border-blue-500" />
-        </div>
-        <div>
-          <label class="mb-1 block text-[12px] font-semibold text-slate-600">Recherche</label>
-          <input v-model.trim="labsFilterQuery" type="text" placeholder="Ex: CRP, TSH..." class="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-[13px] text-slate-800 outline-none focus:border-blue-500" />
+        <div v-for="filter in filterFields" :key="filter.key">
+          <label class="mb-1 block text-[12px] font-semibold text-slate-600">{{ filter.label }}</label>
+          <component
+            :is="filter.tag ?? 'input'"
+            v-model="filters[filter.key]"
+            v-bind="filter.attrs"
+            class="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-[13px] text-slate-800 outline-none focus:border-blue-500"
+          >
+            <template v-if="filter.tag === 'select'">
+              <option value="">Tous</option>
+              <option v-for="opt in labTypeOptions" :key="opt" :value="opt">{{ opt }}</option>
+            </template>
+          </component>
         </div>
       </div>
     </div>
 
-    <article v-for="item in filteredAnalyses" :key="item.id" class="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+    <!-- Liste des analyses -->
+    <article
+      v-for="item in filteredAnalyses"
+      :key="item.id"
+      class="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
+    >
       <div class="flex items-center justify-between">
         <div>
           <div class="flex items-center gap-3">
             <h3 class="text-[16px] font-semibold leading-none text-slate-900">{{ item.name }}</h3>
-            <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold leading-none text-emerald-700">Normal</span>
+            <StatusBadge :status="item.status" />
           </div>
           <div class="mt-2 flex items-center gap-4 text-slate-900">
             <p class="text-[22px] font-semibold leading-none">{{ item.value }} {{ item.unit }}</p>
-            <div class="inline-flex items-center gap-2 text-[12px] text-slate-600">
-              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" /></svg>
+            <span class="inline-flex items-center gap-2 text-[12px] text-slate-600">
+              <CalendarIcon />
               {{ item.date }}
-            </div>
+            </span>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -40,16 +45,12 @@
             type="button"
             class="rounded-lg border border-slate-300 px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
             @click="ouvrirEditionAnalyse(item)"
-          >
-            Modifier
-          </button>
+          >Modifier</button>
           <button
             type="button"
             class="rounded-lg border border-rose-200 px-3 py-1.5 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
             @click="supprimerAnalyse(item)"
-          >
-            Supprimer
-          </button>
+          >Supprimer</button>
         </div>
       </div>
     </article>
@@ -59,122 +60,120 @@
     </div>
   </section>
 
+  <!-- Modale ajout / modification -->
   <div v-if="showAnalysisModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4">
     <div class="w-full max-w-[520px] rounded-3xl bg-white p-8 shadow-2xl">
       <div class="mb-5 flex items-center justify-between">
-        <h3 class="text-[34px] font-semibold leading-none text-slate-900">{{ analysisModalTitle }}</h3>
+        <h3 class="text-[34px] font-semibold leading-none text-slate-900">{{ modalTitle }}</h3>
         <button type="button" class="text-slate-500 hover:text-slate-700" @click="showAnalysisModal = false">
-          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18" /></svg>
+          <CloseIcon />
         </button>
       </div>
 
       <div class="space-y-4">
+        <!-- Type d'analyse -->
         <div>
           <label class="mb-2 block text-[13px] font-semibold text-slate-700">Type d'analyse</label>
           <select
-            v-model="analysisForm.category"
+            v-model="form.category"
             class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] text-slate-800 outline-none focus:border-blue-500"
-            @change="gererChangementCategorieAnalyse"
+            @change="onCategoryChange"
           >
             <option value="">Sélectionnez</option>
-            <option v-for="item in analysisCategoryOptions" :key="item" :value="item">{{ item }}</option>
+            <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
           </select>
         </div>
 
+        <!-- Résultats -->
         <div class="space-y-3">
           <div
-            v-for="(result, index) in analysisForm.results"
-            :key="`analysis-result-${index}`"
+            v-for="(row, index) in form.results"
+            :key="index"
             class="rounded-2xl border border-slate-200 bg-slate-50 p-3"
           >
             <div class="mb-2 flex items-center justify-between">
               <div>
                 <p class="text-[13px] font-semibold text-slate-700">Résultat {{ index + 1 }}</p>
-                <p v-if="expandedAnalysisResultIndex !== index" class="mt-1 text-xs text-slate-500">
-                  {{ resumerResultatAnalyse(result) }}
+                <p v-if="expandedIndex !== index" class="mt-1 text-xs text-slate-500">
+                  {{ summarizeRow(row) }}
                 </p>
               </div>
               <div class="flex items-center gap-2">
                 <button
-                  v-if="expandedAnalysisResultIndex !== index"
+                  v-if="expandedIndex !== index"
                   type="button"
                   class="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                  @click="expandedAnalysisResultIndex = index"
-                >
-                  Modifier
-                </button>
+                  @click="expandedIndex = index"
+                >Modifier</button>
                 <button
-                  v-if="analysisForm.results.length > 1 && !editingAnalysisId"
+                  v-if="!editingId && form.results.length > 1"
                   type="button"
                   class="text-xs font-semibold text-rose-600 hover:text-rose-700"
-                  @click="supprimerResultatAnalyse(index)"
+                  @click="removeRow(index)"
+                >Supprimer</button>
+              </div>
+            </div>
+
+            <div v-if="expandedIndex === index" class="space-y-3">
+              <div>
+                <label class="mb-2 block text-[13px] font-semibold text-slate-700">Nom du résultat</label>
+                <select
+                  v-model="row.result"
+                  :disabled="!form.category"
+                  class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] text-slate-800 outline-none focus:border-blue-500 disabled:opacity-60"
+                  @change="onResultChange(index)"
                 >
-                  Supprimer
-                </button>
+                  <option value="">Sélectionnez</option>
+                  <option v-for="opt in resultOptions" :key="opt.label" :value="opt.label">{{ opt.label }}</option>
+                </select>
               </div>
-            </div>
-
-            <div v-if="expandedAnalysisResultIndex === index">
-            <div>
-              <label class="mb-2 block text-[13px] font-semibold text-slate-700">Nom du résultat</label>
-              <select
-                v-model="result.result"
-                :disabled="!analysisForm.category"
-                class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] text-slate-800 outline-none focus:border-blue-500 disabled:opacity-60"
-                @change="gererChangementResultatAnalyse(index)"
-              >
-                <option value="">Sélectionnez</option>
-                <option v-for="item in analysisResultOptions" :key="item.label" :value="item.label">{{ item.label }}</option>
-              </select>
-            </div>
-
-            <div class="mt-3 grid grid-cols-2 gap-3">
-              <div>
-                <label class="mb-2 block text-[13px] font-semibold text-slate-700">Valeur</label>
-                <input v-model="result.value" type="text" placeholder="5.2" class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] outline-none focus:border-blue-500" />
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="mb-2 block text-[13px] font-semibold text-slate-700">Valeur</label>
+                  <input v-model="row.value" type="text" placeholder="5.2" class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                  <label class="mb-2 block text-[13px] font-semibold text-slate-700">Unité</label>
+                  <input v-model="row.unit" type="text" placeholder="mmol/L" class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] outline-none focus:border-blue-500" />
+                </div>
               </div>
-              <div>
-                <label class="mb-2 block text-[13px] font-semibold text-slate-700">Unité</label>
-                <input v-model="result.unit" type="text" placeholder="mmol/L" class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] outline-none focus:border-blue-500" />
-              </div>
-            </div>
             </div>
           </div>
 
           <button
-            v-if="!editingAnalysisId"
+            v-if="!editingId"
             type="button"
             class="h-10 rounded-xl border border-slate-300 px-4 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
-            @click="ajouterResultatAnalyse"
-          >
-            + Ajouter un autre résultat
-          </button>
+            @click="addRow"
+          >+ Ajouter un autre résultat</button>
         </div>
 
+        <!-- Date -->
         <div>
           <label class="mb-2 block text-[13px] font-semibold text-slate-700">Date</label>
-          <input v-model="analysisForm.date" type="date" class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[15px] outline-none focus:border-blue-500" />
+          <input v-model="form.date" type="date" class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[15px] outline-none focus:border-blue-500" />
         </div>
 
-        <p v-if="analysisError" class="text-sm font-medium text-rose-600">
-          {{ analysisError }}
-        </p>
+        <p v-if="formError" class="text-sm font-medium text-rose-600">{{ formError }}</p>
 
-        <button type="button" class="mt-2 h-11 w-full rounded-2xl bg-emerald-600 text-[20px] font-semibold leading-none text-white hover:bg-emerald-700" @click="enregistrerAnalyse">
-          {{ analysisSubmitLabel }}
-        </button>
+        <button
+          type="button"
+          class="mt-2 h-11 w-full rounded-2xl bg-emerald-600 text-[20px] font-semibold leading-none text-white hover:bg-emerald-700"
+          @click="saveAnalysis"
+        >{{ modalSubmitLabel }}</button>
       </div>
     </div>
   </div>
 
+  <!-- Confirmation suppression -->
   <DialogueConfirmation
     :open="showDeleteConfirm"
     title="Supprimer l'analyse"
     :message="deleteMessage"
     confirm-label="Supprimer"
     cancel-label="Annuler"
-    @cancel="annulerSuppression"
-    @confirm="confirmerSuppression"
+    @cancel="cancelDelete"
+    @confirm="confirmDelete"
   />
 </template>
 
@@ -184,33 +183,32 @@ import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
 import DialogueConfirmation from "@/components/ui/DialogueConfirmation.vue";
 
-const props = defineProps({
-  analyses: { type: Array, default: () => [] },
-});
+// ─── Icônes inline légères ────────────────────────────────────────────────────
+const CalendarIcon = {
+  template: `<svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg>`,
+};
+const CloseIcon = {
+  template: `<svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg>`,
+};
+const StatusBadge = {
+  props: { status: { type: String, default: "Normal" } },
+  computed: {
+    classes() {
+      return this.status === "Anormal"
+        ? "bg-rose-100 text-rose-700"
+        : "bg-emerald-100 text-emerald-700";
+    },
+  },
+  template: `<span :class="['rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none', classes]">{{ status }}</span>`,
+};
 
+// ─── Props / Emits ────────────────────────────────────────────────────────────
+const props = defineProps({ analyses: { type: Array, default: () => [] } });
 const emit = defineEmits(["refresh"]);
 const notifications = useNotificationsStore();
 
-const showAnalysisModal = ref(false);
-const showDeleteConfirm = ref(false);
-const pendingDeleteItem = ref(null);
-const editingAnalysisId = ref(null);
-const expandedAnalysisResultIndex = ref(0);
-const analysisError = ref("");
-const showLabsFilters = ref(false);
-const labsFilterType = ref("");
-const labsFilterDate = ref("");
-const labsFilterQuery = ref("");
-
-const analysisForm = reactive({
-  category: "",
-  results: [
-    { result: "", value: "", unit: "" },
-  ],
-  date: new Date().toISOString().slice(0, 10),
-});
-
-const analysisCatalog = {
+// ─── Catalogue des analyses ───────────────────────────────────────────────────
+const CATALOG = {
   "Biologie sanguine": [
     { label: "Glycémie", unit: "mmol/L" },
     { label: "Insuline", unit: "µIU/mL" },
@@ -284,224 +282,157 @@ const analysisCatalog = {
   ],
 };
 
-const analysisCategoryOptions = Object.keys(analysisCatalog);
-const analysisResultOptions = computed(() => analysisCatalog[analysisForm.category] ?? []);
-const labTypeOptions = computed(() => {
-  const values = props.analyses.map((item) => item.type).filter(Boolean);
-  return [...new Set(values)];
-});
+// ─── État ─────────────────────────────────────────────────────────────────────
+const showAnalysisModal = ref(false);
+const showDeleteConfirm  = ref(false);
+const showLabsFilters    = ref(false);
+const editingId          = ref(null);
+const expandedIndex      = ref(0);
+const formError          = ref("");
+const pendingDelete      = ref(null);
+
+const filters = reactive({ type: "", date: "", query: "" });
+const form    = reactive({ category: "", results: [emptyRow()], date: today() });
+
+// ─── Config filtres (évite la répétition dans le template) ───────────────────
+const filterFields = [
+  { key: "type",  label: "Type",      tag: "select", attrs: {} },
+  { key: "date",  label: "Date",      attrs: { type: "date" } },
+  { key: "query", label: "Recherche", attrs: { type: "text", placeholder: "Ex: CRP, TSH…" } },
+];
+
+// ─── Computed ─────────────────────────────────────────────────────────────────
+const categoryOptions = Object.keys(CATALOG);
+const resultOptions   = computed(() => CATALOG[form.category] ?? []);
+const labTypeOptions  = computed(() => [...new Set(props.analyses.map((a) => a.type).filter(Boolean))]);
+
 const filteredAnalyses = computed(() => {
-  const query = labsFilterQuery.value.trim().toLowerCase();
-  return props.analyses.filter((item) => {
-    const type = item.type;
-    const dateIso = convertirDateIso(item.analysisDate);
-    const matchType = !labsFilterType.value || type === labsFilterType.value;
-    const matchDate = !labsFilterDate.value || dateIso === labsFilterDate.value;
-    const haystack = `${item.name} ${item.value} ${item.unit}`.toLowerCase();
-    const matchQuery = !query || haystack.includes(query);
+  const q = filters.query.toLowerCase();
+  return props.analyses.filter((a) => {
+    const matchType  = !filters.type || a.type === filters.type;
+    const matchDate  = !filters.date || isoDate(a.analysisDate) === filters.date;
+    const matchQuery = !q || `${a.name} ${a.value} ${a.unit}`.toLowerCase().includes(q);
     return matchType && matchDate && matchQuery;
   });
 });
-const analysisModalTitle = computed(() => (editingAnalysisId.value ? "Modifier une analyse" : "Ajouter une analyse"));
-const analysisSubmitLabel = computed(() => (editingAnalysisId.value ? "Mettre à jour" : "Enregistrer"));
-const deleteMessage = computed(() => {
-  const name = pendingDeleteItem.value?.name ? `"${pendingDeleteItem.value.name}"` : "cet element";
-  return `Vous êtes sur le point de supprimer ${name}. Cette action est irreversible.`;
+
+const modalTitle       = computed(() => editingId.value ? "Modifier une analyse" : "Ajouter une analyse");
+const modalSubmitLabel = computed(() => editingId.value ? "Mettre à jour" : "Enregistrer");
+const deleteMessage    = computed(() => {
+  const name = pendingDelete.value?.name ? `"${pendingDelete.value.name}"` : "cet élément";
+  return `Vous êtes sur le point de supprimer ${name}. Cette action est irréversible.`;
 });
 
-// Cette fonction convertit une valeur en nombre ou renvoie null.
-function convertirNombreOuNull(value) {
-  if (value === null || value === undefined || value === "") return null;
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function today() { return new Date().toISOString().slice(0, 10); }
+function isoDate(v) { return v ? String(v).slice(0, 10) : today(); }
+function toNumber(v) { const n = Number(v); return Number.isFinite(n) ? n : null; }
+function emptyRow() { return { result: "", value: "", unit: "" }; }
+function summarizeRow(row) {
+  const name  = row.result?.trim() || "Résultat non renseigné";
+  const val   = String(row.value ?? "").trim();
+  const right = val ? `${val}${row.unit ? ` ${row.unit}` : ""}` : "Valeur non renseignée";
+  return `${name} — ${right}`;
+}
+function resetForm() {
+  formError.value    = "";
+  form.category      = "";
+  form.results       = [emptyRow()];
+  form.date          = today();
+  expandedIndex.value = 0;
 }
 
-// Cette fonction convertit une date en format ISO (YYYY-MM-DD).
-function convertirDateIso(dateValue) {
-  if (!dateValue) return new Date().toISOString().slice(0, 10);
-  return String(dateValue).slice(0, 10);
+// ─── Gestion des lignes de résultat ──────────────────────────────────────────
+function addRow() {
+  form.results.push(emptyRow());
+  expandedIndex.value = form.results.length - 1;
+}
+function removeRow(i) {
+  form.results.splice(i, 1);
+  if (expandedIndex.value >= form.results.length) expandedIndex.value = form.results.length - 1;
+}
+function onCategoryChange() {
+  form.results = [emptyRow()];
+  expandedIndex.value = 0;
+}
+function onResultChange(i) {
+  const opt = (CATALOG[form.category] ?? []).find((o) => o.label === form.results[i].result);
+  if (opt?.unit) form.results[i].unit = opt.unit;
 }
 
-// Cette fonction retourne l'option d'analyse pour une categorie + resultat.
-function trouverOptionAnalyse(category, resultLabel) {
-  const options = analysisCatalog[category] ?? [];
-  return options.find((item) => item.label === resultLabel) ?? null;
-}
+// ─── Sauvegarde ───────────────────────────────────────────────────────────────
+async function saveAnalysis() {
+  formError.value = "";
+  if (!form.category) { formError.value = "Veuillez choisir un type d'analyse."; return; }
 
-// Cette fonction cree une ligne vide pour les resultats multiples.
-function creerLigneResultatAnalyse() {
-  return { result: "", value: "", unit: "" };
-}
-
-// Cette fonction ajoute une ligne de resultat.
-function ajouterResultatAnalyse() {
-  analysisForm.results.push(creerLigneResultatAnalyse());
-  expandedAnalysisResultIndex.value = analysisForm.results.length - 1;
-}
-
-// Cette fonction supprime une ligne de resultat.
-function supprimerResultatAnalyse(index) {
-  if (analysisForm.results.length <= 1) return;
-  analysisForm.results.splice(index, 1);
-  if (expandedAnalysisResultIndex.value >= analysisForm.results.length) {
-    expandedAnalysisResultIndex.value = analysisForm.results.length - 1;
+  const rows = [];
+  for (const row of form.results) {
+    const result = row.result?.trim();
+    const value  = toNumber(row.value);
+    if (!result) { formError.value = "Chaque résultat doit être sélectionné."; return; }
+    if (value === null) { formError.value = "Chaque résultat doit avoir une valeur numérique valide."; return; }
+    rows.push({ analysis_type: form.category, analysis_result: result, value, unit: row.unit || null, analysis_date: isoDate(form.date) });
   }
-}
-
-// Cette fonction gere le changement de type d'analyse.
-function gererChangementCategorieAnalyse() {
-  analysisForm.results = [creerLigneResultatAnalyse()];
-  expandedAnalysisResultIndex.value = 0;
-}
-
-// Cette fonction applique l'unite par defaut selon le resultat selectionne.
-function gererChangementResultatAnalyse(index) {
-  const row = analysisForm.results[index];
-  if (!row) return;
-
-  const selected = trouverOptionAnalyse(analysisForm.category, row.result);
-  if (selected?.unit) {
-    row.unit = selected.unit;
-  }
-}
-
-// Cette fonction remet a zero les champs du formulaire d'analyse.
-function reinitialiserFormulaireAnalyse() {
-  analysisError.value = "";
-  analysisForm.category = "";
-  analysisForm.results = [creerLigneResultatAnalyse()];
-  expandedAnalysisResultIndex.value = 0;
-  analysisForm.date = new Date().toISOString().slice(0, 10);
-}
-
-// Cette fonction genere un resume court d'un resultat pour l'affichage replie.
-function resumerResultatAnalyse(result) {
-  const resultName = result?.result?.trim();
-  const value = String(result?.value ?? "").trim();
-  const unit = String(result?.unit ?? "").trim();
-  const left = resultName || "Resultat non renseigne";
-  const right = value ? `${value}${unit ? ` ${unit}` : ""}` : "Valeur non renseignee";
-  return `${left} - ${right}`;
-}
-
-// Cette fonction enregistre une analyse avec validation simple des champs.
-async function enregistrerAnalyse() {
-  analysisError.value = "";
-  if (!analysisForm.category) {
-    analysisError.value = "Veuillez choisir un type d'analyse.";
-    return;
-  }
-
-  const validRows = [];
-  for (const row of analysisForm.results) {
-    const analysisType = String(analysisForm.category ?? "").trim();
-    const analysisResult = String(row.result ?? "").trim();
-    const numericValue = convertirNombreOuNull(row.value);
-
-    if (!analysisType) {
-      analysisError.value = "Le type d'analyse est obligatoire.";
-      return;
-    }
-    if (!analysisResult) {
-      analysisError.value = "Chaque resultat doit etre selectionne dans la liste.";
-      return;
-    }
-    if (numericValue === null) {
-      analysisError.value = "Chaque resultat doit avoir une valeur numerique valide.";
-      return;
-    }
-
-    validRows.push({
-      analysis_type: analysisType,
-      analysis_result: analysisResult,
-      value: numericValue,
-      unit: row.unit || null,
-      analysis_date: convertirDateIso(analysisForm.date),
-    });
-  }
-
-  if (!validRows.length) {
-    analysisError.value = "Ajoutez au moins un resultat.";
-    return;
-  }
+  if (!rows.length) { formError.value = "Ajoutez au moins un résultat."; return; }
 
   try {
-    if (editingAnalysisId.value) {
-      await api.put(`/health-data/labs/${editingAnalysisId.value}`, validRows[0]);
+    if (editingId.value) {
+      await api.put(`/health-data/labs/${editingId.value}`, rows[0]);
       notifications.actionModifiee();
     } else {
-      await Promise.all(validRows.map((payload) => api.post("/health-data/labs", payload)));
+      await Promise.all(rows.map((p) => api.post("/health-data/labs", p)));
       notifications.actionAjoutee();
-      // On reset les filtres pour afficher immediatement les nouvelles analyses ajoutees.
-      labsFilterType.value = "";
-      labsFilterDate.value = "";
-      labsFilterQuery.value = "";
+      Object.assign(filters, { type: "", date: "", query: "" });
     }
-
-    editingAnalysisId.value = null;
-    reinitialiserFormulaireAnalyse();
+    editingId.value = null;
+    resetForm();
     showAnalysisModal.value = false;
     emit("refresh");
-  } catch (error) {
-    const message = error?.response?.data?.message || "Erreur lors de l'enregistrement.";
-    notifications.erreur(message);
+  } catch (err) {
+    notifications.erreur(err?.response?.data?.message ?? "Erreur lors de l'enregistrement.");
   }
 }
 
-// Cette fonction pre-remplit le formulaire pour modifier une analyse.
+// ─── Édition ──────────────────────────────────────────────────────────────────
 function ouvrirEditionAnalyse(item) {
-  editingAnalysisId.value = item.id;
-  analysisError.value = "";
-  analysisForm.category = item.type ?? "";
-  analysisForm.results = [
-    {
-      result: item.result ?? "",
-      value: String(item.value ?? ""),
-      unit: item.unit ?? "",
-    },
-  ];
-  analysisForm.date = item.analysisDate ?? new Date().toISOString().slice(0, 10);
-  expandedAnalysisResultIndex.value = 0;
+  editingId.value    = item.id;
+  formError.value    = "";
+  form.category      = item.type ?? "";
+  form.results       = [{ result: item.result ?? "", value: String(item.value ?? ""), unit: item.unit ?? "" }];
+  form.date          = item.analysisDate ?? today();
+  expandedIndex.value = 0;
   showAnalysisModal.value = true;
 }
 
-// Cette fonction supprime une analyse apres confirmation utilisateur.
-async function supprimerAnalyse(item) {
-  pendingDeleteItem.value = item;
+// ─── Suppression ─────────────────────────────────────────────────────────────
+function supprimerAnalyse(item) {
+  pendingDelete.value    = item;
   showDeleteConfirm.value = true;
 }
-
-function annulerSuppression() {
-  pendingDeleteItem.value = null;
+function cancelDelete() {
+  pendingDelete.value    = null;
   showDeleteConfirm.value = false;
 }
-
-async function confirmerSuppression() {
-  if (!pendingDeleteItem.value?.id) return;
+async function confirmDelete() {
+  if (!pendingDelete.value?.id) return;
   try {
-    await api.delete(`/health-data/labs/${pendingDeleteItem.value.id}`);
+    await api.delete(`/health-data/labs/${pendingDelete.value.id}`);
     notifications.actionSupprimee();
     emit("refresh");
-  } catch (error) {
-    const message = error?.response?.data?.message || "Erreur lors de la suppression.";
-    notifications.erreur(message);
+  } catch (err) {
+    notifications.erreur(err?.response?.data?.message ?? "Erreur lors de la suppression.");
   } finally {
-    pendingDeleteItem.value = null;
-    showDeleteConfirm.value = false;
+    cancelDelete();
   }
 }
 
-// Cette methode est exposee pour que le parent puisse ouvrir la modale d'ajout.
+// ─── API publique (exposée au parent) ────────────────────────────────────────
 function ouvrirModalAjout() {
-  editingAnalysisId.value = null;
-  reinitialiserFormulaireAnalyse();
+  editingId.value = null;
+  resetForm();
   showAnalysisModal.value = true;
 }
-
-// Cette methode est exposee pour que le parent puisse basculer l'affichage des filtres.
-function basculerFiltres() {
-  showLabsFilters.value = !showLabsFilters.value;
-}
+function basculerFiltres() { showLabsFilters.value = !showLabsFilters.value; }
 
 defineExpose({ ouvrirModalAjout, basculerFiltres });
 </script>

@@ -415,6 +415,7 @@ watch(
 </script>
 
 <style scoped>
+@reference "../../index.css";
 .card        { @apply rounded-[20px] border border-[#d4d9e1] bg-white shadow-[0_1px_4px_rgba(15,23,42,0.05)]; }
 .input-field { @apply h-[52px] w-full rounded-[16px] border border-[#d7dce6] bg-[#fbfcfd] px-4 text-[15px] text-[#061a45] outline-none transition focus:border-[#4a55f5]; }
 .btn-outline  { @apply inline-flex h-[34px] items-center justify-center rounded-[12px] border border-[#d4d9e1] px-3 text-[13px] font-semibold text-[#40506a] transition hover:border-[#aeb9ca] hover:text-[#1a2c52]; }

@@ -1,191 +1,73 @@
 <template>
+  <!-- En-tête -->
   <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <div>
       <h2 class="text-[20px] font-semibold leading-none text-slate-900">Derniers signes vitaux</h2>
       <p class="mt-2 text-[14px] text-slate-500">
-        {{ latestVitalMeasuredAtLabel ? `Derniere entree du ${latestVitalMeasuredAtLabel}` : "Aucune mesure enregistree pour le moment." }}
+        {{ latestVitalMeasuredAtLabel ? `Dernière entrée du ${latestVitalMeasuredAtLabel}` : "Aucune mesure enregistrée pour le moment." }}
       </p>
     </div>
   </div>
 
+  <!-- Cartes des dernières valeurs -->
   <section class="mt-6 grid gap-5 xl:grid-cols-3">
-    <article class="min-h-[162px] rounded-2xl border border-[#efc4cc] bg-[#fdf2f5] px-6 py-6">
-      <div class="flex items-start justify-between">
-        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#f9e3e9] text-[#ff2458]">
-          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-            <path d="M20.8 8.2a4.9 4.9 0 0 0-8.8-3.1 4.9 4.9 0 0 0-8.8 3.1c0 5 8.8 10.8 8.8 10.8s8.8-5.8 8.8-10.8z" />
-          </svg>
-        </div>
-        <span class="rounded-full bg-[#dff6e4] px-3 py-1 text-[12px] leading-none text-[#08aa48]">Normal</span>
-      </div>
-      <p class="mt-4 text-[16px] leading-none text-slate-700">Rythme cardiaque</p>
-      <div class="mt-3 flex items-baseline gap-2">
-        <button
-          v-if="peutModifierDerniereMesure && mesureEnEdition !== 'rythme-cardiaque'"
-          type="button"
-          class="group inline-flex items-end gap-2 text-left"
-          @click="activerEditionMesure('rythme-cardiaque')"
-        >
-          <span class="text-[30px] font-semibold leading-none text-slate-900 transition group-hover:text-[#ff2458]">{{ formulaireDerniereMesure.rythmeCardiaque || latestHeartRate }}</span>
-          <span class="text-[18px] font-medium leading-none text-slate-700 transition group-hover:text-[#ff2458]">bpm</span>
-        </button>
-        <template v-else-if="peutModifierDerniereMesure">
-          <input
-            v-model="formulaireDerniereMesure.rythmeCardiaque"
-            type="text"
-            inputmode="numeric"
-            class="min-w-0 appearance-none border-0 bg-transparent p-0 text-[30px] font-semibold leading-none text-slate-900 shadow-none outline-none ring-0 placeholder:text-slate-400 focus:outline-none focus:ring-0"
-            placeholder="--"
-            @blur="fermerEditionMesure"
-          />
-          <span class="text-[18px] font-medium leading-none text-slate-700">bpm</span>
-        </template>
-        <p v-else class="text-[30px] font-semibold leading-none text-slate-900">{{ latestHeartRate }} <span class="text-[18px] font-medium leading-none text-slate-700">bpm</span></p>
-      </div>
-    </article>
-
-    <article class="min-h-[162px] rounded-2xl border border-[#a8cdfb] bg-[#ebf6fe] px-6 py-6">
-      <div class="flex items-start justify-between">
-        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#d5e7fd] text-[#2c67f6]">
-          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-            <path d="M3 12h4l2-6 4 12 2-6h6" />
-          </svg>
-        </div>
-        <span class="rounded-full bg-[#dff6e4] px-3 py-1 text-[12px] leading-none text-[#08aa48]">Normal</span>
-      </div>
-      <p class="mt-4 text-[16px] leading-none text-slate-700">Tension artérielle</p>
-      <div class="mt-3 flex items-baseline gap-2">
-        <button
-          v-if="peutModifierDerniereMesure && mesureEnEdition !== 'tension'"
-          type="button"
-          class="group inline-flex items-end gap-2 text-left"
-          @click="activerEditionMesure('tension')"
-        >
-          <span class="text-[30px] font-semibold leading-none text-slate-900 transition group-hover:text-[#2c67f6]">
-            {{ formulaireDerniereMesure.tensionSystolique || props.latestVital?.systolic_pressure || "--" }}/{{ formulaireDerniereMesure.tensionDiastolique || props.latestVital?.diastolic_pressure || "--" }}
-          </span>
-          <span class="text-[18px] font-medium leading-none text-slate-700 transition group-hover:text-[#2c67f6]">mmHg</span>
-        </button>
-        <template v-else-if="peutModifierDerniereMesure">
-          <div class="flex min-w-0 items-baseline gap-2">
-            <input
-              v-model="formulaireDerniereMesure.tensionSystolique"
-              type="text"
-              inputmode="numeric"
-              class="w-[58px] appearance-none border-0 bg-transparent p-0 text-[30px] font-semibold leading-none text-slate-900 shadow-none outline-none ring-0 placeholder:text-slate-400 focus:outline-none focus:ring-0"
-              placeholder="--"
-            />
-            <span class="text-[30px] font-semibold leading-none text-slate-900">/</span>
-            <input
-              v-model="formulaireDerniereMesure.tensionDiastolique"
-              type="text"
-              inputmode="numeric"
-              class="w-[58px] appearance-none border-0 bg-transparent p-0 text-[30px] font-semibold leading-none text-slate-900 shadow-none outline-none ring-0 placeholder:text-slate-400 focus:outline-none focus:ring-0"
-              placeholder="--"
-              @blur="fermerEditionMesure"
-            />
-          </div>
-          <span class="text-[18px] font-medium leading-none text-slate-700">mmHg</span>
-        </template>
-        <p v-else class="text-[30px] font-semibold leading-none text-slate-900">{{ latestPressure }} <span class="text-[18px] font-medium leading-none text-slate-700">mmHg</span></p>
-      </div>
-    </article>
-
-    <article class="min-h-[162px] rounded-2xl border border-[#dbc6f7] bg-[#f6f0fc] px-6 py-6">
-      <div class="flex items-start justify-between">
-        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#eee2fc] text-[#8a2cff]">
-          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-            <path d="M12 3s6 6.4 6 10a6 6 0 0 1-12 0c0-3.6 6-10 6-10z" />
-          </svg>
-        </div>
-        <span class="rounded-full bg-[#dff6e4] px-3 py-1 text-[12px] leading-none text-[#08aa48]">Normal</span>
-      </div>
-      <p class="mt-4 text-[16px] leading-none text-slate-700">Saturation O₂</p>
-      <div class="mt-3 flex items-baseline gap-2">
-        <button
-          v-if="peutModifierDerniereMesure && mesureEnEdition !== 'saturation'"
-          type="button"
-          class="group inline-flex items-end gap-2 text-left"
-          @click="activerEditionMesure('saturation')"
-        >
-          <span class="text-[30px] font-semibold leading-none text-slate-900 transition group-hover:text-[#8a2cff]">{{ formulaireDerniereMesure.saturationOxygene || latestOxygen }}</span>
-          <span class="text-[18px] font-medium leading-none text-slate-700 transition group-hover:text-[#8a2cff]">%</span>
-        </button>
-        <template v-else-if="peutModifierDerniereMesure">
-          <input
-            v-model="formulaireDerniereMesure.saturationOxygene"
-            type="text"
-            inputmode="decimal"
-            class="min-w-0 appearance-none border-0 bg-transparent p-0 text-[30px] font-semibold leading-none text-slate-900 shadow-none outline-none ring-0 placeholder:text-slate-400 focus:outline-none focus:ring-0"
-            placeholder="--"
-            @blur="fermerEditionMesure"
-          />
-          <span class="text-[18px] font-medium leading-none text-slate-700">%</span>
-        </template>
-        <p v-else class="text-[30px] font-semibold leading-none text-slate-900">{{ latestOxygen }} <span class="text-[18px] font-medium leading-none text-slate-700">%</span></p>
-      </div>
-    </article>
+    <VitalCard
+      v-for="card in vitalCards"
+      :key="card.key"
+      v-bind="card"
+      :can-edit="peutModifierDerniereMesure"
+      :is-editing="mesureEnEdition === card.key"
+      @edit="activerEditionMesure(card.key)"
+      @blur="fermerEditionMesure"
+    >
+      <template #value>
+        <component :is="card.inputComponent" v-bind="card.inputProps" />
+      </template>
+    </VitalCard>
   </section>
 
+  <!-- Actions d'édition rapide -->
   <div v-if="peutModifierDerniereMesure" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-    <p class="text-[13px] text-slate-500">
-      Cliquez sur une valeur pour la modifier directement dans la carte.
-    </p>
-
+    <p class="text-[13px] text-slate-500">Cliquez sur une valeur pour la modifier directement dans la carte.</p>
     <div class="flex items-center gap-2">
       <button
-        v-if="editionDerniereMesureModifiee"
+        v-if="editionModifiee"
         type="button"
         class="inline-flex h-11 items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 text-[14px] font-semibold text-slate-700 shadow-sm transition hover:border-slate-400"
-        @click="reinitialiserEditionDerniereMesure"
-      >
-        Annuler
-      </button>
+        @click="reinitialiserEdition"
+      >Annuler</button>
       <button
         type="button"
         class="inline-flex h-11 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 text-[14px] font-semibold text-white shadow-[0_8px_16px_rgba(37,99,235,0.22)] disabled:cursor-not-allowed disabled:opacity-50"
-        :disabled="!editionDerniereMesureModifiee || enregistrementDerniereMesureEnCours"
-        @click="enregistrerDerniereMesureDepuisCartes"
-      >
-        {{ enregistrementDerniereMesureEnCours ? "Enregistrement..." : "Enregistrer la derniere entree" }}
-      </button>
+        :disabled="!editionModifiee || enregistrementEnCours"
+        @click="enregistrerDepuisCartes"
+      >{{ enregistrementEnCours ? "Enregistrement..." : "Enregistrer la dernière entrée" }}</button>
     </div>
   </div>
 
+  <!-- Historique -->
   <section class="mt-8 rounded-2xl border border-slate-200 bg-[#f8f9fb] px-8 py-8">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h2 class="text-[20px] font-semibold leading-none text-slate-900">Historique des mesures</h2>
       <button
-        v-if="filtresSignesVitauxActifs"
+        v-if="filtresActifs"
         type="button"
         class="inline-flex h-11 items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 text-[14px] font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700"
-        @click="reinitialiserFiltresSignesVitaux"
-      >
-        Reinitialiser
-      </button>
+        @click="reinitialiserFiltres"
+      >Réinitialiser</button>
     </div>
 
     <div class="mt-8 grid gap-4 lg:grid-cols-2">
       <div>
         <label class="mb-3 block text-[14px] font-semibold text-slate-800">Filtrer par date</label>
         <div class="relative">
-          <input
-            v-model="dateFiltreSignesVitaux"
-            type="date"
-            class="h-12 w-full rounded-2xl border border-slate-300 bg-white pl-5 pr-12 text-[16px] text-slate-900 outline-none focus:border-blue-500"
-          />
-          <svg viewBox="0 0 24 24" class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
-          </svg>
+          <input v-model="filterDate" type="date" class="h-12 w-full rounded-2xl border border-slate-300 bg-white pl-5 pr-12 text-[16px] text-slate-900 outline-none focus:border-blue-500" />
+          <CalendarIcon class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
         </div>
       </div>
-
       <div>
         <label class="mb-3 block text-[14px] font-semibold text-slate-800">Filtrer par type</label>
-        <select
-          v-model="typeFiltreSignesVitaux"
-          class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-5 text-[16px] text-slate-900 outline-none focus:border-blue-500"
-        >
+        <select v-model="filterType" class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-5 text-[16px] text-slate-900 outline-none focus:border-blue-500">
           <option value="all">Tous les signes</option>
           <option value="heart">Rythme cardiaque</option>
           <option value="pressure">Tension artérielle</option>
@@ -195,171 +77,73 @@
     </div>
 
     <div class="mt-6 space-y-3.5">
-      <article
-        v-for="day in historiqueSignesVitauxFiltres"
-        :key="day.dateKey"
-        class="rounded-2xl border border-slate-200 bg-white px-5 py-5"
-      >
+      <article v-for="day in historiqueFiltre" :key="day.dateKey" class="rounded-2xl border border-slate-200 bg-white px-5 py-5">
         <div class="mb-4 flex items-center gap-3 text-slate-900">
-          <svg viewBox="0 0 24 24" class="h-6 w-6 text-slate-500" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
-          </svg>
+          <CalendarIcon class="h-6 w-6 text-slate-500" />
           <h3 class="text-[22px] font-semibold leading-none">{{ day.longDate }}</h3>
         </div>
-
         <div class="grid gap-3 xl:grid-cols-3">
-          <article v-if="typeFiltreSignesVitaux === 'all' || typeFiltreSignesVitaux === 'heart'" class="rounded-xl border border-[#efc4cc] bg-[#fdf2f5] px-4 py-3">
-            <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f9e3e9] text-[#ff2458]">
-                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9">
-                  <path d="M20.8 8.2a4.9 4.9 0 0 0-8.8-3.1 4.9 4.9 0 0 0-8.8 3.1c0 5 8.8 10.8 8.8 10.8s8.8-5.8 8.8-10.8z" />
-                </svg>
-              </div>
-              <div>
-                <p class="text-[13px] leading-none text-slate-700">Rythme cardiaque</p>
-                <p class="mt-2 text-[20px] font-semibold leading-none text-slate-900">{{ day.heartRate }} <span class="text-[18px] font-medium text-slate-700">bpm</span></p>
-                <span class="mt-2 inline-block rounded-full bg-[#dff6e4] px-2.5 py-0.5 text-[12px] leading-none text-[#08aa48]">Normal</span>
-              </div>
-            </div>
-          </article>
-
-          <article v-if="typeFiltreSignesVitaux === 'all' || typeFiltreSignesVitaux === 'pressure'" class="rounded-xl border border-[#a8cdfb] bg-[#ebf6fe] px-4 py-3">
-            <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#d5e7fd] text-[#2c67f6]">
-                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9">
-                  <path d="M3 12h4l2-6 4 12 2-6h6" />
-                </svg>
-              </div>
-              <div>
-                <p class="text-[13px] leading-none text-slate-700">Tension artérielle</p>
-                <p class="mt-2 text-[20px] font-semibold leading-none text-slate-900">{{ day.pressure }} <span class="text-[18px] font-medium text-slate-700">mmHg</span></p>
-                <span class="mt-2 inline-block rounded-full bg-[#dff6e4] px-2.5 py-0.5 text-[12px] leading-none text-[#08aa48]">Normal</span>
-              </div>
-            </div>
-          </article>
-
-          <article v-if="typeFiltreSignesVitaux === 'all' || typeFiltreSignesVitaux === 'oxygen'" class="rounded-xl border border-[#dbc6f7] bg-[#f6f0fc] px-4 py-3">
-            <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eee2fc] text-[#8a2cff]">
-                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9">
-                  <path d="M12 3s6 6.4 6 10a6 6 0 0 1-12 0c0-3.6 6-10 6-10z" />
-                </svg>
-              </div>
-              <div>
-                <p class="text-[13px] leading-none text-slate-700">Saturation O₂</p>
-                <p class="mt-2 text-[20px] font-semibold leading-none text-slate-900">{{ day.oxygen }} <span class="text-[18px] font-medium text-slate-700">%</span></p>
-                <span class="mt-2 inline-block rounded-full bg-[#dff6e4] px-2.5 py-0.5 text-[12px] leading-none text-[#08aa48]">Normal</span>
-              </div>
-            </div>
-          </article>
+          <HistoryCard v-if="showType('heart')"    v-bind="VITAL_META.heart"    :value="day.heartRate"    unit="bpm" />
+          <HistoryCard v-if="showType('pressure')" v-bind="VITAL_META.pressure" :value="day.pressure"     unit="mmHg" />
+          <HistoryCard v-if="showType('oxygen')"   v-bind="VITAL_META.oxygen"   :value="day.oxygen"       unit="%" />
         </div>
       </article>
 
-      <div v-if="!historiqueSignesVitauxFiltres.length" class="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-[14px] text-slate-600">
-        Aucune mesure ne correspond aux filtres selectionnes.
+      <div v-if="!historiqueFiltre.length" class="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-[14px] text-slate-600">
+        Aucune mesure ne correspond aux filtres sélectionnés.
       </div>
     </div>
   </section>
 
-  <div v-if="showVitalsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4">
+  <!-- Modale ajout / modification -->
+  <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4">
     <div class="w-full max-w-[470px] rounded-3xl bg-white p-7 shadow-2xl">
       <div class="mb-4 flex items-center justify-between">
         <div>
-          <h3 class="text-[24px] font-semibold leading-none text-slate-900">{{ vitalModalTitle }}</h3>
-          <p v-if="isEditingLatestVital" class="mt-2 text-[13px] text-slate-500">Seule la derniere entree peut etre modifiee.</p>
+          <h3 class="text-[24px] font-semibold leading-none text-slate-900">{{ modalTitle }}</h3>
+          <p v-if="isEditingLatest" class="mt-2 text-[13px] text-slate-500">Seule la dernière entrée peut être modifiée.</p>
         </div>
-        <button type="button" class="text-slate-500 hover:text-slate-700" @click="showVitalsModal = false">
-          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18" /></svg>
+        <button type="button" class="text-slate-500 hover:text-slate-700" @click="showModal = false">
+          <CloseIcon />
         </button>
       </div>
 
       <div class="space-y-4">
-        <div>
-          <label class="mb-2 block text-[18px] font-semibold text-slate-700">Rythme cardiaque (bpm)</label>
-          <input
-            v-model="vitalForm.heartRate"
-            type="number"
-            min="20"
-            max="260"
-            placeholder="72"
-            :disabled="vitalForm.skipHeartRate"
-            class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60"
-          />
-          <label class="mt-2 inline-flex items-center gap-2 text-[14px] text-slate-600">
-            <input v-model="vitalForm.skipHeartRate" type="checkbox" class="h-4 w-4 rounded border-slate-400" />
-            Je n'ai pas mesuré aujourd'hui
-          </label>
-        </div>
+        <!-- Rythme cardiaque -->
+        <ModalField label="Rythme cardiaque (bpm)" :disabled="form.skipHeartRate" :skip-label="'Je n\'ai pas mesuré aujourd\'hui'" v-model:skip="form.skipHeartRate">
+          <input v-model="form.heartRate" type="number" min="20" max="260" placeholder="72" :disabled="form.skipHeartRate" class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60" />
+        </ModalField>
 
-        <div>
-          <label class="mb-2 block text-[18px] font-semibold text-slate-700">Tension artérielle</label>
+        <!-- Tension -->
+        <ModalField label="Tension artérielle" :disabled="form.skipPressure" :skip-label="'Je n\'ai pas mesuré aujourd\'hui'" v-model:skip="form.skipPressure">
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <input
-                v-model="vitalForm.systolic"
-                type="number"
-                min="50"
-                max="300"
-                placeholder="120"
-                :disabled="vitalForm.skipPressure"
-                class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60"
-              />
+              <input v-model="form.systolic" type="number" min="50" max="300" placeholder="120" :disabled="form.skipPressure" class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60" />
               <p class="mt-1 text-[13px] text-slate-500">Systolique</p>
             </div>
             <div>
-              <input
-                v-model="vitalForm.diastolic"
-                type="number"
-                min="30"
-                max="220"
-                placeholder="80"
-                :disabled="vitalForm.skipPressure"
-                class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60"
-              />
+              <input v-model="form.diastolic" type="number" min="30" max="220" placeholder="80" :disabled="form.skipPressure" class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60" />
               <p class="mt-1 text-right text-[13px] text-slate-500">Diastolique</p>
             </div>
           </div>
-          <label class="mt-2 inline-flex items-center gap-2 text-[14px] text-slate-600">
-            <input v-model="vitalForm.skipPressure" type="checkbox" class="h-4 w-4 rounded border-slate-400" />
-            Je n'ai pas mesuré aujourd'hui
-          </label>
-        </div>
+        </ModalField>
 
-        <div>
-          <label class="mb-2 block text-[18px] font-semibold text-slate-700">Saturation O₂ (%)</label>
-          <input
-            v-model="vitalForm.oxygen"
-            type="number"
-            min="0"
-            max="100"
-            step="0.1"
-            placeholder="98"
-            :disabled="vitalForm.skipOxygen"
-            class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60"
-          />
-          <label class="mt-2 inline-flex items-center gap-2 text-[14px] text-slate-600">
-            <input v-model="vitalForm.skipOxygen" type="checkbox" class="h-4 w-4 rounded border-slate-400" />
-            Je n'ai pas mesuré aujourd'hui
-          </label>
-        </div>
+        <!-- Saturation -->
+        <ModalField label="Saturation O₂ (%)" :disabled="form.skipOxygen" :skip-label="'Je n\'ai pas mesuré aujourd\'hui'" v-model:skip="form.skipOxygen">
+          <input v-model="form.oxygen" type="number" min="0" max="100" step="0.1" placeholder="98" :disabled="form.skipOxygen" class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60" />
+        </ModalField>
 
+        <!-- Date -->
         <div>
           <label class="mb-2 block text-[18px] font-semibold text-slate-700">Date</label>
-          <input
-            v-model="vitalForm.date"
-            type="date"
-            :disabled="isEditingLatestVital"
-            class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:cursor-not-allowed disabled:opacity-70"
-          />
-          <p v-if="isEditingLatestVital" class="mt-2 text-[13px] text-slate-500">La date reste verrouillee pour mettre a jour uniquement la derniere mesure.</p>
+          <input v-model="form.date" type="date" :disabled="isEditingLatest" class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:cursor-not-allowed disabled:opacity-70" />
+          <p v-if="isEditingLatest" class="mt-2 text-[13px] text-slate-500">La date reste verrouillée pour mettre à jour uniquement la dernière mesure.</p>
         </div>
 
-        <p v-if="vitalError" class="text-sm font-medium text-rose-600">
-          {{ vitalError }}
-        </p>
+        <p v-if="formError" class="text-sm font-medium text-rose-600">{{ formError }}</p>
 
         <button type="button" class="mt-2 h-11 w-full rounded-2xl bg-emerald-600 text-[16px] font-semibold text-white hover:bg-emerald-700" @click="enregistrerMesure">
-          {{ isEditingLatestVital ? "Enregistrer les modifications" : "Enregistrer" }}
+          {{ isEditingLatest ? "Enregistrer les modifications" : "Enregistrer" }}
         </button>
       </div>
     </div>
@@ -367,414 +151,299 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from "vue";
+import { computed, defineComponent, h, reactive, ref, watch } from "vue";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
 
-const props = defineProps({
-  latestVital: { type: Object, default: null },
-  chartLabels: { type: Array, default: () => [] },
-  chartHeartRate: { type: Array, default: () => [] },
-  chartSystolic: { type: Array, default: () => [] },
-  chartDiastolic: { type: Array, default: () => [] },
-  chartSaturation: { type: Array, default: () => [] },
-  historyHeartRate: { type: Array, default: () => [] },
-  historySystolic: { type: Array, default: () => [] },
-  historyDiastolic: { type: Array, default: () => [] },
-  historySaturation: { type: Array, default: () => [] },
-  vitalDateKeys: { type: Array, default: () => [] },
+// ─── Mini-composants locaux ───────────────────────────────────────────────────
+
+const CalendarIcon = defineComponent({
+  template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg>`,
 });
 
+const CloseIcon = defineComponent({
+  template: `<svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg>`,
+});
+
+// Carte principale (carré couleur en haut)
+const VitalCard = defineComponent({
+  props: ["label", "accent", "bg", "border", "iconBg", "icon", "displayValue", "unit", "canEdit", "isEditing"],
+  emits: ["edit", "blur"],
+  setup(props, { emit, slots }) {
+    return () =>
+      h("article", { class: `min-h-[162px] rounded-2xl border ${props.border} ${props.bg} px-6 py-6` }, [
+        h("div", { class: "flex items-start justify-between" }, [
+          h("div", { class: `flex h-12 w-12 items-center justify-center rounded-xl ${props.iconBg}`, innerHTML: props.icon }),
+          h("span", { class: "rounded-full bg-[#dff6e4] px-3 py-1 text-[12px] leading-none text-[#08aa48]" }, "Normal"),
+        ]),
+        h("p", { class: "mt-4 text-[16px] leading-none text-slate-700" }, props.label),
+        h("div", { class: "mt-3 flex items-baseline gap-2" }, slots.default?.()),
+      ]);
+  },
+});
+
+// Carte historique (petite, dans la liste)
+const HistoryCard = defineComponent({
+  props: ["label", "accent", "bg", "border", "iconBg", "icon", "value", "unit"],
+  setup(props) {
+    return () =>
+      h("article", { class: `rounded-xl border ${props.border} ${props.bg} px-4 py-3` }, [
+        h("div", { class: "flex items-center gap-3" }, [
+          h("div", { class: `flex h-10 w-10 items-center justify-center rounded-xl ${props.iconBg}`, innerHTML: props.icon }),
+          h("div", {}, [
+            h("p", { class: "text-[13px] leading-none text-slate-700" }, props.label),
+            h("p", { class: "mt-2 text-[20px] font-semibold leading-none text-slate-900" }, [
+              props.value,
+              h("span", { class: "text-[18px] font-medium text-slate-700" }, ` ${props.unit}`),
+            ]),
+            h("span", { class: "mt-2 inline-block rounded-full bg-[#dff6e4] px-2.5 py-0.5 text-[12px] leading-none text-[#08aa48]" }, "Normal"),
+          ]),
+        ]),
+      ]);
+  },
+});
+
+// Champ de la modale avec checkbox "pas mesuré"
+const ModalField = defineComponent({
+  props: ["label", "skip", "skipLabel"],
+  emits: ["update:skip"],
+  setup(props, { emit, slots }) {
+    return () =>
+      h("div", {}, [
+        h("label", { class: "mb-2 block text-[18px] font-semibold text-slate-700" }, props.label),
+        slots.default?.(),
+        h("label", { class: "mt-2 inline-flex items-center gap-2 text-[14px] text-slate-600" }, [
+          h("input", { type: "checkbox", class: "h-4 w-4 rounded border-slate-400", checked: props.skip, onChange: (e) => emit("update:skip", e.target.checked) }),
+          props.skipLabel,
+        ]),
+      ]);
+  },
+});
+
+// ─── Métadonnées des signes vitaux (couleurs, icônes, labels) ─────────────────
+const VITAL_META = {
+  heart: {
+    key: "heart", label: "Rythme cardiaque", unit: "bpm",
+    bg: "bg-[#fdf2f5]", border: "border-[#efc4cc]",
+    iconBg: "bg-[#f9e3e9] text-[#ff2458]", accent: "#ff2458",
+    icon: `<svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20.8 8.2a4.9 4.9 0 0 0-8.8-3.1 4.9 4.9 0 0 0-8.8 3.1c0 5 8.8 10.8 8.8 10.8s8.8-5.8 8.8-10.8z"/></svg>`,
+  },
+  pressure: {
+    key: "pressure", label: "Tension artérielle", unit: "mmHg",
+    bg: "bg-[#ebf6fe]", border: "border-[#a8cdfb]",
+    iconBg: "bg-[#d5e7fd] text-[#2c67f6]", accent: "#2c67f6",
+    icon: `<svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>`,
+  },
+  oxygen: {
+    key: "oxygen", label: "Saturation O₂", unit: "%",
+    bg: "bg-[#f6f0fc]", border: "border-[#dbc6f7]",
+    iconBg: "bg-[#eee2fc] text-[#8a2cff]", accent: "#8a2cff",
+    icon: `<svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3s6 6.4 6 10a6 6 0 0 1-12 0c0-3.6 6-10 6-10z"/></svg>`,
+  },
+};
+
+// ─── Props / Emits ────────────────────────────────────────────────────────────
+const props = defineProps({
+  latestVital:      { type: Object, default: null },
+  chartLabels:      { type: Array, default: () => [] },
+  chartHeartRate:   { type: Array, default: () => [] },
+  chartSystolic:    { type: Array, default: () => [] },
+  chartDiastolic:   { type: Array, default: () => [] },
+  chartSaturation:  { type: Array, default: () => [] },
+  historyHeartRate: { type: Array, default: () => [] },
+  historySystolic:  { type: Array, default: () => [] },
+  historyDiastolic: { type: Array, default: () => [] },
+  historySaturation:{ type: Array, default: () => [] },
+  vitalDateKeys:    { type: Array, default: () => [] },
+});
 const emit = defineEmits(["refresh"]);
 const notifications = useNotificationsStore();
 
-const showVitalsModal = ref(false);
-const vitalError = ref("");
-const dateFiltreSignesVitaux = ref("");
-const typeFiltreSignesVitaux = ref("all");
-const isEditingLatestVital = ref(false);
-const enregistrementDerniereMesureEnCours = ref(false);
-const mesureEnEdition = ref("");
+// ─── État ─────────────────────────────────────────────────────────────────────
+const showModal           = ref(false);
+const isEditingLatest     = ref(false);
+const enregistrementEnCours = ref(false);
+const mesureEnEdition     = ref("");
+const formError           = ref("");
+const filterDate          = ref("");
+const filterType          = ref("all");
 
-const formulaireDerniereMesure = reactive({
-  rythmeCardiaque: "",
-  tensionSystolique: "",
-  tensionDiastolique: "",
-  saturationOxygene: "",
-});
+const draft = reactive({ heartRate: "", systolic: "", diastolic: "", oxygen: "" });
+const form  = reactive({ heartRate: "", systolic: "", diastolic: "", oxygen: "",
+                         skipHeartRate: false, skipPressure: false, skipOxygen: false,
+                         date: today() });
 
-const vitalForm = reactive({
-  heartRate: "",
-  systolic: "",
-  diastolic: "",
-  oxygen: "",
-  skipHeartRate: false,
-  skipPressure: false,
-  skipOxygen: false,
-  date: new Date().toISOString().slice(0, 10),
-});
-
-// Constantes graphique (conservees pour usage futur du graphique SVG).
-const chart = { width: 980, height: 350, left: 70, right: 40, top: 40, bottom: 30, minY: 0, maxY: 140 };
-const yTicks = [0, 35, 70, 105, 140];
-const selectedSeries = reactive({ rhythm: true, tension: true, saturation: true });
-const hoveredIndex = ref(null);
-const chartRef = ref(null);
-
-// Computed derives des props.
+// ─── Computed ─────────────────────────────────────────────────────────────────
 const latestHeartRate = computed(() => props.latestVital?.heart_rate ?? "--");
-const latestPressure = computed(() => {
-  const s = props.latestVital?.systolic_pressure;
-  const d = props.latestVital?.diastolic_pressure;
+const latestOxygen    = computed(() => props.latestVital?.oxygen_saturation ?? "--");
+const latestPressure  = computed(() => {
+  const { systolic_pressure: s, diastolic_pressure: d } = props.latestVital ?? {};
   return s && d ? `${s}/${d}` : "--/--";
 });
-const latestOxygen = computed(() => props.latestVital?.oxygen_saturation ?? "--");
-const latestVitalMeasuredDate = computed(() => convertirDateIso(props.latestVital?.measured_at));
-const latestVitalMeasuredAtLabel = computed(() => (props.latestVital?.measured_at ? formaterDate(latestVitalMeasuredDate.value) : ""));
+const latestVitalDate         = computed(() => isoDate(props.latestVital?.measured_at));
+const latestVitalMeasuredAtLabel = computed(() => props.latestVital?.measured_at ? formatDate(latestVitalDate.value) : "");
 const peutModifierDerniereMesure = computed(() => Boolean(props.latestVital?.measured_at));
-const vitalModalTitle = computed(() => (isEditingLatestVital.value ? "Modifier la derniere mesure" : "Ajouter une mesure"));
-const editionDerniereMesureModifiee = computed(() => {
-  if (!peutModifierDerniereMesure.value) return false;
+const modalTitle = computed(() => isEditingLatest.value ? "Modifier la dernière mesure" : "Ajouter une mesure");
 
+const editionModifiee = computed(() => {
+  if (!peutModifierDerniereMesure.value) return false;
+  const v = props.latestVital;
   return (
-    String(formulaireDerniereMesure.rythmeCardiaque) !== String(props.latestVital?.heart_rate ?? "") ||
-    String(formulaireDerniereMesure.tensionSystolique) !== String(props.latestVital?.systolic_pressure ?? "") ||
-    String(formulaireDerniereMesure.tensionDiastolique) !== String(props.latestVital?.diastolic_pressure ?? "") ||
-    String(formulaireDerniereMesure.saturationOxygene) !== String(props.latestVital?.oxygen_saturation ?? "")
+    String(draft.heartRate)  !== String(v?.heart_rate ?? "") ||
+    String(draft.systolic)   !== String(v?.systolic_pressure ?? "") ||
+    String(draft.diastolic)  !== String(v?.diastolic_pressure ?? "") ||
+    String(draft.oxygen)     !== String(v?.oxygen_saturation ?? "")
   );
 });
 
-const historiqueSignesVitauxFiltres = computed(() => {
-  const rows = props.vitalDateKeys
-    .map((dateKey, index) => {
-      const heartRate = props.historyHeartRate[index] ?? null;
-      const systolic = props.historySystolic[index] ?? null;
-      const diastolic = props.historyDiastolic[index] ?? null;
-      const oxygen = props.historySaturation[index] ?? null;
-      const hasAny = [heartRate, systolic, diastolic, oxygen].some(estValeurMesuree);
+const filtresActifs = computed(() => Boolean(filterDate.value) || filterType.value !== "all");
 
+const historiqueFiltre = computed(() => {
+  const rows = props.vitalDateKeys
+    .map((dateKey, i) => {
+      const hr = props.historyHeartRate[i] ?? null;
+      const sys = props.historySystolic[i] ?? null;
+      const dia = props.historyDiastolic[i] ?? null;
+      const ox  = props.historySaturation[i] ?? null;
+      if (![hr, sys, dia, ox].some(isValidMeasure)) return null;
       return {
         dateKey,
-        longDate: formaterDateLongue(dateKey),
-        hasAny,
-        heartRate: heartRate ?? "--",
-        pressure: estValeurMesuree(systolic) && estValeurMesuree(diastolic)
-          ? `${Number(systolic)}/${Number(diastolic)}`
-          : "--/--",
-        oxygen: oxygen ?? "--",
+        longDate: formatLongDate(dateKey),
+        heartRate: hr ?? "--",
+        pressure: isValidMeasure(sys) && isValidMeasure(dia) ? `${+sys}/${+dia}` : "--/--",
+        oxygen: ox ?? "--",
       };
     })
-    .filter((row) => row.hasAny)
+    .filter(Boolean)
     .reverse();
 
-  if (!dateFiltreSignesVitaux.value) return rows;
-  return rows.filter((row) => row.dateKey === dateFiltreSignesVitaux.value);
+  return filterDate.value ? rows.filter((r) => r.dateKey === filterDate.value) : rows;
 });
 
-const filtresSignesVitauxActifs = computed(() =>
-  Boolean(dateFiltreSignesVitaux.value) || typeFiltreSignesVitaux.value !== "all"
-);
-
-const plottedSeries = computed(() => [
-  { key: "heart", color: "#ef4444", values: props.chartHeartRate, points: construirePoints(props.chartHeartRate) },
-  { key: "sys", color: "#3b82f6", values: props.chartSystolic, points: construirePoints(props.chartSystolic) },
-  { key: "sat", color: "#8b5cf6", values: props.chartSaturation, points: construirePoints(props.chartSaturation) },
+// Cartes de la section principale — les valeurs éditables sont gérées dans le template via `draft`
+const vitalCards = computed(() => [
+  { ...VITAL_META.heart,    displayValue: draft.heartRate || latestHeartRate.value },
+  { ...VITAL_META.pressure, displayValue: `${draft.systolic || props.latestVital?.systolic_pressure || "--"}/${draft.diastolic || props.latestVital?.diastolic_pressure || "--"}` },
+  { ...VITAL_META.oxygen,   displayValue: draft.oxygen    || latestOxygen.value },
 ]);
-const visibleSeries = computed(() =>
-  plottedSeries.value.filter((series) => {
-    if (series.key === "heart") return selectedSeries.rhythm;
-    if (series.key === "sys") return selectedSeries.tension;
-    if (series.key === "sat") return selectedSeries.saturation;
-    return false;
-  }),
-);
 
-const hoverIndex = computed(() => hoveredIndex.value);
-const tooltipTop = 84;
-const tooltipLeft = computed(() => {
-  if (hoverIndex.value === null) return 0;
-  const x = convertirXEnPx(hoverIndex.value);
-  return Math.min(Math.max(x + 10, chart.left + 8), chart.width - 360);
-});
-
-// Cette fonction convertit une valeur en nombre ou renvoie null.
-function convertirNombreOuNull(value) {
-  if (value === null || value === undefined || value === "") return null;
-  const n = Number(String(value).trim().replace(",", "."));
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function today()  { return new Date().toISOString().slice(0, 10); }
+function isoDate(v) { return v ? String(v).slice(0, 10) : today(); }
+function toNumber(v) {
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(String(v).trim().replace(",", "."));
   return Number.isFinite(n) ? n : null;
 }
+function isValidMeasure(v) { return v !== null && v !== undefined && v !== "" && Number.isFinite(Number(v)); }
+function formatDate(iso) {
+  return iso ? new Date(`${iso}T00:00:00`).toLocaleDateString("fr-FR") : "";
+}
+function formatLongDate(iso) {
+  return iso ? new Date(`${iso}T00:00:00`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "";
+}
+function showType(type) { return filterType.value === "all" || filterType.value === type; }
 
-function extraireMessageErreurApi(error, messageParDefaut) {
-  const messagePrincipal = error?.response?.data?.message;
-  const erreurs = error?.response?.data?.errors;
-
-  if (erreurs && typeof erreurs === "object") {
-    const premierChamp = Object.values(erreurs).find((messages) => Array.isArray(messages) && messages.length > 0);
-    if (premierChamp?.[0]) return String(premierChamp[0]);
-  }
-
-  return messagePrincipal || messageParDefaut;
+function syncDraft() {
+  const v = props.latestVital;
+  draft.heartRate  = String(v?.heart_rate ?? "");
+  draft.systolic   = String(v?.systolic_pressure ?? "");
+  draft.diastolic  = String(v?.diastolic_pressure ?? "");
+  draft.oxygen     = String(v?.oxygen_saturation ?? "");
 }
 
-function validerDerniereMesure(rythmeCardiaque, tensionSystolique, tensionDiastolique, saturationOxygene) {
-  if (rythmeCardiaque === null && tensionSystolique === null && tensionDiastolique === null && saturationOxygene === null) {
-    return "Veuillez renseigner au moins une valeur.";
-  }
+function activerEditionMesure(key)  { mesureEnEdition.value = key; }
+function fermerEditionMesure()      { mesureEnEdition.value = ""; }
+function reinitialiserEdition()     { syncDraft(); fermerEditionMesure(); }
+function reinitialiserFiltres()     { filterDate.value = ""; filterType.value = "all"; }
 
-  if ((tensionSystolique === null) !== (tensionDiastolique === null)) {
-    return "Veuillez remplir les deux champs de tension.";
-  }
-
-  if (rythmeCardiaque !== null) {
-    if (!Number.isInteger(rythmeCardiaque)) return "Le rythme cardiaque doit etre un nombre entier.";
-    if (rythmeCardiaque < 20 || rythmeCardiaque > 260) return "Le rythme cardiaque doit etre compris entre 20 et 260 bpm.";
-  }
-
-  if (tensionSystolique !== null) {
-    if (!Number.isInteger(tensionSystolique)) return "La tension systolique doit etre un nombre entier.";
-    if (tensionSystolique < 50 || tensionSystolique > 300) return "La tension systolique doit etre comprise entre 50 et 300 mmHg.";
-  }
-
-  if (tensionDiastolique !== null) {
-    if (!Number.isInteger(tensionDiastolique)) return "La tension diastolique doit etre un nombre entier.";
-    if (tensionDiastolique < 30 || tensionDiastolique > 220) return "La tension diastolique doit etre comprise entre 30 et 220 mmHg.";
-  }
-
-  if (saturationOxygene !== null && (saturationOxygene < 0 || saturationOxygene > 100)) {
-    return "La saturation O2 doit etre comprise entre 0 et 100 %.";
-  }
-
-  return "";
-}
-
-// Cette fonction convertit une date en format ISO (YYYY-MM-DD).
-function convertirDateIso(dateValue) {
-  if (!dateValue) return new Date().toISOString().slice(0, 10);
-  return String(dateValue).slice(0, 10);
-}
-
-// Cette fonction verifie qu'une mesure est reellement presente (et pas null/vide).
-function estValeurMesuree(value) {
-  if (value === null || value === undefined || value === "") return false;
-  return Number.isFinite(Number(value));
-}
-
-// Cette fonction formate une date courte pour l'axe du graphique.
-function formaterLibelle(dateIso) {
-  if (!dateIso) return "";
-  const date = new Date(`${dateIso}T00:00:00`);
-  return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
-}
-
-// Cette fonction formate une date en affichage francais.
-function formaterDate(dateIso) {
-  if (!dateIso) return "";
-  const date = new Date(`${dateIso}T00:00:00`);
-  return date.toLocaleDateString("fr-FR");
-}
-
-// Cette fonction formate une date longue avec jour de semaine (ex: jeudi 26 février 2026).
-function formaterDateLongue(dateIso) {
-  if (!dateIso) return "";
-  const date = new Date(`${dateIso}T00:00:00`);
-  return date.toLocaleDateString("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
+function resetForm() {
+  formError.value = "";
+  isEditingLatest.value = false;
+  const v = props.latestVital;
+  Object.assign(form, {
+    heartRate: String(v?.heart_rate ?? 72),
+    systolic:  String(v?.systolic_pressure ?? 120),
+    diastolic: String(v?.diastolic_pressure ?? 80),
+    oxygen:    String(v?.oxygen_saturation ?? 98),
+    skipHeartRate: false, skipPressure: false, skipOxygen: false,
+    date: today(),
   });
 }
 
-// Cette fonction remplace les valeurs invalides par la derniere valeur valide.
-function normaliserSerie(values, fallback = 0) {
-  let last = fallback;
-  return (Array.isArray(values) ? values : []).map((v) => {
-    const n = Number(v);
-    if (Number.isFinite(n)) {
-      last = n;
-      return n;
-    }
-    return last;
-  });
-}
-
-// Cette fonction initialise le formulaire des signes vitaux avec des valeurs visibles.
-function reinitialiserFormulaireVital() {
-  vitalError.value = "";
-  isEditingLatestVital.value = false;
-  vitalForm.heartRate = String(props.latestVital?.heart_rate ?? 72);
-  vitalForm.systolic = String(props.latestVital?.systolic_pressure ?? 120);
-  vitalForm.diastolic = String(props.latestVital?.diastolic_pressure ?? 80);
-  vitalForm.oxygen = String(props.latestVital?.oxygen_saturation ?? 98);
-  vitalForm.skipHeartRate = false;
-  vitalForm.skipPressure = false;
-  vitalForm.skipOxygen = false;
-  vitalForm.date = new Date().toISOString().slice(0, 10);
-}
-
-function synchroniserEditionDerniereMesure() {
-  formulaireDerniereMesure.rythmeCardiaque = String(props.latestVital?.heart_rate ?? "");
-  formulaireDerniereMesure.tensionSystolique = String(props.latestVital?.systolic_pressure ?? "");
-  formulaireDerniereMesure.tensionDiastolique = String(props.latestVital?.diastolic_pressure ?? "");
-  formulaireDerniereMesure.saturationOxygene = String(props.latestVital?.oxygen_saturation ?? "");
-}
-
-function activerEditionMesure(nomMesure) {
-  mesureEnEdition.value = nomMesure;
-}
-
-function fermerEditionMesure() {
-  mesureEnEdition.value = "";
-}
-
-function reinitialiserEditionDerniereMesure() {
-  synchroniserEditionDerniereMesure();
-  fermerEditionMesure();
-}
-
-function reinitialiserFiltresSignesVitaux() {
-  dateFiltreSignesVitaux.value = "";
-  typeFiltreSignesVitaux.value = "all";
-}
-
-// Cette fonction convertit un index de point en position X du graphique.
-function convertirXEnPx(index) {
-  if (props.chartLabels.length <= 1) return chart.left;
-  const usable = chart.width - chart.left - chart.right;
-  const step = usable / (props.chartLabels.length - 1);
-  return chart.left + index * step;
-}
-
-// Cette fonction convertit une valeur en position Y du graphique.
-function convertirYEnPx(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return chart.height - chart.bottom;
-  const usable = chart.height - chart.top - chart.bottom;
-  const ratio = (n - chart.minY) / (chart.maxY - chart.minY);
-  return chart.height - chart.bottom - ratio * usable;
-}
-
-// Cette fonction construit la chaine de points SVG pour une courbe.
-function construirePoints(values) {
-  return values.map((v, i) => `${convertirXEnPx(i)},${convertirYEnPx(v)}`).join(" ");
-}
-
-// Cette fonction met a jour le point survole dans le graphique.
-function gererMouvementGraphique(event) {
-  if (!chartRef.value || props.chartLabels.length === 0) return;
-  const rect = chartRef.value.getBoundingClientRect();
-  const localX = ((event.clientX - rect.left) / rect.width) * chart.width;
-  const usable = chart.width - chart.left - chart.right;
-  const step = props.chartLabels.length > 1 ? usable / (props.chartLabels.length - 1) : usable;
-  const nearest = Math.round((localX - chart.left) / step);
-  hoveredIndex.value = Math.min(Math.max(nearest, 0), props.chartLabels.length - 1);
-}
-
-// Cette fonction retire le survol quand la souris sort du graphique.
-function gererSortieGraphique() {
-  hoveredIndex.value = null;
-}
-
-// Cette fonction active ou desactive une serie du graphique.
-function basculerSerie(key) {
-  const activeCount = [selectedSeries.rhythm, selectedSeries.tension, selectedSeries.saturation].filter(Boolean).length;
-  if (selectedSeries[key] && activeCount === 1) return;
-  selectedSeries[key] = !selectedSeries[key];
-}
-
-// Cette fonction enregistre une mesure vitale puis emet un evenement de rechargement.
+// ─── Actions API ─────────────────────────────────────────────────────────────
 async function enregistrerMesure() {
-  vitalError.value = "";
-  const measuredAt = convertirDateIso(vitalForm.date);
-  const heartRate = vitalForm.skipHeartRate ? null : convertirNombreOuNull(vitalForm.heartRate);
-  const systolic = vitalForm.skipPressure ? null : convertirNombreOuNull(vitalForm.systolic);
-  const diastolic = vitalForm.skipPressure ? null : convertirNombreOuNull(vitalForm.diastolic);
-  const oxygen = vitalForm.skipOxygen ? null : convertirNombreOuNull(vitalForm.oxygen);
+  formError.value = "";
+  const heartRate = form.skipHeartRate ? null : toNumber(form.heartRate);
+  const systolic  = form.skipPressure  ? null : toNumber(form.systolic);
+  const diastolic = form.skipPressure  ? null : toNumber(form.diastolic);
+  const oxygen    = form.skipOxygen    ? null : toNumber(form.oxygen);
 
   if (heartRate === null && systolic === null && diastolic === null && oxygen === null) {
-    vitalError.value = "Veuillez saisir au moins une mesure ou cocher les options de non-mesure.";
+    formError.value = "Veuillez saisir au moins une mesure.";
     return;
   }
-
   if ((systolic === null) !== (diastolic === null)) {
-    vitalError.value = "Veuillez remplir les deux champs de tension (systolique et diastolique).";
+    formError.value = "Veuillez remplir les deux champs de tension.";
     return;
   }
 
   try {
     await api.post("/health-data/vitals", {
-      measured_at: measuredAt,
-      heart_rate: heartRate,
-      systolic_pressure: systolic,
-      diastolic_pressure: diastolic,
-      oxygen_saturation: oxygen,
+      measured_at: isoDate(form.date),
+      heart_rate: heartRate, systolic_pressure: systolic,
+      diastolic_pressure: diastolic, oxygen_saturation: oxygen,
     });
     notifications.actionAjoutee();
-    reinitialiserFormulaireVital();
-    showVitalsModal.value = false;
+    resetForm();
+    showModal.value = false;
     emit("refresh");
-  } catch (error) {
-    const message = error?.response?.data?.message || "Erreur lors de l'enregistrement.";
-    notifications.erreur(message);
+  } catch (err) {
+    notifications.erreur(err?.response?.data?.message ?? "Erreur lors de l'enregistrement.");
   }
 }
 
-async function enregistrerDerniereMesureDepuisCartes() {
-  if (!peutModifierDerniereMesure.value) {
-    notifications.avertissement("Aucune derniere mesure disponible a modifier.");
+async function enregistrerDepuisCartes() {
+  if (!peutModifierDerniereMesure.value) return;
+
+  const heartRate = toNumber(draft.heartRate);
+  const systolic  = toNumber(draft.systolic);
+  const diastolic = toNumber(draft.diastolic);
+  const oxygen    = toNumber(draft.oxygen);
+
+  if (heartRate === null && systolic === null && diastolic === null && oxygen === null) {
+    notifications.avertissement("Veuillez renseigner au moins une valeur.");
+    return;
+  }
+  if ((systolic === null) !== (diastolic === null)) {
+    notifications.avertissement("Veuillez remplir les deux champs de tension.");
     return;
   }
 
-  const rythmeCardiaque = convertirNombreOuNull(formulaireDerniereMesure.rythmeCardiaque);
-  const tensionSystolique = convertirNombreOuNull(formulaireDerniereMesure.tensionSystolique);
-  const tensionDiastolique = convertirNombreOuNull(formulaireDerniereMesure.tensionDiastolique);
-  const saturationOxygene = convertirNombreOuNull(formulaireDerniereMesure.saturationOxygene);
-
-  const messageValidation = validerDerniereMesure(
-    rythmeCardiaque,
-    tensionSystolique,
-    tensionDiastolique,
-    saturationOxygene,
-  );
-  if (messageValidation) {
-    notifications.avertissement(messageValidation);
-    return;
-  }
-
-  enregistrementDerniereMesureEnCours.value = true;
-
+  enregistrementEnCours.value = true;
   try {
     await api.post("/health-data/vitals", {
-      measured_at: latestVitalMeasuredDate.value,
-      heart_rate: rythmeCardiaque,
-      systolic_pressure: tensionSystolique,
-      diastolic_pressure: tensionDiastolique,
-      oxygen_saturation: saturationOxygene,
+      measured_at: latestVitalDate.value,
+      heart_rate: heartRate, systolic_pressure: systolic,
+      diastolic_pressure: diastolic, oxygen_saturation: oxygen,
     });
-    notifications.actionModifiee("Derniere entree modifiee avec succes.");
+    notifications.actionModifiee("Dernière entrée modifiée avec succès.");
     fermerEditionMesure();
     emit("refresh");
-  } catch (error) {
-    const message = extraireMessageErreurApi(error, "Erreur lors de la modification.");
-    notifications.erreur(message);
+  } catch (err) {
+    const msg = err?.response?.data?.errors
+      ? Object.values(err.response.data.errors).flat()[0]
+      : (err?.response?.data?.message ?? "Erreur lors de la modification.");
+    notifications.erreur(msg);
   } finally {
-    enregistrementDerniereMesureEnCours.value = false;
+    enregistrementEnCours.value = false;
   }
 }
 
-// Cette methode est exposee pour que le parent puisse ouvrir la modale d'ajout.
-function ouvrirModalAjout() {
-  reinitialiserFormulaireVital();
-  showVitalsModal.value = true;
-}
+// ─── API publique ─────────────────────────────────────────────────────────────
+function ouvrirModalAjout() { resetForm(); showModal.value = true; }
 
-watch(
-  () => props.latestVital,
-  () => {
-    synchroniserEditionDerniereMesure();
-  },
-  { immediate: true, deep: true }
-);
+watch(() => props.latestVital, syncDraft, { immediate: true, deep: true });
 
 defineExpose({ ouvrirModalAjout });
 </script>

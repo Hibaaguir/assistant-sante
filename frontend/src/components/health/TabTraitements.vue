@@ -248,13 +248,18 @@ import { computed, ref } from "vue";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
 
+const MAX_DAILY_DOSES = 12;
+const MAX_MONTHLY_FREQUENCY = 31;
+const HISTORY_ALL_DAYS = 90;
+const DEFAULT_HISTORY_DAYS = 7;
+const ALLOWED_FREQUENCY_UNITS = ["jour", "semaine", "mois"];
+
 const props = defineProps({
   treatmentMedicines: { type: Array, default: () => [] },
   treatmentChecks: { type: Object, default: () => ({}) },
   treatmentDays: { type: Array, default: () => [] },
 });
 
-const emit = defineEmits(["refresh"]);
 const notifications = useNotificationsStore();
 
 const showTreatmentModal = ref(false);
@@ -278,36 +283,37 @@ const treatmentHistoryMedicineOptions = computed(() => [
   ...props.treatmentMedicines.map((med) => ({ id: med.id, name: med.name })),
 ]);
 
-const treatmentHistoryRows = computed(() => {
-  const periodDays = treatmentHistoryPeriod.value === "all"
-    ? 90
-    : Number(treatmentHistoryPeriod.value || 7);
+const filteredTreatmentHistoryMedicines = computed(() => {
+  if (selectedTreatmentHistoryMed.value === "all") return props.treatmentMedicines;
+  return props.treatmentMedicines.filter((med) => med.id === selectedTreatmentHistoryMed.value);
+});
 
-  const keys = Array.from({ length: periodDays }).map((_, idx) => {
-    const date = new Date();
-    date.setDate(date.getDate() - idx);
-    return date.toISOString().slice(0, 10);
-  });
+const treatmentHistoryPeriodDays = computed(() => (
+  treatmentHistoryPeriod.value === "all"
+    ? HISTORY_ALL_DAYS
+    : Number(treatmentHistoryPeriod.value || DEFAULT_HISTORY_DAYS)
+));
+
+const treatmentHistoryRows = computed(() => {
+  const keys = construireClesDerniersJours(treatmentHistoryPeriodDays.value);
 
   return keys
     .map((dateKey) => {
-      const meds = props.treatmentMedicines
-        .filter((med) => selectedTreatmentHistoryMed.value === "all" || med.id === selectedTreatmentHistoryMed.value)
-        .map((med) => {
-          const total = obtenirNombrePrisesPourJour(dateKey, med);
-          const taken = compterPrisesCompletees(dateKey, med);
-          const progress = total > 0 ? Math.round((taken / total) * 100) : 0;
+      const meds = filteredTreatmentHistoryMedicines.value.map((med) => {
+        const total = obtenirNombrePrisesPourJour(dateKey, med);
+        const taken = compterPrisesCompletees(dateKey, med);
+        const progress = total > 0 ? Math.round((taken / total) * 100) : 0;
 
-          return {
-            id: med.id,
-            name: med.name,
-            dose: med.dose,
-            taken,
-            total,
-            progress,
-            isComplete: total > 0 && taken >= total,
-          };
-        });
+        return {
+          id: med.id,
+          name: med.name,
+          dose: med.dose,
+          taken,
+          total,
+          progress,
+          isComplete: total > 0 && taken >= total,
+        };
+      });
 
       const total = meds.reduce((sum, med) => sum + med.total, 0);
       const taken = meds.reduce((sum, med) => sum + med.taken, 0);
@@ -349,7 +355,10 @@ const treatmentHistoryStats = computed(() => {
 // Cette fonction formate la date pour l'historique des prises (sans annee).
 function formaterDateHistoriqueTraitement(dateIso) {
   if (!dateIso) return "";
-  const date = new Date(`${dateIso}T00:00:00`);
+  const date = construireDateDepuisCle(dateIso);
+
+  if (!date) return "";
+
   return date.toLocaleDateString("fr-FR", {
     weekday: "long",
     day: "numeric",
@@ -357,11 +366,28 @@ function formaterDateHistoriqueTraitement(dateIso) {
   });
 }
 
+function obtenirCleJour(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function construireDateDepuisCle(dayKey) {
+  const date = new Date(`${dayKey}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function construireClesDerniersJours(periodDays) {
+  return Array.from({ length: periodDays }).map((_, idx) => {
+    const date = new Date();
+    date.setDate(date.getDate() - idx);
+    return obtenirCleJour(date);
+  });
+}
+
 function resoudreFrequenceTraitement(med) {
-  const rawUnit = String(med?.frequency_unit || "").trim().toLowerCase();
-  let frequencyUnit = rawUnit;
+  let frequencyUnit = String(med?.frequency_unit || "").trim().toLowerCase();
 
   let frequencyCount = Number(med?.frequency_count ?? NaN);
+
   if (!Number.isFinite(frequencyCount)) {
     const match = String(med?.freq || "").match(/(\d+)\s*fois\s*\/\s*(jour|semaine|mois)/i);
     if (match) {
@@ -370,7 +396,7 @@ function resoudreFrequenceTraitement(med) {
     }
   }
 
-  if (!["jour", "semaine", "mois"].includes(frequencyUnit)) {
+  if (!ALLOWED_FREQUENCY_UNITS.includes(frequencyUnit)) {
     frequencyUnit = "jour";
   }
 
@@ -380,7 +406,7 @@ function resoudreFrequenceTraitement(med) {
 
   return {
     unit: frequencyUnit,
-    count: Math.max(1, Math.min(Math.round(frequencyCount), 31)),
+    count: Math.max(1, Math.min(Math.round(frequencyCount), MAX_MONTHLY_FREQUENCY)),
   };
 }
 
@@ -401,8 +427,8 @@ function estPrisePrevueCeJour(dayKey, med) {
 
   if (unit === "jour") return true;
 
-  const date = new Date(`${dayKey}T00:00:00`);
-  if (Number.isNaN(date.getTime())) return true;
+  const date = construireDateDepuisCle(dayKey);
+  if (!date) return true;
 
   if (unit === "semaine") {
     const weekDay = ((date.getDay() + 6) % 7) + 1;
@@ -419,29 +445,31 @@ function obtenirNombrePrisesPourJour(dayKey, med) {
   const { unit, count } = resoudreFrequenceTraitement(med);
 
   if (unit === "jour") {
-    return Math.max(1, Math.min(count, 12));
+    return Math.max(1, Math.min(count, MAX_DAILY_DOSES));
   }
 
   return estPrisePrevueCeJour(dayKey, med) ? 1 : 0;
 }
 
-// Cette fonction genere la liste des numeros de prises pour un jour donne.
 function obtenirIndexPrises(dayKey, med) {
   return Array.from({ length: obtenirNombrePrisesPourJour(dayKey, med) }, (_, idx) => idx + 1);
 }
 
-// Cette fonction cree une cle unique pour une prise de medicament.
 function construireClePrise(medId, doseIndex) {
   return `${medId}__dose_${doseIndex}`;
 }
 
-// Cette fonction initialise les cases de suivi pour un jour donne.
 function assurerSuiviJour(dayKey) {
   if (!props.treatmentChecks[dayKey]) props.treatmentChecks[dayKey] = {};
-  for (const med of props.treatmentMedicines) {
-    const doses = obtenirNombrePrisesPourJour(dayKey, med);
 
-    const maxDoses = resoudreFrequenceTraitement(med).unit === "jour" ? 12 : 1;
+  for (const med of props.treatmentMedicines) {
+    const frequency = resoudreFrequenceTraitement(med);
+    const doses = frequency.unit === "jour"
+      ? Math.max(1, Math.min(frequency.count, MAX_DAILY_DOSES))
+      : (estPrisePrevueCeJour(dayKey, med) ? 1 : 0);
+
+    const maxDoses = frequency.unit === "jour" ? MAX_DAILY_DOSES : 1;
+
     for (let i = doses + 1; i <= maxDoses; i += 1) {
       const key = construireClePrise(med.id, i);
       if (key in props.treatmentChecks[dayKey]) {
@@ -458,29 +486,27 @@ function assurerSuiviJour(dayKey) {
   }
 }
 
-// Cette fonction verifie si une prise est marquee comme effectuee.
 function estPriseCochee(dayKey, medId, doseIndex) {
   return Boolean(props.treatmentChecks[dayKey]?.[construireClePrise(medId, doseIndex)]);
 }
 
-// Cette fonction compte le nombre de prises cochees pour un jour.
 function compterPrisesCompletees(dayKey, med) {
   const doses = obtenirNombrePrisesPourJour(dayKey, med);
   let completed = 0;
+
   for (let i = 1; i <= doses; i += 1) {
     if (estPriseCochee(dayKey, med.id, i)) completed += 1;
   }
+
   return completed;
 }
 
-// Cette fonction verifie si toutes les prises du medicament sont faites.
 function estMedicamentComplet(dayKey, med) {
   const expectedDoses = obtenirNombrePrisesPourJour(dayKey, med);
   if (expectedDoses <= 0) return true;
   return compterPrisesCompletees(dayKey, med) >= expectedDoses;
 }
 
-// Cette fonction verifie si tous les medicaments du jour sont complets.
 function estJourComplet(dayKey) {
   if (estJourFutur(dayKey)) return false;
 
@@ -495,21 +521,23 @@ function estJourComplet(dayKey) {
 }
 
 function estJourFutur(dayKey) {
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = obtenirCleJour(new Date());
   return String(dayKey || "") > todayKey;
 }
 
-// Cette fonction envoie l'etat des prises de traitement au serveur.
 async function synchroniserSuiviTraitements() {
   if (!props.treatmentMedicines.length) return;
 
   const checks = [];
+
   for (const day of props.treatmentDays) {
     if (estJourFutur(day.key)) continue;
 
     assurerSuiviJour(day.key);
+
     for (const med of props.treatmentMedicines) {
       const doses = obtenirNombrePrisesPourJour(day.key, med);
+
       for (let i = 1; i <= doses; i += 1) {
         const doseKey = construireClePrise(med.id, i);
         checks.push({
@@ -522,10 +550,10 @@ async function synchroniserSuiviTraitements() {
       }
     }
   }
+
   await api.post("/health-data/treatment-checks/sync", { checks });
 }
 
-// Cette fonction coche ou decoche une prise puis synchronise le suivi.
 async function basculerPrise(dayKey, med, doseIndex) {
   if (estJourFutur(dayKey)) return;
 
@@ -535,7 +563,8 @@ async function basculerPrise(dayKey, med, doseIndex) {
 
   const key = construireClePrise(med.id, doseIndex);
   const previousValue = Boolean(props.treatmentChecks[dayKey][key]);
-  props.treatmentChecks[dayKey][key] = !props.treatmentChecks[dayKey][key];
+  props.treatmentChecks[dayKey][key] = !previousValue;
+
   try {
     await synchroniserSuiviTraitements();
     notifications.actionModifiee();
@@ -546,7 +575,6 @@ async function basculerPrise(dayKey, med, doseIndex) {
   }
 }
 
-// Cette fonction ouvre la modale de suivi pour un jour precis.
 function ouvrirJourTraitement(day) {
   if (!day || day.isFuture || estJourFutur(day.key)) return;
 

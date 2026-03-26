@@ -13,29 +13,10 @@
 </template>
 
 <script setup>
-/*
-  Element unitaire de la navigation laterale.
-  Il recoit son etat (actif/inactif) et ses donnees via props.
-  Son role est uniquement visuel et reutilisable.
-*/
-
 defineProps({
-  to: {
-    type: Object,
-    required: true
-  },
-  label: {
-    type: String,
-    required: true
-  },
-  icon: {
-    type: String,
-    required: true
-  },
-  active: {
-    type: Boolean,
-    default: false
-  }
+  to:     { type: Object,  required: true },
+  label:  { type: String,  required: true },
+  icon:   { type: String,  required: true },
+  active: { type: Boolean, default: false },
 })
 </script>
-

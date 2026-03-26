@@ -3,81 +3,69 @@
     <Transition name="modal-fade">
       <div v-if="estOuvert" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm">
         <div class="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
-          <!-- Bouton fermer -->
+
+          <!-- Fermer -->
           <button
             type="button"
             class="absolute right-4 top-4 text-slate-400 transition hover:text-slate-600"
-            @click="fermer"
             aria-label="Fermer le modal"
+            @click="fermer"
           >
             <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2">
               <path d="m6 6 12 12M18 6 6 18" stroke-linecap="round" />
             </svg>
           </button>
 
-          <!-- Header -->
+          <!-- En-tête -->
           <div class="mb-6">
             <h2 class="text-[24px] font-semibold leading-none text-slate-900">Modification du profil</h2>
             <p class="mt-2 text-sm text-slate-600">Mettez à jour vos informations personnelles</p>
           </div>
 
-          <!-- Tabs -->
+          <!-- Onglets -->
           <div class="mb-6 flex gap-2 border-b border-slate-200">
             <button
+              v-for="onglet in ONGLETS"
+              :key="onglet.id"
               type="button"
               class="pb-3 font-semibold transition"
-              :class="ongletActif === 'nom' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-600 hover:text-slate-900'"
-              @click="ongletActif = 'nom'"
+              :class="ongletActif === onglet.id
+                ? 'border-b-2 border-blue-600 text-blue-600'
+                : 'text-slate-600 hover:text-slate-900'"
+              @click="ongletActif = onglet.id"
             >
-              Informations
-            </button>
-            <button
-              type="button"
-              class="pb-3 font-semibold transition"
-              :class="ongletActif === 'mdp' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-600 hover:text-slate-900'"
-              @click="ongletActif = 'mdp'"
-            >
-              Sécurité
+              {{ onglet.label }}
             </button>
           </div>
 
-          <!-- Contenu -->
+          <!-- Formulaire -->
           <form class="space-y-4" @submit.prevent="traiterFormulaire">
-            <!-- Tab Informations -->
+
+            <!-- Tab : Informations -->
             <div v-if="ongletActif === 'nom'" class="space-y-4">
+
+              <!-- Photo -->
               <div>
                 <p class="block text-sm font-semibold text-slate-700">Photo de profil</p>
                 <div class="mt-2 flex items-center gap-4">
-                  <div class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                  <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                     <img v-if="photoApercu" :src="photoApercu" alt="Photo de profil" class="h-16 w-16 rounded-full object-cover" />
-                    <svg v-else viewBox="0 0 24 24" class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="8" r="4" />
-                      <path d="M6 20a6 6 0 0 1 12 0" />
-                    </svg>
+                    <UserIcon v-else class="h-8 w-8" />
                   </div>
-
                   <div class="flex flex-wrap gap-2">
-                    <input
-                      ref="inputPhoto"
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      class="hidden"
-                      @change="selectionnerPhoto"
-                    />
-
+                    <input ref="inputPhoto" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" @change="selectionnerPhoto" />
                     <button
                       type="button"
-                      class="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                      class="inline-flex h-10 items-center rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
                       :disabled="chargement.photo"
                       @click="ouvrirSelecteurPhoto"
                     >
                       {{ photoApercu ? 'Modifier la photo' : 'Ajouter une photo' }}
                     </button>
-
                     <button
                       v-if="photoApercu"
                       type="button"
-                      class="inline-flex h-10 items-center justify-center rounded-xl border border-rose-200 px-3 text-xs font-semibold text-rose-600 transition hover:bg-rose-50"
+                      class="inline-flex h-10 items-center rounded-xl border border-rose-200 px-3 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"
                       :disabled="chargement.photo"
                       @click="supprimerPhoto"
                     >
@@ -88,6 +76,7 @@
                 <p v-if="erreurs.photo" class="mt-2 text-xs text-rose-600">{{ erreurs.photo }}</p>
               </div>
 
+              <!-- Nom -->
               <div>
                 <label for="nom" class="block text-sm font-semibold text-slate-700">Nom d'utilisateur</label>
                 <input
@@ -100,117 +89,49 @@
                 <p v-if="erreurs.nom" class="mt-2 text-xs text-rose-600">{{ erreurs.nom }}</p>
               </div>
 
-              <button
-                type="submit"
-                :disabled="chargement.nom || formulaire.nom === nomOriginal"
-                class="h-11 w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 font-semibold text-white transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
-              >
+              <BoutonSoumettre :chargement="chargement.nom" :disabled="formulaire.nom === nomOriginal">
                 {{ chargement.nom ? 'Enregistrement...' : 'Enregistrer les modifications' }}
-              </button>
+              </BoutonSoumettre>
             </div>
 
-            <!-- Tab Sécurité -->
+            <!-- Tab : Sécurité -->
             <div v-if="ongletActif === 'mdp'" class="space-y-4">
-              <div>
-                <label for="mdp-actuel" class="block text-sm font-semibold text-slate-700">Mot de passe actuel</label>
-                <div class="relative mt-2">
-                  <input
-                    id="mdp-actuel"
-                    v-model="formulaire.motDePasseActuel"
-                    :type="afficherMotDePasse.actuel ? 'text' : 'password'"
-                    placeholder="••••••••"
-                    class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    @click="afficherMotDePasse.actuel = !afficherMotDePasse.actuel"
-                  >
-                    <svg v-if="afficherMotDePasse.actuel" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                    <svg v-else viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  </button>
-                </div>
-                <p v-if="erreurs.motDePasseActuel" class="mt-2 text-xs text-rose-600">{{ erreurs.motDePasseActuel }}</p>
-              </div>
+              <ChampMotDePasse
+                id="mdp-actuel"
+                v-model="formulaire.motDePasseActuel"
+                v-model:visible="afficherMotDePasse.actuel"
+                label="Mot de passe actuel"
+                :erreur="erreurs.motDePasseActuel"
+              />
+              <ChampMotDePasse
+                id="nouveau-mdp"
+                v-model="formulaire.nouveauMotDePasse"
+                v-model:visible="afficherMotDePasse.nouveau"
+                label="Nouveau mot de passe"
+                :erreur="erreurs.nouveauMotDePasse"
+              />
+              <ChampMotDePasse
+                id="confirm-mdp"
+                v-model="formulaire.confirmationMotDePasse"
+                v-model:visible="afficherMotDePasse.confirmation"
+                label="Confirmez le mot de passe"
+                :erreur="erreurs.confirmationMotDePasse"
+              />
 
-              <div>
-                <label for="nouveau-mdp" class="block text-sm font-semibold text-slate-700">Nouveau mot de passe</label>
-                <div class="relative mt-2">
-                  <input
-                    id="nouveau-mdp"
-                    v-model="formulaire.nouveauMotDePasse"
-                    :type="afficherMotDePasse.nouveau ? 'text' : 'password'"
-                    placeholder="••••••••"
-                    class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    @click="afficherMotDePasse.nouveau = !afficherMotDePasse.nouveau"
-                  >
-                    <svg v-if="afficherMotDePasse.nouveau" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                    <svg v-else viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  </button>
-                </div>
-                <p v-if="erreurs.nouveauMotDePasse" class="mt-2 text-xs text-rose-600">{{ erreurs.nouveauMotDePasse }}</p>
-              </div>
-
-              <div>
-                <label for="confirm-mdp" class="block text-sm font-semibold text-slate-700">Confirmez le mot de passe</label>
-                <div class="relative mt-2">
-                  <input
-                    id="confirm-mdp"
-                    v-model="formulaire.confirmationMotDePasse"
-                    :type="afficherMotDePasse.confirmation ? 'text' : 'password'"
-                    placeholder="••••••••"
-                    class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    @click="afficherMotDePasse.confirmation = !afficherMotDePasse.confirmation"
-                  >
-                    <svg v-if="afficherMotDePasse.confirmation" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                    <svg v-else viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  </button>
-                </div>
-                <p v-if="erreurs.confirmationMotDePasse" class="mt-2 text-xs text-rose-600">{{ erreurs.confirmationMotDePasse }}</p>
-              </div>
-
-              <button
-                type="submit"
-                :disabled="chargement.mdp"
-                class="h-11 w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 font-semibold text-white transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
-              >
+              <BoutonSoumettre :chargement="chargement.mdp">
                 {{ chargement.mdp ? 'Mise à jour...' : 'Changer le mot de passe' }}
-              </button>
+              </BoutonSoumettre>
             </div>
+
           </form>
 
-          <!-- Message de succès -->
+          <!-- Message succès -->
           <Transition name="fade">
             <div v-if="messageSucces" class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
               {{ messageSucces }}
             </div>
           </Transition>
+
         </div>
       </div>
     </Transition>
@@ -220,126 +141,112 @@
 <script setup>
 import { ref, reactive, watch } from 'vue'
 import api from '@/services/api'
-import { useNotificationsStore } from '@/stores/notifications'
 import { useAuthStore } from '@/stores/auth'
+import { useNotificationsStore } from '@/stores/notifications'
+import UserIcon from '@/components/navigation/UserIcon.vue'
 
 defineProps({
-  estOuvert: {
-    type: Boolean,
-    default: false
-  }
+  estOuvert: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['fermer', 'profil-mis-a-jour'])
 
-const authStore = useAuthStore()
+const authStore     = useAuthStore()
 const notifications = useNotificationsStore()
 
-const ongletActif = ref('nom')
-const nomOriginal = ref(authStore.nomUtilisateur)
+// ─── Constantes ───────────────────────────────────────────────
+
+const ONGLETS = [
+  { id: 'nom', label: 'Informations' },
+  { id: 'mdp', label: 'Sécurité' },
+]
+
+// ─── État ─────────────────────────────────────────────────────
+
+const ongletActif  = ref('nom')
+const nomOriginal  = ref(authStore.nomUtilisateur)
 const messageSucces = ref('')
-const inputPhoto = ref(null)
-const photoApercu = ref(authStore.photoProfil || '')
+const inputPhoto   = ref(null)
+const photoApercu  = ref(authStore.photoProfil || '')
 
 const formulaire = reactive({
-  nom: authStore.nomUtilisateur,
-  motDePasseActuel: '',
-  nouveauMotDePasse: '',
-  confirmationMotDePasse: ''
+  nom:                   authStore.nomUtilisateur,
+  motDePasseActuel:      '',
+  nouveauMotDePasse:     '',
+  confirmationMotDePasse:'',
 })
 
-const afficherMotDePasse = reactive({
-  actuel: false,
-  nouveau: false,
-  confirmation: false
-})
+const afficherMotDePasse = reactive({ actuel: false, nouveau: false, confirmation: false })
 
 const erreurs = reactive({
-  nom: '',
-  photo: '',
-  motDePasseActuel: '',
-  nouveauMotDePasse: '',
-  confirmationMotDePasse: ''
+  nom: '', photo: '',
+  motDePasseActuel: '', nouveauMotDePasse: '', confirmationMotDePasse: '',
 })
 
-const chargement = reactive({
-  nom: false,
-  photo: false,
-  mdp: false
-})
+const chargement = reactive({ nom: false, photo: false, mdp: false })
+
+// ─── Helpers ──────────────────────────────────────────────────
+
+const clearErreurs  = () => Object.keys(erreurs).forEach(k => erreurs[k] = '')
+const apiErreur     = (err, champ) =>
+  err?.response?.data?.errors?.[champ]?.[0]
+  ?? err?.response?.data?.message
+  ?? null
 
 function fermer() {
   messageSucces.value = ''
-  Object.keys(erreurs).forEach(key => erreurs[key] = '')
+  clearErreurs()
   emit('fermer')
 }
 
-async function traiterFormulaire() {
-  Object.keys(erreurs).forEach(key => erreurs[key] = '')
+function traiterFormulaire() {
+  clearErreurs()
   messageSucces.value = ''
-
-  if (ongletActif.value === 'nom') {
-    await mettreAJourNom()
-  } else if (ongletActif.value === 'mdp') {
-    await changerMotDePasse()
-  }
+  return ongletActif.value === 'nom' ? mettreAJourNom() : changerMotDePasse()
 }
 
+watch(() => authStore.photoProfil, v => { photoApercu.value = v || '' }, { immediate: true })
+
+// ─── Nom ──────────────────────────────────────────────────────
+
 async function mettreAJourNom() {
-  if (!formulaire.nom.trim()) {
-    erreurs.nom = 'Le nom est requis.'
-    return
-  }
-
-  if (formulaire.nom.length < 2) {
-    erreurs.nom = 'Le nom doit contenir au moins 2 caractères.'
-    return
-  }
-
-  if (formulaire.nom.length > 120) {
-    erreurs.nom = 'Le nom ne peut pas dépasser 120 caractères.'
-    return
-  }
+  const nom = formulaire.nom.trim()
+  if (!nom)          { erreurs.nom = 'Le nom est requis.'; return }
+  if (nom.length < 2)  { erreurs.nom = 'Le nom doit contenir au moins 2 caractères.'; return }
+  if (nom.length > 120){ erreurs.nom = 'Le nom ne peut pas dépasser 120 caractères.'; return }
 
   chargement.nom = true
   try {
-    const response = await api.put('/profil-utilisateur/nom', {
-      nom: formulaire.nom
-    })
-
-    if (response?.data) {
-      authStore.mettreAJourUtilisateur({ name: formulaire.nom })
-      nomOriginal.value = formulaire.nom
-      messageSucces.value = 'Nom mis à jour avec succès!'
-      notifications.succes('Votre profil a été mis à jour.')
-      emit('profil-mis-a-jour')
-      setTimeout(() => fermer(), 1500)
-    }
-  } catch (error) {
-    if (error?.response?.data?.errors?.nom) {
-      erreurs.nom = error.response.data.errors.nom[0]
-    } else if (error?.response?.data?.message) {
-      erreurs.nom = error.response.data.message
-    } else {
-      erreurs.nom = 'Une erreur est survenue lors de la mise à jour.'
-    }
+    await api.put('/profil-utilisateur/nom', { nom })
+    authStore.mettreAJourUtilisateur({ name: nom })
+    nomOriginal.value  = nom
+    messageSucces.value = 'Nom mis à jour avec succès!'
+    notifications.succes('Votre profil a été mis à jour.')
+    emit('profil-mis-a-jour')
+    setTimeout(fermer, 1500)
+  } catch (err) {
+    erreurs.nom = apiErreur(err, 'nom') ?? 'Une erreur est survenue lors de la mise à jour.'
     notifications.erreur(erreurs.nom)
   } finally {
     chargement.nom = false
   }
 }
 
+// ─── Photo ────────────────────────────────────────────────────
+
+const FORMATS_ACCEPTES = ['image/png', 'image/jpeg', 'image/webp']
+
 function ouvrirSelecteurPhoto() {
   erreurs.photo = ''
   inputPhoto.value?.click()
 }
 
-function convertirFichierEnBase64(fichier) {
+function toBase64(fichier) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(String(reader.result || ''))
-    reader.onerror = () => reject(new Error('Impossible de lire le fichier.'))
-    reader.readAsDataURL(fichier)
+    const r = new FileReader()
+    r.onload  = () => resolve(String(r.result || ''))
+    r.onerror = () => reject(new Error('Impossible de lire le fichier.'))
+    r.readAsDataURL(fichier)
   })
 }
 
@@ -348,38 +255,21 @@ async function selectionnerPhoto(event) {
   if (!fichier) return
 
   erreurs.photo = ''
-
-  if (!['image/png', 'image/jpeg', 'image/webp'].includes(fichier.type)) {
-    erreurs.photo = 'Format non supporté. Utilisez PNG, JPG ou WEBP.'
-    return
-  }
-
-  if (fichier.size > 2 * 1024 * 1024) {
-    erreurs.photo = 'La photo ne doit pas dépasser 2 Mo.'
-    return
-  }
+  if (!FORMATS_ACCEPTES.includes(fichier.type)) { erreurs.photo = 'Format non supporté. Utilisez PNG, JPG ou WEBP.'; return }
+  if (fichier.size > 2 * 1024 * 1024)           { erreurs.photo = 'La photo ne doit pas dépasser 2 Mo.'; return }
 
   chargement.photo = true
   try {
-    const base64 = await convertirFichierEnBase64(fichier)
-    const response = await api.put('/profil-utilisateur/photo', {
-      photo: base64,
-    })
-
-    const photo = response?.data?.data?.photo_profil || base64
+    const base64   = await toBase64(fichier)
+    const { data } = await api.put('/profil-utilisateur/photo', { photo: base64 })
+    const photo    = data?.data?.photo_profil || base64
     photoApercu.value = photo
     authStore.mettreAJourUtilisateur({ profile_photo: photo })
     messageSucces.value = 'Photo de profil mise à jour avec succès!'
     notifications.succes('Photo de profil mise à jour.')
     emit('profil-mis-a-jour')
-  } catch (error) {
-    if (error?.response?.data?.errors?.photo) {
-      erreurs.photo = error.response.data.errors.photo[0]
-    } else if (error?.response?.data?.message) {
-      erreurs.photo = error.response.data.message
-    } else {
-      erreurs.photo = 'Une erreur est survenue lors de la mise à jour de la photo.'
-    }
+  } catch (err) {
+    erreurs.photo = apiErreur(err, 'photo') ?? 'Une erreur est survenue lors de la mise à jour de la photo.'
     notifications.erreur(erreurs.photo)
   } finally {
     chargement.photo = false
@@ -388,9 +278,8 @@ async function selectionnerPhoto(event) {
 }
 
 async function supprimerPhoto() {
-  erreurs.photo = ''
   chargement.photo = true
-
+  erreurs.photo    = ''
   try {
     await api.delete('/profil-utilisateur/photo')
     photoApercu.value = ''
@@ -398,76 +287,41 @@ async function supprimerPhoto() {
     messageSucces.value = 'Photo de profil supprimée avec succès!'
     notifications.succes('Photo de profil supprimée.')
     emit('profil-mis-a-jour')
-  } catch (error) {
-    if (error?.response?.data?.message) {
-      erreurs.photo = error.response.data.message
-    } else {
-      erreurs.photo = 'Une erreur est survenue lors de la suppression de la photo.'
-    }
+  } catch (err) {
+    erreurs.photo = apiErreur(err, 'photo') ?? 'Une erreur est survenue lors de la suppression de la photo.'
     notifications.erreur(erreurs.photo)
   } finally {
     chargement.photo = false
   }
 }
 
-watch(
-  () => authStore.photoProfil,
-  (valeur) => {
-    photoApercu.value = valeur || ''
-  },
-  { immediate: true }
-)
+// ─── Mot de passe ─────────────────────────────────────────────
 
 async function changerMotDePasse() {
-  if (!formulaire.motDePasseActuel) {
-    erreurs.motDePasseActuel = 'Le mot de passe actuel est requis.'
-    return
-  }
+  const { motDePasseActuel, nouveauMotDePasse, confirmationMotDePasse } = formulaire
 
-  if (!formulaire.nouveauMotDePasse) {
-    erreurs.nouveauMotDePasse = 'Le nouveau mot de passe est requis.'
-    return
-  }
-
-  if (formulaire.nouveauMotDePasse.length < 8) {
-    erreurs.nouveauMotDePasse = 'Le mot de passe doit contenir au moins 8 caractères.'
-    return
-  }
-
-  if (formulaire.nouveauMotDePasse !== formulaire.confirmationMotDePasse) {
-    erreurs.confirmationMotDePasse = 'Les mots de passe ne correspondent pas.'
-    return
-  }
+  if (!motDePasseActuel)                          { erreurs.motDePasseActuel      = 'Le mot de passe actuel est requis.'; return }
+  if (!nouveauMotDePasse)                         { erreurs.nouveauMotDePasse     = 'Le nouveau mot de passe est requis.'; return }
+  if (nouveauMotDePasse.length < 8)               { erreurs.nouveauMotDePasse     = 'Le mot de passe doit contenir au moins 8 caractères.'; return }
+  if (nouveauMotDePasse !== confirmationMotDePasse){ erreurs.confirmationMotDePasse = 'Les mots de passe ne correspondent pas.'; return }
 
   chargement.mdp = true
   try {
     await api.post('/profil-utilisateur/changer-mot-de-passe', {
-      mot_de_passe_actuel: formulaire.motDePasseActuel,
-      nouveau_mot_de_passe: formulaire.nouveauMotDePasse,
-      nouveau_mot_de_passe_confirmation: formulaire.confirmationMotDePasse
+      mot_de_passe_actuel:               motDePasseActuel,
+      nouveau_mot_de_passe:              nouveauMotDePasse,
+      nouveau_mot_de_passe_confirmation: confirmationMotDePasse,
     })
-
     messageSucces.value = 'Mot de passe changé avec succès!'
-    formulaire.motDePasseActuel = ''
-    formulaire.nouveauMotDePasse = ''
-    formulaire.confirmationMotDePasse = ''
+    formulaire.motDePasseActuel = formulaire.nouveauMotDePasse = formulaire.confirmationMotDePasse = ''
     notifications.succes('Votre mot de passe a été mis à jour.')
-    setTimeout(() => fermer(), 1500)
-  } catch (error) {
-    if (error?.response?.status === 422) {
-      if (error?.response?.data?.message) {
-        erreurs.motDePasseActuel = error.response.data.message
-      } else {
-        erreurs.motDePasseActuel = 'Le mot de passe actuel est incorrect.'
-      }
-    } else if (error?.response?.data?.errors) {
-      const apiErreurs = error.response.data.errors
-      if (apiErreurs.mot_de_passe_actuel) {
-        erreurs.motDePasseActuel = apiErreurs.mot_de_passe_actuel[0]
-      }
-      if (apiErreurs.nouveau_mot_de_passe) {
-        erreurs.nouveauMotDePasse = apiErreurs.nouveau_mot_de_passe[0]
-      }
+    setTimeout(fermer, 1500)
+  } catch (err) {
+    const status  = err?.response?.status
+    const apiErrs = err?.response?.data?.errors
+    if (status === 422) {
+      erreurs.motDePasseActuel      = apiErrs?.mot_de_passe_actuel?.[0]  ?? err?.response?.data?.message ?? 'Le mot de passe actuel est incorrect.'
+      erreurs.nouveauMotDePasse     = apiErrs?.nouveau_mot_de_passe?.[0] ?? ''
     } else {
       erreurs.motDePasseActuel = 'Une erreur est survenue lors du changement du mot de passe.'
     }
@@ -479,23 +333,8 @@ async function changerMotDePasse() {
 </script>
 
 <style scoped>
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
+.modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.3s ease; }
+.modal-fade-enter-from,  .modal-fade-leave-to      { opacity: 0; }
+.fade-enter-active,      .fade-leave-active         { transition: opacity 0.2s ease; }
+.fade-enter-from,        .fade-leave-to             { opacity: 0; }
 </style>

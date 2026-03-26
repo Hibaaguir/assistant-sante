@@ -1,41 +1,39 @@
 ﻿<template>
   <div class="flex items-center justify-between gap-3 sm:gap-4">
     <template v-for="(step, index) in steps" :key="step.id">
+
+      <!-- Étape -->
       <div class="flex min-w-0 items-center gap-2 sm:gap-3">
         <div
           class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold sm:h-9 sm:w-9 sm:text-xs"
-          :class="current >= step.id ? 'bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white' : 'bg-slate-200 text-slate-500'"
+          :class="isDone(step.id) ? ACTIVE : INACTIVE"
         >
-          <span>{{ step.id }}</span>
+          {{ step.id }}
         </div>
-        <p class="whitespace-nowrap text-xs font-medium text-slate-700 sm:text-sm">{{ step.label }}</p>
+        <p class="whitespace-nowrap text-xs font-medium text-slate-700 sm:text-sm">
+          {{ step.label }}
+        </p>
       </div>
+
+      <!-- Séparateur -->
       <div
         v-if="index < steps.length - 1"
         class="hidden h-[2px] max-w-40 flex-1 rounded sm:block"
-        :class="current > step.id ? 'bg-gradient-to-r from-[#2563eb] to-[#7c3aed]' : 'bg-slate-300'"
+        :class="current > step.id ? ACTIVE : 'bg-slate-300'"
       />
+
     </template>
   </div>
 </template>
 
 <script setup>
-/*
-  Indicateur visuel des etapes du wizard journal.
-  Il se base sur `current` et `steps` pour afficher la progression.
-  Pas de logique metier, uniquement du rendu.
-*/
-
 defineProps({
-  current: {
-    type: Number,
-    required: true
-  },
-  steps: {
-    type: Array,
-    required: true
-  }
+  current: { type: Number, required: true },
+  steps:   { type: Array,  required: true },
 })
+
+const ACTIVE   = 'bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white'
+const INACTIVE = 'bg-slate-200 text-slate-500'
+
+const isDone = (id) => props.current >= id
 </script>
-
-
