@@ -1,58 +1,50 @@
 <!--
   NotificationsWidget.vue
-  Widget affichant les notifications de traitements persistant.
-  Responsable: Affichage, chargement, refresh et marquer comme lue.
+  Notifications de traitements persistantes : chargement, refresh auto, marquer comme lue.
 -->
 <template>
-  <section v-if="chargementNotifications || erreurNotification || notificationsVisibles.length > 0" class="mt-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
-    <div v-if="chargementNotifications" class="px-4 py-3 text-sm text-slate-600">
-      Chargement des notifications...
-    </div>
+  <section v-if="loading || error || unread.length" class="mt-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-    <div v-else-if="erreurNotification" class="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-      {{ erreurNotification }}
-    </div>
+    <div v-if="loading" class="px-4 py-3 text-sm text-slate-600">Chargement des notifications...</div>
 
-    <div v-else-if="notificationsVisibles.length > 0">
+    <div v-else-if="error" class="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{{ error }}</div>
+
+    <template v-else>
+      <!-- En-tête -->
       <div class="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-4">
         <div>
           <h2 class="text-[22px] font-semibold leading-none text-slate-900">Notifications traitements</h2>
-          <p class="mt-1 text-sm text-slate-600">Rappels journaliers et oublis detectes</p>
+          <p class="mt-1 text-sm text-slate-600">Rappels journaliers et oublis détectés</p>
         </div>
         <button
           type="button"
           class="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-          :disabled="nombreNonLues === 0 || chargementNotifications"
-          @click="marquerToutLu"
+          :disabled="!unread.length"
+          @click="markAllRead"
         >
           Tout marquer lu
         </button>
       </div>
 
+      <!-- Liste -->
       <ul class="space-y-2 p-4">
-        <li
-          v-for="notification in notificationsVisibles"
-          :key="notification.id"
-          class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2"
-        >
+        <li v-for="n in unread" :key="n.id" class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2">
           <div class="flex items-start justify-between gap-2">
             <div class="flex-1">
-              <p class="text-sm font-semibold text-slate-900">{{ notification.data?.title || 'Notification' }}</p>
-              <p class="mt-0.5 text-xs text-slate-700">{{ notification.data?.message || '' }}</p>
-              <p class="mt-1 text-xs text-slate-500">{{ formaterDateHeureNotification(notification.created_at) }}</p>
+              <p class="text-sm font-semibold text-slate-900">{{ n.data?.title || 'Notification' }}</p>
+              <p class="mt-0.5 text-xs text-slate-700">{{ n.data?.message || '' }}</p>
+              <p class="mt-1 text-xs text-slate-500">{{ formatDate(n.created_at) }}</p>
             </div>
-
             <button
               type="button"
               class="mt-1 rounded-md border border-blue-200 bg-white px-2 py-1 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
-              @click="marquerNotificationLue(notification.id)"
-            >
-              ✓
-            </button>
+              @click="markRead(n.id)"
+            >✓</button>
           </div>
         </li>
       </ul>
-    </div>
+    </template>
+
   </section>
 </template>
 
@@ -62,91 +54,74 @@ import { useRouter } from 'vue-router'
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 
-const router = useRouter()
+const router    = useRouter()
 const authStore = useAuthStore()
-const listeNotifications = ref([])
-const chargementNotifications = ref(false)
-const erreurNotification = ref('')
-let minuterieRafraichissementNotifications = null
 
-const nombreNonLues = computed(() => listeNotifications.value.filter((notification) => !notification.read_at).length)
-const notificationsVisibles = computed(() => listeNotifications.value.filter((notification) => !notification.read_at))
+// ─── État ─────────────────────────────────────────────────────────────────────
+const notifications = ref([])
+const loading       = ref(false)
+const error         = ref('')
+let   timer         = null
 
-async function gererErreurAuthentification(error) {
-  if (error?.response?.status !== 401) {
-    throw error
-  }
-  await authStore.deconnexion({ appelerApi: false })
-  await router.replace({ name: 'connexion' })
-}
+const unread = computed(() => notifications.value.filter(n => !n.read_at))
 
-function formaterDateHeureNotification(value) {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-  return date.toLocaleString('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-async function chargerListeNotifications({ silencieux = false } = {}) {
-  if (!silencieux) chargementNotifications.value = true
-  erreurNotification.value = ''
-
+// ─── Chargement ───────────────────────────────────────────────────────────────
+async function load(silent = false) {
+  if (!silent) loading.value = true
+  error.value = ''
   try {
-    const res = await api.get('/notifications')
-    listeNotifications.value = Array.isArray(res?.data?.data) ? res.data.data : []
-  } catch (error) {
-    if (error?.response?.status === 401) {
-      await gererErreurAuthentification(error)
+    const { data } = await api.get('/notifications')
+    notifications.value = Array.isArray(data?.data) ? data.data : []
+  } catch (e) {
+    if (e?.response?.status === 401) {
+      await authStore.deconnexion({ appelerApi: false })
+      await router.replace({ name: 'connexion' })
       return
     }
-    erreurNotification.value = 'Impossible de charger les notifications pour le moment.'
+    error.value = 'Impossible de charger les notifications pour le moment.'
   } finally {
-    chargementNotifications.value = false
+    loading.value = false
   }
 }
 
-async function marquerNotificationLue(idNotification) {
+// ─── Actions ──────────────────────────────────────────────────────────────────
+async function markRead(id) {
   try {
-    await api.post(`/notifications/${idNotification}/read`)
-    listeNotifications.value = listeNotifications.value.map((notification) => (
-      notification.id === idNotification
-        ? { ...notification, read_at: notification.read_at || new Date().toISOString() }
-        : notification
-    ))
-  } catch (_) {
-    erreurNotification.value = 'Impossible de marquer cette notification comme lue.'
+    await api.post(`/notifications/${id}/read`)
+    const now = new Date().toISOString()
+    notifications.value = notifications.value.map(n =>
+      n.id === id ? { ...n, read_at: n.read_at || now } : n
+    )
+  } catch {
+    error.value = 'Impossible de marquer cette notification comme lue.'
   }
 }
 
-async function marquerToutLu() {
+async function markAllRead() {
   try {
     await api.post('/notifications/read-all')
-    const maintenant = new Date().toISOString()
-    listeNotifications.value = listeNotifications.value.map((notification) => ({
-      ...notification,
-      read_at: notification.read_at || maintenant
-    }))
-  } catch (_) {
-    erreurNotification.value = 'Impossible de marquer toutes les notifications comme lues.'
+    const now = new Date().toISOString()
+    notifications.value = notifications.value.map(n => ({ ...n, read_at: n.read_at || now }))
+  } catch {
+    error.value = 'Impossible de marquer toutes les notifications comme lues.'
   }
 }
 
-onMounted(async () => {
-  await chargerListeNotifications()
-  minuterieRafraichissementNotifications = window.setInterval(() => {
-    chargerListeNotifications({ silencieux: true })
-  }, 60000)
+// ─── Utilitaire ───────────────────────────────────────────────────────────────
+function formatDate(val) {
+  if (!val) return ''
+  const d = new Date(val)
+  return isNaN(d) ? '' : d.toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+}
+
+// ─── Lifecycle ────────────────────────────────────────────────────────────────
+onMounted(() => {
+  load()
+  timer = setInterval(() => load(true), 60_000)
 })
 
 onUnmounted(() => {
-  if (minuterieRafraichissementNotifications !== null) {
-    window.clearInterval(minuterieRafraichissementNotifications)
-    minuterieRafraichissementNotifications = null
-  }
+  clearInterval(timer)
+  timer = null
 })
 </script>

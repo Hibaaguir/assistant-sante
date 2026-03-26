@@ -1,84 +1,63 @@
 <!--
   DashboardLayout.vue
-  Composant de coordination qui combine HealthChart et NotificationsWidget.
-  Responsable: Orchestrer les composants enfants et gérer le layout global.
+  Layout principal du patient : notifications, observation médecin, graphique.
 -->
 <template>
   <div class="mx-auto max-w-[1320px] p-4 sm:p-6 lg:p-8">
-    <header class="flex items-start justify-between gap-3">
-      <div>
-        <h1 class="text-[34px] font-semibold leading-none text-slate-900">Dashboard</h1>
-        <p class="mt-2 text-sm text-slate-600">Vue d'ensemble de votre santé</p>
-      </div>
+
+    <header>
+      <h1 class="text-[34px] font-semibold leading-none text-slate-900">Dashboard</h1>
+      <p class="mt-2 text-sm text-slate-600">Vue d'ensemble de votre santé</p>
     </header>
 
-    <!-- Composant de notifications temporaires (toast) -->
     <NotificationsEnLigne />
-
-    <!-- Widget des notifications de traitements -->
     <NotificationsWidget />
 
+    <!-- Observation médecin -->
     <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div class="flex items-center justify-between gap-3">
         <h2 class="text-[20px] font-semibold text-slate-900">Observation de votre médecin</h2>
-        <p v-if="doctorObservation.updatedAtLabel" class="text-xs text-slate-500">Mise à jour : {{ doctorObservation.updatedAtLabel }}</p>
+        <p v-if="obs.updatedAtLabel" class="text-xs text-slate-500">Mise à jour : {{ obs.updatedAtLabel }}</p>
       </div>
 
-      <p v-if="doctorObservation.text" class="mt-2 text-sm leading-6 text-slate-700">{{ doctorObservation.text }}</p>
-      <p v-else class="mt-2 text-sm text-slate-500">Aucune observation médecin disponible pour le moment.</p>
+      <p class="mt-2 text-sm leading-6" :class="obs.text ? 'text-slate-700' : 'text-slate-500'">
+        {{ obs.text || 'Aucune observation médecin disponible pour le moment.' }}
+      </p>
 
-      <p v-if="doctorObservation.doctorName" class="mt-2 text-xs text-slate-500">Médecin : {{ doctorObservation.doctorName }}</p>
+      <p v-if="obs.doctorName" class="mt-2 text-xs text-slate-500">Médecin : {{ obs.doctorName }}</p>
     </section>
 
-    <!-- Graphique des signes vitaux -->
     <HealthChart />
 
-    <!-- StatsWidget sera ajouté ici plus tard -->
-    <!-- <StatsWidget /> -->
   </div>
 </template>
 
 <script setup>
 import { onMounted, reactive } from 'vue'
 import api from '@/services/api'
-import HealthChart from './HealthChart.vue'
-import NotificationsWidget from './NotificationsWidget.vue'
+import HealthChart          from './HealthChart.vue'
+import NotificationsWidget  from './NotificationsWidget.vue'
 import NotificationsEnLigne from '@/components/ui/NotificationsEnLigne.vue'
 
-const doctorObservation = reactive({
-  text: '',
-  updatedAtLabel: '',
-  doctorName: '',
-})
+const obs = reactive({ text: '', updatedAtLabel: '', doctorName: '' })
 
-function formatObservationDate(dateString) {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  if (Number.isNaN(date.getTime())) return ''
-  return date.toLocaleString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+function formatDate(str) {
+  if (!str) return ''
+  const d = new Date(str)
+  return isNaN(d) ? '' : d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-async function chargerObservationMedecin() {
+async function chargerObservation() {
   try {
-    const res = await api.get('/health-data/overview', { params: { days: 7 } })
-    const observation = res?.data?.data?.doctor_observation || {}
-    doctorObservation.text = String(observation?.text || '')
-    doctorObservation.updatedAtLabel = formatObservationDate(observation?.updated_at)
-    doctorObservation.doctorName = String(observation?.doctor_name || '')
+    const { data } = await api.get('/health-data/overview', { params: { days: 7 } })
+    const o = data?.data?.doctor_observation ?? {}
+    obs.text           = o.text        ?? ''
+    obs.updatedAtLabel = formatDate(o.updated_at)
+    obs.doctorName     = o.doctor_name ?? ''
   } catch {
-    doctorObservation.text = ''
-    doctorObservation.updatedAtLabel = ''
-    doctorObservation.doctorName = ''
+    obs.text = obs.updatedAtLabel = obs.doctorName = ''
   }
 }
 
-onMounted(async () => {
-  await chargerObservationMedecin()
-})
+onMounted(chargerObservation)
 </script>
