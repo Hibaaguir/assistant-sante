@@ -42,7 +42,7 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-
+//relation des table 
     public function profilSante()
     {
         return $this->hasOne(ProfilSante::class);
