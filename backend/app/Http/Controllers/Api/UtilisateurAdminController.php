@@ -7,9 +7,19 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Gère les opérations d'administration sur les utilisateurs
+ * 
+ * Responsabilités:
+ * - Liste des utilisateurs (admin uniquement)
+ * - Mise à jour du statut utilisateur
+ * - Suppression d'utilisateurs
+ * - Vérification des droits administrateur
+ */
 class UtilisateurAdminController extends Controller
 {
-    public function lister(Request $request): JsonResponse
+    // Lister tous les utilisateurs (admin seulement)
+    public function index(Request $request): JsonResponse
     {
         $this->verifierAccesAdministrateur($request);
 
@@ -38,7 +48,8 @@ class UtilisateurAdminController extends Controller
         ]);
     }
 
-    public function mettreAJourStatut(Request $request, User $user): JsonResponse
+    // Mettre à jour le statut d'un utilisateur
+    public function updateStatus(Request $request, User $user): JsonResponse
     {
         $this->verifierAccesAdministrateur($request);
 
@@ -53,7 +64,8 @@ class UtilisateurAdminController extends Controller
         ]);
     }
 
-    public function supprimer(Request $request, User $user): JsonResponse
+    // Supprimer un utilisateur
+    public function destroy(Request $request, User $user): JsonResponse
     {
         $this->verifierAccesAdministrateur($request);
 
@@ -65,12 +77,14 @@ class UtilisateurAdminController extends Controller
         return response()->json(['message' => 'Utilisateur supprime avec succes.']);
     }
 
+    // Vérifier l'accès administrateur
     private function verifierAccesAdministrateur(Request $request): void
     {
         $role = strtolower((string) ($request->user()?->role ?? ''));
         abort_unless(in_array($role, ['admin', 'administrateur'], true), 403, 'Acces refuse.');
     }
 
+    // Convertir le rôle en type utilisateur
     private function convertirRoleEnType(?string $role): string
     {
         $roleNormalise = strtolower((string) $role);

@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('email');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
@@ -21,6 +21,9 @@ return new class extends Migration
             $table->string('statut_admin', 20)->default('Actif');
             $table->longText('profile_photo')->nullable();
             $table->timestamps();
+            
+            // Contrainte d'unicité partielle par rôle (email unique par rôle, pas globalement)
+            $table->unique(['email', 'role'], 'users_email_role_unique');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

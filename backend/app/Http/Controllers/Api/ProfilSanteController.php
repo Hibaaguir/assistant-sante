@@ -15,10 +15,21 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
+/**
+ * Gère le profil de santé de l'utilisateur
+ * 
+ * Responsabilités:
+ * - Création et mise à jour du profil de santé complet
+ * - Consultation du profil de santé
+ * - Synchronisation automatique des invitations médicales
+ * - Gestion des consentements médicaux
+ */
 class ProfilSanteController extends Controller
 {
-    public function enregistrer(Request $request)
+    // Enregistrer ou mettre à jour le profil de santé
+    public function store(Request $request)
     {
+        // Normaliser le champ sexe en minuscules
         if (is_string($request->input('sexe'))) {
             $request->merge([
                 'sexe' => strtolower(trim($request->input('sexe'))),
@@ -88,7 +99,8 @@ class ProfilSanteController extends Controller
         ]);
     }
 
-    public function afficher()
+    // Afficher le profil de santé de l'utilisateur
+    public function show()
     {
         $user = Auth::user();
         $profil = $user->profilSante;
@@ -99,9 +111,11 @@ class ProfilSanteController extends Controller
         ]);
     }
 
+    // Synchroniser invitation médical pour ce profil
     private function synchroniserInvitationMedecin(ProfilSante $profil, ?string $previousDoctorEmail = null): void
     {
         $patient = Auth::user();
+        // Vérifier que l'utilisateur est connecté
         if (! $patient) {
             return;
         }
@@ -110,6 +124,7 @@ class ProfilSanteController extends Controller
             && (bool) $profil->medecin_peut_consulter
             && ! empty($profil->medecin_email);
 
+        // Révoquer les invitations si les conditions ne sont pas réunies
         if (! $shouldInvite) {
             DoctorInvitation::query()
                 ->where('patient_user_id', $patient->id)
@@ -124,6 +139,7 @@ class ProfilSanteController extends Controller
         $doctorEmail = strtolower(trim((string) $profil->medecin_email));
         $doctorEmailChanged = $doctorEmail !== ($previousDoctorEmail !== null ? strtolower(trim($previousDoctorEmail)) : null);
 
+        // Révoquer les invitations si l'email du médecin a changé
         if ($doctorEmailChanged) {
             DoctorInvitation::query()
                 ->where('patient_user_id', $patient->id)
@@ -146,12 +162,14 @@ class ProfilSanteController extends Controller
             ->latest('id')
             ->first();
 
+        // Vérifier que l'utilisateur ne s'invite pas lui-même comme médecin
         if ($existingAccount && $existingAccount->id === $patient->id) {
             return;
         }
 
         $doctor = $doctorAccount;
 
+        // Mettre à jour le rôle d'un utilisateur existant à 'médecin'
         if ($existingAccount && ! $doctorAccount && $existingAccount->role !== 'medecin') {
             try {
                 $existingAccount->update([
@@ -177,7 +195,9 @@ class ProfilSanteController extends Controller
             ->where('doctor_email', $doctorEmail)
             ->first();
 
+        // Gérer la création ou la mise à jour de l'invitation
         if ($existing) {
+            // Mettre à jour si l'invitation est déjà acceptée
             if ($existing->status === 'accepted') {
                 $existing->update([
                     'doctor_user_id' => $doctor?->id,
@@ -200,6 +220,7 @@ class ProfilSanteController extends Controller
                 ]);
             }
         } else {
+            // Créer une nouvelle invitation si elle n'existe pas
             DoctorInvitation::query()->create([
                 'patient_user_id' => $patient->id,
                 'doctor_user_id' => $doctor?->id,
@@ -209,6 +230,7 @@ class ProfilSanteController extends Controller
             ]);
         }
 
+        // Envoyer l'email d'invitation seulement si l'email a changé et le médecin n'existe pas
         if (! $doctorEmailChanged || $doctor) {
             return;
         }

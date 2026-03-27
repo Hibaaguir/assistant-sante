@@ -17,9 +17,12 @@ class NotificationController extends Controller
     {
     }
 
-    public function lister(Request $request): JsonResponse
+    // Lister toutes les notifications de l'utilisateur
+    public function index(Request $request): JsonResponse
     {
+        // Récupérer l'utilisateur et déclencher les notifications de traitement
         $utilisateur = $request->user();
+        // Vérifier que l'utilisateur est une instance de User
         if ($utilisateur instanceof User) {
             $this->declencherNotificationsTraitementsSelonHoraire($utilisateur);
         }
@@ -46,13 +49,16 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function marquerLue(Request $request, string $idNotification): JsonResponse
+    // Marquer une notification comme lue
+    public function markAsRead(Request $request, string $idNotification): JsonResponse
     {
         $notificationTrouvee = $request->user()->notifications()->whereKey($idNotification)->first();
+        // Vérifier que la notification existe
         if (! $notificationTrouvee) {
             return response()->json(['message' => 'Notification introuvable.'], 404);
         }
 
+        // Marquer comme lue seulement si pas déjà lue
         if ($notificationTrouvee->read_at === null) {
             $notificationTrouvee->markAsRead();
         }
@@ -62,7 +68,8 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function toutMarquerLu(Request $request): JsonResponse
+    // Marquer toutes les notifications comme lues
+    public function markAllAsRead(Request $request): JsonResponse
     {
         $request->user()->unreadNotifications->markAsRead();
 
@@ -71,13 +78,18 @@ class NotificationController extends Controller
         ]);
     }
 
+    // ─── Helpers privés ───────────────────────────────────────────────────────
+
+    // Déclencher notifications de traitement selon horaire
     private function declencherNotificationsTraitementsSelonHoraire(User $utilisateur): void
     {
+        // Obtenir la date et l'heure actuelles
         $maintenant = Carbon::now(config('app.timezone'));
         $dateCible = $maintenant->copy()->startOfDay();
         $heureCourante = (int) $maintenant->format('H');
 
         $medicaments = collect($this->serviceDonneesSante->resoudreMedicamentsTraitement($utilisateur->id));
+        // Arrêter si l'utilisateur n'a pas de médicaments à traiter
         if ($medicaments->isEmpty()) {
             return;
         }
@@ -113,6 +125,7 @@ class NotificationController extends Controller
         }
     }
 
+    // Construire statistiques des traitements pour une date
     private function construireStatistiquesPourDate(int $idUtilisateur, Carbon $dateCible, array $medicaments): array
     {
         $cleDate = $dateCible->toDateString();
@@ -159,6 +172,7 @@ class NotificationController extends Controller
         ];
     }
 
+    // Vérifier si notification déjà envoyée
     private function notificationDejaEnvoyee(User $utilisateur, string $typeNotification, Carbon $dateCible): bool
     {
         return $utilisateur->notifications()

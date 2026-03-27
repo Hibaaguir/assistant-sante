@@ -10,12 +10,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
+/**
+ * Gère la réinitialisation du mot de passe oublié
+ * 
+ * Responsabilités:
+ * - Demande de réinitialisation de mot de passe
+ * - Envoi de lien sécurisé par email
+ * - Validation et réinitialisation du mot de passe
+ */
 class MotDePasseOubliController extends Controller
 {
-    public function demanderReinit(Request $request): JsonResponse
+    // Demander la réinitialisation du mot de passe
+    public function requestReset(Request $request): JsonResponse
     {
         $request->validate([
             'email' => 'required|email|max:255',
@@ -26,7 +34,7 @@ class MotDePasseOubliController extends Controller
 
         $user = User::where('email', $request->input('email'))->first();
 
-        // Ne pas révéler si l'email existe ou non (sécurité)
+        // Ne pas révéler si l'email existe (sécurité : prévient l'énumération)
         if (!$user) {
             return response()->json([
                 'message' => 'Si cet email existe, vous recevrez un lien de réinitialisation.',
@@ -58,7 +66,8 @@ class MotDePasseOubliController extends Controller
         ]);
     }
 
-    public function reinitialiserMotDePasse(Request $request): JsonResponse
+    // Réinitialiser le mot de passe
+    public function resetPassword(Request $request): JsonResponse
     {
         $request->validate([
             'email' => 'required|email|max:255',
@@ -75,13 +84,14 @@ class MotDePasseOubliController extends Controller
 
         $user = User::where('email', $request->input('email'))->first();
 
+        // Vérifier que l'utilisateur existe
         if (!$user) {
             return response()->json([
                 'message' => 'Email ou token invalide.',
             ], 422);
         }
 
-        // Vérifier le token
+        // Vérifier que le token de réinitialisation existe
         $resetToken = DB::table('password_reset_tokens')
             ->where('email', $user->email)
             ->latest('created_at')
@@ -93,7 +103,7 @@ class MotDePasseOubliController extends Controller
             ], 422);
         }
 
-        // Vérifier que le token n'a pas expiré (60 minutes par défaut)
+        // Vérifier que le token n'a pas expiré
         if ($resetToken->created_at < now()->subMinutes(60)) {
             DB::table('password_reset_tokens')->where('email', $user->email)->delete();
             return response()->json([
@@ -101,7 +111,7 @@ class MotDePasseOubliController extends Controller
             ], 422);
         }
 
-        // Vérifier le token fourni
+        // Vérifier que le token fourni est valide
         if (!Hash::check($request->input('token'), $resetToken->token)) {
             return response()->json([
                 'message' => 'Token invalide.',

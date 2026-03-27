@@ -7,7 +7,8 @@ use App\Models\User;
 
 class DoctorInvitationLinker
 {
-    public function lierPourUtilisateur(User $user): bool
+    // Link pending doctor invitations to a user account
+    public function linkForUser(User $user): bool
     {
         if ($user->role !== 'medecin') {
             return false;

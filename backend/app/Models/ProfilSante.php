@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -45,4 +46,10 @@ class ProfilSante extends Model
         'fumeur' => 'boolean',
         'alcool' => 'boolean',
     ];
+
+    // Relation indiquant que chaque profil santé appartient à un utilisateur
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

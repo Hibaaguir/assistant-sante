@@ -10,7 +10,25 @@ use Illuminate\Validation\Rules\Password;
 
 class ProfilUtilisateurController extends Controller
 {
-    public function mettreAJourNom(Request $request): JsonResponse
+    // Récupérer le profil de l'utilisateur
+    public function getProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'profile_photo' => $user->profile_photo,
+                'date_of_birth' => $user->date_of_birth,
+            ],
+        ]);
+    }
+
+    // Mettre à jour le nom de l'utilisateur
+    public function updateName(Request $request): JsonResponse
     {
         $request->validate([
             'nom' => 'required|string|min:2|max:120|not_regex:/^\s+$/',
@@ -30,7 +48,8 @@ class ProfilUtilisateurController extends Controller
         ]);
     }
 
-    public function changerMotDePasse(Request $request): JsonResponse
+    // Changer le mot de passe
+    public function changePassword(Request $request): JsonResponse
     {
         $request->validate([
             'mot_de_passe_actuel' => 'required|string',
@@ -43,6 +62,7 @@ class ProfilUtilisateurController extends Controller
 
         $user = $request->user();
 
+        // Vérifier que le mot de passe actuel est correct
         if (!Hash::check($request->input('mot_de_passe_actuel'), $user->password)) {
             return response()->json(['message' => 'Le mot de passe actuel est incorrect.'], 422);
         }
@@ -52,7 +72,8 @@ class ProfilUtilisateurController extends Controller
         return response()->json(['message' => 'Mot de passe changé avec succès.']);
     }
 
-    public function mettreAJourPhoto(Request $request): JsonResponse
+    // Mettre à jour la photo de profil
+    public function updatePhoto(Request $request): JsonResponse
     {
         $request->validate([
             'photo' => [
@@ -76,7 +97,8 @@ class ProfilUtilisateurController extends Controller
         ]);
     }
 
-    public function supprimerPhoto(Request $request): JsonResponse
+    // Supprimer la photo de profil
+    public function deletePhoto(Request $request): JsonResponse
     {
         $user = $request->user();
         $user->update(['profile_photo' => null]);

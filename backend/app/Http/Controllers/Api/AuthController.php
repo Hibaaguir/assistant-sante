@@ -19,10 +19,11 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     public function __construct(
-        private readonly DoctorInvitationLinker $lieurInvitationMedecin,
+        private readonly DoctorInvitationLinker $doctorInvitationLinker,
     ) {}
 
-    public function inscrire(Request $request): JsonResponse
+    // Enregistrer un nouvel utilisateur
+    public function register(Request $request): JsonResponse
     {
         try {
             $validated = $request->validate([
@@ -52,7 +53,8 @@ class AuthController extends Controller
         }
     }
 
-    public function inscrireMedecin(Request $request): JsonResponse
+    // Enregistrer un nouveau médecin
+    public function registerDoctor(Request $request): JsonResponse
     {
         try {
             $validated = $request->validate([
@@ -67,7 +69,8 @@ class AuthController extends Controller
 
             $email = strtolower(trim($validated['email']));
 
-            if (! $this->aInvitationEnAttentePourEmail($email)) {
+            // Vérifier que le médecin a une invitation en attente
+            if (! $this->hasInvitationForEmail($email)) {
                 return response()->json([
                     'message' => "Inscription medecin non autorisee sans invitation en attente.",
                     'errors'  => ['email' => ["Aucune invitation en attente n'a ete trouvee pour cet email."]],
@@ -83,7 +86,7 @@ class AuthController extends Controller
                 'specialite'    => trim($validated['specialite']),
             ]);
 
-            $hasPendingInvitations = $this->lieurInvitationMedecin->lierPourUtilisateur($user);
+            $hasPendingInvitations = $this->doctorInvitationLinker->linkForUser($user);
 
             return $this->reponseAuthentifiee($user, $user->createToken('doctor_auth_token')->plainTextToken, false, '/main/dashboard', $hasPendingInvitations, 201, 'Compte medecin cree avec succes');
 
@@ -97,7 +100,8 @@ class AuthController extends Controller
         }
     }
 
-    public function connecter(Request $request): JsonResponse
+    // Connecter un utilisateur
+    public function login(Request $request): JsonResponse
     {
         try {
             $credentials = $request->validate([
@@ -110,9 +114,10 @@ class AuthController extends Controller
             $role  = $credentials['role'] ?? null;
 
             $user = $role !== null
-                ? $this->trouverUtilisateurPourConnexion($email, $credentials['password'], $role)
-                : $this->trouverUtilisateurSansRole($email, $credentials['password']);
+                ? $this->findUserForLogin($email, $credentials['password'], $role)
+                : $this->findUserWithoutRole($email, $credentials['password']);
 
+            // Vérifier que l'utilisateur existe et le mot de passe est correct
             if (! $user) {
                 return response()->json(['message' => 'Email ou mot de passe invalide.'], 401);
             }
@@ -122,7 +127,8 @@ class AuthController extends Controller
             $isDoctor    = $user->role === 'medecin';
             $isAdmin     = in_array($user->role, ['admin', 'administrateur'], true);
             $hasProfil   = $user->profilSante()->exists();
-            $hasPending  = $isDoctor && ($this->lieurInvitationMedecin->lierPourUtilisateur($user) || $this->aInvitationsMedecinEnAttente($user));
+            // Link pending doctor invitations if user is a doctor
+            $hasPending  = $isDoctor && ($this->doctorInvitationLinker->linkForUser($user) || $this->hasPendingDoctorInvitations($user));
             $redirectTo  = $isAdmin || $isDoctor ? '/main/dashboard' : ($hasProfil ? '/main' : '/profil-sante');
             $tokenName   = $isDoctor ? 'doctor_auth_token' : 'auth_token';
 
@@ -136,7 +142,16 @@ class AuthController extends Controller
         }
     }
 
-    public function utilisateurConnecte(Request $request): JsonResponse
+    // Connecter un médecin (alias de login)
+    public function loginDoctor(Request $request): JsonResponse
+    {
+        // Force the role to 'medecin' for doctor-specific login
+        $request->merge(['role' => 'medecin']);
+        return $this->login($request);
+    }
+
+    // Récupérer l'utilisateur connecté
+    public function getCurrentUser(Request $request): JsonResponse
     {
         /** @var User $user */
         $user      = $request->user();
@@ -144,19 +159,21 @@ class AuthController extends Controller
         $isAdmin   = in_array($user->role, ['admin', 'administrateur'], true);
         $hasProfil = $user->profilSante()->exists();
 
+        // Link pending doctor invitations if user is a doctor
         if ($isDoctor) {
-            $this->lieurInvitationMedecin->lierPourUtilisateur($user);
+            $this->doctorInvitationLinker->linkForUser($user);
         }
 
         return response()->json([
             'user'                          => $this->donneesUtilisateur($user),
             'has_profil_sante'              => $hasProfil,
-            'has_pending_doctor_invitations' => $isDoctor && $this->aInvitationsMedecinEnAttente($user),
+            'has_pending_doctor_invitations' => $isDoctor && $this->hasPendingDoctorInvitations($user),
             'redirect_to'                   => $isAdmin || $isDoctor ? '/main/dashboard' : ($hasProfil ? '/main' : '/profil-sante'),
         ]);
     }
 
-    public function deconnexion(Request $request): JsonResponse
+    // Déconnecter l'utilisateur
+    public function logout(Request $request): JsonResponse
     {
         $request->user()?->currentAccessToken()?->delete();
 
@@ -165,6 +182,7 @@ class AuthController extends Controller
 
     // ─── Helpers privés ───────────────────────────────────────────────────────
 
+    // Formater la réponse d'authentification
     private function reponseAuthentifiee(User $user, string $token, bool $hasProfil, string $redirectTo, bool $hasPendingInvitations, int $status, string $message): JsonResponse
     {
         return response()->json([
@@ -177,11 +195,13 @@ class AuthController extends Controller
         ], $status);
     }
 
+    // Retourner une erreur de validation formatée
     private function erreurValidation(ValidationException $e, string $message): JsonResponse
     {
         return response()->json(['message' => $message, 'errors' => $e->errors()], 422);
     }
 
+    // Récupérer les données publiques de l'utilisateur
     private function donneesUtilisateur(User $user): array
     {
         return [
@@ -195,16 +215,19 @@ class AuthController extends Controller
         ];
     }
 
-    private function aInvitationsMedecinEnAttente(User $user): bool
+    // Vérifier si utilisateur a invitations médecin en attente
+    private function hasPendingDoctorInvitations(User $user): bool
     {
         return DoctorInvitation::where('doctor_user_id', $user->id)->where('status', 'pending')->exists();
     }
 
-    private function aInvitationEnAttentePourEmail(string $email): bool
+    // Vérifier si invitation en attente existe pour email
+    private function hasInvitationForEmail(string $email): bool
     {
         return DoctorInvitation::whereRaw('LOWER(doctor_email) = ?', [strtolower($email)])->where('status', 'pending')->exists();
     }
 
+    // Gérer les erreurs de base de données lors de l'inscription
     private function gererExceptionRequeteInscription(QueryException $e): JsonResponse
     {
         $sqlState   = $e->errorInfo[0] ?? null;
@@ -221,22 +244,25 @@ class AuthController extends Controller
         return response()->json(['message' => 'Erreur lors de la creation du compte'], 500);
     }
 
-    private function trouverUtilisateurPourConnexion(string $email, string $password, string $role): ?User
+    // Trouver utilisateur pour connexion avec rôle
+    private function findUserForLogin(string $email, string $password, string $role): ?User
     {
         $user = User::where('email', $email)->where('role', $role)->latest('id')->first();
         return $user && Hash::check($password, $user->password) ? $user : null;
     }
 
-    private function trouverUtilisateurSansRole(string $email, string $password): ?User
+    // Trouver utilisateur sans rôle spécifié
+    private function findUserWithoutRole(string $email, string $password): ?User
     {
         foreach (['admin', 'administrateur', 'medecin', 'user'] as $role) {
-            if ($user = $this->trouverUtilisateurPourConnexion($email, $password, $role)) {
+            if ($user = $this->findUserForLogin($email, $password, $role)) {
                 return $user;
             }
         }
         return null;
     }
 
+    // Retourner les messages de validation de base
     private function messagesDeBase(): array
     {
         return [
@@ -249,6 +275,7 @@ class AuthController extends Controller
         ];
     }
 
+    // Créer règle validation personnalisée pour date de naissance
     private function regleDate(): \Closure
     {
         return function ($attribute, $value, $fail) {
@@ -259,16 +286,19 @@ class AuthController extends Controller
                 return;
             }
 
+            // Vérifier que le format de la date est valide
             if (! $birthDate || $birthDate->format('Y-m-d') !== $value) {
                 $fail('Date de naissance invalide.');
                 return;
             }
 
+            // Vérifier que la date de naissance n'est pas dans le futur
             if ($birthDate->isFuture()) {
                 $fail('La date de naissance ne peut pas etre dans le futur.');
                 return;
             }
 
+            // Vérifier l'âge minimum (18 ans)
             if ($birthDate->diffInYears(now()) < 18) {
                 $fail('Vous devez avoir au minimum 18 ans pour creer un compte.');
             }

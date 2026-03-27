@@ -20,6 +20,7 @@ class HealthDataController extends Controller
 {
     public function __construct(private readonly HealthDataService $serviceDonneesSante) {}
 
+    // Afficher vue d'ensemble des données de santé
     public function vueEnsemble(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
@@ -90,7 +91,8 @@ class HealthDataController extends Controller
         ]);
     }
 
-    public function listerSignesVitaux(Request $request): JsonResponse
+    // Lister tous les signes vitaux
+    public function indexVitals(Request $request): JsonResponse
     {
         $days = max(1, min((int) $request->query('days', 30), 90));
         $startDate = Carbon::today()->subDays($days - 1);
@@ -107,7 +109,8 @@ class HealthDataController extends Controller
         ]);
     }
 
-    public function enregistrerSigneVital(StoreHealthVitalRequest $request): JsonResponse
+    // Enregistrer un nouveau signe vital
+    public function storeVital(StoreHealthVitalRequest $request): JsonResponse
     {
         $payload = $request->validated();
         $userId = $request->user()->id;
@@ -121,6 +124,7 @@ class HealthDataController extends Controller
             ->orderByDesc('id')
             ->first();
 
+        // Vérifier si des signes vitaux existent déjà pour cette date
         if ($existing) {
             // Merge par date: on conserve les mesures deja presentes si la nouvelle saisie est null.
             $existing->update([
@@ -152,7 +156,8 @@ class HealthDataController extends Controller
         ], 201);
     }
 
-    public function listerResultatsLaboratoire(Request $request): JsonResponse
+    // Lister tous les résultats de laboratoire
+    public function indexLabResults(Request $request): JsonResponse
     {
         $rows = HealthLabResult::query()
             ->where('user_id', $request->user()->id)
@@ -166,7 +171,8 @@ class HealthDataController extends Controller
         ]);
     }
 
-    public function enregistrerResultatLaboratoire(StoreHealthLabResultRequest $request): JsonResponse
+    // Enregistrer un nouveau résultat de laboratoire
+    public function storeLabResult(StoreHealthLabResultRequest $request): JsonResponse
     {
         $payload = $request->validated();
         $payload['user_id'] = $request->user()->id;
@@ -179,9 +185,11 @@ class HealthDataController extends Controller
         ], 201);
     }
 
-    public function mettreAJourResultatLaboratoire(UpdateHealthLabResultRequest $request, HealthLabResult $healthLabResult): JsonResponse
+    // Mettre à jour un résultat de laboratoire
+    public function updateLabResult(UpdateHealthLabResultRequest $request, HealthLabResult $healthLabResult): JsonResponse
     {
-        if ($error = $this->autoriserResultatLaboratoire($healthLabResult, $request)) return $error;
+        // Vérifier que l'utilisateur est propriétaire du résultat
+        if ($error = $this->authorizeLabResult($healthLabResult, $request)) return $error;
 
         $healthLabResult->update($request->validated());
 
@@ -191,9 +199,11 @@ class HealthDataController extends Controller
         ]);
     }
 
-    public function supprimerResultatLaboratoire(Request $request, HealthLabResult $healthLabResult): JsonResponse
+    // Supprimer un résultat de laboratoire
+    public function destroyLabResult(Request $request, HealthLabResult $healthLabResult): JsonResponse
     {
-        if ($error = $this->autoriserResultatLaboratoire($healthLabResult, $request)) return $error;
+        // Vérifier que l'utilisateur est propriétaire du résultat
+        if ($error = $this->authorizeLabResult($healthLabResult, $request)) return $error;
 
         $healthLabResult->delete();
 
@@ -202,7 +212,8 @@ class HealthDataController extends Controller
         ]);
     }
 
-    public function listerControlesTraitement(Request $request): JsonResponse
+    // Lister tous les contrôles de traitement
+    public function indexTreatmentChecks(Request $request): JsonResponse
     {
         $days = max(1, min((int) $request->query('days', 14), 90));
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
@@ -220,7 +231,8 @@ class HealthDataController extends Controller
         ]);
     }
 
-    public function synchroniserControlesTraitement(SyncHealthTreatmentChecksRequest $request): JsonResponse
+    // Synchroniser les contrôles de traitement
+    public function syncTreatmentChecks(SyncHealthTreatmentChecksRequest $request): JsonResponse
     {
         $userId = $request->user()->id;
 
@@ -247,8 +259,10 @@ class HealthDataController extends Controller
         ]);
     }
 
-    private function autoriserResultatLaboratoire(HealthLabResult $labResult, Request $request): ?JsonResponse
+    // Vérifier l'accès à un résultat de laboratoire
+    private function authorizeLabResult(HealthLabResult $labResult, Request $request): ?JsonResponse
     {
+        // Vérifier que le résultat appartient à l'utilisateur
         if ($labResult->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Acces non autorise a ce resultat de laboratoire.'], 403);
         }
