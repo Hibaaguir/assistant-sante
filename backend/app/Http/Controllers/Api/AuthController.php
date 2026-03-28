@@ -61,7 +61,7 @@ class AuthController extends Controller
                 'email'         => ['required', 'email', 'max:255', Rule::unique('users', 'email')->where(fn ($q) => $q->where('role', 'medecin'))],
                 'password'      => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
                 'specialite'    => ['required', 'string', 'min:2', 'max:120'],
-                'date_of_birth' => ['nullable', 'date_format:Y-m-d'],
+                'date_of_birth' => ['nullable', 'date_format:Y-m-d', $this->regleDate(25, 'Un medecin doit avoir au minimum 25 ans pour creer un compte medecin.')],
             ], array_merge($this->messagesDeBase(), [
                 'specialite.required'      => 'La specialite est obligatoire.',
                 'date_of_birth.date_format' => 'La date doit etre au format YYYY-MM-DD.',
@@ -276,9 +276,9 @@ class AuthController extends Controller
     }
 
     // Créer règle validation personnalisée pour date de naissance
-    private function regleDate(): \Closure
+    private function regleDate(int $ageMinimum = 18, ?string $messageAgeMinimum = null): \Closure
     {
-        return function ($attribute, $value, $fail) {
+        return function ($attribute, $value, $fail) use ($ageMinimum, $messageAgeMinimum) {
             try {
                 $birthDate = Carbon::createFromFormat('Y-m-d', (string) $value);
             } catch (\Throwable) {
@@ -298,9 +298,9 @@ class AuthController extends Controller
                 return;
             }
 
-            // Vérifier l'âge minimum (18 ans)
-            if ($birthDate->diffInYears(now()) < 18) {
-                $fail('Vous devez avoir au minimum 18 ans pour creer un compte.');
+            // Vérifier l'âge minimum
+            if ($birthDate->diffInYears(now()) < $ageMinimum) {
+                $fail($messageAgeMinimum ?? "Vous devez avoir au minimum {$ageMinimum} ans pour creer un compte.");
             }
         };
     }

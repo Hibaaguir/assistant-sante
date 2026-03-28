@@ -16,7 +16,6 @@ return new class extends Migration
             $table->unsignedSmallInteger('systolic_pressure')->nullable();
             $table->unsignedSmallInteger('diastolic_pressure')->nullable();
             $table->decimal('oxygen_saturation', 4, 1)->nullable();
-            $table->string('notes', 1000)->nullable();
             $table->timestamps();
 
             $table->index(['user_id', 'measured_at']);

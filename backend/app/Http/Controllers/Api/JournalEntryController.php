@@ -39,7 +39,7 @@ class JournalEntryController extends Controller
     public function store(StoreJournalEntryRequest $request): JsonResponse
     {
         // Récupérer les données validées
-        $payload = $request->validated();
+        $payload = $this->normaliserPayload($request->validated());
         $payload['user_id'] = $request->user()->id;
 
         // Créer ou mettre à jour l'entrée du journal
@@ -83,7 +83,7 @@ class JournalEntryController extends Controller
             return $error;
         }
 
-        $journalEntry->update($request->validated());
+        $journalEntry->update($this->normaliserPayload($request->validated()));
 
         return response()->json([
             'message' => 'Entree du journal mise a jour avec succes.',
@@ -118,5 +118,72 @@ class JournalEntryController extends Controller
         }
 
         return null;
+    }
+
+    private function normaliserPayload(array $payload): array
+    {
+        $caloriesDepuisMeals = null;
+
+        if (array_key_exists('meals', $payload)) {
+            [$payload['meals'], $caloriesDepuisMeals] = $this->retirerCaloriesDesMeals($payload['meals']);
+        }
+
+        if (array_key_exists('calories', $payload)) {
+            $payload['calories'] = $payload['calories'] === null
+                ? null
+                : $this->bornerCalories($payload['calories']);
+
+            return $payload;
+        }
+
+        if ($caloriesDepuisMeals !== null) {
+            $payload['calories'] = $caloriesDepuisMeals;
+        }
+
+        return $payload;
+    }
+
+    private function retirerCaloriesDesMeals(mixed $meals): array
+    {
+        if (! is_array($meals)) {
+            return [$meals, 0];
+        }
+
+        $total = 0;
+        $sanitizedMeals = [];
+
+        foreach ($meals as $meal) {
+            if (! is_array($meal)) {
+                $sanitizedMeals[] = $meal;
+                continue;
+            }
+
+            $rawCalories = $meal['calories'] ?? null;
+            if ($rawCalories === null || $rawCalories === '') {
+                unset($meal['calories']);
+                $sanitizedMeals[] = $meal;
+                continue;
+            }
+
+            $total += $this->bornerCalories($rawCalories);
+            if ($total >= 65535) {
+                $total = 65535;
+            }
+
+            unset($meal['calories']);
+            $sanitizedMeals[] = $meal;
+        }
+
+        return [$sanitizedMeals, $total];
+    }
+
+    private function bornerCalories(mixed $value): int
+    {
+        $parsed = is_numeric($value) ? (int) round((float) $value) : 0;
+        if ($parsed < 0) {
+            return 0;
+        }
+
+        return min($parsed, 65535);
     }
 }

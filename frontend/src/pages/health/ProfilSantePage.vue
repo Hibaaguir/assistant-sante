@@ -493,7 +493,7 @@ const goalOptions = [
   "Reduire mon stress",
   "Suivre ma sante regulierement",
 ];
-const allergyOptions = [
+const allergyOptions = ref([
   "Pollen",
   "Acariens",
   "Poils d'animaux",
@@ -507,8 +507,8 @@ const allergyOptions = [
   "Aspirine",
   "Piqures d'insectes",
   "Moisissures",
-];
-const diseaseOptions = [
+]);
+const diseaseOptions = ref([
   "Diabete",
   "Hypertension arterielle",
   "Asthme",
@@ -522,35 +522,9 @@ const diseaseOptions = [
   "Cholesterol eleve",
   "Depression",
   "Anemie",
-];
-const treatmentTypes = ref([
-  "Anti-inflammatoire",
-  "Antibiotique",
-  "Antidouleur",
-  "Antihypertenseur",
-  "Antidiabetique",
-  "Anticoagulant",
-  "Antiallergique",
-  "Antidepresseur",
-  "Corticoide",
-  "Traitement hormonal",
-  "Supplement vitaminique",
-  "Inhalateur respiratoire",
 ]);
-const treatmentNamesByType = reactive({
-  "Anti-inflammatoire": ["Ibuprofene", "Diclofenac", "Ketoprofene", "Naproxene"],
-  "Antibiotique": ["Amoxicilline", "Azithromycine", "Cefixime", "Ciprofloxacine"],
-  "Antidouleur": ["Paracetamol", "Tramadol", "Codeine"],
-  "Antihypertenseur": ["Amlodipine", "Ramipril", "Losartan", "Bisoprolol"],
-  "Antidiabetique": ["Metformine", "Insuline", "Gliclazide"],
-  "Anticoagulant": ["Heparine", "Warfarine", "Rivaroxaban"],
-  "Antiallergique": ["Cetirizine", "Loratadine", "Desloratadine"],
-  "Antidepresseur": ["Sertraline", "Fluoxetine", "Escitalopram"],
-  Corticoide: ["Prednisone", "Dexamethasone", "Hydrocortisone"],
-  "Traitement hormonal": ["Levothyrox", "Estradiol", "Progesterone"],
-  "Supplement vitaminique": ["Vitamine D", "Vitamine C", "Fer"],
-  "Inhalateur respiratoire": ["Ventoline", "Symbicort", "Seretide"],
-});
+const treatmentTypes = ref([]);
+const treatmentNamesByType = reactive({});
 
 const customInputs = reactive({
   allergies: "",
@@ -573,12 +547,140 @@ const treatmentDraft = reactive({
   end_date: "",
 });
 
-function getTreatmentNamesByType(type) {
-  const normalizedType = String(type || "").trim();
-  if (!normalizedType) return [];
+function normalizeTreatmentText(value) {
+  return String(value || "").trim().replace(/\s+/g, " ");
+}
+
+function appendUniqueCatalogOption(targetRef, value) {
+  const normalizedValue = normalizeTreatmentText(value);
+  if (!normalizedValue) return;
+
+  const exists = targetRef.value.some((item) =>
+    item.localeCompare(normalizedValue, "fr", { sensitivity: "base" }) === 0
+  );
+
+  if (exists) return;
+
+  targetRef.value = [...targetRef.value, normalizedValue].sort((a, b) =>
+    a.localeCompare(b, "fr", { sensitivity: "base" })
+  );
+}
+
+function ensureTreatmentType(type) {
+  const normalizedType = normalizeTreatmentText(type);
+  if (!normalizedType) return "";
+
+  if (!treatmentTypes.value.includes(normalizedType)) {
+    treatmentTypes.value = [...treatmentTypes.value, normalizedType].sort((a, b) =>
+      a.localeCompare(b, "fr", { sensitivity: "base" })
+    );
+  }
+
   if (!Array.isArray(treatmentNamesByType[normalizedType])) {
     treatmentNamesByType[normalizedType] = [];
   }
+
+  return normalizedType;
+}
+
+function mergeTreatmentCatalogEntry(type, name = "") {
+  const normalizedType = ensureTreatmentType(type);
+  if (!normalizedType) return;
+
+  const normalizedName = normalizeTreatmentText(name);
+  if (!normalizedName) return;
+
+  const namesForType = treatmentNamesByType[normalizedType];
+  if (!namesForType.includes(normalizedName)) {
+    namesForType.push(normalizedName);
+    namesForType.sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
+  }
+}
+
+function applyTreatmentCatalog(catalog) {
+  const types = Array.isArray(catalog?.types) ? catalog.types : [];
+  types.forEach((type) => ensureTreatmentType(type));
+
+  const namesByType =
+    catalog?.names_by_type && typeof catalog.names_by_type === "object"
+      ? catalog.names_by_type
+      : {};
+
+  Object.entries(namesByType).forEach(([type, names]) => {
+    ensureTreatmentType(type);
+    (Array.isArray(names) ? names : []).forEach((name) => mergeTreatmentCatalogEntry(type, name));
+  });
+}
+
+async function loadTreatmentCatalog() {
+  try {
+    const response = await api.get("/treatment-catalog");
+    applyTreatmentCatalog(response?.data?.data || {});
+  } catch (_) {
+    // Le profil reste editable meme si le catalogue n'est pas charge.
+  }
+}
+
+function applyAllergyCatalog(catalog) {
+  const items = Array.isArray(catalog?.items) ? catalog.items : [];
+  items.forEach((item) => appendUniqueCatalogOption(allergyOptions, item));
+}
+
+function applyChronicDiseaseCatalog(catalog) {
+  const items = Array.isArray(catalog?.items) ? catalog.items : [];
+  items.forEach((item) => appendUniqueCatalogOption(diseaseOptions, item));
+}
+
+async function loadAllergyCatalog() {
+  try {
+    const response = await api.get("/allergy-catalog");
+    applyAllergyCatalog(response?.data?.data || {});
+  } catch (_) {
+    // Le profil reste editable meme si le catalogue n'est pas charge.
+  }
+}
+
+async function loadChronicDiseaseCatalog() {
+  try {
+    const response = await api.get("/chronic-disease-catalog");
+    applyChronicDiseaseCatalog(response?.data?.data || {});
+  } catch (_) {
+    // Le profil reste editable meme si le catalogue n'est pas charge.
+  }
+}
+
+async function persistAllergyCatalogEntry(name) {
+  const normalizedName = normalizeTreatmentText(name);
+  if (!normalizedName) return;
+
+  await api.post("/allergy-catalog", {
+    name: normalizedName,
+  });
+}
+
+async function persistChronicDiseaseCatalogEntry(name) {
+  const normalizedName = normalizeTreatmentText(name);
+  if (!normalizedName) return;
+
+  await api.post("/chronic-disease-catalog", {
+    name: normalizedName,
+  });
+}
+
+async function persistTreatmentCatalogEntry(type, name = "") {
+  const normalizedType = normalizeTreatmentText(type);
+  const normalizedName = normalizeTreatmentText(name);
+  if (!normalizedType) return;
+
+  await api.post("/treatment-catalog", {
+    type: normalizedType,
+    name: normalizedName || null,
+  });
+}
+
+function getTreatmentNamesByType(type) {
+  const normalizedType = ensureTreatmentType(type);
+  if (!normalizedType) return [];
   return treatmentNamesByType[normalizedType];
 }
 
@@ -625,11 +727,30 @@ function toggleSelected(key, value) {
   draft[key] = [...draft[key], value];
 }
 
-function addCustom(key, value) {
+async function addCustom(key, value) {
   const normalized = String(value || "").trim();
   if (!normalized) return;
   if (!Array.isArray(draft[key])) draft[key] = [];
   if (!draft[key].includes(normalized)) draft[key] = [...draft[key], normalized];
+
+  if (key === "allergies") {
+    appendUniqueCatalogOption(allergyOptions, normalized);
+    try {
+      await persistAllergyCatalogEntry(normalized);
+    } catch {
+      notifications.avertissement("Allergie ajoutee au profil local, mais la mise a jour du catalogue partage a echoue.");
+    }
+  }
+
+  if (key === "maladies_chroniques") {
+    appendUniqueCatalogOption(diseaseOptions, normalized);
+    try {
+      await persistChronicDiseaseCatalogEntry(normalized);
+    } catch {
+      notifications.avertissement("Maladie chronique ajoutee au profil local, mais la mise a jour du catalogue partage a echoue.");
+    }
+  }
+
   customInputs[key] = "";
 }
 
@@ -665,17 +786,15 @@ function handleTreatmentDateInput(event, key) {
 }
 
 function handleTreatmentTypeInput() {
-  const normalizedType = String(treatmentDraft.type || "").trim();
+  const normalizedType = normalizeTreatmentText(treatmentDraft.type);
   if (!normalizedType) {
     treatmentDraft.name = "";
     return;
   }
 
-  if (!treatmentTypes.value.includes(normalizedType)) {
-    treatmentTypes.value = [...treatmentTypes.value, normalizedType];
-  }
+  treatmentDraft.type = ensureTreatmentType(normalizedType);
 
-  const availableNames = getTreatmentNamesByType(normalizedType);
+  const availableNames = getTreatmentNamesByType(treatmentDraft.type);
   if (treatmentDraft.name && !availableNames.includes(treatmentDraft.name)) {
     treatmentDraft.name = "";
   }
@@ -751,13 +870,18 @@ function cancelTreatmentEditWithNotice() {
   notifications.actionAnnulee();
 }
 
-function saveTreatmentDraft() {
-  if (!treatmentDraft.type || !treatmentDraft.name) return;
+async function saveTreatmentDraft() {
+  const normalizedType = normalizeTreatmentText(treatmentDraft.type);
+  const normalizedName = normalizeTreatmentText(treatmentDraft.name);
+  if (!normalizedType || !normalizedName) return;
+
+  treatmentDraft.type = normalizedType;
+  treatmentDraft.name = normalizedName;
   const isUpdate = editingTreatmentIndex.value > -1;
 
   const nextTreatment = {
-    type: treatmentDraft.type,
-    name: treatmentDraft.name,
+    type: normalizedType,
+    name: normalizedName,
     dose: treatmentDraft.dose || null,
     frequency_unit: treatmentDraft.frequency_unit || "jour",
     frequency_count: Number(treatmentDraft.frequency_count || 1),
@@ -777,12 +901,13 @@ function saveTreatmentDraft() {
     draft.traitements.push(nextTreatment);
   }
 
-  if (nextTreatment.type && !treatmentTypes.value.includes(nextTreatment.type)) {
-    treatmentTypes.value = [...treatmentTypes.value, nextTreatment.type];
-  }
-  const namesForType = getTreatmentNamesByType(nextTreatment.type);
-  if (nextTreatment.name && !namesForType.includes(nextTreatment.name)) {
-    namesForType.push(nextTreatment.name);
+  ensureTreatmentType(nextTreatment.type);
+  mergeTreatmentCatalogEntry(nextTreatment.type, nextTreatment.name);
+
+  try {
+    await persistTreatmentCatalogEntry(nextTreatment.type, nextTreatment.name);
+  } catch {
+    notifications.avertissement("Traitement ajoute au profil local, mais la mise a jour du catalogue partage a echoue.");
   }
 
   cancelTreatmentEdit();
@@ -824,22 +949,17 @@ function syncDraftFromProfil() {
   draft.objectifs = normaliserListe(profil.objectifs);
   draft.allergies = normaliserListe(profil.allergies);
   draft.maladies_chroniques = normaliserListe(profil.maladies_chroniques);
+  draft.allergies.forEach((item) => appendUniqueCatalogOption(allergyOptions, item));
+  draft.maladies_chroniques.forEach((item) => appendUniqueCatalogOption(diseaseOptions, item));
   draft.traitements = Array.isArray(profil.traitements) ? [...profil.traitements] : [];
   draft.traitements.forEach((item) => {
     if (!item || typeof item !== "object") return;
 
-    const type = String(item.type || "").trim();
-    const name = String(item.name || "").trim();
+    const type = normalizeTreatmentText(item.type || "");
+    const name = normalizeTreatmentText(item.name || "");
 
-    if (type && !treatmentTypes.value.includes(type)) {
-      treatmentTypes.value = [...treatmentTypes.value, type];
-    }
-    if (type && name) {
-      const namesForType = getTreatmentNamesByType(type);
-      if (!namesForType.includes(name)) {
-        namesForType.push(name);
-      }
-    }
+    if (type) ensureTreatmentType(type);
+    if (type && name) mergeTreatmentCatalogEntry(type, name);
   });
   draft.fumeur = Boolean(profil.fumeur);
   draft.alcool = Boolean(profil.alcool);
@@ -934,7 +1054,6 @@ function construireChargeUtile() {
   const allergies = normaliserListe(draft.allergies);
   const maladiesChroniques = normaliserListe(draft.maladies_chroniques);
   const traitements = Array.isArray(draft.traitements) ? draft.traitements : [];
-  const prendMedicament = traitements.length > 0;
   const consulteMedecin = Boolean(draft.consulte_medecin);
   const medecinPeutConsulter = Boolean(consulteMedecin && draft.medecin_peut_consulter);
 
@@ -947,8 +1066,6 @@ function construireChargeUtile() {
     allergies,
     maladies_chroniques: maladiesChroniques,
     traitements,
-    prend_medicament: prendMedicament,
-    nom_medicament: prendMedicament ? (traitements[0]?.name || null) : null,
     fumeur: Boolean(draft.fumeur),
     alcool: Boolean(draft.alcool),
     consulte_medecin: consulteMedecin,
@@ -1053,6 +1170,12 @@ async function enregistrerSection(section) {
 // Chargement initial du profil.
 onMounted(async () => {
   try {
+    await Promise.all([
+      loadTreatmentCatalog(),
+      loadAllergyCatalog(),
+      loadChronicDiseaseCatalog(),
+    ]);
+
     const response = await api.get("/profil-sante");
     Object.assign(profil, response?.data?.data || {});
     Object.assign(user, response?.data?.user || {});

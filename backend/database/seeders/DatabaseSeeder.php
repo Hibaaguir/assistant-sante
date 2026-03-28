@@ -36,7 +36,10 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             UserSeeder::class,
-          //  JournalSeeder::class,
+            TreatmentCatalogSeeder::class,
+            AllergyCatalogSeeder::class,
+            ChronicDiseaseCatalogSeeder::class,
+            // JournalSeeder::class,
         ]);
     }
 }

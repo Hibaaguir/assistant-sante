@@ -25,6 +25,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import ElementNavLaterale from './ElementNavLaterale.vue'
 

@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   current: { type: Number, required: true },
   steps:   { type: Array,  required: true },
 })

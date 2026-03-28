@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AllergyCatalogController;
+use App\Http\Controllers\Api\ChronicDiseaseCatalogController;
 use App\Http\Controllers\Api\DoctorInvitationController;
 use App\Http\Controllers\Api\HealthDataController;
 use App\Http\Controllers\Api\JournalEntryController;
@@ -8,6 +10,7 @@ use App\Http\Controllers\Api\MotDePasseOubliController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ProfilSanteController;
 use App\Http\Controllers\Api\ProfilUtilisateurController;
+use App\Http\Controllers\Api\TreatmentCatalogController;
 use App\Http\Controllers\Api\UtilisateurAdminController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- Session ---
     Route::get('/auth/user',         [AuthController::class, 'getCurrentUser']);
+    Route::get('/auth/me',           [AuthController::class, 'getCurrentUser']);
     Route::post('/auth/logout',      [AuthController::class, 'logout']);
 
     // --- Profil utilisateur ---
@@ -49,6 +53,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('profil-sante')->group(function () {
         Route::post('/', [ProfilSanteController::class, 'store']);
         Route::get('/',  [ProfilSanteController::class, 'show']);
+    });
+
+    // --- Catalogue traitements ---
+    Route::prefix('treatment-catalog')->group(function () {
+        Route::get('/',  [TreatmentCatalogController::class, 'index']);
+        Route::post('/', [TreatmentCatalogController::class, 'store']);
+    });
+
+    // --- Catalogue allergies ---
+    Route::prefix('allergy-catalog')->group(function () {
+        Route::get('/',  [AllergyCatalogController::class, 'index']);
+        Route::post('/', [AllergyCatalogController::class, 'store']);
+    });
+
+    // --- Catalogue maladies chroniques ---
+    Route::prefix('chronic-disease-catalog')->group(function () {
+        Route::get('/',  [ChronicDiseaseCatalogController::class, 'index']);
+        Route::post('/', [ChronicDiseaseCatalogController::class, 'store']);
     });
 
     // --- Notifications ---

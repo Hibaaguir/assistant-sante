@@ -7,9 +7,13 @@ use App\Mail\DoctorInvitationMail;
 use App\Models\DoctorInvitation;
 use App\Models\ProfilSante;
 use App\Models\User;
+use App\Services\AllergyCatalogService;
+use App\Services\ChronicDiseaseCatalogService;
+use App\Services\TreatmentCatalogService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -26,6 +30,12 @@ use Illuminate\Validation\Rule;
  */
 class ProfilSanteController extends Controller
 {
+    public function __construct(
+        private readonly AllergyCatalogService $allergyCatalogService,
+        private readonly ChronicDiseaseCatalogService $chronicDiseaseCatalogService,
+        private readonly TreatmentCatalogService $treatmentCatalogService,
+    ) {}
+
     // Enregistrer ou mettre à jour le profil de santé
     public function store(Request $request)
     {
@@ -54,8 +64,6 @@ class ProfilSanteController extends Controller
             'traitements.*.frequency_unit' => ['nullable', Rule::in(['jour', 'semaine', 'mois'])],
             'traitements.*.frequency_count' => ['nullable', 'integer', 'min:1'],
             'traitements.*.duration' => ['nullable', 'string', 'max:120'],
-            'prend_medicament' => ['required', 'boolean'],
-            'nom_medicament' => ['nullable', 'string', 'max:255', 'required_if:prend_medicament,1'],
             'consulte_medecin' => ['required', 'boolean'],
             'medecin_peut_consulter' => ['required_if:consulte_medecin,1', 'boolean'],
             'medecin_email' => [
@@ -86,10 +94,39 @@ class ProfilSanteController extends Controller
             ? strtolower(trim((string) $existingProfil->medecin_email))
             : null;
 
-        $profil = ProfilSante::updateOrCreate(
-            ['user_id' => Auth::id()],
-            $validated
-        );
+        try {
+            $profil = DB::transaction(function () use ($validated) {
+                $savedProfil = ProfilSante::updateOrCreate(
+                    ['user_id' => Auth::id()],
+                    $validated
+                );
+
+                $this->treatmentCatalogService->saveFromTreatments(
+                    is_array($validated['traitements'] ?? null) ? $validated['traitements'] : [],
+                    (int) Auth::id(),
+                );
+
+                $this->allergyCatalogService->saveFromList(
+                    is_array($validated['allergies'] ?? null) ? $validated['allergies'] : [],
+                    (int) Auth::id(),
+                );
+
+                $this->chronicDiseaseCatalogService->saveFromList(
+                    is_array($validated['maladies_chroniques'] ?? null) ? $validated['maladies_chroniques'] : [],
+                    (int) Auth::id(),
+                );
+
+                return $savedProfil;
+            });
+        } catch (\Throwable $exception) {
+            Log::error('Profil sante persistence failed during treatment catalog sync: '.$exception->getMessage(), [
+                'user_id' => Auth::id(),
+            ]);
+
+            return response()->json([
+                'message' => "Erreur lors de l'enregistrement du profil.",
+            ], 500);
+        }
 
         $this->synchroniserInvitationMedecin($profil, $previousDoctorEmail);
 
@@ -104,6 +141,45 @@ class ProfilSanteController extends Controller
     {
         $user = Auth::user();
         $profil = $user->profilSante;
+
+        if ($profil && is_array($profil->traitements)) {
+            try {
+                $this->treatmentCatalogService->saveFromTreatments(
+                    $profil->traitements,
+                    (int) $user->id,
+                );
+            } catch (\Throwable $exception) {
+                Log::warning('Profil sante show catalog sync skipped: '.$exception->getMessage(), [
+                    'user_id' => $user->id,
+                ]);
+            }
+        }
+
+        if ($profil && is_array($profil->allergies)) {
+            try {
+                $this->allergyCatalogService->saveFromList(
+                    $profil->allergies,
+                    (int) $user->id,
+                );
+            } catch (\Throwable $exception) {
+                Log::warning('Profil sante show allergy sync skipped: '.$exception->getMessage(), [
+                    'user_id' => $user->id,
+                ]);
+            }
+        }
+
+        if ($profil && is_array($profil->maladies_chroniques)) {
+            try {
+                $this->chronicDiseaseCatalogService->saveFromList(
+                    $profil->maladies_chroniques,
+                    (int) $user->id,
+                );
+            } catch (\Throwable $exception) {
+                Log::warning('Profil sante show chronic disease sync skipped: '.$exception->getMessage(), [
+                    'user_id' => $user->id,
+                ]);
+            }
+        }
 
         return response()->json([
             'data' => $profil,

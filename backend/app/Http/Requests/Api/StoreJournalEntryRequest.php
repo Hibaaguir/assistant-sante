@@ -28,7 +28,7 @@ class StoreJournalEntryRequest extends FormRequest
             'meals'              => ['nullable', 'array'],
             'meals.*.type'       => ['nullable', 'string', 'max:40'],
             'meals.*.label'      => ['required_with:meals', 'string', 'max:255'],
-            'meals.*.calories'   => ['nullable', 'integer', 'min:0', 'max:15000'],
+            'calories'           => ['nullable', 'integer', 'min:0', 'max:65535'],
 
             // Activité physique
             'activity_type'     => ['nullable', 'string', 'max:120'],

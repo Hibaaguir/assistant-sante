@@ -80,6 +80,10 @@ router.beforeEach(async (to) => {
     return { name: "connexion" };
   }
 
+  if (user && authStore.estDansEspaceMedecin && to.name !== "tableau-de-bord") {
+    return { name: "tableau-de-bord" };
+  }
+
   if (
     to.meta.requiresAuth &&
     user &&

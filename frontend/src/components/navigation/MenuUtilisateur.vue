@@ -67,6 +67,8 @@
 import { computed, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import ModificationProfilModal from '@/components/profil/ModificationProfilModal.vue'
+import AvatarImg from '@/components/navigation/AvatarImg.vue'
+import UserIcon from '@/components/navigation/UserIcon.vue'
 
 const authStore = useAuthStore()
 

@@ -85,6 +85,9 @@
                 </li>
               </ul>
               <p v-else class="mt-2 text-sm text-slate-500">Aucun repas ajoute pour le moment.</p>
+              <div class="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
+                Total calories: {{ mealsCaloriesTotal }} kcal
+              </div>
             </div>
           </div>
 
@@ -444,6 +447,17 @@ const hydrationTotal = computed(() => {
   const extra = Math.max(0, Number(form.customHydration) || 0)
   return (form.cupCount * 0.5) + (form.bottleCount * 1.5) + extra
 })
+const normaliserCaloriesRepas = (value) => {
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed < 0) return null
+  return Math.round(parsed)
+}
+const mealsCaloriesTotal = computed(() => {
+  return form.meals.reduce((sum, meal) => {
+    const calories = normaliserCaloriesRepas(meal?.calories)
+    return sum + (calories ?? 0)
+  }, 0)
+})
 const SUGAR_BADGE = {
   high:   'border-rose-300 bg-rose-100 text-rose-800',
   medium: 'border-amber-300 bg-amber-100 text-amber-800',
@@ -530,7 +544,7 @@ const ajouterRepas = () => {
   form.meals.push({
     type: form.selectedMeal,
     label: mealDraft.label.trim(),
-    calories: mealDraft.calories
+    calories: normaliserCaloriesRepas(mealDraft.calories)
   })
 
   mealDraft.label = ''
@@ -658,6 +672,7 @@ const enregistrer = async () => {
       caffeine: Number(form.caffeine),
       hydration: Number(hydrationTotal.value.toFixed(1)),
       meals: [...form.meals],
+      calories: mealsCaloriesTotal.value,
       activityType: form.activityType || 'Marche',
       activityDuration: Number.isFinite(Number(form.activityDuration)) ? Number(form.activityDuration) : 0,
       intensity: form.intensity,

@@ -23,6 +23,7 @@ return new class extends Migration
 
             // Alimentation & activité physique
             $table->json('meals')->nullable();
+            $table->unsignedSmallInteger('calories')->nullable();
             $table->string('activity_type', 120)->nullable();
             $table->unsignedSmallInteger('activity_duration')->nullable();
             $table->enum('intensity', ['light', 'medium', 'high'])->default('medium');

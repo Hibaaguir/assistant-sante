@@ -15,6 +15,29 @@ function convertirEntierOuNull(value) {
   return Math.round(parsed);
 }
 
+function calculerCaloriesDepuisMeals(meals) {
+  if (!Array.isArray(meals)) return 0;
+
+  const total = meals.reduce((sum, meal) => {
+    const value = Number(meal?.calories);
+    if (!Number.isFinite(value) || value <= 0) return sum;
+    return sum + Math.round(value);
+  }, 0);
+
+  return Math.max(0, Math.min(total, 65535));
+}
+
+function supprimerCaloriesDesMeals(meals) {
+  if (!Array.isArray(meals)) return [];
+
+  return meals.map((meal) => {
+    if (!meal || typeof meal !== "object" || Array.isArray(meal)) return meal;
+    const nextMeal = { ...meal };
+    delete nextMeal.calories;
+    return nextMeal;
+  });
+}
+
 function formaterLibelleDate(dateIso) {
   if (!dateIso) return "";
   const date = new Date(`${dateIso}T00:00:00`);
@@ -37,7 +60,8 @@ function versVue(modele) {
     sugar: modele.sugar ?? "low",
     caffeine: Number(modele.caffeine ?? 0),
     hydration: Number(modele.hydration ?? 0),
-    meals: Array.isArray(modele.meals) ? modele.meals : [],
+    meals: supprimerCaloriesDesMeals(Array.isArray(modele.meals) ? modele.meals : []),
+    calories: Number(modele.calories ?? 0),
     activityType: modele.activity_type ?? "",
     activityDuration: Number(modele.activity_duration ?? 0),
     intensity: modele.intensity ?? "medium",
@@ -52,6 +76,10 @@ function versVue(modele) {
 }
 
 function versChargeUtile(entree) {
+  const mealsBruts = Array.isArray(entree.meals) ? entree.meals : [];
+  const meals = supprimerCaloriesDesMeals(mealsBruts);
+  const calories = convertirEntierOuNull(entree.calories);
+
   return {
     entry_date: entree.dateIso || new Date().toISOString().slice(0, 10),
     sleep: convertirEntierOuNull(entree.sleep),
@@ -60,7 +88,8 @@ function versChargeUtile(entree) {
     sugar: entree.sugar ?? "low",
     caffeine: convertirEntierOuNull(entree.caffeine) ?? 0,
     hydration: entree.hydration ?? 0,
-    meals: Array.isArray(entree.meals) ? entree.meals : [],
+    meals,
+    calories: calories ?? calculerCaloriesDepuisMeals(mealsBruts),
     activity_type: entree.activityType ?? null,
     activity_duration: convertirEntierOuNull(entree.activityDuration),
     intensity: entree.intensity ?? "medium",

@@ -131,7 +131,6 @@ const step1Errors = reactive({ sexe: "", taille: "", poids: "", objectifs: "" })
 const form = reactive({
   sexe: "", taille: "", poids: "", groupe_sanguin: "",
   objectifs: [], allergies: [], maladies_chroniques: [], traitements: [],
-  prend_medicament: false, nom_medicament: "",
   fumeur: false, alcool: false,
   consulte_medecin: false, medecin_peut_consulter: false, medecin_email: "",
 });
@@ -151,7 +150,6 @@ const computedAge = computed(() => {
 });
 
 // ─── Watchers (effets de bord sur le formulaire) ──────────────────────────────
-watch(() => form.prend_medicament,      (v) => { if (!v) form.nom_medicament = ""; });
 watch(() => form.consulte_medecin,      (v) => { if (!v) { form.medecin_peut_consulter = false; form.medecin_email = ""; } });
 watch(() => form.medecin_peut_consulter,(v) => { if (!v) form.medecin_email = ""; });
 
@@ -212,7 +210,6 @@ function validateStep2() {
 }
 
 function validateStep3() {
-  if (form.prend_medicament && !form.nom_medicament) { stepError.value = "Veuillez renseigner le nom du médicament."; return false; }
   if (form.consulte_medecin && form.medecin_peut_consulter) {
     if (!form.medecin_email) { stepError.value = "Veuillez renseigner l'email du médecin."; return false; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.medecin_email)) { stepError.value = "L'email du médecin est invalide."; return false; }
@@ -256,8 +253,6 @@ function buildPayload() {
           }))
           .filter((t) => t.type)
       : [],
-    prend_medicament: form.prend_medicament,
-    nom_medicament: form.prend_medicament ? form.nom_medicament : null,
     fumeur: form.fumeur,
     alcool: form.alcool,
     consulte_medecin: form.consulte_medecin,

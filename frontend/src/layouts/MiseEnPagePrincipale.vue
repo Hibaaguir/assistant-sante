@@ -1,11 +1,16 @@
 <template>
-  <!-- Structure principale du layout authentifié avec affichage conditionnel de la barre latérale et du contenu courant -->
-  <div v-if="authStore.resolved" class="min-h-screen text-slate-900 lg:flex" :class="authStore.estDansEspaceMedecin || authStore.estAdministrateur ? 'bg-[#f5f6f8]' : 'bg-[#EEF2F7]'">
+  <div
+    v-if="authStore.resolved"
+    class="min-h-screen text-slate-900 lg:flex"
+    :class="authStore.estDansEspaceMedecin || authStore.estAdministrateur ? 'bg-[#f5f6f8]' : 'bg-[#EEF2F7]'"
+  >
     <BarreLateraleApp v-if="authStore.estDansEspacePersonnel" :active="routeActive" />
 
     <main class="w-full flex-1">
+
+      <!-- Barre d'actions globale -->
       <div
-        v-if="afficherBarreActionsGlobale"
+        v-if="route.name"
         class="mx-auto flex w-full max-w-[1320px] items-center justify-end gap-3 px-4 pb-2 pt-4 sm:px-6 lg:px-8"
       >
         <button
@@ -18,7 +23,7 @@
             <path d="M16 17l5-5-5-5" />
             <path d="M21 12H9" />
           </svg>
-          Deconnexion
+          Déconnexion
         </button>
         <MenuUtilisateur />
       </div>
@@ -29,35 +34,35 @@
 </template>
 
 <script setup>
-// Import des dépendances Vue, du routeur, du store d'authentification et du composant de navigation latérale
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import BarreLateraleApp from '@/components/navigation/BarreLateraleApp.vue'
-import MenuUtilisateur from '@/components/navigation/MenuUtilisateur.vue'
+import MenuUtilisateur  from '@/components/navigation/MenuUtilisateur.vue'
 
-// Initialisation de la route courante et du store centralisé d'authentification
-const route = useRoute()
-const router = useRouter()
+const route     = useRoute()
+const router    = useRouter()
 const authStore = useAuthStore()
 
-// Calcul de la route active pour synchroniser l'état visuel de la barre latérale avec la page affichée
+// ─── Computed ─────────────────────────────────────────────────
+
+const JOURNAL_ROUTES   = ['journal', 'assistant-journal', 'historique-journal']
+const MAIN_NAV_ROUTES  = ['tableau-de-bord', 'mon-profil-sante', 'donnees-sante', 'recommandations-ia']
+
 const routeActive = computed(() => {
-  if (['journal', 'assistant-journal', 'historique-journal'].includes(route.name)) return 'journal'
-  return ['tableau-de-bord', 'mon-profil-sante', 'donnees-sante', 'recommandations-ia'].includes(route.name) ? route.name : ''
+  if (JOURNAL_ROUTES.includes(route.name))   return 'journal'
+  if (MAIN_NAV_ROUTES.includes(route.name))  return route.name
+  return ''
 })
 
-const afficherBarreActionsGlobale = computed(() => Boolean(route.name))
+// ─── Actions ──────────────────────────────────────────────────
 
 async function deconnexion() {
   await authStore.deconnexion()
   router.push({ name: 'accueil-publique' })
 }
 
-// Vérification au montage que l'état d'authentification est bien résolu avant l'affichage complet du layout
 onMounted(() => {
-  if (!authStore.resolved) {
-    authStore.chargerUtilisateur()
-  }
+  if (!authStore.resolved) authStore.chargerUtilisateur()
 })
 </script>

@@ -39,10 +39,6 @@ class HealthDataService
             $medicines[] = $this->normaliseMedicament($item, $index);
         }
 
-        if (empty($medicines) && $profil?->prend_medicament && !empty($profil?->nom_medicament)) {
-            $medicines[] = $this->creerMedicamentSimple($profil->nom_medicament);
-        }
-
         return array_filter($medicines);
     }
 
@@ -86,18 +82,6 @@ class HealthDataService
             'freq' => $frequencyCount > 0 && $frequencyUnit ? "$frequencyCount fois / $frequencyUnit" : 'Non precise',
             'doses_per_day' => max(1, min($dosesPerDay, 12)),
             'note' => trim((string) ($item['duration'] ?? '')) ?: ($type ? ucfirst($type) : ''),
-        ];
-    }
-
-    private function creerMedicamentSimple(string $nom): array
-    {
-        return [
-            'id' => $this->genererIdMedicament($nom, 1),
-            'name' => trim($nom),
-            'dose' => 'Dose non precisee',
-            'freq' => 'Non precise',
-            'doses_per_day' => 1,
-            'note' => '',
         ];
     }
 

@@ -19,15 +19,10 @@ return new class extends Migration
             $table->string('groupe_sanguin');
 
             // Objectifs & antécédents
-            $table->string('objectif')->nullable();
             $table->json('objectifs')->nullable();
             $table->json('allergies')->nullable();
             $table->json('maladies_chroniques')->nullable();
             $table->json('traitements')->nullable();
-
-            // Médicaments
-            $table->boolean('prend_medicament')->default(false);
-            $table->string('nom_medicament')->nullable();
 
             // Style de vie
             $table->boolean('fumeur')->default(false);
