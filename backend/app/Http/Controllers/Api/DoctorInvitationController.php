@@ -19,6 +19,61 @@ class DoctorInvitationController extends Controller
 {
     public function __construct(private readonly HealthDataService $serviceDonneesSante) {}
 
+    // Créer une invitation pour un médecin qui veut s'inscrire
+    public function createInvitation(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'doctor_email' => ['required', 'email', 'max:255'],
+            ]);
+
+            $doctorEmail = strtolower(trim($validated['doctor_email']));
+
+            // Vérifier si une invitation existe déjà pour cet email
+            $existing = DoctorInvitation::whereRaw('LOWER(doctor_email) = ?', [$doctorEmail])->first();
+
+            if ($existing) {
+                return response()->json([
+                    'message' => 'Une invitation existe deja pour cet email.',
+                    'data'    => [
+                        'id'            => $existing->id,
+                        'doctor_email'  => $existing->doctor_email,
+                        'status'        => $existing->status,
+                        'created_at'    => $existing->created_at?->toISOString(),
+                    ],
+                ], 200);
+            }
+
+            // Créer une nouvelle invitation pour un médecin sans patient (phase d'inscription)
+            $invitation = DoctorInvitation::create([
+                'patient_user_id' => null,
+                'doctor_user_id'  => null,
+                'doctor_email'    => $doctorEmail,
+                'status'          => 'pending',
+                'token'           => \Illuminate\Support\Str::uuid(),
+            ]);
+
+            return response()->json([
+                'message' => 'Invitation créee avec succes.',
+                'data'    => [
+                    'id'            => $invitation->id,
+                    'doctor_email'  => $invitation->doctor_email,
+                    'status'        => $invitation->status,
+                    'created_at'    => $invitation->created_at?->toISOString(),
+                ],
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation échouée.',
+                'errors'  => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Doctor invitation error: ' . $e->getMessage());
+            return response()->json(['message' => 'Erreur lors de la création de l\'invitation.'], 500);
+        }
+    }
+
     // Lister toutes les invitations médicales
     public function index(Request $request): JsonResponse
     {

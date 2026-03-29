@@ -69,6 +69,11 @@ class UtilisateurAdminController extends Controller
     {
         $this->verifierAccesAdministrateur($request);
 
+        // Vérification de sécurité - s'assurer que l'utilisateur existe
+        if (!$user || !$user->id) {
+            abort(404, 'Utilisateur non trouvé.');
+        }
+
         abort_if($request->user()?->id === $user->id, 422, 'Vous ne pouvez pas supprimer votre propre compte.');
 
         $user->tokens()->delete();

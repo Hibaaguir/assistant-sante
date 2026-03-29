@@ -16,6 +16,13 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
+| Routes publiques (sans Sanctum)
+|--------------------------------------------------------------------------
+*/
+Route::post('/doctor-invitations/create', [DoctorInvitationController::class, 'createInvitation']);
+
+/*
+|--------------------------------------------------------------------------
 | Authentification (publique)
 |--------------------------------------------------------------------------
 */

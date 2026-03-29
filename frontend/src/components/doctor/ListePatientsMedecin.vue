@@ -1,185 +1,302 @@
 <template>
-  <div>
+    <div>
+        <!-- Statistiques -->
+        <section class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <article
+                v-for="card in cartesStatistiques"
+                :key="card.key"
+                class="rounded-[18px] border bg-white px-5 py-6 shadow-[0_1px_3px_rgba(15,23,42,0.05)]"
+                :class="card.borderClass"
+            >
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-[15px] font-medium text-[#455572]">
+                            {{ card.label }}
+                        </p>
+                        <p
+                            class="mt-4 text-[18px] font-semibold leading-none"
+                            :class="card.valueClass"
+                        >
+                            {{ card.value }}
+                        </p>
+                    </div>
+                    <div
+                        class="grid place-items-center h-12 w-12 shrink-0 rounded-[15px]"
+                        :class="card.iconWrapClass"
+                    >
+                        <component
+                            :is="card.icon"
+                            class="size-6"
+                            :class="card.iconClass"
+                        />
+                    </div>
+                </div>
+            </article>
+        </section>
 
-    <!-- Statistiques -->
-    <section class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <article
-        v-for="card in cartesStatistiques"
-        :key="card.key"
-        class="rounded-[18px] border bg-white px-5 py-6 shadow-[0_1px_3px_rgba(15,23,42,0.05)]"
-        :class="card.borderClass"
-      >
-        <div class="flex items-center justify-between gap-4">
-          <div>
-            <p class="text-[15px] font-medium text-[#455572]">{{ card.label }}</p>
-            <p class="mt-4 text-[18px] font-semibold leading-none" :class="card.valueClass">{{ card.value }}</p>
-          </div>
-          <div class="grid place-items-center h-12 w-12 shrink-0 rounded-[15px]" :class="card.iconWrapClass">
-            <component :is="card.icon" class="size-6" :class="card.iconClass" />
-          </div>
-        </div>
-      </article>
-    </section>
+        <!-- Recherche & filtres -->
+        <section
+            class="mt-8 rounded-[18px] border border-[#d4d9e1] bg-white p-4 shadow-[0_1px_4px_rgba(15,23,42,0.05)] sm:p-6"
+        >
+            <div class="flex flex-col gap-4 xl:flex-row xl:items-center">
+                <label class="relative block xl:flex-1">
+                    <IconeRecherche
+                        class="pointer-events-none absolute left-5 top-1/2 size-5 -translate-y-1/2 text-[#9aa5b7]"
+                    />
+                    <input
+                        v-model="search"
+                        type="text"
+                        placeholder="Rechercher un patient..."
+                        class="h-[50px] w-full rounded-[16px] border border-[#d1d7e1] bg-[#fdfdfd] pl-13 pr-4 text-[15px] text-[#1a2640] outline-none placeholder:text-[#96a2b4]"
+                    />
+                </label>
 
-    <!-- Recherche & filtres -->
-    <section class="mt-8 rounded-[18px] border border-[#d4d9e1] bg-white p-4 shadow-[0_1px_4px_rgba(15,23,42,0.05)] sm:p-6">
-      <div class="flex flex-col gap-4 xl:flex-row xl:items-center">
-        <label class="relative block xl:flex-1">
-          <IconeRecherche class="pointer-events-none absolute left-5 top-1/2 size-5 -translate-y-1/2 text-[#9aa5b7]" />
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Rechercher un patient..."
-            class="h-[50px] w-full rounded-[16px] border border-[#d1d7e1] bg-[#fdfdfd] pl-13 pr-4 text-[15px] text-[#1a2640] outline-none placeholder:text-[#96a2b4]"
-          />
-        </label>
-
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:w-auto">
-          <button
-            v-for="tab in PATIENT_TABS"
-            :key="tab.key"
-            type="button"
-            class="h-[50px] rounded-[15px] px-5 text-[15px] font-semibold transition"
-            :class="ongletActif === tab.key ? tab.activeClass : 'bg-[#f1f2f4] text-[#243657]'"
-            @click="ongletActif = tab.key"
-          >
-            {{ tab.label }}
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Liste patients -->
-    <section class="mt-6 space-y-4">
-      <article
-        v-for="patient in patientsFiltres"
-        :key="patient.id"
-        class="cursor-pointer rounded-[18px] border border-[#d4d9e1] bg-white px-6 py-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)] transition hover:border-[#c7d5f5] hover:shadow-[0_8px_18px_rgba(15,23,42,0.08)]"
-        @click="$emit('open-patient', patient)"
-      >
-        <div class="flex items-start gap-4">
-          <!-- Avatar -->
-          <div
-            class="grid place-items-center h-[58px] w-[58px] shrink-0 rounded-full text-[18px] font-bold text-white"
-            :style="{ backgroundColor: patient.avatarColor }"
-          >
-            {{ patient.initials }}
-          </div>
-
-          <div class="min-w-0 flex-1">
-            <!-- Nom + statut -->
-            <div class="flex items-center gap-3">
-              <h3 class="text-[20px] font-bold text-[#031a46]">{{ patient.name }}</h3>
-              <span class="h-3 w-3 rounded-full shrink-0" :style="{ backgroundColor: patient.dotColor }" />
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:w-auto">
+                    <button
+                        v-for="tab in PATIENT_TABS"
+                        :key="tab.key"
+                        type="button"
+                        class="h-[50px] rounded-[15px] px-5 text-[15px] font-semibold transition"
+                        :class="
+                            ongletActif === tab.key
+                                ? tab.activeClass
+                                : 'bg-[#f1f2f4] text-[#243657]'
+                        "
+                        @click="ongletActif = tab.key"
+                    >
+                        {{ tab.label }}
+                    </button>
+                </div>
             </div>
+        </section>
 
-            <!-- Infos rapides -->
-            <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[14px] text-[#3f4d66]">
-              <span>{{ patient.age }} ans</span>
-              <span class="text-[#9aa5b7]">•</span>
-              <span class="inline-flex items-center gap-1.5">
-                <IconeHorloge class="size-4" />{{ patient.lastSeen }}
-              </span>
-              <span class="text-[#9aa5b7]">•</span>
-              <span>RDV : {{ patient.nextVisit }}</span>
-            </div>
+        <!-- Liste patients -->
+        <section class="mt-6 space-y-4">
+            <article
+                v-for="patient in patientsFiltres"
+                :key="patient.id"
+                class="cursor-pointer rounded-[18px] border border-[#d4d9e1] bg-white px-6 py-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)] transition hover:border-[#c7d5f5] hover:shadow-[0_8px_18px_rgba(15,23,42,0.08)]"
+                @click="$emit('open-patient', patient)"
+            >
+                <div class="flex items-start gap-4">
+                    <!-- Avatar -->
+                    <div
+                        class="grid place-items-center h-[58px] w-[58px] shrink-0 rounded-full text-[18px] font-bold text-white"
+                        :style="{ backgroundColor: patient.avatarColor }"
+                    >
+                        {{ patient.initials }}
+                    </div>
 
-            <!-- Métriques vitales -->
-            <div class="mt-4 flex flex-wrap gap-3">
-              <VitalBadge :icon="IconeCoeur" iconClass="text-[#ff2143]" border="border-[#f4bcc3]" bg="bg-[#fff5f6]">
-                {{ patient.heartRate }}
-              </VitalBadge>
-              <VitalBadge :icon="IconeOnde" iconClass="text-[#1454ff]" border="border-[#aac8ff]" bg="bg-[#eff6ff]">
-                {{ patient.bloodPressure }}
-              </VitalBadge>
-              <VitalBadge v-if="patient.glucose" :icon="IconeGoutte" iconClass="text-[#ff3b30]" border="border-[#f4bcc3]" bg="bg-[#fff5f6]">
-                {{ patient.glucose }}
-              </VitalBadge>
-            </div>
+                    <div class="min-w-0 flex-1">
+                        <!-- Nom + statut -->
+                        <div class="flex items-center gap-3">
+                            <h3
+                                class="text-[24px] font-extrabold text-slate-900"
+                            >
+                                {{ patient.name }}
+                            </h3>
+                            <span
+                                class="h-3 w-3 rounded-full shrink-0"
+                                :style="{ backgroundColor: patient.dotColor }"
+                            />
+                        </div>
 
-            <!-- Tags -->
-            <div v-if="patient.tags?.length" class="mt-4 flex flex-wrap gap-2">
-              <span
-                v-for="tag in patient.tags"
-                :key="tag"
-                class="inline-flex h-[26px] items-center rounded-full bg-[#f0f1f4] px-3 text-[14px] font-medium text-[#495972]"
-              >{{ tag }}</span>
-            </div>
-          </div>
-        </div>
-      </article>
+                        <!-- Infos rapides -->
+                        <div
+                            class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[14px] text-[#3f4d66]"
+                        >
+                            <span>{{ patient.age }} ans</span>
+                            <span class="text-[#9aa5b7]">•</span>
+                            <span class="inline-flex items-center gap-1.5">
+                                <IconeHorloge class="size-4" />{{
+                                    patient.lastSeen
+                                }}
+                            </span>
+                            <span class="text-[#9aa5b7]">•</span>
+                            <span>RDV : {{ patient.nextVisit }}</span>
+                        </div>
 
-      <p v-if="!patientsFiltres.length" class="rounded-[16px] border border-[#d4d9e1] bg-white px-5 py-5 text-[15px] text-[#5a6881]">
-        Aucun patient trouvé.
-      </p>
-    </section>
+                        <!-- Métriques vitales -->
+                        <div class="mt-4 flex flex-wrap gap-3">
+                            <VitalBadge
+                                :icon="IconeCoeur"
+                                iconClass="text-[#ff2143]"
+                                border="border-[#f4bcc3]"
+                                bg="bg-[#fff5f6]"
+                            >
+                                {{ patient.heartRate }}
+                            </VitalBadge>
+                            <VitalBadge
+                                :icon="IconeOnde"
+                                iconClass="text-[#1454ff]"
+                                border="border-[#aac8ff]"
+                                bg="bg-[#eff6ff]"
+                            >
+                                {{ patient.bloodPressure }}
+                            </VitalBadge>
+                            <VitalBadge
+                                v-if="patient.glucose"
+                                :icon="IconeGoutte"
+                                iconClass="text-[#ff3b30]"
+                                border="border-[#f4bcc3]"
+                                bg="bg-[#fff5f6]"
+                            >
+                                {{ patient.glucose }}
+                            </VitalBadge>
+                        </div>
 
-  </div>
+                        <!-- Tags -->
+                        <div
+                            v-if="patient.tags?.length"
+                            class="mt-4 flex flex-wrap gap-2"
+                        >
+                            <span
+                                v-for="tag in patient.tags"
+                                :key="tag"
+                                class="inline-flex h-[26px] items-center rounded-full bg-[#f0f1f4] px-3 text-[14px] font-medium text-[#495972]"
+                                >{{ tag }}</span
+                            >
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <p
+                v-if="!patientsFiltres.length"
+                class="rounded-[16px] border border-[#d4d9e1] bg-white px-5 py-5 text-[15px] text-[#5a6881]"
+            >
+                Aucun patient trouvé.
+            </p>
+        </section>
+    </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref } from "vue";
 import {
-  IconeTriangleAlerte, IconeHorloge, IconeGoutte,
-  IconeCoeur, IconeCoeurPlein, IconePouls,
-  IconeRecherche, IconeContourUtilisateur, IconeOnde
-} from '@/components/doctor/IconesMedecin.js'
+    IconeTriangleAlerte,
+    IconeHorloge,
+    IconeGoutte,
+    IconeCoeur,
+    IconeCoeurPlein,
+    IconePouls,
+    IconeRecherche,
+    IconeContourUtilisateur,
+    IconeOnde,
+} from "@/components/doctor/IconesMedecin.js";
 
 // ── Micro-composant badge vital ──────────────────────────────────────────────
 const VitalBadge = {
-  props: ['icon', 'iconClass', 'border', 'bg'],
-  template: `
+    props: ["icon", "iconClass", "border", "bg"],
+    template: `
     <span class="inline-flex h-[34px] items-center gap-2 rounded-[10px] border px-3 text-[14px] font-semibold text-[#102241]"
           :class="[border, bg]">
       <component :is="icon" class="size-4" :class="iconClass" />
       <slot />
     </span>
-  `
-}
+  `,
+};
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 const PATIENT_TABS = [
-  { key: 'all',      label: 'Tous',         activeClass: 'bg-[#1454ff] text-white shadow-[0_6px_16px_rgba(20,84,255,0.25)]'  },
-  { key: 'critical', label: 'Critiques',    activeClass: 'bg-[#f80000] text-white shadow-[0_6px_16px_rgba(248,0,0,0.18)]'   },
-  { key: 'watch',    label: 'Surveillance', activeClass: 'bg-[#eb7b00] text-white shadow-[0_6px_16px_rgba(235,123,0,0.2)]'  },
-  { key: 'stable',   label: 'Stables',      activeClass: 'bg-[#08b33b] text-white shadow-[0_6px_16px_rgba(8,179,59,0.2)]'   }
-]
+    {
+        key: "all",
+        label: "Tous",
+        activeClass:
+            "bg-[#1454ff] text-white shadow-[0_6px_16px_rgba(20,84,255,0.25)]",
+    },
+    {
+        key: "critical",
+        label: "Critiques",
+        activeClass:
+            "bg-[#f80000] text-white shadow-[0_6px_16px_rgba(248,0,0,0.18)]",
+    },
+    {
+        key: "watch",
+        label: "Surveillance",
+        activeClass:
+            "bg-[#eb7b00] text-white shadow-[0_6px_16px_rgba(235,123,0,0.2)]",
+    },
+    {
+        key: "stable",
+        label: "Stables",
+        activeClass:
+            "bg-[#08b33b] text-white shadow-[0_6px_16px_rgba(8,179,59,0.2)]",
+    },
+];
 
 const STAT_CONFIG = [
-  { key: 'total',    label: 'Total patients', valueClass: 'text-[#031a46]', borderClass: 'border-[#d7dce3]', icon: IconeContourUtilisateur, iconWrapClass: 'bg-[#dbe9ff]', iconClass: 'text-[#1454ff]' },
-  { key: 'critical', label: 'Critiques',      valueClass: 'text-[#ff1f2d]', borderClass: 'border-[#f3b8bb]', icon: IconeTriangleAlerte,     iconWrapClass: 'bg-[#fee3e5]', iconClass: 'text-[#ff1f2d]' },
-  { key: 'watch',    label: 'Surveillance',   valueClass: 'text-[#ef7a00]', borderClass: 'border-[#f0cb58]', icon: IconePouls,              iconWrapClass: 'bg-[#fff0c8]', iconClass: 'text-[#ef7a00]' },
-  { key: 'stable',   label: 'Stables',        valueClass: 'text-[#07b33f]', borderClass: 'border-[#b5e6c6]', icon: IconeCoeurPlein,         iconWrapClass: 'bg-[#d2f3de]', iconClass: 'text-[#07b33f]' }
-]
+    {
+        key: "total",
+        label: "Total patients",
+        valueClass: "text-[#031a46]",
+        borderClass: "border-[#d7dce3]",
+        icon: IconeContourUtilisateur,
+        iconWrapClass: "bg-[#dbe9ff]",
+        iconClass: "text-[#1454ff]",
+    },
+    {
+        key: "critical",
+        label: "Critiques",
+        valueClass: "text-[#ff1f2d]",
+        borderClass: "border-[#f3b8bb]",
+        icon: IconeTriangleAlerte,
+        iconWrapClass: "bg-[#fee3e5]",
+        iconClass: "text-[#ff1f2d]",
+    },
+    {
+        key: "watch",
+        label: "Surveillance",
+        valueClass: "text-[#ef7a00]",
+        borderClass: "border-[#f0cb58]",
+        icon: IconePouls,
+        iconWrapClass: "bg-[#fff0c8]",
+        iconClass: "text-[#ef7a00]",
+    },
+    {
+        key: "stable",
+        label: "Stables",
+        valueClass: "text-[#07b33f]",
+        borderClass: "border-[#b5e6c6]",
+        icon: IconeCoeurPlein,
+        iconWrapClass: "bg-[#d2f3de]",
+        iconClass: "text-[#07b33f]",
+    },
+];
 
 // ── Props / emits ─────────────────────────────────────────────────────────────
 const props = defineProps({
-  patients: { type: Array, default: () => [] }
-})
-defineEmits(['open-patient'])
+    patients: { type: Array, default: () => [] },
+});
+defineEmits(["open-patient"]);
 
 // ── État local ────────────────────────────────────────────────────────────────
-const search = ref('')
-const ongletActif = ref('all')
+const search = ref("");
+const ongletActif = ref("all");
 
 // ── Computed ──────────────────────────────────────────────────────────────────
 const cartesStatistiques = computed(() => {
-  const counts = PATIENT_TABS.reduce((acc, tab) => {
-    acc[tab.key] = tab.key === 'all'
-      ? props.patients.length
-      : props.patients.filter(p => p.status === tab.key).length
-    return acc
-  }, {})
+    const counts = PATIENT_TABS.reduce((acc, tab) => {
+        acc[tab.key] =
+            tab.key === "all"
+                ? props.patients.length
+                : props.patients.filter((p) => p.status === tab.key).length;
+        return acc;
+    }, {});
 
-  return STAT_CONFIG.map(cfg => ({ ...cfg, value: counts[cfg.key] }))
-})
+    return STAT_CONFIG.map((cfg) => ({ ...cfg, value: counts[cfg.key] }));
+});
 
 const patientsFiltres = computed(() => {
-  const term = search.value.trim().toLowerCase()
-  return props.patients.filter(p => {
-    const matchTab    = ongletActif.value === 'all' || p.status === ongletActif.value
-    const matchSearch = !term || p.name.toLowerCase().includes(term) || p.tags?.some(t => t.toLowerCase().includes(term))
-    return matchTab && matchSearch
-  })
-})
+    const term = search.value.trim().toLowerCase();
+    return props.patients.filter((p) => {
+        const matchTab =
+            ongletActif.value === "all" || p.status === ongletActif.value;
+        const matchSearch =
+            !term ||
+            p.name.toLowerCase().includes(term) ||
+            p.tags?.some((t) => t.toLowerCase().includes(term));
+        return matchTab && matchSearch;
+    });
+});
 </script>

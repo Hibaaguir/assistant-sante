@@ -70,6 +70,7 @@ class ProfilSanteController extends Controller
                 'nullable',
                 'email',
                 'required_if:medecin_peut_consulter,1',
+                'email:rfc,dns',
                 function (string $attribute, mixed $value, \Closure $fail) {
                     $currentEmail = strtolower((string) Auth::user()?->email);
                     if (strtolower((string) $value) === $currentEmail) {
@@ -306,18 +307,29 @@ class ProfilSanteController extends Controller
             ]);
         }
 
-        // Envoyer l'email d'invitation seulement si l'email a changé et le médecin n'existe pas
-        if (! $doctorEmailChanged || $doctor) {
-            return;
-        }
+        // Envoyer l'email d'invitation seulement si:
+        // 1. L'email a changé OU c'est la première fois
+        // 2. Le médecin n'existe pas (pas de compte doctor existant)
+        $shouldSendEmail = $doctorEmailChanged && ! $doctor;
 
-        try {
-            Mail::to($doctorEmail)->send(new DoctorInvitationMail(
-                $patient,
-                $doctorEmail,
-            ));
-        } catch (\Throwable $e) {
-            Log::warning('Doctor invitation email failed: '.$e->getMessage());
+        if ($shouldSendEmail) {
+            try {
+                Mail::to($doctorEmail)->queue(new DoctorInvitationMail(
+                    $patient,
+                    $doctorEmail,
+                ));
+                Log::info('Doctor invitation email queued successfully', [
+                    'doctor_email' => $doctorEmail,
+                    'patient_id' => $patient->id,
+                ]);
+            } catch (\Throwable $e) {
+                Log::error('Doctor invitation email failed', [
+                    'doctor_email' => $doctorEmail,
+                    'patient_id' => $patient->id,
+                    'error' => $e->getMessage(),
+                    'exception' => get_class($e),
+                ]);
+            }
         }
     }
 }

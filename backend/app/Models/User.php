@@ -26,6 +26,7 @@ class User extends Authenticatable
         'date_of_birth',
         'role',
         'specialite',
+        'statut_admin',
         'profile_photo',
     ];
 

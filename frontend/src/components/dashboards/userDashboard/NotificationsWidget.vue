@@ -4,7 +4,7 @@
 -->
 <template>
     <section
-        v-if="loading || error || unread.length"
+        v-if="true"
         class="mt-5 rounded-2xl border border-slate-200 bg-white shadow-sm"
     >
         <div v-if="loading" class="px-4 py-3 text-sm text-slate-600">
@@ -18,18 +18,18 @@
             {{ error }}
         </div>
 
-        <template v-else>
+        <template v-else-if="unread.length">
             <!-- En-tête -->
             <div
                 class="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-4"
             >
                 <div>
                     <h2
-                        class="text-[22px] font-semibold leading-none text-slate-900"
+                        class="text-[24px] font-bold leading-none text-slate-900"
                     >
                         Notifications traitements
                     </h2>
-                    <p class="mt-1 text-sm text-slate-600">
+                    <p class="mt-1.5 text-base font-medium text-slate-600">
                         Rappels journaliers et oublis détectés
                     </p>
                 </div>
@@ -48,7 +48,7 @@
                 <li
                     v-for="n in unread"
                     :key="n.id"
-                    class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2"
+                    class="rounded-lg border border-purple-200 bg-purple-50 px-3 py-2"
                 >
                     <div class="flex items-start justify-between gap-2">
                         <div class="flex-1">
@@ -64,7 +64,7 @@
                         </div>
                         <button
                             type="button"
-                            class="mt-1 rounded-md border border-blue-200 bg-white px-2 py-1 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+                            class="mt-1 rounded-md border border-purple-200 bg-white px-2 py-1 text-xs font-semibold text-purple-700 transition hover:bg-purple-100"
                             @click="markRead(n.id)"
                         >
                             ✓
@@ -72,6 +72,18 @@
                     </div>
                 </li>
             </ul>
+        </template>
+
+        <template v-else>
+            <!-- État vide -->
+            <div class="px-4 py-8 text-center">
+                <p class="text-sm font-semibold text-slate-800">
+                    Aucune notification pour le moment
+                </p>
+                <p class="mt-1 text-xs text-slate-500">
+                    Toutes vos notifications ont été lues
+                </p>
+            </div>
         </template>
     </section>
 </template>

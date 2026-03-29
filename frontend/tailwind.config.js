@@ -1,11 +1,22 @@
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.vue",
-    "./src/**/*.js",
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
+    content: ["./index.html", "./src/**/*.vue", "./src/**/*.js"],
+    theme: {
+        extend: {
+            colors: {
+                brand: {
+                    50: "#fff7f7",
+                    100: "#ffe9ed",
+                    200: "#ffd9e0",
+                    300: "#ffc5d4",
+                    400: "#ffacc2",
+                    500: "#ff8aad",
+                    600: "#ff6895",
+                    700: "#ff4670",
+                    800: "#ff1f57",
+                    900: "#c2185b",
+                },
+            },
+        },
+    },
+    plugins: [],
 };
