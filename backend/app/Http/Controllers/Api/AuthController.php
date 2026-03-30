@@ -26,22 +26,31 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         try {
+
             $validated = $request->validate([
-                'name'          => ['required', 'string', 'min:3', 'max:50'],
-                'email'         => ['required', 'email', 'max:255', Rule::unique('users', 'email')->where(fn ($q) => $q->where('role', 'user'))],
-                'date_of_birth' => ['required', 'date_format:Y-m-d', $this->regleDate()],
+                'email'         => ['required', 'email', 'max:255', 'unique:comptes,email'],
                 'password'      => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+                'date_naissance'=> ['required', 'date_format:Y-m-d', $this->regleDate()],
+                'profile_photo' => ['nullable', 'string'],
+                'age'           => ['nullable', 'integer', 'min:0'],
             ], $this->messagesDeBase());
 
-            $user = User::create([
-                'name'          => $validated['name'],
-                'email'         => strtolower(trim($validated['email'])),
-                'date_of_birth' => $validated['date_of_birth'],
-                'password'      => Hash::make($validated['password']),
-                'role'          => 'user',
+            // Création du compte
+            $compte = \App\Models\Compte::create([
+                'email'    => strtolower(trim($validated['email'])),
+                'password' => Hash::make($validated['password']),
+                'statut'   => 'actif',
             ]);
 
-            return $this->reponseAuthentifiee($user, $user->createToken('auth_token')->plainTextToken, false, '/profil-sante', false, 201, 'Compte cree avec succes');
+            // Création de l'utilisateur lié au compte
+            $user = User::create([
+                'compte_id'      => $compte->id,
+                'date_naissance' => $validated['date_naissance'],
+                'profile_photo'  => $validated['profile_photo'] ?? null,
+                'age'            => $validated['age'] ?? null,
+            ]);
+
+            return $this->reponseAuthentifiee($user, $compte->createToken('auth_token')->plainTextToken, false, '/profil-sante', false, 201, 'Compte cree avec succes');
 
         } catch (ValidationException $e) {
             return $this->erreurValidation($e, 'Veuillez corriger les erreurs du formulaire.');
@@ -107,32 +116,26 @@ class AuthController extends Controller
             $credentials = $request->validate([
                 'email'    => ['required', 'email'],
                 'password' => ['required', 'string'],
-                'role'     => ['nullable', Rule::in(['user', 'medecin', 'admin', 'administrateur'])],
             ]);
 
             $email = strtolower(trim($credentials['email']));
-            $role  = $credentials['role'] ?? null;
-
-            $user = $role !== null
-                ? $this->findUserForLogin($email, $credentials['password'], $role)
-                : $this->findUserWithoutRole($email, $credentials['password']);
-
-            // Vérifier que l'utilisateur existe et le mot de passe est correct
-            if (! $user) {
+            $compte = \App\Models\Compte::where('email', $email)->first();
+            if (! $compte || !\Illuminate\Support\Facades\Hash::check($credentials['password'], $compte->password)) {
                 return response()->json(['message' => 'Email ou mot de passe invalide.'], 401);
             }
 
-            $user->tokens()->delete();
+            $user = $compte->user;
+            if (! $user) {
+                return response()->json(['message' => 'Aucun utilisateur lié à ce compte.'], 404);
+            }
 
-            $isDoctor    = $user->role === 'medecin';
-            $isAdmin     = in_array($user->role, ['admin', 'administrateur'], true);
-            $hasProfil   = $user->profilSante()->exists();
-            // Link pending doctor invitations if user is a doctor
-            $hasPending  = $isDoctor && ($this->doctorInvitationLinker->linkForUser($user) || $this->hasPendingDoctorInvitations($user));
-            $redirectTo  = $isAdmin || $isDoctor ? '/main/dashboard' : ($hasProfil ? '/main' : '/profil-sante');
-            $tokenName   = $isDoctor ? 'doctor_auth_token' : 'auth_token';
+            // Suppression des anciens tokens si besoin (selon votre logique de sécurité)
+            // $compte->tokens()->delete();
 
-            return $this->reponseAuthentifiee($user, $user->createToken($tokenName)->plainTextToken, $hasProfil, $redirectTo, $hasPending, 200, 'Connexion reussie.');
+            $hasProfil = $user->profilSante()->exists();
+            $redirectTo = $hasProfil ? '/main' : '/profil-sante';
+
+            return $this->reponseAuthentifiee($user, $compte->createToken('auth_token')->plainTextToken, $hasProfil, $redirectTo, false, 200, 'Connexion reussie.');
 
         } catch (ValidationException $e) {
             return $this->erreurValidation($e, 'Veuillez corriger les erreurs du formulaire.');
@@ -153,22 +156,23 @@ class AuthController extends Controller
     // Récupérer l'utilisateur connecté
     public function getCurrentUser(Request $request): JsonResponse
     {
-        /** @var User $user */
-        $user      = $request->user();
-        $isDoctor  = $user->role === 'medecin';
-        $isAdmin   = in_array($user->role, ['admin', 'administrateur'], true);
-        $hasProfil = $user->profilSante()->exists();
-
-        // Link pending doctor invitations if user is a doctor
-        if ($isDoctor) {
-            $this->doctorInvitationLinker->linkForUser($user);
-        }
+        // Récupérer le compte via le token
+        $compte = $request->user();
+        $user = $compte->user;
+        $hasProfil = $user && $user->profilSante()->exists();
 
         return response()->json([
-            'user'                          => $this->donneesUtilisateur($user),
-            'has_profil_sante'              => $hasProfil,
-            'has_pending_doctor_invitations' => $isDoctor && $this->hasPendingDoctorInvitations($user),
-            'redirect_to'                   => $isAdmin || $isDoctor ? '/main/dashboard' : ($hasProfil ? '/main' : '/profil-sante'),
+            'user'         => $user ? [
+                'id'             => $user->id,
+                'compte_id'      => $user->compte_id,
+                'date_naissance' => $user->date_naissance,
+                'profile_photo'  => $user->profile_photo,
+                'age'            => $user->age,
+                'email'          => $compte->email,
+                'statut'         => $compte->statut,
+            ] : null,
+            'has_profil_sante' => $hasProfil,
+            'redirect_to'      => $hasProfil ? '/main' : '/profil-sante',
         ]);
     }
 
