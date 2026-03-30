@@ -9,10 +9,11 @@ use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property int $id
- * @property string $name
- * @property string $email
- * @property string $role
- * @property \Illuminate\Support\Carbon|null $date_of_birth
+ * @property int $compte_id
+ * @property \Illuminate\Support\Carbon|null $date_naissance
+ * @property string|null $profile_photo
+ * @property int|null $age
+ * @property-read \App\Models\Compte|null $compte
  * @property-read \App\Models\ProfilSante|null $profilSante
  */
 class User extends Authenticatable
@@ -20,28 +21,24 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens;
 
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'date_of_birth',
-        'role',
-        'specialite',
-        'statut_admin',
+        'compte_id',
+        'date_naissance',
         'profile_photo',
+        'age',
     ];
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    // Aucun champ caché nécessaire ici
 
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'date_of_birth' => 'date',
-            'password' => 'hashed',
+            'date_naissance' => 'date',
+            'age' => 'integer',
         ];
+    }
+    public function compte()
+    {
+        return $this->belongsTo(Compte::class, 'compte_id');
     }
 //relation des table 
     public function profilSante()
