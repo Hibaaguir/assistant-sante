@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\DoctorInvitation;
+use App\Models\InvitationMedecin;
 use App\Models\Utilisateur;
 use App\Models\Compte;
 use App\Services\DoctorInvitationLinker;
@@ -238,13 +238,13 @@ class AuthController extends Controller
     // Vérifier si utilisateur a invitations médecin en attente
     private function hasPendingDoctorInvitations(Utilisateur $user): bool
     {
-        return DoctorInvitation::where('id_medecin_utilisateur', $user->id)->where('status', 'pending')->exists();
+        return InvitationMedecin::where('id_medecin_utilisateur', $user->id)->where('status', 'pending')->exists();
     }
 
     // Vérifier si invitation en attente existe pour email
     private function hasInvitationForEmail(string $email): bool
     {
-        return DoctorInvitation::whereRaw('LOWER(doctor_email) = ?', [strtolower($email)])->where('status', 'pending')->exists();
+        return InvitationMedecin::whereRaw('LOWER(doctor_email) = ?', [strtolower($email)])->where('status', 'pending')->exists();
     }
 
     // Gérer les erreurs de base de données lors de l'inscription

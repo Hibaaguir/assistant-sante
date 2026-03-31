@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\DoctorInvitation;
-use App\Models\HealthLabResult;
-use App\Models\HealthTreatmentCheck;
-use App\Models\HealthVital;
+use App\Models\InvitationMedecin;
+use App\Models\ResultatAnalyse;
+use App\Models\SuiviTraitement;
+use App\Models\SignesVitaux;
 use App\Models\Utilisateur;
 use App\Services\HealthDataService;
 use Carbon\Carbon;
@@ -30,7 +30,7 @@ class DoctorInvitationController extends Controller
             $doctorEmail = strtolower(trim($validated['doctor_email']));
 
             // Vérifier si une invitation existe déjà pour cet email
-            $existing = DoctorInvitation::whereRaw('LOWER(doctor_email) = ?', [$doctorEmail])->first();
+            $existing = InvitationMedecin::whereRaw('LOWER(doctor_email) = ?', [$doctorEmail])->first();
 
             if ($existing) {
                 return response()->json([
@@ -45,7 +45,7 @@ class DoctorInvitationController extends Controller
             }
 
             // Créer une nouvelle invitation pour un médecin sans patient (phase d'inscription)
-            $invitation = DoctorInvitation::create([
+            $invitation = InvitationMedecin::create([
                 'id_patient_utilisateur' => null,
                 'id_medecin_utilisateur'  => null,
                 'doctor_email'    => $doctorEmail,
@@ -80,26 +80,26 @@ class DoctorInvitationController extends Controller
         $compte = $request->user();
         $utilisateur = $compte->utilisateur;
         
-        $invitations = DoctorInvitation::with($this->withPatient())
+        $invitations = InvitationMedecin::with($this->withPatient())
             ->where('id_medecin_utilisateur', $utilisateur->id)
             ->orderByRaw("case when status = 'pending' then 0 else 1 end")
             ->orderByDesc('id')
             ->get()
-            ->map(fn (DoctorInvitation $inv) => $this->serializeInvitation($inv))
+            ->map(fn (InvitationMedecin $inv) => $this->serializeInvitation($inv))
             ->values();
 
         return response()->json(['message' => 'Invitations recuperees avec succes.', 'data' => $invitations]);
     }
 
     // Accepter une invitation médicale
-    public function accept(Request $request, DoctorInvitation $doctorInvitation): JsonResponse
+    public function accept(Request $request, InvitationMedecin $invitationMedecin): JsonResponse
     {
         // Vérifier que le médecin est propriétaire de l'invitation
-        if ($error = $this->authorizeInvitation($doctorInvitation, $request)) return $error;
+        if ($error = $this->authorizeInvitation($invitationMedecin, $request)) return $error;
 
         // Mettre à jour le statut seulement s'il n'est pas déjà accepté
-        if ($doctorInvitation->status !== 'accepted') {
-            $doctorInvitation->update(['status' => 'accepted', 'accepted_at' => now(), 'rejected_at' => null, 'revoked_at' => null]);
+        if ($invitationMedecin->status !== 'accepted') {
+            $invitationMedecin->update(['status' => 'accepted', 'accepted_at' => now(), 'rejected_at' => null, 'revoked_at' => null]);
         }
 
         // Synchroniser le rôle de l'utilisateur en médecin
@@ -110,21 +110,21 @@ class DoctorInvitationController extends Controller
 
         return response()->json([
             'message' => 'Invitation acceptee.',
-            'data'    => $this->serializeInvitation($doctorInvitation->fresh($this->withPatient())),
+            'data'    => $this->serializeInvitation($invitationMedecin->fresh($this->withPatient())),
         ]);
     }
 
     // Refuser une invitation médicale
-    public function reject(Request $request, DoctorInvitation $doctorInvitation): JsonResponse
+    public function reject(Request $request, InvitationMedecin $invitationMedecin): JsonResponse
     {
         // Vérifier que le médecin est propriétaire de l'invitation
-        if ($error = $this->authorizeInvitation($doctorInvitation, $request)) return $error;
+        if ($error = $this->authorizeInvitation($invitationMedecin, $request)) return $error;
 
-        $doctorInvitation->update(['status' => 'rejected', 'rejected_at' => now()]);
+        $invitationMedecin->update(['status' => 'rejected', 'rejected_at' => now()]);
 
         return response()->json([
             'message' => 'Invitation refusee.',
-            'data'    => $this->serializeInvitation($doctorInvitation->fresh($this->withPatient())),
+            'data'    => $this->serializeInvitation($invitationMedecin->fresh($this->withPatient())),
         ]);
     }
 
@@ -134,18 +134,18 @@ class DoctorInvitationController extends Controller
         $compte = $request->user();
         $utilisateur = $compte->utilisateur;
         
-        $patients = DoctorInvitation::with($this->withPatient())
+        $patients = InvitationMedecin::with($this->withPatient())
             ->where('id_medecin_utilisateur', $utilisateur->id)
             ->where('status', 'accepted')
             ->orderByDesc('accepted_at')
             ->get()
-            ->map(function (DoctorInvitation $invitation) {
+            ->map(function (InvitationMedecin $invitation) {
                 $patient = $invitation->patient;
                 // Filtrer les invitations sans patient valide
                 if (! $patient) return null;
 
                 $latestVitals  = $this->latestVitals($patient->id);
-                $labResults    = HealthLabResult::where('id_utilisateur', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->limit(5)->get();
+                $labResults    = ResultatAnalyse::where('id_utilisateur', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->limit(5)->get();
 
                 return [
                     'invitation_id' => $invitation->id,
@@ -182,10 +182,10 @@ class DoctorInvitationController extends Controller
                 'patient'             => $patient,
                 'profile'             => $patient->profilSante,
                 'latest_vitals'       => $this->latestVitals($patient->id),
-                'vitals'              => HealthVital::where('id_utilisateur', $patient->id)->where('measured_at', '>=', $vitalsStart)->orderByDesc('measured_at')->get(),
-                'lab_results'         => HealthLabResult::where('id_utilisateur', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->get(),
+                'vitals'              => SignesVitaux::where('id_utilisateur', $patient->id)->where('measured_at', '>=', $vitalsStart)->orderByDesc('measured_at')->get(),
+                'lab_results'         => ResultatAnalyse::where('id_utilisateur', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->get(),
                 'treatment_medicines' => $this->serviceDonneesSante->resoudreMedicamentsTraitement($patient->id),
-                'treatment_checks'    => HealthTreatmentCheck::where('id_utilisateur', $patient->id)->where('check_date', '>=', Carbon::today()->subDays(29)->toDateString())->orderBy('check_date')->orderBy('medication_name')->get(),
+                'treatment_checks'    => SuiviTraitement::where('id_utilisateur', $patient->id)->where('check_date', '>=', Carbon::today()->subDays(29)->toDateString())->orderBy('check_date')->orderBy('medication_name')->get(),
                 'general_observation' => [
                     'text'       => $invitation->general_observation,
                     'updated_at' => $invitation->general_observation_updated_at?->toISOString(),
@@ -238,9 +238,9 @@ class DoctorInvitationController extends Controller
     }
 
     // Récupérer les derniers signes vitaux du patient
-    private function latestVitals(int $userId): ?HealthVital
+    private function latestVitals(int $userId): ?SignesVitaux
     {
-        return HealthVital::where('id_utilisateur', $userId)
+        return SignesVitaux::where('id_utilisateur', $userId)
             ->where(fn ($q) => $q->whereNotNull('heart_rate')->orWhereNotNull('systolic_pressure')->orWhereNotNull('diastolic_pressure')->orWhereNotNull('oxygen_saturation'))
             ->orderByDesc('measured_at')
             ->orderByDesc('id')
@@ -248,7 +248,7 @@ class DoctorInvitationController extends Controller
     }
 
     // Sérialiser une invitation médicale
-    private function serializeInvitation(DoctorInvitation $invitation): array
+    private function serializeInvitation(InvitationMedecin $invitation): array
     {
         return [
             'id'           => $invitation->id,
@@ -263,11 +263,11 @@ class DoctorInvitationController extends Controller
     }
 
     // Trouver invitation autorisée pour un patient
-    private function findAuthorizedInvitation(Request $request, Utilisateur $patient): ?DoctorInvitation
+    private function findAuthorizedInvitation(Request $request, Utilisateur $patient): ?InvitationMedecin
     {
         $compte = $request->user();
         $utilisateur = $compte->utilisateur;
-        return DoctorInvitation::where('id_medecin_utilisateur', $utilisateur->id)
+        return InvitationMedecin::where('id_medecin_utilisateur', $utilisateur->id)
             ->where('id_patient_utilisateur', $patient->id)
             ->where('status', 'accepted')
             ->latest('accepted_at')
@@ -276,7 +276,7 @@ class DoctorInvitationController extends Controller
     }
 
     // Construire alertes pour un patient
-    private function buildPatientAlerts(Utilisateur $patient, ?HealthVital $latestVitals, Collection $labResults): array
+    private function buildPatientAlerts(Utilisateur $patient, ?SignesVitaux $latestVitals, Collection $labResults): array
     {
         $alerts = [];
 
@@ -291,7 +291,7 @@ class DoctorInvitationController extends Controller
             ];
         }
 
-        $glucose = $labResults->first(fn (HealthLabResult $r) => str_contains(strtolower((string) $r->analysis_type), 'glucose'));
+        $glucose = $labResults->first(fn (ResultatAnalyse $r) => str_contains(strtolower((string) $r->analysis_type), 'glucose'));
 
         // Détecter une glycémie dangeureusement basse (critique)
         if ($glucose && is_numeric($glucose->value) && $glucose->value < 3.9) {
@@ -308,7 +308,7 @@ class DoctorInvitationController extends Controller
     }
 
     // Vérifier authorization pour une invitation
-    private function authorizeInvitation(DoctorInvitation $invitation, Request $request): ?JsonResponse
+    private function authorizeInvitation(InvitationMedecin $invitation, Request $request): ?JsonResponse
     {
         // Vérifier que l'utilisateur est le propriétaire de l'invitation
         $compte = $request->user();

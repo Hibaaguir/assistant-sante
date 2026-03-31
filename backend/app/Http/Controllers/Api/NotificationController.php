@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\HealthTreatmentCheck;
+use App\Models\SuiviTraitement;
 use App\Models\Utilisateur;
 use App\Notifications\TraitementJournalierNotification;
 use App\Services\HealthDataService;
@@ -129,7 +129,7 @@ class NotificationController extends Controller
     private function construireStatistiquesPourDate(int $idUtilisateur, Carbon $dateCible, array $medicaments): array
     {
         $cleDate = $dateCible->toDateString();
-        $controles = HealthTreatmentCheck::query()
+        $controles = SuiviTraitement::query()
             ->where('id_utilisateur', $idUtilisateur)
             ->whereDate('check_date', $cleDate)
             ->get();
@@ -144,7 +144,7 @@ class NotificationController extends Controller
             $prisesPrevues = max(1, (int) ($medicament['doses_per_day'] ?? 1));
 
             $prisesFaitesPourMedicament = $controles
-                ->filter(function (HealthTreatmentCheck $controle) use ($idMedicament) {
+                ->filter(function (SuiviTraitement $controle) use ($idMedicament) {
                     return str_starts_with((string) $controle->medication_key, $idMedicament.'__dose_') && (bool) $controle->taken;
                 })
                 ->count();

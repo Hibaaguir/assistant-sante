@@ -10,14 +10,14 @@ use Illuminate\Http\Response;
 class RepasController extends Controller
 {
     // Récupérer tous les repas d'une entrée du journal
-    public function index(JournalEntry $entreeJournal)
+    public function index(JournalQuotidien $entreeJournal)
     {
         $repas = $entreeJournal->repas()->get();
         return response()->json(['data' => $repas], Response::HTTP_OK);
     }
 
     // Créer un nouveau repas
-    public function store(Request $request, JournalEntry $entreeJournal)
+    public function store(Request $request, JournalQuotidien $entreeJournal)
     {
         $validated = $request->validate([
             'type_repas' => 'required|in:petit_dejeuner,dejeuner,diner,collation',
@@ -32,13 +32,13 @@ class RepasController extends Controller
     }
 
     // Afficher un repas spécifique
-    public function show(JournalEntry $entreeJournal, Repas $repas)
+    public function show(JournalQuotidien $entreeJournal, Repas $repas)
     {
         return response()->json(['data' => $repas], Response::HTTP_OK);
     }
 
     // Mettre à jour un repas
-    public function update(Request $request, JournalEntry $entreeJournal, Repas $repas)
+    public function update(Request $request, JournalQuotidien $entreeJournal, Repas $repas)
     {
         $validated = $request->validate([
             'type_repas' => 'sometimes|in:petit_dejeuner,dejeuner,diner,collation',
@@ -53,7 +53,7 @@ class RepasController extends Controller
     }
 
     // Supprimer un repas
-    public function destroy(JournalEntry $entreeJournal, Repas $repas)
+    public function destroy(JournalQuotidien $entreeJournal, Repas $repas)
     {
         $repas->delete();
         return response()->json(null, Response::HTTP_NO_CONTENT);

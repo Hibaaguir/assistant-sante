@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\StoreHealthLabResultRequest;
-use App\Http\Requests\Api\StoreHealthVitalRequest;
-use App\Http\Requests\Api\SyncHealthTreatmentChecksRequest;
-use App\Http\Requests\Api\UpdateHealthLabResultRequest;
-use App\Models\DoctorInvitation;
-use App\Models\HealthLabResult;
-use App\Models\HealthTreatmentCheck;
-use App\Models\HealthVital;
+use App\Http\Requests\Api\StoreResultatAnalyseRequest;
+use App\Http\Requests\Api\StoreSignesVitauxRequest;
+use App\Http\Requests\Api\SyncSuiviTraitementRequest;
+use App\Http\Requests\Api\UpdateResultatAnalyseRequest;
+use App\Models\InvitationMedecin;
+use App\Models\ResultatAnalyse;
+use App\Models\SuiviTraitement;
+use App\Models\SignesVitaux;
 use App\Services\HealthDataService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class HealthDataController extends Controller
+class DonneesSanteController extends Controller
 {
     public function __construct(private readonly HealthDataService $serviceDonneesSante) {}
 
@@ -30,13 +30,13 @@ class HealthDataController extends Controller
         $days = max(1, min((int) $request->query( 'days', 7), 30));
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
 
-        $vitals = SigneVital::query()
+        $vitals = SignesVitaux::query()
             ->where('id_utilisateur', $userId)
             ->whereDate('measured_at', '>=', $startDate)
             ->orderBy('measured_at')
             ->get();
 
-        $latestVitals = SigneVital::query()
+        $latestVitals = SignesVitaux::query()
             ->where('id_utilisateur', $userId)
             ->where(function ($query) {
                 $query
@@ -49,14 +49,14 @@ class HealthDataController extends Controller
             ->orderByDesc('id')
             ->first();
 
-        $labResults = HealthLabResult::query()
+        $labResults = ResultatAnalyse::query()
             ->where('id_utilisateur', $userId)
             ->orderByDesc('analysis_date')
             ->orderByDesc('id')
             ->limit(20)
             ->get();
 
-        $treatmentChecks = HealthTreatmentCheck::query()
+        $treatmentChecks = SuiviTraitement::query()
             ->where('id_utilisateur', $userId)
             ->where('check_date', '>=', $startDate)
             ->orderBy('check_date')
@@ -102,7 +102,7 @@ class HealthDataController extends Controller
         $days = max(1, min((int) $request->query('days', 30), 90));
         $startDate = Carbon::today()->subDays($days - 1);
 
-        $rows = SigneVital::query()
+        $rows = SignesVitaux::query()
             ->where('id_utilisateur', $userId)
             ->where('measured_at', '>=', $startDate)
             ->orderByDesc('measured_at')
@@ -115,7 +115,7 @@ class HealthDataController extends Controller
     }
 
     // Enregistrer un nouveau signe vital
-    public function storeVital(StoreHealthVitalRequest $request): JsonResponse
+    public function storeVital(StoreSignesVitauxRequest $request): JsonResponse
     {
         $compte = $request->user();
         $userId = $compte->utilisateur->id;
@@ -123,7 +123,7 @@ class HealthDataController extends Controller
         $measuredAt = isset($payload['measured_at']) ? Carbon::parse($payload['measured_at']) : now();
         $measuredDate = $measuredAt->toDateString();
 
-        $existing = HealthVital::query()
+        $existing = SignesVitaux::query()
             ->where('id_utilisateur', $userId)
             ->whereDate('measured_at', $measuredDate)
             ->orderByDesc('measured_at')
@@ -147,7 +147,7 @@ class HealthDataController extends Controller
             ]);
         }
 
-        $vital = SigneVital::create([
+        $vital = SignesVitaux::create([
             'id_utilisateur' => $userId,
             'heart_rate' => $payload['heart_rate'] ?? null,
             'systolic_pressure' => $payload['systolic_pressure'] ?? null,
@@ -167,7 +167,7 @@ class HealthDataController extends Controller
     {
         $compte = $request->user();
         $userId = $compte->utilisateur->id;
-        $rows = HealthLabResult::query()
+        $rows = ResultatAnalyse::query()
             ->where('id_utilisateur', $userId)
             ->orderByDesc('analysis_date')
             ->orderByDesc('id')
@@ -180,14 +180,14 @@ class HealthDataController extends Controller
     }
 
     // Enregistrer un nouveau résultat de laboratoire
-    public function storeLabResult(StoreHealthLabResultRequest $request): JsonResponse
+    public function storeLabResult(StoreResultatAnalyseRequest $request): JsonResponse
     {
         $compte = $request->user();
         $userId = $compte->utilisateur->id;
         $payload = $request->validated();
         $payload['id_utilisateur'] = $userId;
 
-        $row = HealthLabResult::create($payload);
+        $row = ResultatAnalyse::create($payload);
 
         return response()->json([
             'message' => 'Resultat de laboratoire enregistre avec succes.',
@@ -196,26 +196,26 @@ class HealthDataController extends Controller
     }
 
     // Mettre à jour un résultat de laboratoire
-    public function updateLabResult(UpdateHealthLabResultRequest $request, HealthLabResult $healthLabResult): JsonResponse
+    public function updateLabResult(UpdateResultatAnalyseRequest $request, ResultatAnalyse $resultatAnalyse): JsonResponse
     {
         // Vérifier que l'utilisateur est propriétaire du résultat
-        if ($error = $this->authorizeLabResult($healthLabResult, $request)) return $error;
+        if ($error = $this->authorizeLabResult($resultatAnalyse, $request)) return $error;
 
-        $healthLabResult->update($request->validated());
+        $resultatAnalyse->update($request->validated());
 
         return response()->json([
             'message' => 'Resultat de laboratoire mis a jour avec succes.',
-            'data' => $healthLabResult->fresh(),
+            'data' => $resultatAnalyse->fresh(),
         ]);
     }
 
     // Supprimer un résultat de laboratoire
-    public function destroyLabResult(Request $request, HealthLabResult $healthLabResult): JsonResponse
+    public function destroyLabResult(Request $request, ResultatAnalyse $resultatAnalyse): JsonResponse
     {
         // Vérifier que l'utilisateur est propriétaire du résultat
-        if ($error = $this->authorizeLabResult($healthLabResult, $request)) return $error;
+        if ($error = $this->authorizeLabResult($resultatAnalyse, $request)) return $error;
 
-        $healthLabResult->delete();
+        $resultatAnalyse->delete();
 
         return response()->json([
             'message' => 'Resultat de laboratoire supprime avec succes.',
@@ -230,7 +230,7 @@ class HealthDataController extends Controller
         $days = max(1, min((int) $request->query('days', 14), 90));
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
 
-        $rows = HealthTreatmentCheck::query()
+        $rows = SuiviTraitement::query()
             ->where('id_utilisateur', $userId)
             ->where('check_date', '>=', $startDate)
             ->orderBy('check_date')
@@ -244,13 +244,13 @@ class HealthDataController extends Controller
     }
 
     // Synchroniser les contrôles de traitement
-    public function syncTreatmentChecks(SyncHealthTreatmentChecksRequest $request): JsonResponse
+    public function syncTreatmentChecks(SyncSuiviTraitementRequest $request): JsonResponse
     {
         $compte = $request->user();
         $userId = $compte->utilisateur->id;
 
         foreach ($request->validated('checks') as $check) {
-            HealthTreatmentCheck::updateOrCreate(
+            SuiviTraitement::updateOrCreate(
                 [
                     'id_utilisateur' => $userId,
                     'check_date' => $check['check_date'],
@@ -273,7 +273,7 @@ class HealthDataController extends Controller
     }
 
     // Vérifier l'accès à un résultat de laboratoire
-    private function authorizeLabResult(HealthLabResult $labResult, Request $request): ?JsonResponse
+    private function authorizeLabResult(ResultatAnalyse $labResult, Request $request): ?JsonResponse
     {
         // Vérifier que le résultat appartient à l'utilisateur
         $compte = $request->user();

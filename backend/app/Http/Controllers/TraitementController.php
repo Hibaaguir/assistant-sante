@@ -12,7 +12,7 @@ class TraitementController extends Controller
     // Récupérer tous les traitements d'un profil de santé
     public function index(ProfilSante $profilSante)
     {
-        $traitements = $profilSante->traitements()->with('catalogueArticle')->get();
+        $traitements = $profilSante->traitements()->with('catalogueTraitement')->get();
         return response()->json(['data' => $traitements], Response::HTTP_OK);
     }
 
@@ -20,7 +20,7 @@ class TraitementController extends Controller
     public function store(Request $request, ProfilSante $profilSante)
     {
         $validated = $request->validate([
-            'article_catalogue_id' => 'required|exists:treatment_catalog_items,id',
+            'catalogue_traitement_id' => 'required|exists:catalogue_traitements,id',
             'dose' => 'nullable|string|max:120',
             'frequence' => 'nullable|string|max:120',
             'nombre_prises' => 'nullable|integer|min:1',
@@ -30,20 +30,20 @@ class TraitementController extends Controller
 
         $traitement = $profilSante->traitements()->create($validated);
 
-        return response()->json(['data' => $traitement->load('catalogueArticle')], Response::HTTP_CREATED);
+        return response()->json(['data' => $traitement->load('catalogueTraitement')], Response::HTTP_CREATED);
     }
 
     // Afficher un traitement spécifique
     public function show(ProfilSante $profilSante, Traitement $traitement)
     {
-        return response()->json(['data' => $traitement->load('catalogueArticle')], Response::HTTP_OK);
+        return response()->json(['data' => $traitement->load('catalogueTraitement')], Response::HTTP_OK);
     }
 
     // Mettre à jour un traitement
     public function update(Request $request, ProfilSante $profilSante, Traitement $traitement)
     {
         $validated = $request->validate([
-            'article_catalogue_id' => 'sometimes|exists:treatment_catalog_items,id',
+            'catalogue_traitement_id' => 'sometimes|exists:catalogue_traitements,id',
             'dose' => 'nullable|string|max:120',
             'frequence' => 'nullable|string|max:120',
             'nombre_prises' => 'nullable|integer|min:1',
@@ -53,7 +53,7 @@ class TraitementController extends Controller
 
         $traitement->update($validated);
 
-        return response()->json(['data' => $traitement->load('catalogueArticle')], Response::HTTP_OK);
+        return response()->json(['data' => $traitement->load('catalogueTraitement')], Response::HTTP_OK);
     }
 
     // Supprimer un traitement

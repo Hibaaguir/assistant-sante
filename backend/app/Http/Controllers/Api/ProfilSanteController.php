@@ -4,12 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Mail\DoctorInvitationMail;
-use App\Models\DoctorInvitation;
+use App\Models\InvitationMedecin;
 use App\Models\ProfilSante;
 use App\Models\Utilisateur;
-use App\Services\AllergyCatalogService;
-use App\Services\ChronicDiseaseCatalogService;
-use App\Services\TreatmentCatalogService;
+
+use App\Services\TraitementCatalogueService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,9 +30,7 @@ use Illuminate\Validation\Rule;
 class ProfilSanteController extends Controller
 {
     public function __construct(
-        private readonly AllergyCatalogService $allergyCatalogService,
-        private readonly ChronicDiseaseCatalogService $chronicDiseaseCatalogService,
-        private readonly TreatmentCatalogService $treatmentCatalogService,
+        private readonly TraitementCatalogueService $traitementCatalogueService,
     ) {}
 
     // Enregistrer ou mettre à jour le profil de santé
@@ -42,12 +39,12 @@ class ProfilSanteController extends Controller
         // Normaliser le champ sexe en minuscules
         if (is_string($request->input('sexe'))) {
             $request->merge([
-                'sexe' => strtolower(trim($request->input('sexe'))),
+                'genre' => strtolower(trim($request->input('sexe'))),
             ]);
         }
 
         $validated = $request->validate([
-            'sexe' => ['required', Rule::in(['homme', 'femme'])],
+            'genre' => ['required', Rule::in(['homme', 'femme'])],
             'taille' => ['required', 'numeric', 'min:30', 'max:250'],
             'poids' => ['required', 'numeric', 'min:1', 'max:300'],
             'groupe_sanguin' => ['required', 'string', 'max:5'],
@@ -106,20 +103,12 @@ class ProfilSanteController extends Controller
                     $validated
                 );
 
-                $this->treatmentCatalogService->saveFromTreatments(
+                $this->traitementCatalogueService->saveFromTreatments(
                     is_array($validated['traitements'] ?? null) ? $validated['traitements'] : [],
                     (int) $userId,
                 );
 
-                $this->allergyCatalogService->saveFromList(
-                    is_array($validated['allergies'] ?? null) ? $validated['allergies'] : [],
-                    (int) $userId,
-                );
-
-                $this->chronicDiseaseCatalogService->saveFromList(
-                    is_array($validated['maladies_chroniques'] ?? null) ? $validated['maladies_chroniques'] : [],
-                    (int) $userId,
-                );
+                
 
                 return $savedProfil;
             });
@@ -151,7 +140,7 @@ class ProfilSanteController extends Controller
         $userId = $utilisateur->id;
         if ($profil && is_array($profil->traitements)) {
             try {
-                $this->treatmentCatalogService->saveFromTreatments(
+                $this->traitementCatalogueService->saveFromTreatments(
                     $profil->traitements,
                     (int) $userId,
                 );
@@ -162,31 +151,6 @@ class ProfilSanteController extends Controller
             }
         }
 
-        if ($profil && is_array($profil->allergies)) {
-            try {
-                $this->allergyCatalogService->saveFromList(
-                    $profil->allergies,
-                    (int) $userId,
-                );
-            } catch (\Throwable $exception) {
-                Log::warning('Profil sante show allergy sync skipped: '.$exception->getMessage(), [
-                    'id_utilisateur' => $userId,
-                ]);
-            }
-        }
-
-        if ($profil && is_array($profil->maladies_chroniques)) {
-            try {
-                $this->chronicDiseaseCatalogService->saveFromList(
-                    $profil->maladies_chroniques,
-                    (int) $userId,
-                );
-            } catch (\Throwable $exception) {
-                Log::warning('Profil sante show chronic disease sync skipped: '.$exception->getMessage(), [
-                    'id_utilisateur' => $userId,
-                ]);
-            }
-        }
 
         return response()->json([
             'data' => $profil,
@@ -213,7 +177,7 @@ class ProfilSanteController extends Controller
 
         // Révoquer les invitations si les conditions ne sont pas réunies
         if (! $shouldInvite) {
-            DoctorInvitation::query()
+            InvitationMedecin::query()
                 ->where('id_patient_utilisateur', $utilisateur->id)
                 ->where('status', 'pending')
                 ->update([
@@ -228,7 +192,7 @@ class ProfilSanteController extends Controller
 
         // Révoquer les invitations si l'email du médecin a changé
         if ($doctorEmailChanged) {
-            DoctorInvitation::query()
+            InvitationMedecin::query()
                 ->where('id_patient_utilisateur', $utilisateur->id)
                 ->where('status', 'pending')
                 ->where('doctor_email', '!=', $doctorEmail)
@@ -288,7 +252,7 @@ class ProfilSanteController extends Controller
             }
         }
 
-        $existing = DoctorInvitation::query()
+        $existing = InvitationMedecin::query()
             ->where('id_patient_utilisateur', $utilisateur->id)
             ->where('doctor_email', $doctorEmail)
             ->first();
@@ -319,7 +283,7 @@ class ProfilSanteController extends Controller
             }
         } else {
             // Créer une nouvelle invitation si elle n'existe pas
-            DoctorInvitation::query()->create([
+            InvitationMedecin::query()->create([
                 'id_patient_utilisateur' => $utilisateur->id,
                 'id_medecin_utilisateur' => $doctor?->id,
                 'doctor_email' => $doctorEmail,

@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\HealthVital;
+
 use App\Models\ProfilSante;
+use App\Models\SignesVitaux;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -16,7 +17,7 @@ class HealthDataService
             ->values();
 
         $grouped = $vitals
-            ->groupBy(fn (HealthVital $v) => $v->measured_at?->toDateString())
+            ->groupBy(fn (SignesVitaux $v) => $v->measured_at?->toDateString())
             ->map(fn (Collection $items) => $this->extraireSignesVitauxParDate($items));
 
         return [
@@ -44,7 +45,7 @@ class HealthDataService
 
     private function extraireSignesVitauxParDate(Collection $items): array
     {
-        $sorted = $items->sortByDesc(fn (HealthVital $v) => 
+        $sorted = $items->sortByDesc(fn (SignesVitaux $v) => 
             ($v->measured_at?->format('Y-m-d H:i:s') ?? '0000-00-00 00:00:00') . '#' . 
             str_pad((string) $v->id, 10, '0', STR_PAD_LEFT)
         );
@@ -59,7 +60,7 @@ class HealthDataService
 
     private function obtenirDerniereValeur(Collection $items, string $field): ?float
     {
-        $row = $items->first(fn (HealthVital $v) => $v->{$field} !== null);
+        $row = $items->first(fn (SignesVitaux $v) => $v->{$field} !== null);
         return $row ? round((float) $row->{$field}, 1) : null;
     }
 

@@ -6,13 +6,13 @@ namespace App\Http\Requests\Api;
 use Illuminate\Validation\Rule;
 
 // Classe utilisée pour valider les données lors de la mise à jour d'une entrée du journal
-// Elle hérite des règles du StoreJournalEntryRequest
-class UpdateJournalEntryRequest extends StoreJournalEntryRequest
+// Elle hérite des règles du StoreJournalQuotidienRequest
+class UpdateJournalQuotidienRequest extends StoreJournalQuotidienRequest
 {
     // Définition des règles de validation pour la mise à jour
     public function rules(): array
     {
-        // Récupère toutes les règles définies dans StoreJournalEntryRequest
+        // Récupère toutes les règles définies dans StoreJournalQuotidienRequest
         $rules = parent::rules();
 
         // Modifie certaines règles pour permettre une mise à jour partielle (champ optionnel)

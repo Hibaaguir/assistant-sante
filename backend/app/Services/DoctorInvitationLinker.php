@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\DoctorInvitation;
+use App\Models\InvitationMedecin;
 use App\Models\Utilisateur;
 
 class DoctorInvitationLinker
@@ -20,8 +20,8 @@ class DoctorInvitationLinker
             return false;
         }
 
-        return DoctorInvitation::query()
-            ->whereRaw('LOWER(doctor_email) = ?', [strtolower($email)])
+        return InvitationMedecin::query()
+            ->whereRaw('LOWER(medecin_email) = ?', [strtolower($email)])
             ->where(fn ($q) => $q->whereNull('id_medecin_utilisateur')->orWhere('id_medecin_utilisateur', '!=', $utilisateur->id))
             ->update(['id_medecin_utilisateur' => $utilisateur->id]) > 0;
     }

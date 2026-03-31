@@ -35,7 +35,7 @@ class Traitement extends Model
     }
 
     // Relation : référence un article du catalogue de traitements
-    public function catalogueArticle(): BelongsTo
+    public function catalogueTraitement(): BelongsTo
     {
         return $this->belongsTo(CatalogueTraitement::class, 'catalogue_traitements_id');
     }

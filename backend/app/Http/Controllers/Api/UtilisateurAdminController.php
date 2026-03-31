@@ -94,7 +94,7 @@ class UtilisateurAdminController extends Controller
     {
         $roleNormalise = strtolower((string) $role);
 
-        if ($roleNormalise === 'medecin' || $roleNormalise === 'doctor') {
+        if ($roleNormalise === 'medecin') {
             return 'Médecin';
         }
 

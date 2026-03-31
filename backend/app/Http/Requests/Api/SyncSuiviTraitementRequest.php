@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SyncHealthTreatmentChecksRequest extends FormRequest
+class SyncSuiviTraitementRequest extends FormRequest
 {
     public function authorize(): bool
     {

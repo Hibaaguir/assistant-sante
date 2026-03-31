@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\StoreJournalEntryRequest;
-use App\Http\Requests\Api\UpdateJournalEntryRequest;
+use App\Http\Requests\Api\StoreJournalQuotidienRequest;
+use App\Http\Requests\Api\UpdateJournalQuotidienRequest;
 use App\Models\JournalQuotidien;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
  * - Fusion automatique des entrées du même jour
  * - Vérification des droits d'accès
  */
-class JournalEntryController extends Controller
+class JournalQuotidienController extends Controller
 {
     // Récupérer toutes les entrées du journal
     public function index(Request $request): JsonResponse
@@ -25,7 +25,7 @@ class JournalEntryController extends Controller
         $compte = $request->user();
         $userId = $compte->utilisateur->id;
 
-        $entries = JournalEntry::where('id_utilisateur', $userId)
+        $entries = JournalQuotidien::where('id_utilisateur', $userId)
             ->orderByDesc('entry_date')
             ->orderByDesc('id')
             ->get();
@@ -37,7 +37,7 @@ class JournalEntryController extends Controller
     }
 
     // Enregistrer une nouvelle entrée ou mettre à jour celle du même jour
-    public function store(StoreJournalEntryRequest $request): JsonResponse
+    public function store(StoreJournalQuotidienRequest $request): JsonResponse
     {
         // Récupérer les données validées
         $payload = $this->normaliserPayload($request->validated());
@@ -45,7 +45,7 @@ class JournalEntryController extends Controller
         $payload['id_utilisateur'] = $compte->utilisateur->id;
 
         // Créer ou mettre à jour l'entrée du journal
-        $entry = JournalEntry::updateOrCreate(
+        $entry = JournalQuotidien::updateOrCreate(
             [
                 'id_utilisateur' => $payload['id_utilisateur'],
                 'entry_date' => $payload['entry_date'],
@@ -62,9 +62,9 @@ class JournalEntryController extends Controller
     }
 
     // Afficher une entrée spécifique du journal
-    public function show(Request $request, JournalEntry $journalEntry): JsonResponse
+    public function show(Request $request, JournalQuotidien $journalQuotidien): JsonResponse
     {
-        $error = $this->authorizeEntry($journalEntry, $request);
+        $error = $this->authorizeEntry($journalQuotidien, $request);
         // Vérifier que l'entrée appartient à l'utilisateur
         if ($error) {
             return $error;
@@ -72,37 +72,37 @@ class JournalEntryController extends Controller
 
         return response()->json([
             'message' => 'Entree du journal recuperee avec succes.',
-            'data' => $journalEntry,
+            'data' => $journalQuotidien,
         ]);
     }
 
     // Mettre à jour une entrée existante du journal
-    public function update(UpdateJournalEntryRequest $request, JournalEntry $journalEntry): JsonResponse
+    public function update(UpdateJournalQuotidienRequest $request, JournalQuotidien $journalQuotidien): JsonResponse
     {
-        $error = $this->authorizeEntry($journalEntry, $request);
+        $error = $this->authorizeEntry($journalQuotidien, $request);
         // Vérifier que l'entrée appartient à l'utilisateur
         if ($error) {
             return $error;
         }
 
-        $journalEntry->update($this->normaliserPayload($request->validated()));
+        $journalQuotidien->update($this->normaliserPayload($request->validated()));
 
         return response()->json([
             'message' => 'Entree du journal mise a jour avec succes.',
-            'data' => $journalEntry->fresh(),
+            'data' => $journalQuotidien->fresh(),
         ]);
     }
 
     // Supprimer une entrée du journal
-    public function destroy(Request $request, JournalEntry $journalEntry): JsonResponse
+    public function destroy(Request $request, JournalQuotidien $journalQuotidien): JsonResponse
     {
-        $error = $this->authorizeEntry($journalEntry, $request);
+        $error = $this->authorizeEntry($journalQuotidien, $request);
         // Vérifier que l'entrée appartient à l'utilisateur
         if ($error) {
             return $error;
         }
 
-        $journalEntry->delete();
+        $journalQuotidien->delete();
 
         return response()->json([
             'message' => 'Entree du journal supprimee avec succes.',
@@ -110,7 +110,7 @@ class JournalEntryController extends Controller
     }
 
     // Vérifier que l'entrée appartient bien à l'utilisateur connecté
-    private function authorizeEntry(JournalEntry $entry, Request $request): ?JsonResponse
+    private function authorizeEntry(JournalQuotidien $entry, Request $request): ?JsonResponse
     {
         // Empêcher l'accès non autorisé aux entrées d'autres utilisateurs
         $compte = $request->user();

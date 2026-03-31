@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\TreatmentCatalogItem;
+use App\Models\CatalogueTraitement;
 
-class TreatmentCatalogService
+class TraitementCatalogueService
 {
     public function buildCatalog(): array
     {
-        $items = TreatmentCatalogItem::query()
+        $items = CatalogueTraitement::query()
             ->orderBy('type')
             ->orderBy('name')
             ->get(['type', 'name']);
@@ -61,7 +61,7 @@ class TreatmentCatalogService
         $lowerType = mb_strtolower($normalizedType, 'UTF-8');
         $lowerName = mb_strtolower($normalizedName, 'UTF-8');
 
-        $existing = TreatmentCatalogItem::query()
+        $existing = CatalogueTraitement::query()
             ->whereRaw('LOWER(type) = ?', [$lowerType])
             ->whereRaw('LOWER(name) = ?', [$lowerName])
             ->first();
@@ -73,7 +73,7 @@ class TreatmentCatalogService
             return;
         }
 
-        TreatmentCatalogItem::query()->create([
+        CatalogueTraitement::query()->create([
             'type' => $normalizedType,
             'name' => $normalizedName,
             'created_by_id_utilisateur' => $createdByUserId,

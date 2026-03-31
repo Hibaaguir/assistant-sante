@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Mail\ResetMotDePasseMail;
+use App\Mail\ReinisialiserMotDePasse;
 use App\Models\Compte;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -59,7 +59,7 @@ class MotDePasseOubliController extends Controller
         $resetUrl = $frontendUrl . '?email=' . urlencode($compte->email) . '&token=' . $token;
 
         // Envoyer l'email
-        Mail::send(new ResetMotDePasseMail($compte->email, $token, $resetUrl));
+        Mail::send(new ReinisialiserMotDePasse($compte->email, $token, $resetUrl));
 
         return response()->json([
             'message' => 'Si cet email existe, vous recevrez un lien de réinitialisation.',

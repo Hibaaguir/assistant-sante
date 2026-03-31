@@ -10,14 +10,14 @@ use Illuminate\Http\Response;
 class ActivitePhysiqueController extends Controller
 {
     // Récupérer toutes les activités physiques d'une entrée du journal
-    public function index(JournalEntry $entreeJournal)
+    public function index(JournalQuotidien $entreeJournal)
     {
         $activites = $entreeJournal->activitesPhysiques()->get();
         return response()->json(['data' => $activites], Response::HTTP_OK);
     }
 
     // Créer une nouvelle activité physique
-    public function store(Request $request, JournalEntry $entreeJournal)
+    public function store(Request $request, JournalQuotidien $entreeJournal)
     {
         $validated = $request->validate([
             'type_activite' => 'required|string|max:120',
@@ -25,19 +25,22 @@ class ActivitePhysiqueController extends Controller
             'intensite' => 'required|in:faible,moyenne,elevee',
         ]);
 
-        $activite = $entreeJournal->activitesPhysiques()->create($validated);
+        // Ajoute la clé étrangère attendue par le modèle
+        $validated['id_journal_quotidien'] = $entreeJournal->id;
+
+        $activite = ActivitePhysique::create($validated);
 
         return response()->json(['data' => $activite], Response::HTTP_CREATED);
     }
 
     // Afficher une activité physique spécifique
-    public function show(JournalEntry $entreeJournal, ActivitePhysique $activitePhysique)
+    public function show(JournalQuotidien $entreeJournal, ActivitePhysique $activitePhysique)
     {
         return response()->json(['data' => $activitePhysique], Response::HTTP_OK);
     }
 
     // Mettre à jour une activité physique
-    public function update(Request $request, JournalEntry $entreeJournal, ActivitePhysique $activitePhysique)
+    public function update(Request $request, JournalQuotidien $entreeJournal, ActivitePhysique $activitePhysique)
     {
         $validated = $request->validate([
             'type_activite' => 'sometimes|string|max:120',
@@ -51,7 +54,7 @@ class ActivitePhysiqueController extends Controller
     }
 
     // Supprimer une activité physique
-    public function destroy(JournalEntry $entreeJournal, ActivitePhysique $activitePhysique)
+    public function destroy(JournalQuotidien $entreeJournal, ActivitePhysique $activitePhysique)
     {
         $activitePhysique->delete();
         return response()->json(null, Response::HTTP_NO_CONTENT);

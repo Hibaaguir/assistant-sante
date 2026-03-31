@@ -10,7 +10,7 @@ class ActivitePhysique extends Model
     protected $table = 'activites_physiques';
 
     protected $fillable = [
-        'id_entree_journal',
+        'id_journal_quotidien',
         'type_activite',
         'duree_activite',
         'intensite',

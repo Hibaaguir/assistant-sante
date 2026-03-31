@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Services\TreatmentCatalogService;
+use App\Services\TraitementCatalogueService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,13 +11,13 @@ use Illuminate\Support\Facades\Auth;
 class TreatmentCatalogController extends Controller
 {
     public function __construct(
-        private readonly TreatmentCatalogService $treatmentCatalogService,
+        private readonly TraitementCatalogueService $traitementCatalogueService,
     ) {}
 
     public function index(): JsonResponse
     {
         return response()->json([
-            'data' => $this->treatmentCatalogService->buildCatalog(),
+            'data' => $this->traitementCatalogueService->buildCatalog(),
         ]);
     }
 
@@ -28,7 +28,7 @@ class TreatmentCatalogController extends Controller
             'name' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $this->treatmentCatalogService->saveEntry(
+        $this->traitementCatalogueService->saveEntry(
             $validated['type'],
             $validated['name'] ?? null,
             Auth::id(),
@@ -36,7 +36,7 @@ class TreatmentCatalogController extends Controller
 
         return response()->json([
             'message' => 'Catalogue de traitements mis a jour.',
-            'data' => $this->treatmentCatalogService->buildCatalog(),
+            'data' => $this->traitementCatalogueService->buildCatalog(),
         ]);
     }
 }

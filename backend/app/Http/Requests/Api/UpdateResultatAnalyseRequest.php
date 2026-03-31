@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
-class UpdateHealthLabResultRequest extends StoreHealthLabResultRequest
+class UpdateResultatAnalyseRequest extends StoreResultatAnalyseRequest
 {
     public function rules(): array
     {

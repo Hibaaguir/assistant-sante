@@ -10,14 +10,14 @@ use Illuminate\Http\Response;
 class TabacController extends Controller
 {
     // Récupérer toutes les consommations de tabac d'une entrée du journal
-    public function index(JournalEntry $entreeJournal)
+    public function index(JournalQuotidien $entreeJournal)
     {
         $tabacs = $entreeJournal->tabacs()->get();
         return response()->json(['data' => $tabacs], Response::HTTP_OK);
     }
 
     // Créer une nouvelle consommation de tabac
-    public function store(Request $request, JournalEntry $entreeJournal)
+    public function store(Request $request, JournalQuotidien $entreeJournal)
     {
         $validated = $request->validate([
             'type_tabac' => 'required|in:cigarette,vape',
@@ -32,13 +32,13 @@ class TabacController extends Controller
     }
 
     // Afficher une consommation de tabac spécifique
-    public function show(JournalEntry $entreeJournal, Tabac $tabac)
+    public function show(JournalQuotidien $entreeJournal, Tabac $tabac)
     {
         return response()->json(['data' => $tabac], Response::HTTP_OK);
     }
 
     // Mettre à jour une consommation de tabac
-    public function update(Request $request, JournalEntry $entreeJournal, Tabac $tabac)
+    public function update(Request $request, JournalQuotidien $entreeJournal, Tabac $tabac)
     {
         $validated = $request->validate([
             'type_tabac' => 'sometimes|in:cigarette,vape',
@@ -53,7 +53,7 @@ class TabacController extends Controller
     }
 
     // Supprimer une consommation de tabac
-    public function destroy(JournalEntry $entreeJournal, Tabac $tabac)
+    public function destroy(JournalQuotidien $entreeJournal, Tabac $tabac)
     {
         $tabac->delete();
         return response()->json(null, Response::HTTP_NO_CONTENT);
