@@ -35,11 +35,11 @@ class AllergyCatalogSeeder extends Seeder
             AllergyCatalogItem::query()->firstOrCreate([
                 'name' => $normalizedName,
             ], [
-                'created_by_user_id' => null,
+                'created_by_id_utilisateur' => null,
             ]);
         }
 
-        ProfilSante::query()->select('id', 'user_id', 'allergies')->chunkById(200, function ($profiles): void {
+        ProfilSante::query()->select('id', 'id_utilisateur', 'allergies')->chunkById(200, function ($profiles): void {
             foreach ($profiles as $profile) {
                 $allergies = is_array($profile->allergies) ? $profile->allergies : [];
 
@@ -52,7 +52,7 @@ class AllergyCatalogSeeder extends Seeder
                     AllergyCatalogItem::query()->firstOrCreate([
                         'name' => $name,
                     ], [
-                        'created_by_user_id' => $profile->user_id,
+                        'created_by_id_utilisateur' => $profile->id_utilisateur,
                     ]);
                 }
             }

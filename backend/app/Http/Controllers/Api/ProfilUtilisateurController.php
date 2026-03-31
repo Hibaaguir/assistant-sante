@@ -13,16 +13,19 @@ class ProfilUtilisateurController extends Controller
     // Récupérer le profil de l'utilisateur
     public function getProfile(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $compte = $request->user();
+        $utilisateur = $compte->utilisateur;
 
         return response()->json([
             'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'profile_photo' => $user->profile_photo,
-                'date_of_birth' => $user->date_of_birth,
+                'id'             => $utilisateur->id,
+                'nom'            => $utilisateur->nom,
+                'email'          => $compte->email,
+                'role'           => $utilisateur->role,
+                'photo_profil'   => $utilisateur->photo_profil,
+                'date_naissance' => $utilisateur->date_naissance,
+                'age'            => $utilisateur->age,
+                'specialite'     => $utilisateur->specialite,
             ],
         ]);
     }
@@ -39,12 +42,13 @@ class ProfilUtilisateurController extends Controller
             'nom.not_regex' => 'Le nom ne peut pas contenir seulement des espaces.',
         ]);
 
-        $user = $request->user();
-        $user->update(['name' => trim($request->input('nom'))]);
+        $compte = $request->user();
+        $utilisateur = $compte->utilisateur;
+        $utilisateur->update(['nom' => trim($request->input('nom'))]);
 
         return response()->json([
             'message' => 'Nom mis à jour avec succès.',
-            'data' => ['nom' => $user->name],
+            'data' => ['nom' => $utilisateur->nom],
         ]);
     }
 
@@ -60,14 +64,14 @@ class ProfilUtilisateurController extends Controller
             'nouveau_mot_de_passe.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
         ]);
 
-        $user = $request->user();
+        $compte = $request->user();
 
         // Vérifier que le mot de passe actuel est correct
-        if (!Hash::check($request->input('mot_de_passe_actuel'), $user->password)) {
+        if (!Hash::check($request->input('mot_de_passe_actuel'), $compte->motdepasse)) {
             return response()->json(['message' => 'Le mot de passe actuel est incorrect.'], 422);
         }
 
-        $user->update(['password' => Hash::make($request->input('nouveau_mot_de_passe'))]);
+        $compte->update(['motdepasse' => Hash::make($request->input('nouveau_mot_de_passe'))]);
 
         return response()->json(['message' => 'Mot de passe changé avec succès.']);
     }
@@ -88,20 +92,22 @@ class ProfilUtilisateurController extends Controller
             'photo.regex' => 'Format de photo non supporté.',
         ]);
 
-        $user = $request->user();
-        $user->update(['profile_photo' => $request->input('photo')]);
+        $compte = $request->user();
+        $utilisateur = $compte->utilisateur;
+        $utilisateur->update(['photo_profil' => $request->input('photo')]);
 
         return response()->json([
             'message' => 'Photo de profil mise à jour avec succès.',
-            'data' => ['photo_profil' => $user->profile_photo],
+            'data' => ['photo_profil' => $utilisateur->photo_profil],
         ]);
     }
 
     // Supprimer la photo de profil
     public function deletePhoto(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $user->update(['profile_photo' => null]);
+        $compte = $request->user();
+        $utilisateur = $compte->utilisateur;
+        $utilisateur->update(['photo_profil' => null]);
 
         return response()->json([
             'message' => 'Photo de profil supprimée avec succès.',

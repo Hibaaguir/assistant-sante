@@ -339,7 +339,7 @@ async function soumettre() {
             password: form.password,
         });
 
-        const role = data?.user?.role;
+        const role = data?.utilisateur?.role;
         authStore.appliquerAuthentification(
             data,
             role === "medecin" ? "medecin" : null,

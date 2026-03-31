@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreJournalEntryRequest;
 use App\Http\Requests\Api\UpdateJournalEntryRequest;
-use App\Models\JournalEntry;
+use App\Models\JournalQuotidien;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -22,9 +22,10 @@ class JournalEntryController extends Controller
     // Récupérer toutes les entrées du journal
     public function index(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
+        $compte = $request->user();
+        $userId = $compte->utilisateur->id;
 
-        $entries = JournalEntry::where('user_id', $userId)
+        $entries = JournalEntry::where('id_utilisateur', $userId)
             ->orderByDesc('entry_date')
             ->orderByDesc('id')
             ->get();
@@ -40,12 +41,13 @@ class JournalEntryController extends Controller
     {
         // Récupérer les données validées
         $payload = $this->normaliserPayload($request->validated());
-        $payload['user_id'] = $request->user()->id;
+        $compte = $request->user();
+        $payload['id_utilisateur'] = $compte->utilisateur->id;
 
         // Créer ou mettre à jour l'entrée du journal
         $entry = JournalEntry::updateOrCreate(
             [
-                'user_id' => $payload['user_id'],
+                'id_utilisateur' => $payload['id_utilisateur'],
                 'entry_date' => $payload['entry_date'],
             ],
             $payload
@@ -111,7 +113,8 @@ class JournalEntryController extends Controller
     private function authorizeEntry(JournalEntry $entry, Request $request): ?JsonResponse
     {
         // Empêcher l'accès non autorisé aux entrées d'autres utilisateurs
-        if ($entry->user_id !== $request->user()->id) {
+        $compte = $request->user();
+        if ($entry->id_utilisateur !== $compte->utilisateur->id) {
             return response()->json([
                 'message' => 'Acces non autorise a cette entree du journal.',
             ], 403);

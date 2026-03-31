@@ -39,7 +39,7 @@ const authStore = useAuthStore();
 
 // ─── Helpers ──────────────────────────────────────────────────
 
-const ROLES = { medecin: "Médecin", user: "Patient" };
+const ROLES = { medecin: "Médecin", usager: "Patient" };
 const roleLabel = computed(() => ROLES[authStore.roleUtilisateur] ?? "");
 
 const nav = (name, label, icon) => ({ name, label, icon, to: { name } });

@@ -67,8 +67,8 @@ class TreatmentCatalogService
             ->first();
 
         if ($existing) {
-            if ($existing->created_by_user_id === null && $createdByUserId !== null) {
-                $existing->update(['created_by_user_id' => $createdByUserId]);
+            if ($existing->created_by_id_utilisateur === null && $createdByUserId !== null) {
+                $existing->update(['created_by_id_utilisateur' => $createdByUserId]);
             }
             return;
         }
@@ -76,7 +76,7 @@ class TreatmentCatalogService
         TreatmentCatalogItem::query()->create([
             'type' => $normalizedType,
             'name' => $normalizedName,
-            'created_by_user_id' => $createdByUserId,
+            'created_by_id_utilisateur' => $createdByUserId,
         ]);
     }
 

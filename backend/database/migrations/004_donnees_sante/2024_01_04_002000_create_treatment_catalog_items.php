@@ -8,20 +8,24 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('treatment_catalog_items', function (Blueprint $table) {
+        Schema::create('catalogue_traitements', function (Blueprint $table) {
             $table->id();
-            $table->string('type', 120);
-            $table->string('name', 255)->default('');
-            $table->foreignId('created_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('type', 120)->nullable();
+            $table->string('nom', 255);
+            $table->foreignId('created_by_id_utilisateur')->nullable()->constrained('utilisateurs')->nullOnDelete();
+            
+            // Métadonnées
             $table->timestamps();
-
-            $table->unique(['type', 'name']);
+            
+            // Index
             $table->index('type');
+            $table->index('nom');
+            $table->index('created_by_id_utilisateur');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('treatment_catalog_items');
+        Schema::dropIfExists('catalogue_traitements');
     }
 };

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Mail\ResetMotDePasseMail;
-use App\Models\User;
+use App\Models\Compte;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,10 +32,10 @@ class MotDePasseOubliController extends Controller
             'email.email' => 'L\'email doit être valide.',
         ]);
 
-        $user = User::where('email', $request->input('email'))->first();
+        $compte = Compte::where('email', $request->input('email'))->first();
 
         // Ne pas révéler si l'email existe (sécurité : prévient l'énumération)
-        if (!$user) {
+        if (!$compte) {
             return response()->json([
                 'message' => 'Si cet email existe, vous recevrez un lien de réinitialisation.',
             ]);
@@ -45,21 +45,21 @@ class MotDePasseOubliController extends Controller
         $token = Str::random(64);
 
         // Supprimer les tokens existants pour cet email
-        DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+        DB::table('password_reset_tokens')->where('email', $compte->email)->delete();
 
         // Insérer le nouveau token
         DB::table('password_reset_tokens')->insert([
-            'email' => $user->email,
+            'email' => $compte->email,
             'token' => Hash::make($token),
             'created_at' => now(),
         ]);
 
         // Construire l'URL du frontend pour réinitialiser
         $frontendUrl = config('app.frontend_url', config('app.url')) . '/reinitialiser-mot-de-passe';
-        $resetUrl = $frontendUrl . '?email=' . urlencode($user->email) . '&token=' . $token;
+        $resetUrl = $frontendUrl . '?email=' . urlencode($compte->email) . '&token=' . $token;
 
         // Envoyer l'email
-        Mail::send(new ResetMotDePasseMail($user->email, $token, $resetUrl));
+        Mail::send(new ResetMotDePasseMail($compte->email, $token, $resetUrl));
 
         return response()->json([
             'message' => 'Si cet email existe, vous recevrez un lien de réinitialisation.',
@@ -82,10 +82,10 @@ class MotDePasseOubliController extends Controller
             'mot_de_passe.confirmed' => 'La confirmation ne correspond pas.',
         ]);
 
-        $user = User::where('email', $request->input('email'))->first();
+        $compte = Compte::where('email', $request->input('email'))->first();
 
-        // Vérifier que l'utilisateur existe
-        if (!$user) {
+        // Vérifier que le compte existe
+        if (!$compte) {
             return response()->json([
                 'message' => 'Email ou token invalide.',
             ], 422);
@@ -93,7 +93,7 @@ class MotDePasseOubliController extends Controller
 
         // Vérifier que le token de réinitialisation existe
         $resetToken = DB::table('password_reset_tokens')
-            ->where('email', $user->email)
+            ->where('email', $compte->email)
             ->latest('created_at')
             ->first();
 
@@ -105,7 +105,7 @@ class MotDePasseOubliController extends Controller
 
         // Vérifier que le token n'a pas expiré
         if ($resetToken->created_at < now()->subMinutes(60)) {
-            DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+            DB::table('password_reset_tokens')->where('email', $compte->email)->delete();
             return response()->json([
                 'message' => 'Le lien de réinitialisation a expiré.',
             ], 422);
@@ -119,17 +119,17 @@ class MotDePasseOubliController extends Controller
         }
 
         // Mettre à jour le mot de passe
-        $user->update([
-            'password' => Hash::make($request->input('mot_de_passe')),
+        $compte->update([
+            'motdepasse' => Hash::make($request->input('mot_de_passe')),
         ]);
 
         // Supprimer le token utilisé
-        DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+        DB::table('password_reset_tokens')->where('email', $compte->email)->delete();
 
         return response()->json([
             'message' => 'Votre mot de passe a été réinitialisé avec succès.',
             'data' => [
-                'role' => $user->role,
+                'role' => $compte->utilisateur->role,
             ],
         ]);
     }

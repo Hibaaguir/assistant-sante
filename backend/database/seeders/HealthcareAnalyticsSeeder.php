@@ -8,10 +8,10 @@ use App\Models\DoctorInvitation;
 use App\Models\HealthLabResult;
 use App\Models\HealthTreatmentCheck;
 use App\Models\HealthVital;
-use App\Models\JournalEntry;
+use App\Models\JournalQuotidien;
 use App\Models\ProfilSante;
-use App\Models\TreatmentCatalogItem;
-use App\Models\User;
+use App\Models\CatalogueTraitement;
+use App\Models\Utilisateur;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
@@ -106,12 +106,12 @@ class HealthcareAnalyticsSeeder extends Seeder
         $this->createVitals($patients);
         $this->createLabResults($patients);
         $this->createTreatmentChecks($patients);
-        $this->createDoctorInvitations($patients);
+        $this->createInvitationsMedecin($patients);
     }
 
     private function createDoctors(): Collection
     {
-        return User::factory()
+        return Utilisateur::factory()
             ->count(self::DOCTOR_COUNT)
             ->state(function (): array {
                 $emailLocalPart = 'doctor+' . Str::lower(str_replace('-', '', Str::uuid()->toString()));
@@ -131,13 +131,13 @@ class HealthcareAnalyticsSeeder extends Seeder
 
     private function createPatients(): Collection
     {
-        return User::factory()
+        return Utilisateur::factory()
             ->count(self::PATIENT_COUNT)
             ->state(function (): array {
                 $emailLocalPart = 'patient+' . Str::lower(str_replace('-', '', Str::uuid()->toString()));
 
                 return [
-                    'role' => 'user',
+                    'role' => 'usager',
                     'email' => $emailLocalPart . '@seed.local',
                     'specialite' => null,
                     'date_of_birth' => Carbon::today()
@@ -151,9 +151,7 @@ class HealthcareAnalyticsSeeder extends Seeder
 
     private function createProfiles(Collection $patients, Collection $doctors): void
     {
-        $allergyPool = AllergyCatalogItem::query()->pluck('name')->filter()->values()->all();
-        $diseasePool = ChronicDiseaseCatalogItem::query()->pluck('name')->filter()->values()->all();
-        $treatmentCatalog = TreatmentCatalogItem::query()
+        $treatmentCatalog = CatalogueTraitement::query()
             ->get(['type', 'name'])
             ->groupBy('type')
             ->map(fn (Collection $rows) => $rows->pluck('name')->filter()->values()->all())
@@ -326,7 +324,7 @@ class HealthcareAnalyticsSeeder extends Seeder
             }
 
             $entries = JournalEntry::query()
-                ->where('user_id', $patient->id)
+                ->where('id_utilisateur', $patient->id)
                 ->whereDate('entry_date', '>=', $start->toDateString())
                 ->orderBy('entry_date')
                 ->get(['entry_date', 'stress', 'intensity']);
@@ -492,11 +490,11 @@ class HealthcareAnalyticsSeeder extends Seeder
 
             DoctorInvitation::query()->updateOrCreate(
                 [
-                    'patient_user_id' => $patient->id,
+                    'id_patient_utilisateur' => $patient->id,
                     'doctor_email' => $context['assigned_doctor_email'],
                 ],
                 [
-                    'doctor_user_id' => $context['assigned_doctor_id'],
+                    'id_medecin_utilisateur' => $context['assigned_doctor_id'],
                     'status' => $status,
                     'token' => hash('sha256', Str::uuid()->toString()),
                     'accepted_at' => $status === 'accepted' ? Carbon::now()->subDays(fake()->numberBetween(3, 120)) : null,

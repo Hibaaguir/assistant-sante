@@ -8,52 +8,49 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('health_vitals', function (Blueprint $table) {
+        Schema::create('signes_vitaux', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->dateTime('measured_at');
-            $table->unsignedSmallInteger('heart_rate')->nullable();
-            $table->unsignedSmallInteger('systolic_pressure')->nullable();
-            $table->unsignedSmallInteger('diastolic_pressure')->nullable();
-            $table->unsignedSmallInteger('oxygen_saturation', 4, 1)->nullable();
+            $table->foreignId('id_utilisateur')->constrained('utilisateurs')->cascadeOnDelete();
+            $table->dateTime('mesure_a');
+            $table->unsignedSmallInteger('frequence_cardiaque')->nullable();
+            $table->unsignedSmallInteger('pression_systolique')->nullable();
+            $table->unsignedSmallInteger('pression_diastolique')->nullable();
+            $table->unsignedSmallInteger('saturation_oxygene')->nullable();
             $table->timestamps();
 
-            $table->index(['user_id', 'measured_at']);
+            $table->index(['id_utilisateur', 'mesure_a']);
         });
 
-        Schema::create('health_lab_results', function (Blueprint $table) {
+        Schema::create('resultats_analyses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('analysis_type', 120);
-            $table->string('analysis_result', 120)->nullable();
-            $table->decimal('value', 10, 2);
-            $table->string('unit', 30)->nullable();
-            $table->date('analysis_date');
+            $table->foreignId('id_utilisateur')->constrained('utilisateurs')->cascadeOnDelete();
+            $table->string('type_analyse', 120);
+            $table->string('resultat_analyse', 120)->nullable();
+            $table->decimal('valeur', 10, 2);
+            $table->string('unite', 30)->nullable();
+            $table->date('date_analyse');
             $table->timestamps();
 
-            $table->index(['user_id', 'analysis_date']);
+            $table->index(['id_utilisateur', 'date_analyse']);
         });
 
-        Schema::create('health_treatment_checks', function (Blueprint $table) {
+        Schema::create('suivi_traitement', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->date('check_date');
-            $table->string('medication_key', 120);
-            $table->string('medication_name', 255);
-            $table->string('dose', 120)->nullable();
-            $table->boolean('taken')->default(false);
-            $table->dateTime('checked_at')->nullable();
+            $table->foreignId('traitement_id')->constrained('traitements')->cascadeOnDelete();
+            $table->date('date_controle');
+            $table->boolean('pris')->default(false);
+            $table->dateTime('verifie_a')->nullable();
             $table->timestamps();
 
-            $table->unique(['user_id', 'check_date', 'medication_key'], 'htc_user_date_medication_unique');
-            $table->index(['user_id', 'check_date']);
+            $table->unique(['traitement_id', 'date_controle']);
+            $table->index(['traitement_id', 'date_controle']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('health_treatment_checks');
-        Schema::dropIfExists('health_lab_results');
-        Schema::dropIfExists('health_vitals');
+        Schema::dropIfExists('suivi_traitement');
+        Schema::dropIfExists('resultats_analyses');
+        Schema::dropIfExists('signes_vitaux');
     }
 };

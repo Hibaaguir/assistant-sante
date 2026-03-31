@@ -4,33 +4,26 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * @property int $id
- * @property int $user_id
- * @property bool $consulte_medecin
- * @property bool $medecin_peut_consulter
- * @property string|null $medecin_email
- */
 class ProfilSante extends Model
 {
     protected $table = 'profils_sante';
 
     protected $fillable = [
-        'user_id',
-        'sexe',
+        'id_utilisateur',
+        'genre',
         'taille',
         'poids',
         'groupe_sanguin',
         'objectifs',
         'allergies',
         'maladies_chroniques',
-        'traitements',
         'fumeur',
-        'alcool',
-        'consulte_medecin',
+        'alcoolique',
+        'inviter_medecin',
         'medecin_email',
-        'medecin_peut_consulter',
+        
     ];
 
     protected $casts = [
@@ -38,15 +31,20 @@ class ProfilSante extends Model
         'maladies_chroniques' => 'array',
         'traitements' => 'array',
         'objectifs' => 'array',
-        'consulte_medecin' => 'boolean',
-        'medecin_peut_consulter' => 'boolean',
+        'inviter_medecin' => 'boolean',
         'fumeur' => 'boolean',
-        'alcool' => 'boolean',
+        'alcoolique' => 'boolean',
     ];
 
     // Relation indiquant que chaque profil santé appartient à un utilisateur
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Utilisateur::class, 'id_utilisateur', 'id');
+    }
+
+    // Relation : un profil de santé peut avoir plusieurs traitements
+    public function traitements(): HasMany
+    {
+        return $this->hasMany(Traitement::class);
     }
 }

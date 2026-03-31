@@ -30,7 +30,7 @@ class HealthDataService
 
     public function resoudreMedicamentsTraitement(int $userId): array
     {
-        $profil = ProfilSante::query()->where('user_id', $userId)->first();
+        $profil = ProfilSante::query()->where('id_utilisateur', $userId)->first();
         $medicines = [];
 
         foreach ((array) $profil?->traitements as $index => $item) {

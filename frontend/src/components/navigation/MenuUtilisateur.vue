@@ -104,7 +104,7 @@ const authStore = useAuthStore();
 const menuOpen = ref(false);
 const modalProfilOuvert = ref(false);
 
-const ROLES = { medecin: "Médecin", user: "Patient" };
+const ROLES = { medecin: "Médecin", usager: "Patient" };
 const roleLabel = computed(() => ROLES[authStore.roleUtilisateur] ?? "");
 
 function ouvrirModalProfil() {

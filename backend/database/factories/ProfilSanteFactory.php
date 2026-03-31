@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\TreatmentCatalogItem;
-use App\Models\User;
+use App\Models\CatalogueTraitement;
+use App\Models\Utilisateur;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,7 +20,7 @@ class ProfilSanteFactory extends Factory
 
         $traitements = [];
         if (fake()->boolean(30)) {
-            $rows = TreatmentCatalogItem::query()
+            $rows = CatalogueTraitement::query()
                 ->where('name', 'not like', 'Traitement %')
                 ->inRandomOrder()
                 ->limit(fake()->numberBetween(1, 3))
@@ -52,7 +52,7 @@ class ProfilSanteFactory extends Factory
         }
 
         return [
-            'user_id' => User::factory(),
+            'id_utilisateur' => Utilisateur::factory(),
             'sexe' => $sexe,
             'taille' => $taille,
             'poids' => fake()->numberBetween(48, 110),

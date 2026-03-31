@@ -150,7 +150,7 @@
                                 </svg>
                             </span>
                             <input
-                                :value="form.date_of_birth"
+                                :value="form.date_naissance"
                                 type="text"
                                 placeholder="JJ/MM/AAAA"
                                 inputmode="numeric"
@@ -159,16 +159,16 @@
                                 @input="gererSaisieDate"
                                 @blur="validerFormatDate"
                                 :class="[
-                                    classeChamp(errors.date_of_birth),
+                                    classeChamp(errors.date_naissance),
                                     'pl-12',
                                 ]"
                             />
                         </div>
                         <p
-                            v-if="errors.date_of_birth"
+                            v-if="errors.date_naissance"
                             class="mt-2 text-sm text-red-600"
                         >
-                            {{ errors.date_of_birth }}
+                            {{ errors.date_naissance }}
                         </p>
                     </div>
 
@@ -415,7 +415,7 @@ const form = reactive({
     email: String(route.query.email || "").trim(),
     password: "",
     specialite: "",
-    date_of_birth: "",
+    date_naissance: "",
 });
 
 const errors = reactive({
@@ -423,7 +423,7 @@ const errors = reactive({
     email: "",
     password: "",
     specialite: "",
-    date_of_birth: "",
+    date_naissance: "",
 });
 
 const loading = ref(false);
@@ -441,7 +441,7 @@ function effacerErreurs() {
     errors.email = "";
     errors.password = "";
     errors.specialite = "";
-    errors.date_of_birth = "";
+    errors.date_naissance = "";
 }
 
 function classeChamp(hasError) {
@@ -489,15 +489,15 @@ function gererSaisieDate(e) {
     if (value.length > 2) formatted += "/" + value.slice(2, 4);
     if (value.length > 4) formatted += "/" + value.slice(4, 8);
 
-    form.date_of_birth = formatted;
+    form.date_naissance = formatted;
 }
 
 function validerFormatDate() {
-    if (!form.date_of_birth) return;
+    if (!form.date_naissance) return;
 
-    const parts = form.date_of_birth.split("/");
+    const parts = form.date_naissance.split("/");
     if (parts.length !== 3) {
-        errors.date_of_birth = "Format invalide. Utilisez JJ/MM/AAAA";
+        errors.date_naissance = "Format invalide. Utilisez JJ/MM/AAAA";
         return;
     }
 
@@ -514,23 +514,25 @@ function validerFormatDate() {
         year < 1900 ||
         year > new Date().getFullYear()
     ) {
-        errors.date_of_birth = "Date invalide. Verifie le jour, mois ou annee.";
+        errors.date_naissance =
+            "Date invalide. Verifie le jour, mois ou annee.";
         return;
     }
 
     const dateObj = new Date(year, month - 1, day);
     if (dateObj.getDate() !== day || dateObj.getMonth() !== month - 1) {
-        errors.date_of_birth = "Date invalide (ex: 31 fevrier n'existe pas).";
+        errors.date_naissance = "Date invalide (ex: 31 fevrier n'existe pas).";
         return;
     }
 
     const age = new Date().getFullYear() - year;
     if (age < 25) {
-        errors.date_of_birth = "Vous devez avoir au moins 25 ans pour exercer.";
+        errors.date_naissance =
+            "Vous devez avoir au moins 25 ans pour exercer.";
         return;
     }
 
-    errors.date_of_birth = "";
+    errors.date_naissance = "";
 }
 
 function convertirDatePourAPI(dateStr) {
@@ -549,7 +551,7 @@ async function soumettre() {
         !form.email ||
         !form.password ||
         !form.specialite ||
-        !form.date_of_birth
+        !form.date_naissance
     ) {
         if (!form.name) errors.name = "Le nom complet est obligatoire.";
         if (!form.email) errors.email = "L'adresse email est obligatoire.";
@@ -557,8 +559,8 @@ async function soumettre() {
             errors.password = "Le mot de passe est obligatoire.";
         if (!form.specialite)
             errors.specialite = "La specialite est obligatoire.";
-        if (!form.date_of_birth)
-            errors.date_of_birth = "La date de naissance est obligatoire.";
+        if (!form.date_naissance)
+            errors.date_naissance = "La date de naissance est obligatoire.";
         serverMessage.value = "Veuillez remplir les champs obligatoires.";
         return;
     }
@@ -574,8 +576,8 @@ async function soumettre() {
 
     // Validation de la date de naissance
     validerFormatDate();
-    if (errors.date_of_birth) {
-        serverMessage.value = errors.date_of_birth;
+    if (errors.date_naissance) {
+        serverMessage.value = errors.date_naissance;
         messageType.value = "error";
         return;
     }
@@ -589,7 +591,7 @@ async function soumettre() {
             password: form.password,
             password_confirmation: form.password,
             specialite: form.specialite,
-            date_of_birth: convertirDatePourAPI(form.date_of_birth),
+            date_naissance: convertirDatePourAPI(form.date_naissance),
         });
 
         authStore.appliquerAuthentification(res?.data, "medecin");
@@ -615,8 +617,8 @@ async function soumettre() {
             errors.specialite = Array.isArray(data.errors.specialite)
                 ? data.errors.specialite[0]
                 : "";
-            errors.date_of_birth = Array.isArray(data.errors.date_of_birth)
-                ? data.errors.date_of_birth[0]
+            errors.date_naissance = Array.isArray(data.errors.date_naissance)
+                ? data.errors.date_naissance[0]
                 : "";
             serverMessage.value =
                 "Veuillez corriger les erreurs du formulaire medecin.";

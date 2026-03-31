@@ -7,7 +7,7 @@ use App\Models\DoctorInvitation;
 use App\Models\HealthLabResult;
 use App\Models\HealthTreatmentCheck;
 use App\Models\HealthVital;
-use App\Models\User;
+use App\Models\Utilisateur;
 use App\Services\HealthDataService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -46,8 +46,8 @@ class DoctorInvitationController extends Controller
 
             // Créer une nouvelle invitation pour un médecin sans patient (phase d'inscription)
             $invitation = DoctorInvitation::create([
-                'patient_user_id' => null,
-                'doctor_user_id'  => null,
+                'id_patient_utilisateur' => null,
+                'id_medecin_utilisateur'  => null,
                 'doctor_email'    => $doctorEmail,
                 'status'          => 'pending',
                 'token'           => \Illuminate\Support\Str::uuid(),
@@ -77,8 +77,11 @@ class DoctorInvitationController extends Controller
     // Lister toutes les invitations médicales
     public function index(Request $request): JsonResponse
     {
+        $compte = $request->user();
+        $utilisateur = $compte->utilisateur;
+        
         $invitations = DoctorInvitation::with($this->withPatient())
-            ->where('doctor_user_id', $request->user()->id)
+            ->where('id_medecin_utilisateur', $utilisateur->id)
             ->orderByRaw("case when status = 'pending' then 0 else 1 end")
             ->orderByDesc('id')
             ->get()
@@ -100,8 +103,9 @@ class DoctorInvitationController extends Controller
         }
 
         // Synchroniser le rôle de l'utilisateur en médecin
-        if ($request->user()->role !== 'medecin') {
-            $request->user()->update(['role' => 'medecin']);
+        $utilisateur = $request->user()->utilisateur;
+        if ($utilisateur->role !== 'medecin') {
+            $utilisateur->update(['role' => 'medecin']);
         }
 
         return response()->json([
@@ -127,8 +131,11 @@ class DoctorInvitationController extends Controller
     // Lister tous les patients du médecin
     public function indexPatients(Request $request): JsonResponse
     {
+        $compte = $request->user();
+        $utilisateur = $compte->utilisateur;
+        
         $patients = DoctorInvitation::with($this->withPatient())
-            ->where('doctor_user_id', $request->user()->id)
+            ->where('id_medecin_utilisateur', $utilisateur->id)
             ->where('status', 'accepted')
             ->orderByDesc('accepted_at')
             ->get()
@@ -138,7 +145,7 @@ class DoctorInvitationController extends Controller
                 if (! $patient) return null;
 
                 $latestVitals  = $this->latestVitals($patient->id);
-                $labResults    = HealthLabResult::where('user_id', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->limit(5)->get();
+                $labResults    = HealthLabResult::where('id_utilisateur', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->limit(5)->get();
 
                 return [
                     'invitation_id' => $invitation->id,
@@ -156,7 +163,7 @@ class DoctorInvitationController extends Controller
     }
 
     // Afficher détail complet d'un patient
-    public function showPatient(Request $request, User $patient): JsonResponse
+    public function showPatient(Request $request, Utilisateur $patient): JsonResponse
     {
         $invitation = $this->findAuthorizedInvitation($request, $patient);
         // Vérifier que le médecin a accès à ce patient
@@ -175,10 +182,10 @@ class DoctorInvitationController extends Controller
                 'patient'             => $patient,
                 'profile'             => $patient->profilSante,
                 'latest_vitals'       => $this->latestVitals($patient->id),
-                'vitals'              => HealthVital::where('user_id', $patient->id)->where('measured_at', '>=', $vitalsStart)->orderByDesc('measured_at')->get(),
-                'lab_results'         => HealthLabResult::where('user_id', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->get(),
+                'vitals'              => HealthVital::where('id_utilisateur', $patient->id)->where('measured_at', '>=', $vitalsStart)->orderByDesc('measured_at')->get(),
+                'lab_results'         => HealthLabResult::where('id_utilisateur', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->get(),
                 'treatment_medicines' => $this->serviceDonneesSante->resoudreMedicamentsTraitement($patient->id),
-                'treatment_checks'    => HealthTreatmentCheck::where('user_id', $patient->id)->where('check_date', '>=', Carbon::today()->subDays(29)->toDateString())->orderBy('check_date')->orderBy('medication_name')->get(),
+                'treatment_checks'    => HealthTreatmentCheck::where('id_utilisateur', $patient->id)->where('check_date', '>=', Carbon::today()->subDays(29)->toDateString())->orderBy('check_date')->orderBy('medication_name')->get(),
                 'general_observation' => [
                     'text'       => $invitation->general_observation,
                     'updated_at' => $invitation->general_observation_updated_at?->toISOString(),
@@ -188,7 +195,7 @@ class DoctorInvitationController extends Controller
     }
 
     // Enregistrer observation générale sur un patient
-    public function storeObservation(Request $request, User $patient): JsonResponse
+    public function storeObservation(Request $request, Utilisateur $patient): JsonResponse
     {
         $invitation = $this->findAuthorizedInvitation($request, $patient);
         // Vérifier que le médecin a accès à ce patient
@@ -233,7 +240,7 @@ class DoctorInvitationController extends Controller
     // Récupérer les derniers signes vitaux du patient
     private function latestVitals(int $userId): ?HealthVital
     {
-        return HealthVital::where('user_id', $userId)
+        return HealthVital::where('id_utilisateur', $userId)
             ->where(fn ($q) => $q->whereNotNull('heart_rate')->orWhereNotNull('systolic_pressure')->orWhereNotNull('diastolic_pressure')->orWhereNotNull('oxygen_saturation'))
             ->orderByDesc('measured_at')
             ->orderByDesc('id')
@@ -256,10 +263,12 @@ class DoctorInvitationController extends Controller
     }
 
     // Trouver invitation autorisée pour un patient
-    private function findAuthorizedInvitation(Request $request, User $patient): ?DoctorInvitation
+    private function findAuthorizedInvitation(Request $request, Utilisateur $patient): ?DoctorInvitation
     {
-        return DoctorInvitation::where('doctor_user_id', $request->user()->id)
-            ->where('patient_user_id', $patient->id)
+        $compte = $request->user();
+        $utilisateur = $compte->utilisateur;
+        return DoctorInvitation::where('id_medecin_utilisateur', $utilisateur->id)
+            ->where('id_patient_utilisateur', $patient->id)
             ->where('status', 'accepted')
             ->latest('accepted_at')
             ->latest('id')
@@ -267,7 +276,7 @@ class DoctorInvitationController extends Controller
     }
 
     // Construire alertes pour un patient
-    private function buildPatientAlerts(User $patient, ?HealthVital $latestVitals, Collection $labResults): array
+    private function buildPatientAlerts(Utilisateur $patient, ?HealthVital $latestVitals, Collection $labResults): array
     {
         $alerts = [];
 
@@ -302,7 +311,9 @@ class DoctorInvitationController extends Controller
     private function authorizeInvitation(DoctorInvitation $invitation, Request $request): ?JsonResponse
     {
         // Vérifier que l'utilisateur est le propriétaire de l'invitation
-        if ($invitation->doctor_user_id !== $request->user()->id) {
+        $compte = $request->user();
+        $utilisateur = $compte->utilisateur;
+        if ($invitation->id_medecin_utilisateur !== $utilisateur->id) {
             return response()->json(['message' => 'Acces non autorise a cette invitation.'], 403);
         }
         return null;

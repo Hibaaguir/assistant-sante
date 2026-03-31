@@ -52,7 +52,9 @@
             <section
                 class="min-h-[250px] rounded-[14px] border border-purple-200 bg-gradient-to-br from-purple-50 via-white to-purple-100 p-4 shadow-[0_4px_16px_rgba(59,130,246,0.1)] sm:p-5 relative overflow-hidden"
             >
-                <div class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-blue-200/20 blur-2xl"></div>
+                <div
+                    class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-blue-200/20 blur-2xl"
+                ></div>
                 <div class="mb-5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <span
@@ -96,7 +98,7 @@
                 <div v-if="!editing.base" class="space-y-2">
                     <LigneChampSante
                         label="Nom"
-                        :value="user.name || '-'"
+                        :value="utilisateur.nom || '-'"
                         icon="user"
                     />
                     <LigneChampSante
@@ -144,7 +146,7 @@
                             >Nom</label
                         >
                         <input
-                            :value="user.name || ''"
+                            :value="utilisateur.nom || ''"
                             disabled
                             class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base text-slate-700"
                         />
@@ -245,7 +247,9 @@
             <section
                 class="min-h-[250px] rounded-[14px] border border-purple-200 bg-gradient-to-br from-purple-50 via-white to-purple-100 p-4 shadow-[0_4px_16px_rgba(168,85,247,0.1)] sm:p-5 relative overflow-hidden"
             >
-                <div class="pointer-events-none absolute -left-8 -bottom-8 h-28 w-28 rounded-full bg-purple-200/20 blur-2xl"></div>
+                <div
+                    class="pointer-events-none absolute -left-8 -bottom-8 h-28 w-28 rounded-full bg-purple-200/20 blur-2xl"
+                ></div>
                 <div class="mb-5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <span
@@ -555,7 +559,9 @@
             <section
                 class="min-h-[250px] rounded-[14px] border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-emerald-100 p-4 shadow-[0_4px_16px_rgba(34,197,94,0.1)] sm:p-5 relative overflow-hidden"
             >
-                <div class="pointer-events-none absolute -right-10 -bottom-10 h-32 w-32 rounded-full bg-cyan-200/15 blur-2xl"></div>
+                <div
+                    class="pointer-events-none absolute -right-10 -bottom-10 h-32 w-32 rounded-full bg-cyan-200/15 blur-2xl"
+                ></div>
                 <div class="mb-5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <span
@@ -1091,7 +1097,7 @@ const loadError = ref("");
 const doctorEmailError = ref("");
 const savingSection = ref("");
 const profil = reactive({});
-const user = reactive({});
+const utilisateur = reactive({});
 const sectionErrors = reactive({
     base: {
         sexe: "",
@@ -1343,8 +1349,8 @@ const treatmentNamesForSelectedType = computed(() =>
 
 // Age affiche dans la section "Informations de base".
 const computedAge = computed(() => {
-    if (!user.date_of_birth) return "";
-    const dob = new Date(user.date_of_birth);
+    if (!utilisateur.date_naissance) return "";
+    const dob = new Date(utilisateur.date_naissance);
     if (Number.isNaN(dob.getTime())) return "";
     const today = new Date();
     let age = today.getFullYear() - dob.getFullYear();
@@ -1801,7 +1807,7 @@ async function enregistrerSection(section) {
             construireChargeUtile(),
         );
         Object.assign(profil, response?.data?.data || {});
-        Object.assign(user, response?.data?.user || user);
+        Object.assign(utilisateur, response?.data?.utilisateur || {});
         authStore.definirPresenceProfilSante(true);
         syncDraftFromProfil();
         editing[section] = false;
@@ -1897,7 +1903,7 @@ onMounted(async () => {
 
         const response = await api.get("/profil-sante");
         Object.assign(profil, response?.data?.data || {});
-        Object.assign(user, response?.data?.user || {});
+        Object.assign(utilisateur, response?.data?.utilisateur || {});
         authStore.definirPresenceProfilSante(Boolean(response?.data?.data));
         syncDraftFromProfil();
     } catch (e) {

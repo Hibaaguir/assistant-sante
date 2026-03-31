@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\HealthTreatmentCheck;
-use App\Models\User;
+use App\Models\Utilisateur;
 use App\Notifications\TraitementJournalierNotification;
 use App\Services\HealthDataService;
 use Carbon\Carbon;
@@ -35,7 +35,7 @@ class NotifierTraitementsDuJour extends Command
         $date = $this->resolveDate();
         $counts = ['reminder' => 0, 'missed' => 0];
 
-        User::whereHas('profilSante')->get()->each(function (User $user) use ($mode, $date, &$counts) {
+        Utilisateur::whereHas('profilSante')->get()->each(function (Utilisateur $user) use ($mode, $date, &$counts) {
             $medicaments = collect($this->serviceDonneesSante->resoudreMedicamentsTraitement($user->id));
 
             if ($medicaments->isEmpty()) return;
@@ -52,7 +52,7 @@ class NotifierTraitementsDuJour extends Command
         return self::SUCCESS;
     }
 
-    private function maybeNotify(User $user, string $type, string $mode, Carbon $date, array $stats, array &$counts): void
+    private function maybeNotify(Utilisateur $user, string $type, string $mode, Carbon $date, array $stats, array &$counts): void
     {
         $guard = $type === 'reminder' ? $stats['expected_total'] > 0 : $stats['missing_total'] > 0;
 
@@ -81,7 +81,7 @@ class NotifierTraitementsDuJour extends Command
     private function buildStats(int $userId, Carbon $date, Collection $medicaments): array
     {
         $checks = HealthTreatmentCheck::query()
-            ->where('user_id', $userId)
+            ->where('id_utilisateur', $userId)
             ->whereDate('check_date', $date->toDateString())
             ->get();
 
@@ -112,7 +112,7 @@ class NotifierTraitementsDuJour extends Command
         ];
     }
 
-    private function alreadyNotified(User $user, string $type, Carbon $date): bool
+    private function alreadyNotified(Utilisateur $user, string $type, Carbon $date): bool
     {
         return $user->notifications()
             ->where('type', TraitementJournalierNotification::class)

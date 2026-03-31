@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Models\Utilisateur;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -35,7 +35,7 @@ class HealthLabResultFactory extends Factory
         $option = fake()->randomElement($catalog[$analysisType]);
 
         return [
-            'user_id' => User::factory(),
+            'id_utilisateur' => Utilisateur::factory(),
             'analysis_type' => $analysisType,
             'analysis_result' => $option['label'],
             'value' => fake()->randomFloat(2, $option['min'], $option['max']),

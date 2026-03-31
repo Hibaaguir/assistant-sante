@@ -487,8 +487,8 @@ onMounted(async () => {
     }
     try {
         const { data } = await api.get("/profil-sante");
-        dateNaissance.value = data?.user?.date_of_birth
-            ? String(data.user.date_of_birth)
+        dateNaissance.value = data?.utilisateur?.date_naissance
+            ? String(data.utilisateur.date_naissance)
             : "";
         authStore.definirPresenceProfilSante(Boolean(data?.data));
         if (data?.data) {

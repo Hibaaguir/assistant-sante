@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('profils_sante', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('id_utilisateur')->constrained('utilisateurs')->cascadeOnDelete();
 
             // Informations physiques
-            $table->enum('sexe', ['homme', 'femme']);
+            $table->enum('genre', ['homme', 'femme']);
             $table->float('taille');
             $table->float('poids');
             $table->string('groupe_sanguin');
@@ -22,17 +22,14 @@ return new class extends Migration
             $table->json('objectifs')->nullable();
             $table->json('allergies')->nullable();
             $table->json('maladies_chroniques')->nullable();
-            $table->json('traitements')->nullable();
 
             // Style de vie
             $table->boolean('fumeur')->default(false);
-            $table->boolean('alcool')->default(false);
+            $table->boolean('alcoolique')->default(false);
 
             // Suivi médecin
-            $table->boolean('consulte_medecin')->default(false);
+            $table->boolean('inviter_medecin')->default(false);
             $table->string('medecin_email')->nullable();
-            $table->boolean('medecin_peut_consulter')->default(false);
-
             $table->timestamps();
         });
     }

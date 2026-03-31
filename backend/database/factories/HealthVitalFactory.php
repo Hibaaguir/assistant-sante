@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Models\Utilisateur;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -13,7 +13,7 @@ class HealthVitalFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
+            'id_utilisateur' => Utilisateur::factory(),
             'measured_at' => fake()->dateTimeBetween('-60 days', 'now'),
             'heart_rate' => fake()->numberBetween(55, 115),
             'systolic_pressure' => fake()->numberBetween(100, 155),

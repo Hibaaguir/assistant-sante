@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DoctorInvitation;
-use App\Models\User;
+use App\Models\Utilisateur;
+use App\Models\Compte;
 use App\Services\DoctorInvitationLinker;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
@@ -28,29 +29,32 @@ class AuthController extends Controller
         try {
 
             $validated = $request->validate([
+                'name'          => ['required', 'string', 'min:2', 'max:255'],
                 'email'         => ['required', 'email', 'max:255', 'unique:comptes,email'],
                 'password'      => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
                 'date_naissance'=> ['required', 'date_format:Y-m-d', $this->regleDate()],
-                'profile_photo' => ['nullable', 'string'],
+                'photo_profil'  => ['nullable', 'string'],
                 'age'           => ['nullable', 'integer', 'min:0'],
             ], $this->messagesDeBase());
 
             // Création du compte
-            $compte = \App\Models\Compte::create([
-                'email'    => strtolower(trim($validated['email'])),
-                'password' => Hash::make($validated['password']),
-                'statut'   => 'actif',
+            $compte = Compte::create([
+                'email'        => strtolower(trim($validated['email'])),
+                'motdepasse'   => Hash::make($validated['password']),
+                'statut_compte'=> 'actif',
             ]);
 
             // Création de l'utilisateur lié au compte
-            $user = User::create([
+            $utilisateur = Utilisateur::create([
                 'compte_id'      => $compte->id,
+                'nom'            => $validated['name'],
                 'date_naissance' => $validated['date_naissance'],
-                'profile_photo'  => $validated['profile_photo'] ?? null,
-                'age'            => $validated['age'] ?? null,
+                'photo_profil'   => $validated['photo_profil'] ?? null,
+                'age'            => $this->calculerAge($validated['date_naissance']),
+                'role'           => 'usager',
             ]);
 
-            return $this->reponseAuthentifiee($user, $compte->createToken('auth_token')->plainTextToken, false, '/profil-sante', false, 201, 'Compte cree avec succes');
+            return $this->reponseAuthentifiee($utilisateur, $compte->createToken('auth_token')->plainTextToken, false, '/profil-sante', false, 201, 'Compte cree avec succes');
 
         } catch (ValidationException $e) {
             return $this->erreurValidation($e, 'Veuillez corriger les erreurs du formulaire.');
@@ -67,13 +71,14 @@ class AuthController extends Controller
     {
         try {
             $validated = $request->validate([
-                'email'         => ['required', 'email', 'max:255', Rule::unique('users', 'email')->where(fn ($q) => $q->where('role', 'medecin'))],
+                'email'         => ['required', 'email', 'max:255', 'unique:comptes,email'],
                 'password'      => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+                'nom'           => ['required', 'string', 'min:2', 'max:120'],
                 'specialite'    => ['required', 'string', 'min:2', 'max:120'],
-                'date_of_birth' => ['nullable', 'date_format:Y-m-d', $this->regleDate(25, 'Un medecin doit avoir au minimum 25 ans pour creer un compte medecin.')],
+                'date_naissance' => ['nullable', 'date_format:Y-m-d', $this->regleDate(25, 'Un medecin doit avoir au minimum 25 ans pour creer un compte medecin.')],
             ], array_merge($this->messagesDeBase(), [
                 'specialite.required'      => 'La specialite est obligatoire.',
-                'date_of_birth.date_format' => 'La date doit etre au format YYYY-MM-DD.',
+                'date_naissance.date_format' => 'La date doit etre au format YYYY-MM-DD.',
             ]));
 
             $email = strtolower(trim($validated['email']));
@@ -86,18 +91,26 @@ class AuthController extends Controller
                 ], 403);
             }
 
-            $user = User::create([
-                'name'          => trim($request->input('name') ?: 'Medecin'),
-                'email'         => $email,
-                'date_of_birth' => $validated['date_of_birth'] ?? null,
-                'password'      => Hash::make($validated['password']),
+            // Création du compte
+            $compte = Compte::create([
+                'email'        => $email,
+                'motdepasse'   => Hash::make($validated['password']),
+                'statut_compte'=> 'actif',
+            ]);
+
+            // Création de l'utilisateur médecin
+            $utilisateur = Utilisateur::create([
+                'compte_id'      => $compte->id,
+                'nom'           => trim($validated['nom']),
+                'date_naissance' => $validated['date_naissance'] ?? null,
+                'age'            => $validated['date_naissance'] ? $this->calculerAge($validated['date_naissance']) : null,
                 'role'          => 'medecin',
                 'specialite'    => trim($validated['specialite']),
             ]);
 
-            $hasPendingInvitations = $this->doctorInvitationLinker->linkForUser($user);
+            $hasPendingInvitations = $this->doctorInvitationLinker->linkForUser($utilisateur);
 
-            return $this->reponseAuthentifiee($user, $user->createToken('doctor_auth_token')->plainTextToken, false, '/main/dashboard', $hasPendingInvitations, 201, 'Compte medecin cree avec succes');
+            return $this->reponseAuthentifiee($utilisateur, $compte->createToken('doctor_auth_token')->plainTextToken, false, '/main/dashboard', $hasPendingInvitations, 201, 'Compte medecin cree avec succes');
 
         } catch (ValidationException $e) {
             return $this->erreurValidation($e, 'Veuillez corriger les erreurs du formulaire medecin.');
@@ -119,23 +132,23 @@ class AuthController extends Controller
             ]);
 
             $email = strtolower(trim($credentials['email']));
-            $compte = \App\Models\Compte::where('email', $email)->first();
-            if (! $compte || !\Illuminate\Support\Facades\Hash::check($credentials['password'], $compte->password)) {
+            $compte = Compte::where('email', $email)->first();
+            if (! $compte || !Hash::check($credentials['password'], $compte->motdepasse)) {
                 return response()->json(['message' => 'Email ou mot de passe invalide.'], 401);
             }
 
-            $user = $compte->user;
-            if (! $user) {
+            $utilisateur = $compte->utilisateur;
+            if (! $utilisateur) {
                 return response()->json(['message' => 'Aucun utilisateur lié à ce compte.'], 404);
             }
 
             // Suppression des anciens tokens si besoin (selon votre logique de sécurité)
             // $compte->tokens()->delete();
 
-            $hasProfil = $user->profilSante()->exists();
+            $hasProfil = $utilisateur->profilSante()->exists();
             $redirectTo = $hasProfil ? '/main' : '/profil-sante';
 
-            return $this->reponseAuthentifiee($user, $compte->createToken('auth_token')->plainTextToken, $hasProfil, $redirectTo, false, 200, 'Connexion reussie.');
+            return $this->reponseAuthentifiee($utilisateur, $compte->createToken('auth_token')->plainTextToken, $hasProfil, $redirectTo, false, 200, 'Connexion reussie.');
 
         } catch (ValidationException $e) {
             return $this->erreurValidation($e, 'Veuillez corriger les erreurs du formulaire.');
@@ -158,18 +171,21 @@ class AuthController extends Controller
     {
         // Récupérer le compte via le token
         $compte = $request->user();
-        $user = $compte->user;
-        $hasProfil = $user && $user->profilSante()->exists();
+        $utilisateur = $compte->utilisateur;
+        $hasProfil = $utilisateur && $utilisateur->profilSante()->exists();
 
         return response()->json([
-            'user'         => $user ? [
-                'id'             => $user->id,
-                'compte_id'      => $user->compte_id,
-                'date_naissance' => $user->date_naissance,
-                'profile_photo'  => $user->profile_photo,
-                'age'            => $user->age,
+            'utilisateur'      => $utilisateur ? [
+                'id'             => $utilisateur->id,
+                'compte_id'      => $utilisateur->compte_id,
+                'nom'            => $utilisateur->nom,
+                'date_naissance' => $utilisateur->date_naissance,
+                'photo_profil'   => $utilisateur->photo_profil,
+                'age'            => $utilisateur->age,
+                'role'           => $utilisateur->role,
+                'specialite'     => $utilisateur->specialite,
                 'email'          => $compte->email,
-                'statut'         => $compte->statut,
+                'statut'         => $compte->statut_compte,
             ] : null,
             'has_profil_sante' => $hasProfil,
             'redirect_to'      => $hasProfil ? '/main' : '/profil-sante',
@@ -187,14 +203,14 @@ class AuthController extends Controller
     // ─── Helpers privés ───────────────────────────────────────────────────────
 
     // Formater la réponse d'authentification
-    private function reponseAuthentifiee(User $user, string $token, bool $hasProfil, string $redirectTo, bool $hasPendingInvitations, int $status, string $message): JsonResponse
+    private function reponseAuthentifiee(Utilisateur $utilisateur, string $token, bool $hasProfil, string $redirectTo, bool $hasPendingInvitations, int $status, string $message): JsonResponse
     {
         return response()->json([
             'message'                        => $message,
             'token'                          => $token,
             'has_profil_sante'               => $hasProfil,
             'redirect_to'                    => $redirectTo,
-            'user'                           => $this->donneesUtilisateur($user),
+            'utilisateur'                    => $this->donneesUtilisateur($utilisateur),
             'has_pending_doctor_invitations' => $hasPendingInvitations,
         ], $status);
     }
@@ -206,23 +222,23 @@ class AuthController extends Controller
     }
 
     // Récupérer les données publiques de l'utilisateur
-    private function donneesUtilisateur(User $user): array
+    private function donneesUtilisateur(Utilisateur $utilisateur): array
     {
         return [
-            'id'            => $user->id,
-            'name'          => $user->name,
-            'email'         => $user->email,
-            'date_of_birth' => $user->date_of_birth,
-            'role'          => $user->role,
-            'specialite'    => $user->specialite,
-            'profile_photo' => $user->profile_photo,
+            'id'             => $utilisateur->id,
+            'nom'            => $utilisateur->nom,
+            'date_naissance' => $utilisateur->date_naissance,
+            'photo_profil'   => $utilisateur->photo_profil,
+            'age'            => $utilisateur->age,
+            'role'           => $utilisateur->role,
+            'specialite'     => $utilisateur->specialite,
         ];
     }
 
     // Vérifier si utilisateur a invitations médecin en attente
-    private function hasPendingDoctorInvitations(User $user): bool
+    private function hasPendingDoctorInvitations(Utilisateur $user): bool
     {
-        return DoctorInvitation::where('doctor_user_id', $user->id)->where('status', 'pending')->exists();
+        return DoctorInvitation::where('id_medecin_utilisateur', $user->id)->where('status', 'pending')->exists();
     }
 
     // Vérifier si invitation en attente existe pour email
@@ -249,33 +265,35 @@ class AuthController extends Controller
     }
 
     // Trouver utilisateur pour connexion avec rôle
-    private function findUserForLogin(string $email, string $password, string $role): ?User
+    private function findUserForLogin(string $email, string $password, string $role): ?Utilisateur
     {
-        $user = User::where('email', $email)->where('role', $role)->latest('id')->first();
-        return $user && Hash::check($password, $user->password) ? $user : null;
+        $compte = Compte::where('email', $email)->first();
+        if (!$compte || !Hash::check($password, $compte->motdepasse)) {
+            return null;
+        }
+        
+        $utilisateur = $compte->utilisateur;
+        return ($utilisateur && $utilisateur->role === $role) ? $utilisateur : null;
     }
 
     // Trouver utilisateur sans rôle spécifié
-    private function findUserWithoutRole(string $email, string $password): ?User
+    private function findUserWithoutRole(string $email, string $password): ?Utilisateur
     {
-        foreach (['admin', 'administrateur', 'medecin', 'user'] as $role) {
-            if ($user = $this->findUserForLogin($email, $password, $role)) {
-                return $user;
-            }
-        }
-        return null;
+        $compte = Compte::where('email', $email)->first();
+        return ($compte && Hash::check($password, $compte->motdepasse)) ? $compte->utilisateur : null;
     }
 
     // Retourner les messages de validation de base
     private function messagesDeBase(): array
     {
         return [
-            'name.required'          => "Le nom d'utilisateur est obligatoire.",
-            'email.required'         => "L'adresse email est obligatoire.",
-            'email.unique'           => 'Cet email est deja utilise pour ce role.',
-            'date_of_birth.required' => 'La date de naissance est obligatoire.',
-            'date_of_birth.date_format' => 'Format de date invalide. Utilisez YYYY-MM-DD.',
-            'password.required'      => 'Le mot de passe est obligatoire.',
+            'nom.required'               => "Le nom d'utilisateur est obligatoire.",
+            'email.required'             => "L'adresse email est obligatoire.",
+            'email.unique'               => 'Cet email est deja utilise.',
+            'date_naissance.required'    => 'La date de naissance est obligatoire.',
+            'date_naissance.date_format' => 'Format de date invalide. Utilisez YYYY-MM-DD.',
+            'password.required'          => 'Le mot de passe est obligatoire.',
+            'password.confirmed'         => 'Les mots de passe ne correspondent pas.',
         ];
     }
 
@@ -307,5 +325,11 @@ class AuthController extends Controller
                 $fail($messageAgeMinimum ?? "Vous devez avoir au minimum {$ageMinimum} ans pour creer un compte.");
             }
         };
+    }
+
+    // Calculer l'âge à partir de la date de naissance
+    private function calculerAge(string $dateNaissance): int
+    {
+        return Carbon::createFromFormat('Y-m-d', $dateNaissance)->diffInYears(now());
     }
 }

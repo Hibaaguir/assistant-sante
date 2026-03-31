@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Models\Compte;
+use App\Models\Utilisateur;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,23 +17,38 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
         // Utilisateur administrateur
-        User::factory()->create([
-            'name' => 'Administrateur',
+        $compteAdmin = Compte::create([
             'email' => 'admin@gmail.com',
-            'password' => bcrypt('admin1234'),
+            'motdepasse' => Hash::make('admin1234'),
+            'statut_compte' => 'actif',
+        ]);
+
+        Utilisateur::create([
+            'compte_id' => $compteAdmin->id,
+            'nom' => 'Administrateur',
+            'date_naissance' => null,
+            'photo_profil' => null,
+            'age' => null,
             'role' => 'administrateur',
-            'statut_admin' => 'Actif',
+            'specialite' => null,
         ]);
 
         // Utilisateur test normal
-        User::factory()->create([
-            'name' => 'Test User',
+        $compteTest = Compte::create([
             'email' => 'test@example.com',
-            'password' => bcrypt('password'),
-            'role' => 'user',
+            'motdepasse' => Hash::make('password'),
+            'statut_compte' => 'actif',
+        ]);
+
+        Utilisateur::create([
+            'compte_id' => $compteTest->id,
+            'nom' => 'Test User',
+            'date_naissance' => null,
+            'photo_profil' => null,
+            'age' => null,
+            'role' => 'usager',
+            'specialite' => null,
         ]);
 
         $this->call([

@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Models\Utilisateur;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -14,8 +14,8 @@ class DoctorInvitationFactory extends Factory
     public function definition(): array
     {
         return [
-            'patient_user_id' => User::factory(),
-            'doctor_user_id' => null,
+            'id_patient_utilisateur' => Utilisateur::factory(),
+            'id_medecin_utilisateur' => null,
             'doctor_email' => fake()->unique()->safeEmail(),
             'status' => fake()->randomElement(['pending', 'accepted', 'rejected', 'revoked']),
             'token' => hash('sha256', Str::uuid()->toString()),

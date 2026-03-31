@@ -4,7 +4,7 @@
   Cette route affiche le dashboard correspondant au rôle connecté.
 -->
 <template>
-    <div v-if="authStore.user" class="w-full">
+    <div v-if="authStore.utilisateur" class="w-full">
         <component :is="dashboardComponent" />
     </div>
     <div v-else class="flex items-center justify-center py-12">

@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Models\Utilisateur;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -13,7 +13,7 @@ class JournalEntryFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
+            'id_utilisateur' => Utilisateur::factory(),
             'entry_date' => fake()->dateTimeBetween('-90 days', 'now')->format('Y-m-d'),
             'sleep' => fake()->numberBetween(4, 9),
             'stress' => fake()->numberBetween(1, 9),

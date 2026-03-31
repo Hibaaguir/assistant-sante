@@ -2,29 +2,28 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Compte extends Model
 {
-    use HasFactory, Notifiable;
-
     protected $table = 'comptes';
 
     protected $fillable = [
         'email',
+        'email_verified_at',
         'password',
-        'statut',
+        'remember_token',
     ];
 
-    protected $hidden = [
-        'password',
+    protected $hidden = ['password', 'remember_token'];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
     ];
 
-    public function user()
+    public function utilisateurs()
     {
-        return $this->hasOne(User::class, 'compte_id');
+        return $this->hasMany(Utilisateur::class, 'compte_id');
     }
 }

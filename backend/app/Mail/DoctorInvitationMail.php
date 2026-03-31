@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\User;
+use App\Models\Utilisateur;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -14,7 +14,7 @@ class DoctorInvitationMail extends Mailable
     use Queueable, SerializesModels;
 
     public function __construct(
-        public User $patient,
+        public Utilisateur $patient,
         public string $doctorEmail,
         public string $applicationPath = '/doctor-register',
         public ?string $role = null,
@@ -24,7 +24,7 @@ class DoctorInvitationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Invitation medecin - {$this->patient->name}",
+            subject: "Invitation medecin - {$this->patient->nom}",
         );
     }
 
@@ -37,7 +37,7 @@ class DoctorInvitationMail extends Mailable
         return new Content(
             view: 'emails.doctor-invitation',
             with: [
-                'patientName' => $this->patient->name,
+                'patientName' => $this->patient->nom,
                 'applicationUrl' => $url,
             ],
         );

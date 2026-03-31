@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\HealthTreatmentCheck;
-use App\Models\User;
+use App\Models\Utilisateur;
 use App\Notifications\TraitementJournalierNotification;
 use App\Services\HealthDataService;
 use Carbon\Carbon;
@@ -22,8 +22,8 @@ class NotificationController extends Controller
     {
         // Récupérer l'utilisateur et déclencher les notifications de traitement
         $utilisateur = $request->user();
-        // Vérifier que l'utilisateur est une instance de User
-        if ($utilisateur instanceof User) {
+        // Vérifier que l'utilisateur est une instance de Utilisateur
+        if ($utilisateur instanceof Utilisateur) {
             $this->declencherNotificationsTraitementsSelonHoraire($utilisateur);
         }
 
@@ -81,7 +81,7 @@ class NotificationController extends Controller
     // ─── Helpers privés ───────────────────────────────────────────────────────
 
     // Déclencher notifications de traitement selon horaire
-    private function declencherNotificationsTraitementsSelonHoraire(User $utilisateur): void
+    private function declencherNotificationsTraitementsSelonHoraire(Utilisateur $utilisateur): void
     {
         // Obtenir la date et l'heure actuelles
         $maintenant = Carbon::now(config('app.timezone'));
@@ -130,7 +130,7 @@ class NotificationController extends Controller
     {
         $cleDate = $dateCible->toDateString();
         $controles = HealthTreatmentCheck::query()
-            ->where('user_id', $idUtilisateur)
+            ->where('id_utilisateur', $idUtilisateur)
             ->whereDate('check_date', $cleDate)
             ->get();
 
@@ -173,7 +173,7 @@ class NotificationController extends Controller
     }
 
     // Vérifier si notification déjà envoyée
-    private function notificationDejaEnvoyee(User $utilisateur, string $typeNotification, Carbon $dateCible): bool
+    private function notificationDejaEnvoyee(Utilisateur $utilisateur, string $typeNotification, Carbon $dateCible): bool
     {
         return $utilisateur->notifications()
             ->where('type', TraitementJournalierNotification::class)

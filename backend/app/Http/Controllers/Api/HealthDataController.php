@@ -23,18 +23,21 @@ class HealthDataController extends Controller
     // Afficher vue d'ensemble des données de santé
     public function vueEnsemble(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
+        $compte = $request->user();
+        $utilisateur = $compte->utilisateur;
+        $userId = $utilisateur->id;
+        
         $days = max(1, min((int) $request->query( 'days', 7), 30));
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
 
-        $vitals = HealthVital::query()
-            ->where('user_id', $userId)
+        $vitals = SigneVital::query()
+            ->where('id_utilisateur', $userId)
             ->whereDate('measured_at', '>=', $startDate)
             ->orderBy('measured_at')
             ->get();
 
-        $latestVitals = HealthVital::query()
-            ->where('user_id', $userId)
+        $latestVitals = SigneVital::query()
+            ->where('id_utilisateur', $userId)
             ->where(function ($query) {
                 $query
                     ->whereNotNull('heart_rate')
@@ -47,22 +50,22 @@ class HealthDataController extends Controller
             ->first();
 
         $labResults = HealthLabResult::query()
-            ->where('user_id', $userId)
+            ->where('id_utilisateur', $userId)
             ->orderByDesc('analysis_date')
             ->orderByDesc('id')
             ->limit(20)
             ->get();
 
         $treatmentChecks = HealthTreatmentCheck::query()
-            ->where('user_id', $userId)
+            ->where('id_utilisateur', $userId)
             ->where('check_date', '>=', $startDate)
             ->orderBy('check_date')
             ->orderBy('medication_name')
             ->get();
 
-        $latestDoctorObservation = DoctorInvitation::query()
-            ->with('doctor:id,name,email')
-            ->where('patient_user_id', $userId)
+        $latestDoctorObservation = InvitationMedecin::query()
+            ->with('doctor:id,nom')
+            ->where('id_patient_utilisateur', $userId)
             ->where('status', 'accepted')
             ->whereNotNull('general_observation')
             ->orderByDesc('general_observation_updated_at')
@@ -84,8 +87,8 @@ class HealthDataController extends Controller
                 'doctor_observation' => [
                     'text' => $latestDoctorObservation?->general_observation,
                     'updated_at' => optional($latestDoctorObservation?->general_observation_updated_at)?->toISOString(),
-                    'doctor_name' => $latestDoctorObservation?->doctor?->name,
-                    'doctor_email' => $latestDoctorObservation?->doctor?->email,
+                    'doctor_name' => $latestDoctorObservation?->doctor?->nom,
+                    'doctor_email' => $latestDoctorObservation?->doctor?->compte?->email,
                 ],
             ],
         ]);
@@ -94,11 +97,13 @@ class HealthDataController extends Controller
     // Lister tous les signes vitaux
     public function indexVitals(Request $request): JsonResponse
     {
+        $compte = $request->user();
+        $userId = $compte->utilisateur->id;
         $days = max(1, min((int) $request->query('days', 30), 90));
         $startDate = Carbon::today()->subDays($days - 1);
 
-        $rows = HealthVital::query()
-            ->where('user_id', $request->user()->id)
+        $rows = SigneVital::query()
+            ->where('id_utilisateur', $userId)
             ->where('measured_at', '>=', $startDate)
             ->orderByDesc('measured_at')
             ->get();
@@ -112,13 +117,14 @@ class HealthDataController extends Controller
     // Enregistrer un nouveau signe vital
     public function storeVital(StoreHealthVitalRequest $request): JsonResponse
     {
+        $compte = $request->user();
+        $userId = $compte->utilisateur->id;
         $payload = $request->validated();
-        $userId = $request->user()->id;
         $measuredAt = isset($payload['measured_at']) ? Carbon::parse($payload['measured_at']) : now();
         $measuredDate = $measuredAt->toDateString();
 
         $existing = HealthVital::query()
-            ->where('user_id', $userId)
+            ->where('id_utilisateur', $userId)
             ->whereDate('measured_at', $measuredDate)
             ->orderByDesc('measured_at')
             ->orderByDesc('id')
@@ -141,8 +147,8 @@ class HealthDataController extends Controller
             ]);
         }
 
-        $vital = HealthVital::create([
-            'user_id' => $userId,
+        $vital = SigneVital::create([
+            'id_utilisateur' => $userId,
             'heart_rate' => $payload['heart_rate'] ?? null,
             'systolic_pressure' => $payload['systolic_pressure'] ?? null,
             'diastolic_pressure' => $payload['diastolic_pressure'] ?? null,
@@ -159,8 +165,10 @@ class HealthDataController extends Controller
     // Lister tous les résultats de laboratoire
     public function indexLabResults(Request $request): JsonResponse
     {
+        $compte = $request->user();
+        $userId = $compte->utilisateur->id;
         $rows = HealthLabResult::query()
-            ->where('user_id', $request->user()->id)
+            ->where('id_utilisateur', $userId)
             ->orderByDesc('analysis_date')
             ->orderByDesc('id')
             ->get();
@@ -174,8 +182,10 @@ class HealthDataController extends Controller
     // Enregistrer un nouveau résultat de laboratoire
     public function storeLabResult(StoreHealthLabResultRequest $request): JsonResponse
     {
+        $compte = $request->user();
+        $userId = $compte->utilisateur->id;
         $payload = $request->validated();
-        $payload['user_id'] = $request->user()->id;
+        $payload['id_utilisateur'] = $userId;
 
         $row = HealthLabResult::create($payload);
 
@@ -215,11 +225,13 @@ class HealthDataController extends Controller
     // Lister tous les contrôles de traitement
     public function indexTreatmentChecks(Request $request): JsonResponse
     {
+        $compte = $request->user();
+        $userId = $compte->utilisateur->id;
         $days = max(1, min((int) $request->query('days', 14), 90));
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
 
         $rows = HealthTreatmentCheck::query()
-            ->where('user_id', $request->user()->id)
+            ->where('id_utilisateur', $userId)
             ->where('check_date', '>=', $startDate)
             ->orderBy('check_date')
             ->orderBy('medication_name')
@@ -234,12 +246,13 @@ class HealthDataController extends Controller
     // Synchroniser les contrôles de traitement
     public function syncTreatmentChecks(SyncHealthTreatmentChecksRequest $request): JsonResponse
     {
-        $userId = $request->user()->id;
+        $compte = $request->user();
+        $userId = $compte->utilisateur->id;
 
         foreach ($request->validated('checks') as $check) {
             HealthTreatmentCheck::updateOrCreate(
                 [
-                    'user_id' => $userId,
+                    'id_utilisateur' => $userId,
                     'check_date' => $check['check_date'],
                     'medication_key' => $check['medication_key'],
                 ],
@@ -263,7 +276,9 @@ class HealthDataController extends Controller
     private function authorizeLabResult(HealthLabResult $labResult, Request $request): ?JsonResponse
     {
         // Vérifier que le résultat appartient à l'utilisateur
-        if ($labResult->user_id !== $request->user()->id) {
+        $compte = $request->user();
+        $userId = $compte->utilisateur->id;
+        if ($labResult->id_utilisateur !== $userId) {
             return response()->json(['message' => 'Acces non autorise a ce resultat de laboratoire.'], 403);
         }
         return null;

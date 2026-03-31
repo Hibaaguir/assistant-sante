@@ -120,7 +120,7 @@
                             <!-- Date de naissance -->
                             <FormField
                                 label="Date de naissance"
-                                :error="errors.date_of_birth"
+                                :error="errors.date_naissance"
                             >
                                 <template #icon>
                                     <path
@@ -131,12 +131,12 @@
                                     />
                                 </template>
                                 <input
-                                    :value="form.date_of_birth"
+                                    :value="form.date_naissance"
                                     type="text"
                                     placeholder="JJ/MM/AAAA"
                                     inputmode="numeric"
                                     maxlength="10"
-                                    v-bind="inputProps('date_of_birth')"
+                                    v-bind="inputProps('date_naissance')"
                                     @beforeinput="
                                         (e) => {
                                             if (
@@ -291,14 +291,14 @@ const authStore = useAuthStore();
 const form = reactive({
     name: "",
     email: "",
-    date_of_birth: "",
+    date_naissance: "",
     password: "",
     password_confirmation: "",
 });
 const errors = reactive({
     name: "",
     email: "",
-    date_of_birth: "",
+    date_naissance: "",
     password: "",
 });
 const loading = ref(false);
@@ -335,7 +335,7 @@ const pwdError = (pwd) => {
 // ─── Date de naissance ────────────────────────────────────────────────────────
 function onDateInput(e) {
     const digits = (e.target.value ?? "").replace(/\D/g, "").slice(0, 8);
-    form.date_of_birth =
+    form.date_naissance =
         digits.length <= 2
             ? digits
             : digits.length <= 4
@@ -344,18 +344,18 @@ function onDateInput(e) {
 }
 
 function validerDate() {
-    const m = form.date_of_birth.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (!form.date_of_birth) {
-        errors.date_of_birth = "";
+    const m = form.date_naissance.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!form.date_naissance) {
+        errors.date_naissance = "";
         return;
     }
     if (!m) {
-        errors.date_of_birth = "Format invalide. Utilisez JJ/MM/AAAA.";
+        errors.date_naissance = "Format invalide. Utilisez JJ/MM/AAAA.";
         return;
     }
     const [, d, mo, y] = m.map(Number);
     const date = new Date(y, mo - 1, d);
-    errors.date_of_birth =
+    errors.date_naissance =
         mo < 1 ||
         mo > 12 ||
         d < 1 ||
@@ -381,8 +381,8 @@ async function soumettre() {
     // Validation champs obligatoires
     if (!form.name) errors.name = "Le nom d'utilisateur est obligatoire.";
     if (!form.email) errors.email = "L'adresse email est obligatoire.";
-    if (!form.date_of_birth)
-        errors.date_of_birth = "La date de naissance est obligatoire.";
+    if (!form.date_naissance)
+        errors.date_naissance = "La date de naissance est obligatoire.";
     if (!form.password) errors.password = "Le mot de passe est obligatoire.";
 
     // Validation format
@@ -405,7 +405,7 @@ async function soumettre() {
         const { data } = await api.post("/auth/register", {
             name: form.name,
             email: form.email,
-            date_of_birth: isoDate(form.date_of_birth),
+            date_naissance: isoDate(form.date_naissance),
             password: form.password,
             password_confirmation: form.password_confirmation,
         });
@@ -429,7 +429,7 @@ async function soumettre() {
         if (status === 422 && data.errors) {
             errors.name = first(data.errors.name);
             errors.email = first(data.errors.email);
-            errors.date_of_birth = first(data.errors.date_of_birth);
+            errors.date_naissance = first(data.errors.date_naissance);
             errors.password = first(data.errors.password);
             serverMessage.value =
                 "Veuillez corriger les erreurs du formulaire.";

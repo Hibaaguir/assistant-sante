@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\TreatmentCatalogItem;
-use App\Models\User;
+use App\Models\CatalogueTraitement;
+use App\Models\Utilisateur;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -24,7 +24,7 @@ class HealthTreatmentCheckFactory extends Factory
         if ($catalogItem === null) {
             $catalogItem = TreatmentCatalogItem::query()->firstOrCreate(
                 ['type' => 'Antidouleur', 'name' => 'Paracetamol'],
-                ['created_by_user_id' => null],
+                ['created_by_id_utilisateur' => null],
             );
         }
 
@@ -40,7 +40,7 @@ class HealthTreatmentCheckFactory extends Factory
         }
 
         return [
-            'user_id' => User::factory(),
+            'id_utilisateur' => Utilisateur::factory(),
             'check_date' => $checkDate->format('Y-m-d'),
             'treatment_type' => $type,
             'medication_key' => $keyBase . '-' . fake()->numberBetween(1, 4),

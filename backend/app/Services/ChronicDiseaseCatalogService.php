@@ -44,15 +44,15 @@ class ChronicDiseaseCatalogService
             ->first();
 
         if ($existing) {
-            if ($existing->created_by_user_id === null && $createdByUserId !== null) {
-                $existing->update(['created_by_user_id' => $createdByUserId]);
+            if ($existing->created_by_id_utilisateur === null && $createdByUserId !== null) {
+                $existing->update(['created_by_id_utilisateur' => $createdByUserId]);
             }
             return;
         }
 
         ChronicDiseaseCatalogItem::query()->create([
             'name' => $normalizedName,
-            'created_by_user_id' => $createdByUserId,
+            'created_by_id_utilisateur' => $createdByUserId,
         ]);
     }
 

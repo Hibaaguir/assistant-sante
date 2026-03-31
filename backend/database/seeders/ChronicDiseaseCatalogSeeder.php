@@ -35,11 +35,11 @@ class ChronicDiseaseCatalogSeeder extends Seeder
             ChronicDiseaseCatalogItem::query()->firstOrCreate([
                 'name' => $normalizedName,
             ], [
-                'created_by_user_id' => null,
+                'created_by_id_utilisateur' => null,
             ]);
         }
 
-        ProfilSante::query()->select('id', 'user_id', 'maladies_chroniques')->chunkById(200, function ($profiles): void {
+        ProfilSante::query()->select('id', 'id_utilisateur', 'maladies_chroniques')->chunkById(200, function ($profiles): void {
             foreach ($profiles as $profile) {
                 $diseases = is_array($profile->maladies_chroniques) ? $profile->maladies_chroniques : [];
 
@@ -52,7 +52,7 @@ class ChronicDiseaseCatalogSeeder extends Seeder
                     ChronicDiseaseCatalogItem::query()->firstOrCreate([
                         'name' => $name,
                     ], [
-                        'created_by_user_id' => $profile->user_id,
+                        'created_by_id_utilisateur' => $profile->id_utilisateur,
                     ]);
                 }
             }

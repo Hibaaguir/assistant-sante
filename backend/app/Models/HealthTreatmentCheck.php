@@ -8,23 +8,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class HealthTreatmentCheck extends Model
 {
     protected $fillable = [
-        'user_id',
-        'check_date',
-        'medication_key',
-        'medication_name',
-        'dose',
-        'taken',
-        'checked_at',
+        'traitement_id',
+        'date_controle',
+        'pris',
+        'verifie_a',
     ];
 
     protected $casts = [
-        'check_date' => 'date:Y-m-d',
-        'taken' => 'boolean',
-        'checked_at' => 'datetime',
+        'date_controle' => 'date:Y-m-d',
+        'pris' => 'boolean',
+        'verifie_a' => 'datetime',
     ];
 
-    public function user(): BelongsTo
+    // Relation : chaque suivi appartient à un traitement
+    public function traitement(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Traitement::class);
+    }
+
+    // Relation : accès indirect à l'utilisateur via le traitement
+    public function user()
+    {
+        return $this->traitement->utilisateur();
     }
 }

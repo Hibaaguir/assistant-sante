@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Utilisateur;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -24,20 +24,20 @@ class UtilisateurAdminController extends Controller
         $this->verifierAccesAdministrateur($request);
 
         // Exclure les administrateurs de la liste
-        $utilisateurs = User::query()
+        $utilisateurs = Utilisateur::query()
             ->whereNotIn('role', ['admin', 'administrateur'])
             ->latest('id')
             ->get()
-            ->map(function (User $utilisateur) {
+            ->map(function (Utilisateur $utilisateur) {
                 return [
                     'id' => $utilisateur->id,
-                    'nom' => (string) $utilisateur->name,
-                    'email' => (string) $utilisateur->email,
+                    'nom' => (string) $utilisateur->nom,
+                    'email' => (string) ($utilisateur->compte?->email ?? ''),
                     'type' => $this->convertirRoleEnType($utilisateur->role),
                     'specialite' => (string) ($utilisateur->specialite ?? ''),
                     'statut' => (string) ($utilisateur->statut_admin ?? 'Actif'),
-                    'inscription' => optional($utilisateur->created_at)?->format('d/m/Y'),
-                    'derniere_activite' => optional($utilisateur->updated_at)?->format('d/m/Y'),
+                    'inscription' => optional($utilisateur->cree_a)?->format('d/m/Y'),
+                    'derniere_activite' => optional($utilisateur->modifie_a)?->format('d/m/Y'),
                 ];
             })
             ->values();
@@ -49,7 +49,7 @@ class UtilisateurAdminController extends Controller
     }
 
     // Mettre à jour le statut d'un utilisateur
-    public function updateStatus(Request $request, User $user): JsonResponse
+    public function updateStatus(Request $request, Utilisateur $user): JsonResponse
     {
         $this->verifierAccesAdministrateur($request);
 
@@ -65,7 +65,7 @@ class UtilisateurAdminController extends Controller
     }
 
     // Supprimer un utilisateur
-    public function destroy(Request $request, User $user): JsonResponse
+    public function destroy(Request $request, Utilisateur $user): JsonResponse
     {
         $this->verifierAccesAdministrateur($request);
 
@@ -85,7 +85,7 @@ class UtilisateurAdminController extends Controller
     // Vérifier l'accès administrateur
     private function verifierAccesAdministrateur(Request $request): void
     {
-        $role = strtolower((string) ($request->user()?->role ?? ''));
+        $role = strtolower((string) ($request->user()->utilisateur?->role ?? ''));
         abort_unless(in_array($role, ['admin', 'administrateur'], true), 403, 'Acces refuse.');
     }
 

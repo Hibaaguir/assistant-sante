@@ -1,7 +1,8 @@
 <?php
 
 use App\Mail\DoctorInvitationMail;
-use App\Models\User;
+use App\Models\Compte;
+use App\Models\Utilisateur;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
@@ -18,10 +19,20 @@ Artisan::command('inspire', function () {
 })->purpose('Afficher une citation inspirante');
 
 Artisan::command('mail:test-invitation-medecin {email : Adresse e-mail du destinataire}', function (string $email) {
-    $patient = new User([
-        'name'  => 'Patient de test',
+    // Create a temporary account and user for the test patient
+    $compte = new Compte([
         'email' => 'patient-test@example.com',
+        'motdepasse' => 'test',
+        'statut_compte' => 'actif',
     ]);
+
+    $patient = new Utilisateur([
+        'nom' => 'Patient de test',
+        'compte_id' => null, // Non persisté
+    ]);
+
+    // Set the relation manually
+    $patient->setRelation('compte', $compte);
 
     Mail::to($email)->send(new DoctorInvitationMail($patient, $email));
 
