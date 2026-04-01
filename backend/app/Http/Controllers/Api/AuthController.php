@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\InvitationMedecin;
+use App\Models\ProfilSante;
 use App\Models\Utilisateur;
 use App\Models\Compte;
 use App\Services\DoctorInvitationLinker;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -54,7 +56,12 @@ class AuthController extends Controller
                 'role'           => 'usager',
             ]);
 
-            return $this->reponseAuthentifiee($utilisateur, $compte->createToken('auth_token')->plainTextToken, false, '/profil-sante', false, 201, 'Compte cree avec succes');
+            // Création automatique d'un profil santé vide
+            ProfilSante::create([
+                'id_utilisateur' => $utilisateur->id,
+            ]);
+
+            return $this->reponseAuthentifiee($utilisateur, $utilisateur->createToken('auth_token')->plainTextToken, false, '/profil-sante', false, 201, 'Compte cree avec succes');
 
         } catch (ValidationException $e) {
             return $this->erreurValidation($e, 'Veuillez corriger les erreurs du formulaire.');
@@ -62,7 +69,7 @@ class AuthController extends Controller
             return $this->gererExceptionRequeteInscription($e);
         } catch (\Throwable $e) {
             Log::error('Registration error: ' . $e->getMessage());
-            return response()->json(['message' => 'Erreur lors de la creation du compte'], 500);
+            return response()->json(['message' => 'Erreur lors de la creation du compte'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -110,7 +117,7 @@ class AuthController extends Controller
 
             $hasPendingInvitations = $this->doctorInvitationLinker->linkForUser($utilisateur);
 
-            return $this->reponseAuthentifiee($utilisateur, $compte->createToken('doctor_auth_token')->plainTextToken, false, '/main/dashboard', $hasPendingInvitations, 201, 'Compte medecin cree avec succes');
+            return $this->reponseAuthentifiee($utilisateur, $utilisateur->createToken('doctor_auth_token')->plainTextToken, false, '/main/dashboard', $hasPendingInvitations, 201, 'Compte medecin cree avec succes');
 
         } catch (ValidationException $e) {
             return $this->erreurValidation($e, 'Veuillez corriger les erreurs du formulaire medecin.');
@@ -118,7 +125,7 @@ class AuthController extends Controller
             return $this->gererExceptionRequeteInscription($e);
         } catch (\Throwable $e) {
             Log::error('Doctor registration error: ' . $e->getMessage());
-            return response()->json(['message' => 'Erreur lors de la creation du compte medecin'], 500);
+            return response()->json(['message' => 'Erreur lors de la creation du compte medecin'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -134,27 +141,28 @@ class AuthController extends Controller
             $email = strtolower(trim($credentials['email']));
             $compte = Compte::where('email', $email)->first();
             if (! $compte || !Hash::check($credentials['password'], $compte->motdepasse)) {
-                return response()->json(['message' => 'Email ou mot de passe invalide.'], 401);
+                return response()->json(['message' => 'Email ou mot de passe invalide.'], Response::HTTP_UNAUTHORIZED);
             }
 
             $utilisateur = $compte->utilisateur;
             if (! $utilisateur) {
-                return response()->json(['message' => 'Aucun utilisateur lié à ce compte.'], 404);
+                return response()->json(['message' => 'Aucun utilisateur lié à ce compte.'], Response::HTTP_NOT_FOUND);
             }
 
             // Suppression des anciens tokens si besoin (selon votre logique de sécurité)
             // $compte->tokens()->delete();
 
-            $hasProfil = $utilisateur->profilSante()->exists();
+            $profilSante = $utilisateur->profilSante;
+            $hasProfil = $profilSante && $profilSante->isComplete();
             $redirectTo = $hasProfil ? '/main' : '/profil-sante';
 
-            return $this->reponseAuthentifiee($utilisateur, $compte->createToken('auth_token')->plainTextToken, $hasProfil, $redirectTo, false, 200, 'Connexion reussie.');
+            return $this->reponseAuthentifiee($utilisateur, $utilisateur->createToken('auth_token')->plainTextToken, $hasProfil, $redirectTo, false, 200, 'Connexion reussie.');
 
         } catch (ValidationException $e) {
             return $this->erreurValidation($e, 'Veuillez corriger les erreurs du formulaire.');
         } catch (\Throwable $e) {
             Log::error('Login error: ' . $e->getMessage());
-            return response()->json(['message' => 'Erreur lors de la connexion.'], 500);
+            return response()->json(['message' => 'Erreur lors de la connexion.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -167,15 +175,22 @@ class AuthController extends Controller
     }
 
     // Récupérer l'utilisateur connecté
+    // Récupérer l'utilisateur connecté
     public function getCurrentUser(Request $request): JsonResponse
     {
-        // Récupérer le compte via le token
-        $compte = $request->user();
-        $utilisateur = $compte->utilisateur;
-        $hasProfil = $utilisateur && $utilisateur->profilSante()->exists();
+        // Récupérer l'utilisateur via le token (Auth::user() retourne Utilisateur selon config/auth.php)
+        $utilisateur = $request->user();
+        
+        if (!$utilisateur) {
+            return response()->json(['utilisateur' => null, 'has_profil_sante' => false], Response::HTTP_UNAUTHORIZED);
+        }
+        
+        $compte = $utilisateur->compte;
+        $profilSante = $utilisateur->profilSante;
+        $hasProfil = $profilSante && $profilSante->isComplete();
 
         return response()->json([
-            'utilisateur'      => $utilisateur ? [
+            'utilisateur'      => [
                 'id'             => $utilisateur->id,
                 'compte_id'      => $utilisateur->compte_id,
                 'nom'            => $utilisateur->nom,
@@ -184,9 +199,9 @@ class AuthController extends Controller
                 'age'            => $utilisateur->age,
                 'role'           => $utilisateur->role,
                 'specialite'     => $utilisateur->specialite,
-                'email'          => $compte->email,
-                'statut'         => $compte->statut_compte,
-            ] : null,
+                'email'          => $compte?->email,
+                'statut'         => $compte?->statut_compte,
+            ],
             'has_profil_sante' => $hasProfil,
             'redirect_to'      => $hasProfil ? '/main' : '/profil-sante',
         ]);
@@ -218,7 +233,7 @@ class AuthController extends Controller
     // Retourner une erreur de validation formatée
     private function erreurValidation(ValidationException $e, string $message): JsonResponse
     {
-        return response()->json(['message' => $message, 'errors' => $e->errors()], 422);
+        return response()->json(['message' => $message, 'errors' => $e->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
     // Récupérer les données publiques de l'utilisateur

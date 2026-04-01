@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\TraitementCatalogueService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class TreatmentCatalogController extends Controller

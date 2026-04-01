@@ -822,7 +822,7 @@ async function enregistrerMesure() {
     }
 
     try {
-        await api.post("/health-data/vitals", {
+        await api.post("/donnees-sante/vitals", {
             measured_at: isoDate(form.date),
             heart_rate: heartRate,
             systolic_pressure: systolic,
@@ -871,7 +871,7 @@ async function enregistrerDepuisCartes() {
 
     enregistrementEnCours.value = true;
     try {
-        await api.post("/health-data/vitals", {
+        await api.post("/donnees-sante/vitals", {
             measured_at: today(),
             heart_rate: heartRate,
             systolic_pressure: systolic,

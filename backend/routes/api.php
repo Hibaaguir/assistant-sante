@@ -1,11 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\AllergyCatalogController;
-use App\Http\Controllers\Api\ChronicDiseaseCatalogController;
 use App\Http\Controllers\Api\DoctorInvitationController;
-use App\Http\Controllers\Api\HealthDataController;
-use App\Http\Controllers\Api\JournalEntryController;
+use App\Http\Controllers\Api\DonneesSanteController;
+use App\Http\Controllers\Api\JournalQuotidienController;
 use App\Http\Controllers\Api\MotDePasseOubliController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ProfilSanteController;
@@ -68,18 +66,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [TreatmentCatalogController::class, 'store']);
     });
 
-    // --- Catalogue allergies ---
-    Route::prefix('allergy-catalog')->group(function () {
-        Route::get('/',  [AllergyCatalogController::class, 'index']);
-        Route::post('/', [AllergyCatalogController::class, 'store']);
-    });
-
-    // --- Catalogue maladies chroniques ---
-    Route::prefix('chronic-disease-catalog')->group(function () {
-        Route::get('/',  [ChronicDiseaseCatalogController::class, 'index']);
-        Route::post('/', [ChronicDiseaseCatalogController::class, 'store']);
-    });
-
     // --- Notifications ---
     Route::prefix('notifications')->group(function () {
         Route::get('/',                          [NotificationController::class, 'index']);
@@ -94,26 +80,26 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{user}',      [UtilisateurAdminController::class, 'destroy']);
     });
 
-    // --- Journal ---
+    // --- Journal Quotidien ---
     Route::prefix('journal')->group(function () {
-        Route::get('/',                [JournalEntryController::class, 'index']);
-        Route::post('/',               [JournalEntryController::class, 'store']);
-        Route::get('/{journalEntry}',  [JournalEntryController::class, 'show']);
-        Route::put('/{journalEntry}',  [JournalEntryController::class, 'update']);
-        Route::delete('/{journalEntry}', [JournalEntryController::class, 'destroy']);
+        Route::get('/',                [JournalQuotidienController::class, 'index']);
+        Route::post('/',               [JournalQuotidienController::class, 'store']);
+        Route::get('/{journalQuotidien}',  [JournalQuotidienController::class, 'show']);
+        Route::put('/{journalQuotidien}',  [JournalQuotidienController::class, 'update']);
+        Route::delete('/{journalQuotidien}', [JournalQuotidienController::class, 'destroy']);
     });
 
-    // --- Données de santé (Health Data) ---
-    Route::prefix('health-data')->group(function () {
-        Route::get('/overview',      [HealthDataController::class, 'vueEnsemble']);
-        Route::get('/vitals',        [HealthDataController::class, 'indexVitals']);
-        Route::post('/vitals',       [HealthDataController::class, 'storeVital']);
-        Route::get('/labs',          [HealthDataController::class, 'indexLabResults']);
-        Route::post('/labs',         [HealthDataController::class, 'storeLabResult']);
-        Route::put('/labs/{healthLabResult}',    [HealthDataController::class, 'updateLabResult']);
-        Route::delete('/labs/{healthLabResult}', [HealthDataController::class, 'destroyLabResult']);
-        Route::get('/treatment-checks',    [HealthDataController::class, 'indexTreatmentChecks']);
-        Route::post('/treatment-checks/sync', [HealthDataController::class, 'syncTreatmentChecks']);
+    // --- Données de santé ---
+    Route::prefix('donnees-sante')->group(function () {
+        Route::get('/overview',      [DonneesSanteController::class, 'vueEnsemble']);
+        Route::get('/vitals',        [DonneesSanteController::class, 'indexVitals']);
+        Route::post('/vitals',       [DonneesSanteController::class, 'storeVital']);
+        Route::get('/labs',          [DonneesSanteController::class, 'indexLabResults']);
+        Route::post('/labs',         [DonneesSanteController::class, 'storeLabResult']);
+        Route::put('/labs/{resultatAnalyse}',    [DonneesSanteController::class, 'updateLabResult']);
+        Route::delete('/labs/{resultatAnalyse}', [DonneesSanteController::class, 'destroyLabResult']);
+        Route::get('/treatment-checks',    [DonneesSanteController::class, 'indexTreatmentChecks']);
+        Route::post('/treatment-checks/sync', [DonneesSanteController::class, 'syncTreatmentChecks']);
     });
 
     // --- Doctor Invitations ---

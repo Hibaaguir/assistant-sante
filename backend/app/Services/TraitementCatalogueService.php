@@ -10,8 +10,8 @@ class TraitementCatalogueService
     {
         $items = CatalogueTraitement::query()
             ->orderBy('type')
-            ->orderBy('name')
-            ->get(['type', 'name']);
+            ->orderBy('nom')
+            ->get(['type', 'nom']);
 
         $types = [];
         $namesByType = [];
@@ -24,7 +24,7 @@ class TraitementCatalogueService
 
             $this->appendUniqueValue($types, $type);
 
-            $name = $this->normalizeText($item->name);
+            $name = $this->normalizeText($item->nom);
             if ($name === null) {
                 continue;
             }
@@ -63,7 +63,7 @@ class TraitementCatalogueService
 
         $existing = CatalogueTraitement::query()
             ->whereRaw('LOWER(type) = ?', [$lowerType])
-            ->whereRaw('LOWER(name) = ?', [$lowerName])
+            ->whereRaw('LOWER(nom) = ?', [$lowerName])
             ->first();
 
         if ($existing) {
@@ -75,7 +75,7 @@ class TraitementCatalogueService
 
         CatalogueTraitement::query()->create([
             'type' => $normalizedType,
-            'name' => $normalizedName,
+            'nom' => $normalizedName,
             'created_by_id_utilisateur' => $createdByUserId,
         ]);
     }

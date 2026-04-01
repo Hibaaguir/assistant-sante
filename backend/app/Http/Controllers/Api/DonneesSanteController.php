@@ -15,6 +15,7 @@ use App\Services\HealthDataService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class DonneesSanteController extends Controller
 {
@@ -60,7 +61,6 @@ class DonneesSanteController extends Controller
             ->where('id_utilisateur', $userId)
             ->where('check_date', '>=', $startDate)
             ->orderBy('check_date')
-            ->orderBy('medication_name')
             ->get();
 
         $latestDoctorObservation = InvitationMedecin::query()
@@ -234,7 +234,6 @@ class DonneesSanteController extends Controller
             ->where('id_utilisateur', $userId)
             ->where('check_date', '>=', $startDate)
             ->orderBy('check_date')
-            ->orderBy('medication_name')
             ->get();
 
         return response()->json([
@@ -279,7 +278,7 @@ class DonneesSanteController extends Controller
         $compte = $request->user();
         $userId = $compte->utilisateur->id;
         if ($labResult->id_utilisateur !== $userId) {
-            return response()->json(['message' => 'Acces non autorise a ce resultat de laboratoire.'], 403);
+            return response()->json(['message' => 'Acces non autorise a ce resultat de laboratoire.'], Response::HTTP_FORBIDDEN);
         }
         return null;
     }

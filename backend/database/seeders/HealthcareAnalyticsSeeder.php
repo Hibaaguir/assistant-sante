@@ -2,15 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\AllergyCatalogItem;
-use App\Models\ChronicDiseaseCatalogItem;
-use App\Models\DoctorInvitation;
-use App\Models\HealthLabResult;
 use App\Models\HealthTreatmentCheck;
-use App\Models\HealthVital;
 use App\Models\JournalQuotidien;
 use App\Models\ProfilSante;
 use App\Models\CatalogueTraitement;
+use App\Models\SigneVital;
+use App\Models\ResultatAnalyse;
+use App\Models\InvitationMedecin;
+use App\Models\SignesVitaux;
 use App\Models\Utilisateur;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -157,6 +156,10 @@ class HealthcareAnalyticsSeeder extends Seeder
             ->map(fn (Collection $rows) => $rows->pluck('name')->filter()->values()->all())
             ->all();
 
+        // Données sanitaires
+        $allergyPool = ['Pénicilline', 'Arachides', 'Crustacés', 'Œufs', 'Soja', 'Gluten', 'Lait'];
+        $diseasePool = ['Diabète', 'Hypertension', 'Asthme', 'Obésité', 'Dépression', 'Arthrite', 'Cholestérol'];
+
         foreach ($patients as $patient) {
             $age = Carbon::parse($patient->date_of_birth)->age;
             $sexe = fake()->randomElement(['homme', 'femme']);
@@ -286,7 +289,7 @@ class HealthcareAnalyticsSeeder extends Seeder
 
                 $caffeine = $this->clampInt((int) round(fake()->randomFloat(1, 0, 4) + ($stress / 5)), 0, 20);
 
-                JournalEntry::factory()
+                JournalQuotidien::factory()
                     ->for($patient)
                     ->state([
                         'entry_date' => $entryDate->toDateString(),
@@ -323,7 +326,7 @@ class HealthcareAnalyticsSeeder extends Seeder
                 continue;
             }
 
-            $entries = JournalEntry::query()
+            $entries = JournalQuotidien::query()
                 ->where('id_utilisateur', $patient->id)
                 ->whereDate('entry_date', '>=', $start->toDateString())
                 ->orderBy('entry_date')
@@ -366,7 +369,7 @@ class HealthcareAnalyticsSeeder extends Seeder
                     ->setHour(fake()->numberBetween(6, 22))
                     ->setMinute(fake()->randomElement([0, 10, 20, 30, 40, 50]));
 
-                HealthVital::factory()
+                SignesVitaux::factory()
                     ->for($patient)
                     ->state([
                         'measured_at' => $measuredAt,
@@ -406,7 +409,7 @@ class HealthcareAnalyticsSeeder extends Seeder
                 foreach ($testsForMonth as $panel) {
                     $value = $this->labValueForContext($panel['indicator'], $panel['base'], $panel['spread'], $context);
 
-                    HealthLabResult::factory()
+                    ResultatAnalyse::factory()
                         ->for($patient)
                         ->state([
                             'analysis_type' => $panel['category'],
@@ -474,7 +477,7 @@ class HealthcareAnalyticsSeeder extends Seeder
         }
     }
 
-    private function createDoctorInvitations(Collection $patients): void
+    private function createInvitationsMedecin(Collection $patients): void
     {
         foreach ($patients as $patient) {
             $context = $this->contexts[$patient->id] ?? null;
@@ -488,7 +491,7 @@ class HealthcareAnalyticsSeeder extends Seeder
 
             $status = fake()->boolean(80) ? 'accepted' : 'pending';
 
-            DoctorInvitation::query()->updateOrCreate(
+            InvitationMedecin::query()->updateOrCreate(
                 [
                     'id_patient_utilisateur' => $patient->id,
                     'doctor_email' => $context['assigned_doctor_email'],

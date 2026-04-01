@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Utilisateur;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 /**
  * Gère les opérations d'administration sur les utilisateurs
@@ -85,7 +86,7 @@ class UtilisateurAdminController extends Controller
     // Vérifier l'accès administrateur
     private function verifierAccesAdministrateur(Request $request): void
     {
-        $role = strtolower((string) ($request->user()->utilisateur?->role ?? ''));
+        $role = strtolower((string) ($request->user()->role ?? ''));
         abort_unless(in_array($role, ['admin', 'administrateur'], true), 403, 'Acces refuse.');
     }
 

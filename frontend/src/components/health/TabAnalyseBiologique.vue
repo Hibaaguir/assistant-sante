@@ -520,11 +520,11 @@ async function saveAnalysis() {
 
     try {
         if (editingId.value) {
-            await api.put(`/health-data/labs/${editingId.value}`, rows[0]);
+            await api.put(`/donnees-sante/labs/${editingId.value}`, rows[0]);
             notifications.actionModifiee();
         } else {
             await Promise.all(
-                rows.map((p) => api.post("/health-data/labs", p)),
+                rows.map((p) => api.post("/donnees-sante/labs", p)),
             );
             notifications.actionAjoutee();
             Object.assign(filters, { type: "", date: "", query: "" });
@@ -569,7 +569,7 @@ function cancelDelete() {
 async function confirmDelete() {
     if (!pendingDelete.value?.id) return;
     try {
-        await api.delete(`/health-data/labs/${pendingDelete.value.id}`);
+        await api.delete(`/donnees-sante/labs/${pendingDelete.value.id}`);
         notifications.actionSupprimee();
         emit("refresh");
     } catch (err) {

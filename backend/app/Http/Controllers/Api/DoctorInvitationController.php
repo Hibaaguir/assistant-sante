@@ -12,6 +12,7 @@ use App\Services\HealthDataService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 
 
@@ -70,7 +71,7 @@ class DoctorInvitationController extends Controller
             ], 422);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Doctor invitation error: ' . $e->getMessage());
-            return response()->json(['message' => 'Erreur lors de la création de l\'invitation.'], 500);
+            return response()->json(['message' => 'Erreur lors de la création de l\'invitation.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -168,7 +169,7 @@ class DoctorInvitationController extends Controller
         $invitation = $this->findAuthorizedInvitation($request, $patient);
         // Vérifier que le médecin a accès à ce patient
         if (! $invitation) {
-            return response()->json(['message' => 'Acces non autorise a ce patient.'], 403);
+            return response()->json(['message' => 'Acces non autorise a ce patient.'], Response::HTTP_FORBIDDEN);
         }
 
         $vitalsDays  = max(1, min((int) $request->query('vitals_days', 30), 90));
@@ -185,7 +186,7 @@ class DoctorInvitationController extends Controller
                 'vitals'              => SignesVitaux::where('id_utilisateur', $patient->id)->where('measured_at', '>=', $vitalsStart)->orderByDesc('measured_at')->get(),
                 'lab_results'         => ResultatAnalyse::where('id_utilisateur', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->get(),
                 'treatment_medicines' => $this->serviceDonneesSante->resoudreMedicamentsTraitement($patient->id),
-                'treatment_checks'    => SuiviTraitement::where('id_utilisateur', $patient->id)->where('check_date', '>=', Carbon::today()->subDays(29)->toDateString())->orderBy('check_date')->orderBy('medication_name')->get(),
+                'treatment_checks'    => SuiviTraitement::where('id_utilisateur', $patient->id)->where('check_date', '>=', Carbon::today()->subDays(29)->toDateString())->orderBy('check_date')->get(),
                 'general_observation' => [
                     'text'       => $invitation->general_observation,
                     'updated_at' => $invitation->general_observation_updated_at?->toISOString(),
@@ -200,7 +201,7 @@ class DoctorInvitationController extends Controller
         $invitation = $this->findAuthorizedInvitation($request, $patient);
         // Vérifier que le médecin a accès à ce patient
         if (! $invitation) {
-            return response()->json(['message' => 'Acces non autorise a ce patient.'], 403);
+            return response()->json(['message' => 'Acces non autorise a ce patient.'], Response::HTTP_FORBIDDEN);
         }
 
         $validated   = $request->validate(
@@ -314,7 +315,7 @@ class DoctorInvitationController extends Controller
         $compte = $request->user();
         $utilisateur = $compte->utilisateur;
         if ($invitation->id_medecin_utilisateur !== $utilisateur->id) {
-            return response()->json(['message' => 'Acces non autorise a cette invitation.'], 403);
+            return response()->json(['message' => 'Acces non autorise a cette invitation.'], Response::HTTP_FORBIDDEN);
         }
         return null;
     }

@@ -857,7 +857,7 @@ async function synchroniserSuiviTraitements() {
         }
     }
 
-    await api.post("/health-data/treatment-checks/sync", { checks });
+    await api.post("/donnees-sante/treatment-checks/sync", { checks });
 }
 
 async function basculerPrise(dayKey, med, doseIndex) {

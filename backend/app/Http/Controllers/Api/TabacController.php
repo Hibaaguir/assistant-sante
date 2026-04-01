@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Tabac;
 use App\Models\JournalQuotidien;
 use Illuminate\Http\Request;
@@ -25,6 +26,7 @@ class TabacController extends Controller
             'frequence_vape' => 'nullable|integer|min:0',
             'bouffees_par_jour' => 'nullable|integer|min:0',
         ]);
+        
 
         $tabac = $entreeJournal->tabacs()->create($validated);
 

@@ -10,7 +10,9 @@ use App\Models\Utilisateur;
 
 use App\Services\TraitementCatalogueService;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -61,6 +63,8 @@ class ProfilSanteController extends Controller
             'traitements.*.frequency_unit' => ['nullable', Rule::in(['jour', 'semaine', 'mois'])],
             'traitements.*.frequency_count' => ['nullable', 'integer', 'min:1'],
             'traitements.*.duration' => ['nullable', 'string', 'max:120'],
+            'traitements.*.date_debut' => ['nullable', 'date_format:Y-m-d'],
+            'traitements.*.date_fin' => ['nullable', 'date_format:Y-m-d'],
             'consulte_medecin' => ['required', 'boolean'],
             'medecin_peut_consulter' => ['required_if:consulte_medecin,1', 'boolean'],
             'medecin_email' => [
@@ -69,8 +73,8 @@ class ProfilSanteController extends Controller
                 'required_if:medecin_peut_consulter,1',
                 'email:rfc,dns',
                 function (string $attribute, mixed $value, \Closure $fail) {
-                    $compte = Auth::user();
-                    $currentEmail = strtolower((string) $compte?->email);
+                    $utilisateur = Auth::user();
+                    $currentEmail = strtolower((string) $utilisateur?->compte?->email);
                     if (strtolower((string) $value) === $currentEmail) {
                         $fail("L'email du medecin doit etre different de votre email.");
                     }
@@ -80,8 +84,12 @@ class ProfilSanteController extends Controller
             'alcool' => ['required', 'boolean'],
         ]);
 
-        $compte = Auth::user();
-        $utilisateur = $compte->utilisateur;
+        $utilisateur = Auth::user();
+        
+        if (!$utilisateur) {
+            return response()->json(['message' => 'Utilisateur non trouvé.'], Response::HTTP_UNAUTHORIZED);
+        }
+        
         $validated['id_utilisateur'] = $utilisateur->id;
         $validated['medecin_email'] = $validated['medecin_email'] !== null
             ? strtolower(trim($validated['medecin_email']))
@@ -95,26 +103,70 @@ class ProfilSanteController extends Controller
             ? strtolower(trim((string) $existingProfil->medecin_email))
             : null;
 
+        // Extraire les traitements avant de faire updateOrCreate
+        $traitementsData = $validated['traitements'] ?? [];
+        unset($validated['traitements']);
+
         try {
-            $profil = DB::transaction(function () use ($validated, $utilisateur) {
+            $profil = DB::transaction(function () use ($validated, $utilisateur, $traitementsData) {
                 $userId = $utilisateur->id;
                 $savedProfil = ProfilSante::updateOrCreate(
                     ['id_utilisateur' => $userId],
                     $validated
                 );
 
-                $this->traitementCatalogueService->saveFromTreatments(
-                    is_array($validated['traitements'] ?? null) ? $validated['traitements'] : [],
-                    (int) $userId,
-                );
+                // Sauvegarder les traitements dans la table traitements
+                if (is_array($traitementsData) && count($traitementsData) > 0) {
+                    // Supprimer les anciens traitements
+                    $savedProfil->traitements()->delete();
+                    
+                    // Ajouter les nouveaux traitements
+                    foreach ($traitementsData as $traitement) {
+                        if (! is_array($traitement)) {
+                            continue;
+                        }
 
-                
+                        // D'abord, créer/trouver l'entrée dans le catalogue
+                        $catalogueEntry = null;
+                        $type = $traitement['type'] ?? null;
+                        $name = $traitement['name'] ?? null;
+                        
+                        if (!empty($type)) {
+                            $normalizedType = mb_strtolower(trim($type), 'UTF-8');
+                            $normalizedName = mb_strtolower(trim($name ?? ''), 'UTF-8');
+                            
+                            $catalogueEntry = \App\Models\CatalogueTraitement::query()
+                                ->whereRaw('LOWER(type) = ?', [$normalizedType])
+                                ->whereRaw('LOWER(nom) = ?', [$normalizedName])
+                                ->first();
+                            
+                            if (!$catalogueEntry) {
+                                $catalogueEntry = \App\Models\CatalogueTraitement::query()->create([
+                                    'type' => $type,
+                                    'nom' => $name ?? '',
+                                    'created_by_id_utilisateur' => $userId,
+                                ]);
+                            }
+                        }
+                        
+                        // Créer le traitement avec la FK vers le catalogue
+                        $savedProfil->traitements()->create([
+                            'catalogue_traitement_id' => $catalogueEntry?->id,
+                            'dose' => $traitement['dose'] ?? null,
+                            'frequence' => $traitement['frequency_unit'] ?? null,
+                            'nombre_prises' => $traitement['frequency_count'] ?? null,
+                            'date_debut' => !empty($traitement['date_debut']) ? $traitement['date_debut'] : null,
+                            'date_fin' => !empty($traitement['date_fin']) ? $traitement['date_fin'] : null,
+                        ]);
+                    }
+                }
 
                 return $savedProfil;
             });
         } catch (\Throwable $exception) {
-            Log::error('Profil sante persistence failed during treatment catalog sync: '.$exception->getMessage(), [
+            Log::error('Profil sante persistence failed: '.$exception->getMessage(), [
                 'id_utilisateur' => $utilisateur->id,
+                'exception' => $exception,
             ]);
 
             return response()->json([
@@ -123,6 +175,9 @@ class ProfilSanteController extends Controller
         }
 
         $this->synchroniserInvitationMedecin($profil, $previousDoctorEmail, $utilisateur);
+
+        // Recharger le profil avec les traitements pour la réponse
+        $profil->load('traitements');
 
         return response()->json([
             'message' => 'Profil sante enregistre avec succes.',
@@ -133,24 +188,13 @@ class ProfilSanteController extends Controller
     // Afficher le profil de santé de l'utilisateur
     public function show()
     {
-        $compte = Auth::user();
-        $utilisateur = $compte->utilisateur;
-        $profil = $utilisateur->profilSante;
-
-        $userId = $utilisateur->id;
-        if ($profil && is_array($profil->traitements)) {
-            try {
-                $this->traitementCatalogueService->saveFromTreatments(
-                    $profil->traitements,
-                    (int) $userId,
-                );
-            } catch (\Throwable $exception) {
-                Log::warning('Profil sante show catalog sync skipped: '.$exception->getMessage(), [
-                    'id_utilisateur' => $userId,
-                ]);
-            }
+        $utilisateur = Auth::user();
+        
+        if (!$utilisateur) {
+            return response()->json(['message' => 'Utilisateur non trouvé.'], Response::HTTP_UNAUTHORIZED);
         }
-
+        
+        $profil = $utilisateur->profilSante()->with('traitements')->first();
 
         return response()->json([
             'data' => $profil,
@@ -162,8 +206,7 @@ class ProfilSanteController extends Controller
     private function synchroniserInvitationMedecin(ProfilSante $profil, ?string $previousDoctorEmail = null, $utilisateur = null): void
     {
         if (!$utilisateur) {
-            $compte = Auth::user();
-            $utilisateur = $compte->utilisateur;
+            $utilisateur = Auth::user();
         }
         
         // Vérifier que l'utilisateur existe
@@ -178,10 +221,10 @@ class ProfilSanteController extends Controller
         // Révoquer les invitations si les conditions ne sont pas réunies
         if (! $shouldInvite) {
             InvitationMedecin::query()
-                ->where('id_patient_utilisateur', $utilisateur->id)
-                ->where('status', 'pending')
+                ->where('id_utilisateur_patient', $utilisateur->id)
+                ->where('statut', 'en_attente')
                 ->update([
-                    'status' => 'revoked',
+                    'statut' => 'revoque',
                     'revoked_at' => now(),
                 ]);
             return;
@@ -193,11 +236,11 @@ class ProfilSanteController extends Controller
         // Révoquer les invitations si l'email du médecin a changé
         if ($doctorEmailChanged) {
             InvitationMedecin::query()
-                ->where('id_patient_utilisateur', $utilisateur->id)
-                ->where('status', 'pending')
-                ->where('doctor_email', '!=', $doctorEmail)
+                ->where('id_utilisateur_patient', $utilisateur->id)
+                ->where('statut', 'en_attente')
+                ->where('email_medecin', '!=', $doctorEmail)
                 ->update([
-                    'status' => 'revoked',
+                    'statut' => 'revoque',
                     'revoked_at' => now(),
                 ]);
         }
@@ -237,7 +280,7 @@ class ProfilSanteController extends Controller
                 $doctor = $existingAccount->fresh();
             } catch (QueryException $exception) {
                 Log::warning('Doctor invitation role sync skipped: '.$exception->getMessage(), [
-                    'doctor_email' => $doctorEmail,
+                    'email_medecin' => $doctorEmail,
                     'existing_account_id' => $existingAccount->id,
                 ]);
 
@@ -253,42 +296,42 @@ class ProfilSanteController extends Controller
         }
 
         $existing = InvitationMedecin::query()
-            ->where('id_patient_utilisateur', $utilisateur->id)
-            ->where('doctor_email', $doctorEmail)
+            ->where('id_utilisateur_patient', $utilisateur->id)
+            ->where('email_medecin', $doctorEmail)
             ->first();
 
         // Gérer la création ou la mise à jour de l'invitation
         if ($existing) {
             // Mettre à jour si l'invitation est déjà acceptée
-            if ($existing->status === 'accepted') {
+            if ($existing->statut === 'accepte') {
                 $existing->update([
-                    'id_medecin_utilisateur' => $doctor?->id,
-                    'doctor_email' => $doctorEmail,
+                    'id_utilisateur_medecin' => $doctor?->id,
+                    'email_medecin' => $doctorEmail,
                 ]);
             } elseif ($doctorEmailChanged) {
                 $existing->update([
-                    'id_medecin_utilisateur' => $doctor?->id,
-                    'doctor_email' => $doctorEmail,
-                    'status' => 'pending',
-                    'token' => Str::random(64),
+                    'id_utilisateur_medecin' => $doctor?->id,
+                    'email_medecin' => $doctorEmail,
+                    'statut' => 'en_attente',
+                    'jeton' => Str::random(64),
                     'accepted_at' => null,
                     'rejected_at' => null,
                     'revoked_at' => null,
                 ]);
             } else {
                 $existing->update([
-                    'id_medecin_utilisateur' => $doctor?->id,
-                    'doctor_email' => $doctorEmail,
+                    'id_utilisateur_medecin' => $doctor?->id,
+                    'email_medecin' => $doctorEmail,
                 ]);
             }
         } else {
             // Créer une nouvelle invitation si elle n'existe pas
             InvitationMedecin::query()->create([
-                'id_patient_utilisateur' => $utilisateur->id,
-                'id_medecin_utilisateur' => $doctor?->id,
-                'doctor_email' => $doctorEmail,
-                'status' => 'pending',
-                'token' => Str::random(64),
+                'id_utilisateur_patient' => $utilisateur->id,
+                'id_utilisateur_medecin' => $doctor?->id,
+                'email_medecin' => $doctorEmail,
+                'statut' => 'en_attente',
+                'jeton' => Str::random(64),
             ]);
         }
 
@@ -304,7 +347,7 @@ class ProfilSanteController extends Controller
                     $doctorEmail,
                 ));
                 Log::info('Doctor invitation email queued successfully', [
-                    'doctor_email' => $doctorEmail,
+                    'email_medecin' => $doctorEmail,
                     'patient_id' => $utilisateur->id,
                 ]);
             } catch (\Throwable $e) {

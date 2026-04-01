@@ -81,7 +81,7 @@ function formatDate(str) {
 
 async function chargerObservation() {
     try {
-        const { data } = await api.get("/health-data/overview", {
+        const { data } = await api.get("/donnees-sante/overview", {
             params: { days: 7 },
         });
         const o = data?.data?.doctor_observation ?? {};

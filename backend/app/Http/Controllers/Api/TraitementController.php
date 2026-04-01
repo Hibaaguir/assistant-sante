@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Traitement;
 use App\Models\ProfilSante;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class TraitementController extends Controller
     public function store(Request $request, ProfilSante $profilSante)
     {
         $validated = $request->validate([
-            'catalogue_traitement_id' => 'required|exists:catalogue_traitements,id',
+            'article_catalogue_id' => 'required|exists:catalogue_traitements,id',
             'dose' => 'nullable|string|max:120',
             'frequence' => 'nullable|string|max:120',
             'nombre_prises' => 'nullable|integer|min:1',
@@ -43,7 +44,7 @@ class TraitementController extends Controller
     public function update(Request $request, ProfilSante $profilSante, Traitement $traitement)
     {
         $validated = $request->validate([
-            'catalogue_traitement_id' => 'sometimes|exists:catalogue_traitements,id',
+            'article_catalogue_id' => 'sometimes|exists:catalogue_traitements,id',
             'dose' => 'nullable|string|max:120',
             'frequence' => 'nullable|string|max:120',
             'nombre_prises' => 'nullable|integer|min:1',

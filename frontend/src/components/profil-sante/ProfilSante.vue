@@ -431,6 +431,8 @@ function buildPayload() {
                       dose: t?.dose ?? null,
                       frequency_unit: t?.frequency_unit ?? null,
                       frequency_count: normalizeFrequency(t?.frequency_count),
+                      date_debut: t?.start_date ?? null,       
+                      date_fin: t?.end_date ?? null,            
                       duration: t?.duration ?? null,
                   }))
                   .filter((t) => t.type)
@@ -487,20 +489,63 @@ onMounted(async () => {
     }
     try {
         const { data } = await api.get("/profil-sante");
+        console.log("ProfilSante - Réponse GET /profil-sante:", data);
+
         dateNaissance.value = data?.utilisateur?.date_naissance
             ? String(data.utilisateur.date_naissance)
             : "";
         authStore.definirPresenceProfilSante(Boolean(data?.data));
-        if (data?.data) {
+
+        // Vérifier si le profil est complet (tous les champs obligatoires remplis)
+        const profil = data?.data;
+        console.log("Profil reçu:", profil);
+
+        if (!profil) {
+            console.log("Pas de profil, affichage du formulaire");
+            loading.value = false;
+            return;
+        }
+
+        const estComplet =
+            profil.genre &&
+            profil.taille &&
+            profil.poids &&
+            profil.groupe_sanguin;
+
+        console.log("Profil complet?", estComplet);
+
+        if (estComplet) {
+            console.log("Profil complet, redirection vers mon-profil-sante");
             router.replace({ name: "mon-profil-sante" });
             return;
         }
+
+        // Pré-remplir le formulaire s'il y a des données existantes
+        console.log("Pré-remplissage du formulaire");
+        form.sexe = profil.genre || "";
+        form.taille = profil.taille || "";
+        form.poids = profil.poids || "";
+        form.groupe_sanguin = profil.groupe_sanguin || "";
+        form.objectifs = profil.objectifs || [];
+        form.allergies = profil.allergies || [];
+        form.maladies_chroniques = profil.maladies_chroniques || [];
+        form.traitements = profil.traitements || [];
+        form.fumeur = profil.fumeur || false;
+        form.alcool = profil.alcoolique || false;
+        form.consulte_medecin = profil.consulte_medecin || false;
+        form.medecin_peut_consulter = profil.medecin_peut_consulter || false;
+        form.medecin_email = profil.medecin_email || "";
     } catch (err) {
+        console.error("ProfilSante - Erreur lors du chargement:", err);
         if (err.response?.status === 401) {
+            console.log("Non authentifié, redirection vers login");
             redirectLogin();
             return;
         }
-        saveError.value = "Impossible de charger le profil santé.";
+        saveError.value =
+            "Impossible de charger le profil santé: " +
+            (err.response?.data?.message || err.message);
+        console.error("Détails de l'erreur:", err.response?.data);
     } finally {
         loading.value = false;
     }

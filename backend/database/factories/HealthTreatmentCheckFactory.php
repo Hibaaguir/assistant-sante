@@ -16,13 +16,13 @@ class HealthTreatmentCheckFactory extends Factory
     {
         $taken = fake()->boolean(82);
         $checkDate = fake()->dateTimeBetween('-45 days', 'now');
-        $catalogItem = TreatmentCatalogItem::query()
+        $catalogItem = CatalogueTraitement::query()
             ->where('name', 'not like', 'Traitement %')
             ->inRandomOrder()
             ->first(['type', 'name']);
 
         if ($catalogItem === null) {
-            $catalogItem = TreatmentCatalogItem::query()->firstOrCreate(
+            $catalogItem = CatalogueTraitement::query()->firstOrCreate(
                 ['type' => 'Antidouleur', 'name' => 'Paracetamol'],
                 ['created_by_id_utilisateur' => null],
             );

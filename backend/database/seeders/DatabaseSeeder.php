@@ -52,11 +52,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            UserSeeder::class,
-            TreatmentCatalogSeeder::class,
-            AllergyCatalogSeeder::class,
-            ChronicDiseaseCatalogSeeder::class,
-            // JournalSeeder::class,
+            // UserSeeder::class,
+            // TreatmentCatalogSeeder::class,
+            // AllergyCatalogSeeder::class,
+            // ChronicDiseaseCatalogSeeder::class,
         ]);
     }
 }

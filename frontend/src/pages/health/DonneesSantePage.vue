@@ -252,12 +252,12 @@ function assurerSuiviJour(dayKey) {
 
 async function chargerDonneesSante() {
     try {
-        const res = await api.get("/health-data/overview", {
+        const res = await api.get("/donnees-sante/overview", {
             params: { days: 7 },
         });
         const data = res?.data?.data ?? {};
         const treatmentHistoryRes = await api.get(
-            "/health-data/treatment-checks",
+            "/donnees-sante/treatment-checks",
             { params: { days: 90 } },
         );
         const treatmentHistoryData = Array.isArray(

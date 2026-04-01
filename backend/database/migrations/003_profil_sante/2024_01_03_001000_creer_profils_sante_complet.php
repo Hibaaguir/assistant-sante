@@ -13,10 +13,10 @@ return new class extends Migration
             $table->foreignId('id_utilisateur')->constrained('utilisateurs')->cascadeOnDelete();
 
             // Informations physiques
-            $table->enum('genre', ['homme', 'femme']);
-            $table->float('taille');
-            $table->float('poids');
-            $table->string('groupe_sanguin');
+            $table->enum('genre', ['homme', 'femme'])->nullable();
+            $table->float('taille')->nullable();
+            $table->float('poids')->nullable();
+            $table->string('groupe_sanguin')->nullable();
 
             // Objectifs & antécédents
             $table->json('objectifs')->nullable();
@@ -28,7 +28,8 @@ return new class extends Migration
             $table->boolean('alcoolique')->default(false);
 
             // Suivi médecin
-            $table->boolean('inviter_medecin')->default(false);
+            $table->boolean('consulte_medecin')->default(false);
+            $table->boolean('medecin_peut_consulter')->default(false);
             $table->string('medecin_email')->nullable();
             $table->timestamps();
         });

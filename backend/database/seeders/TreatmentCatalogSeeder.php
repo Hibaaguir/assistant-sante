@@ -33,7 +33,7 @@ class TreatmentCatalogSeeder extends Seeder
 
             foreach ($names as $name) {
                 $normalizedName = $this->normalizeText($name) ?? '';
-                TreatmentCatalogItem::query()->firstOrCreate([
+                CatalogueTraitement::query()->firstOrCreate([
                     'type' => $normalizedType,
                     'name' => $normalizedName,
                 ], [
@@ -58,7 +58,7 @@ class TreatmentCatalogSeeder extends Seeder
                         continue;
                     }
 
-                    TreatmentCatalogItem::query()->firstOrCreate([
+                    CatalogueTraitement::query()->firstOrCreate([
                         'type' => $type,
                         'name' => $name,
                     ], [
