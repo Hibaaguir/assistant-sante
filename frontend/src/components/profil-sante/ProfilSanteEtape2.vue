@@ -796,20 +796,20 @@ const diseaseOptions = [
     "Anemie",
 ];
 
-const treatmentTypes = ref([
-    "Anti-inflammatoire",
-    "Antibiotique",
-    "Antidouleur",
-    "Antihypertenseur",
-    "Antidiabetique",
-    "Anticoagulant",
-    "Antiallergique",
-    "Antidepresseur",
-    "Corticoide",
-    "Traitement hormonal",
-    "Supplement vitaminique",
-    "Inhalateur respiratoire",
-]);
+import { ref, onMounted } from "vue";
+import axios from "axios";
+
+const treatmentTypes = ref([]);
+
+onMounted(async () => {
+    try {
+        const res = await axios.get("/api/catalogue-traitements/types");
+        // Filtre les valeurs nulles ou vides et retire les doublons côté JS si besoin
+        treatmentTypes.value = Array.from(new Set(res.data.filter(x => x && x.trim() !== "")));
+    } catch (e) {
+        treatmentTypes.value = [];
+    }
+});
 
 const treatmentNamesByType = reactive({
     "Anti-inflammatoire": [
@@ -943,24 +943,7 @@ function selectTreatmentType(value) {
     openTreatmentTypes.value = false;
 }
 
-function addCustomTreatmentType() {
-    const value = customTreatmentType.value.trim();
-    if (!value) return;
-    if (!treatmentTypes.value.includes(value))
-        treatmentTypes.value = [...treatmentTypes.value, value];
-    if (!Array.isArray(treatmentNamesByType[value])) {
-        treatmentNamesByType[value] = [];
-    }
-    treatment.type = value;
-    treatment.name = "";
-    treatmentErrors.type = "";
-    treatmentErrors.name = "";
-    customTreatmentType.value = "";
-    queryTreatmentNames.value = "";
-    customTreatmentName.value = "";
-    openTreatmentNames.value = false;
-    openTreatmentTypes.value = false;
-}
+// Suppression de l'ajout dynamique de type : les types viennent uniquement de l'API
 
 function toggleTreatmentNames() {
     if (!treatment.type.trim()) {

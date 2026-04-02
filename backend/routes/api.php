@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ProfilSanteController;
 use App\Http\Controllers\Api\ProfilUtilisateurController;
 use App\Http\Controllers\Api\TreatmentCatalogController;
 use App\Http\Controllers\Api\UtilisateurAdminController;
+use App\Http\Controllers\Api\CatalogueTraitementController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -65,6 +66,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/',  [TreatmentCatalogController::class, 'index']);
         Route::post('/', [TreatmentCatalogController::class, 'store']);
     });
+
+    // Routes catalogue traitements
+    Route::get('/catalogue-traitements/types', [CatalogueTraitementController::class, 'types']);
+    Route::get('/catalogue-traitements/noms', [CatalogueTraitementController::class, 'noms']);
 
     // --- Notifications ---
     Route::prefix('notifications')->group(function () {

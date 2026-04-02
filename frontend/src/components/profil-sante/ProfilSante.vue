@@ -431,12 +431,13 @@ function buildPayload() {
                       dose: t?.dose ?? null,
                       frequency_unit: t?.frequency_unit ?? null,
                       frequency_count: normalizeFrequency(t?.frequency_count),
-                      date_debut: t?.start_date ?? null,       
-                      date_fin: t?.end_date ?? null,            
+                      date_debut: toIsoDate(t?.start_date) ?? null,
+                      date_fin: toIsoDate(t?.end_date) ?? null,
                       duration: t?.duration ?? null,
                   }))
                   .filter((t) => t.type)
             : [],
+
         fumeur: form.fumeur,
         alcool: form.alcool,
         consulte_medecin: form.consulte_medecin,
@@ -447,6 +448,13 @@ function buildPayload() {
                 ? form.medecin_email
                 : null,
     };
+}
+
+// Conversion JJ/MM/AAAA -> YYYY-MM-DD pour le backend
+function toIsoDate(frDate) {
+    const match = String(frDate || "").match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!match) return null;
+    return `${match[3]}-${match[2]}-${match[1]}`;
 }
 
 // ─── Sauvegarde finale ────────────────────────────────────────────────────────
