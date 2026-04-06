@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Compte;
-use App\Models\Utilisateur;
+use App\Models\Account;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -12,50 +12,46 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // Utilisateur administrateur
-        $compteAdmin = Compte::create([
-            'email' => 'admin@gmail.com',
-            'motdepasse' => Hash::make('admin1234'),
-            'statut_compte' => 'actif',
-        ]);
+        // Admin account (create if not exists)
+        $adminAccount = Account::firstOrCreate(
+            ['email' => 'admin@gmail.com'],
+            ['password' => Hash::make('admin1234'), 'account_status' => 'active']
+        );
 
-        Utilisateur::create([
-            'compte_id' => $compteAdmin->id,
-            'nom' => 'Administrateur',
-            'date_naissance' => null,
-            'photo_profil' => null,
-            'age' => null,
-            'role' => 'administrateur',
-            'specialite' => null,
-        ]);
+        if (!User::where('account_id', $adminAccount->id)->exists()) {
+            User::create([
+                'account_id'    => $adminAccount->id,
+                'name'          => 'Administrator',
+                'date_of_birth' => null,
+                'profile_photo' => null,
+                'age'           => null,
+                'role'          => 'admin',
+                'specialty'     => null,
+            ]);
+        }
 
-        // Utilisateur test normal
-        $compteTest = Compte::create([
-            'email' => 'test@example.com',
-            'motdepasse' => Hash::make('password'),
-            'statut_compte' => 'actif',
-        ]);
+        // Test user account (create if not exists)
+        $testAccount = Account::firstOrCreate(
+            ['email' => 'test@example.com'],
+            ['password' => Hash::make('password'), 'account_status' => 'active']
+        );
 
-        Utilisateur::create([
-            'compte_id' => $compteTest->id,
-            'nom' => 'Test User',
-            'date_naissance' => null,
-            'photo_profil' => null,
-            'age' => null,
-            'role' => 'usager',
-            'specialite' => null,
-        ]);
+        if (!User::where('account_id', $testAccount->id)->exists()) {
+            User::create([
+                'account_id'    => $testAccount->id,
+                'name'          => 'Test User',
+                'date_of_birth' => null,
+                'profile_photo' => null,
+                'age'           => null,
+                'role'          => 'user',
+                'specialty'     => null,
+            ]);
+        }
 
         $this->call([
-            // UserSeeder::class,
-            // TreatmentCatalogSeeder::class,
-            // AllergyCatalogSeeder::class,
-            // ChronicDiseaseCatalogSeeder::class,
+            TreatmentCatalogSeeder::class,
         ]);
     }
 }

@@ -1,10 +1,9 @@
 <!--
   DashboardPage.vue
-  Page de dashboard unifiée.
-  Cette route affiche le dashboard correspondant au rôle connecté.
+  Unified dashboard page — shows the correct dashboard based on the authenticated user's role.
 -->
 <template>
-    <div v-if="authStore.utilisateur" class="w-full">
+    <div v-if="authStore.user" class="w-full">
         <component :is="dashboardComponent" />
     </div>
     <div v-else class="flex items-center justify-center py-12">
@@ -15,19 +14,19 @@
 <script setup>
 import { computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
-import TableauDeBordMedecin from "@/components/dashboards/doctorDashboard/TableauDeBordMedecin.vue";
-import TableauDeBordAdministrateur from "@/components/dashboards/adminDashboard/TableauDeBordAdministrateur.vue";
+import DoctorDashboard from "@/components/dashboards/doctorDashboard/DoctorDashboard.vue";
+import AdminDashboard from "@/components/dashboards/adminDashboard/AdminDashboard.vue";
 import DashboardLayout from "@/components/dashboards/userDashboard/DashboardLayout.vue";
 
 const authStore = useAuthStore();
 
 onMounted(() => {
-    authStore.chargerUtilisateur();
+    authStore.loadUser();
 });
 
 const dashboardComponent = computed(() => {
-    if (authStore.estAdministrateur) return TableauDeBordAdministrateur;
-    if (authStore.estMedecin) return TableauDeBordMedecin;
+    if (authStore.isAdmin) return AdminDashboard;
+    if (authStore.isDoctor) return DoctorDashboard;
     return DashboardLayout;
 });
 </script>

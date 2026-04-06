@@ -1,8 +1,8 @@
 <?php
 
 use App\Mail\DoctorInvitationMail;
-use App\Models\Compte;
-use App\Models\Utilisateur;
+use App\Models\Account;
+use App\Models\User;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
@@ -10,43 +10,38 @@ use Illuminate\Support\Facades\Schedule;
 
 /*
 |--------------------------------------------------------------------------
-| Commandes Artisan
+| Artisan Commands
 |--------------------------------------------------------------------------
 */
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
-})->purpose('Afficher une citation inspirante');
+})->purpose('Display an inspiring quote');
 
-Artisan::command('mail:test-invitation-medecin {email : Adresse e-mail du destinataire}', function (string $email) {
+Artisan::command('mail:test-doctor-invitation {email : Recipient email address}', function (string $email) {
     // Create a temporary account and user for the test patient
-    $compte = new Compte([
+    $account = new Account([
         'email' => 'patient-test@example.com',
-        'motdepasse' => 'test',
-        'statut_compte' => 'actif',
+        'password' => 'test',
+        'admin_status' => 'Active',
     ]);
 
-    $patient = new Utilisateur([
-        'nom' => 'Patient de test',
-        'compte_id' => null, // Non persisté
+    $patient = new User([
+        'name' => 'Test Patient',
+        'account_id' => null, // Not persisted
     ]);
 
     // Set the relation manually
-    $patient->setRelation('compte', $compte);
+    $patient->setRelation('account', $account);
 
     Mail::to($email)->send(new DoctorInvitationMail($patient, $email));
 
-    $this->info("Invitation e-mail envoyée à {$email}.");
-})->purpose('Envoyer une invitation médecin via le service SMTP configuré');
-
-// Alias anglais (compatibilité anciens clients)
-Artisan::command('mail:test-doctor-invitation {email : Recipient email address}', function (string $email) {
-    $this->call('mail:test-invitation-medecin', ['email' => $email]);
-})->purpose('Alias of mail:test-invitation-medecin');
+    $this->info("Invitation email sent to {$email}.");
+})->purpose('Send a doctor invitation via the configured SMTP service');
 
 /*
 |--------------------------------------------------------------------------
-| Tâches planifiées
+| Scheduled Tasks
 |--------------------------------------------------------------------------
 */
 

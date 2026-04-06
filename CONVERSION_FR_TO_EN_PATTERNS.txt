@@ -1,0 +1,525 @@
+================================================================================
+FR → EN REGEX FIND & REPLACE PATTERNS - CONVERSION À L'ANGLAIS
+================================================================================
+
+INSTRUCTIONS:
+1. Ouvrir Find & Replace: Ctrl+H
+2. Activer Mode Regex: Cliquer sur .* à droite du champ Find
+3. Copier Pattern "Find" dans le champ Find
+4. Copier Pattern "Replace" dans le champ Replace
+5. IMPORTANT: Tester sur 3-4 résultats avant "Replace All"
+6. Faire un commit après chaque section
+
+================================================================================
+SECTION 1: VARIABLE NAMES - PRIORITÉ 1
+================================================================================
+
+Pattern 1: $idUtilisateur → $userId
+Find:    \$idUtilisateur\b
+Replace: $userId
+
+---
+
+Pattern 2: $utilisateur → $user
+Find:    \$utilisateur\b
+Replace: $user
+
+---
+
+Pattern 3: $utilisateurs → $users
+Find:    \$utilisateurs\b
+Replace: $users
+
+---
+
+Pattern 4: $jours → $days
+Find:    \$jours\b
+Replace: $days
+
+---
+
+Pattern 5: $jour → $day
+Find:    \$jour\b
+Replace: $day
+
+---
+
+Pattern 6: $vitaux → $vitals
+Find:    \$vitaux\b
+Replace: $vitals
+
+---
+
+Pattern 7: $vital → $vital (garder)
+Note: Déjà en anglais
+
+---
+
+Pattern 8: $frequence_cardiaque → $heart_rate
+Find:    \$frequence_cardiaque\b
+Replace: $heart_rate
+
+---
+
+Pattern 9: $pression_systolique → $systolic_pressure
+Find:    \$pression_systolique\b
+Replace: $systolic_pressure
+
+---
+
+Pattern 10: $pression_diastolique → $diastolic_pressure
+Find:    \$pression_diastolique\b
+Replace: $diastolic_pressure
+
+---
+
+Pattern 11: $saturation_oxygene → $oxygen_saturation
+Find:    \$saturation_oxygene\b
+Replace: $oxygen_saturation
+
+---
+
+Pattern 12: $medecin → $doctor
+Find:    \$medecin\b
+Replace: $doctor
+
+---
+
+Pattern 13: $medecins → $doctors
+Find:    \$medecins\b
+Replace: $doctors
+
+---
+
+Pattern 14: $emailMedecin → $doctorEmail
+Find:    \$emailMedecin\b
+Replace: $doctorEmail
+
+---
+
+Pattern 15: $traitement → $treatment
+Find:    \$traitement\b
+Replace: $treatment
+
+---
+
+Pattern 16: $traitements → $treatments
+Find:    \$traitements\b
+Replace: $treatments
+
+---
+
+Pattern 17: $medicament → $medicine
+Find:    \$medicament\b
+Replace: $medicine
+
+---
+
+Pattern 18: $medicaments → $medicines
+Find:    \$medicaments\b
+Replace: $medicines
+
+---
+
+Pattern 19: $jeton → $token
+Find:    \$jeton\b
+Replace: $token
+
+---
+
+Pattern 20: $donnees → $data
+Find:    \$donnees\b
+Replace: $data
+
+---
+
+Pattern 21: $element → $item
+Find:    \$element\b
+Replace: $item
+
+---
+
+Pattern 22: $elements → $items
+Find:    \$elements\b
+Replace: $items
+
+---
+
+Pattern 23: $resultat → $result
+Find:    \$resultat\b
+Replace: $result
+
+---
+
+Pattern 24: $resultats → $results
+Find:    \$resultats\b
+Replace: $results
+
+---
+
+Pattern 25: $erreur → $error
+Find:    \$erreur\b
+Replace: $error
+
+---
+
+Pattern 26: $erreurs → $errors
+Find:    \$erreurs\b
+Replace: $errors
+
+---
+
+Pattern 27: $statut → $status
+Find:    \$statut\b
+Replace: $status
+
+---
+
+Pattern 28: $cle → $key
+Find:    \$cle\b
+Replace: $key
+
+---
+
+Pattern 29: $cles → $keys
+Find:    \$cles\b
+Replace: $keys
+
+---
+
+Pattern 30: $nombre → $count
+Find:    \$nombre\b
+Replace: $count
+
+---
+
+================================================================================
+SECTION 2: NOMS DE VARIABLE COMPOSÉS (Laravel Models)
+================================================================================
+
+Pattern 31: id_utilisateur → user_id
+Find:    'id_utilisateur'|"id_utilisateur"|\$id_utilisateur
+Replace: 'user_id'
+
+---
+
+Pattern 32: id_medecin → doctor_id
+Find:    'id_medecin'|"id_medecin"|\$id_medecin
+Replace: 'doctor_id'
+
+---
+
+Pattern 33: id_traitement → treatment_id
+Find:    'id_traitement'|"id_traitement"|\$id_traitement
+Replace: 'treatment_id'
+
+---
+
+Pattern 34: id_journal_quotidien → journal_entry_id
+Find:    'id_journal_quotidien'|"id_journal_quotidien"|\$id_journal_quotidien
+Replace: 'journal_entry_id'
+
+---
+
+Pattern 35: type_activite → activity_type
+Find:    'type_activite'|"type_activite"|\$type_activite
+Replace: 'activity_type'
+
+---
+
+Pattern 36: duree_activite → activity_duration
+Find:    'duree_activite'|"duree_activite"|\$duree_activite
+Replace: $activity_duration
+
+---
+
+Pattern 37: entreeJournal → journalEntry
+Find:    \$entreeJournal\b|entreeJournal
+Replace: $journalEntry
+
+---
+
+Pattern 38: entreesJournal → journalEntries
+Find:    \$entreesJournal\b|entreesJournal
+Replace: $journalEntries
+
+---
+
+================================================================================
+SECTION 3: CLÉS API JSON RESPONSE
+================================================================================
+
+Pattern 39: derniers_vitaux → latest_vitals
+Find:    'derniers_vitaux'|"derniers_vitaux"
+Replace: 'latest_vitals'
+
+---
+
+Pattern 40: resultats_labo → lab_results
+Find:    'resultats_labo'|"resultats_labo"
+Replace: 'lab_results'
+
+---
+
+Pattern 41: type_analyse → analysis_type
+Find:    'type_analyse'|"type_analyse"
+Replace: 'analysis_type'
+
+---
+
+Pattern 42: date_analyse → analysis_date
+Find:    'date_analyse'|"date_analyse"
+Replace: 'analysis_date'
+
+---
+
+Pattern 43: medicaments_traitement → treatment_medicines
+Find:    'medicaments_traitement'|"medicaments_traitement"
+Replace: 'treatment_medicines'
+
+---
+
+Pattern 44: verifications_traitement → treatment_checks
+Find:    'verifications_traitement'|"verifications_traitement"
+Replace: 'treatment_checks'
+
+---
+
+Pattern 45: observation_medecin → doctor_observation
+Find:    'observation_medecin'|"observation_medecin"
+Replace: 'doctor_observation'
+
+---
+
+Pattern 46: profil_sante → health_profile
+Find:    'profil_sante'|"profil_sante"
+Replace: 'health_profile'
+
+---
+
+Pattern 47: en_attente → pending
+Find:    'en_attente'|"en_attente"
+Replace: 'pending'
+
+---
+
+Pattern 48: accepte → accepted
+Find:    'accepte'|"accepte"
+Replace: 'accepted'
+
+---
+
+Pattern 49: refuse → rejected
+Find:    'refuse'|"refuse"
+Replace: 'rejected'
+
+---
+
+================================================================================
+SECTION 4: COMMENTAIRES ET CHAÎNES
+================================================================================
+
+Pattern 50: // Récupérer → // Get
+Find:    // Récupérer
+Replace: // Get
+
+---
+
+Pattern 51: // Créer → // Create
+Find:    // Créer
+Replace: // Create
+
+---
+
+Pattern 52: // Afficher → // Show
+Find:    // Afficher
+Replace: // Show
+
+---
+
+Pattern 53: // Mettre à jour → // Update
+Find:    // Mettre à jour
+Replace: // Update
+
+---
+
+Pattern 54: // Supprimer → // Delete
+Find:    // Supprimer
+Replace: // Delete
+
+---
+
+================================================================================
+SECTION 5: MODEL RELATIONSHIPS NAMES
+================================================================================
+
+Pattern 55: activitesPhysiques → physicalActivities
+Find:    activitesPhysiques\(\)
+Replace: physicalActivities()
+
+---
+
+Pattern 56: aliments → foods
+Find:    aliments\(\)
+Replace: foods()
+
+---
+
+Pattern 57: medicationsDetaillees → detailedMedications
+Find:    medicationsDetaillees\(\)
+Replace: detailedMedications()
+
+---
+
+Pattern 58: traitementsActifs → activeTreatments
+Find:    traitementsActifs\(\)
+Replace: activeTreatments()
+
+---
+
+Pattern 59: invitationsMedecin → doctorInvitations
+Find:    invitationsMedecin\(\)
+Replace: doctorInvitations()
+
+---
+
+================================================================================
+SECTION 6: ROUTES ET ENDPOINTS (route names)
+================================================================================
+
+Pattern 60: donnees-sante → health-data
+Find:    donnees-sante
+Replace: health-data
+
+---
+
+Pattern 61: vue-ensemble → overview
+Find:    vue-ensemble
+Replace: overview
+
+---
+
+Pattern 62: profil-sante → health-profile
+Find:    profil-sante
+Replace: health-profile
+
+---
+
+Pattern 63: journal-quotidien → daily-journal
+Find:    journal-quotidien
+Replace: daily-journal
+
+---
+
+Pattern 64: medicaments → medications
+Find:    medicaments
+Replace: medications
+
+---
+
+Pattern 65: activites-physiques → physical-activities
+Find:    activites-physiques
+Replace: physical-activities
+
+---
+
+================================================================================
+ORDRE D'EXÉCUTION RECOMMANDÉ:
+================================================================================
+
+ÉTAPE 1 (Backend - 30 min):
+[ ] Section 1: Patterns 1-30 (variables de base)
+    Scope: app/Models/*.php + app/Http/Controllers/Api/*.php
+    
+[ ] Tester: php artisan test
+[ ] Commit: "refactor: convert variable names to English"
+
+---
+
+ÉTAPE 2 (15 min):
+[ ] Section 2: Patterns 31-38 (noms composés)
+    Scope: app/Models/*.php
+    
+[ ] Commit: "refactor: convert model property names to English"
+
+---
+
+ÉTAPE 3 (15 min):
+[ ] Section 3: Patterns 39-49 (clés API)
+    Scope: app/Http/Controllers/Api/*.php + app/Services/*.php
+    
+[ ] Tester les endpoints
+[ ] Commit: "refactor: convert API response keys to English"
+
+---
+
+ÉTAPE 4 (10 min):
+[ ] Section 4: Patterns 50-54 (commentaires)
+    Scope: app/**/*.php
+    
+[ ] Commit: "refactor: convert comments to English"
+
+---
+
+ÉTAPE 5 (10 min):
+[ ] Section 5: Patterns 55-59 (relationships)
+    Scope: app/Models/*.php
+    
+[ ] Commit: "refactor: convert relationship names to English"
+
+---
+
+ÉTAPE 6 (Frontend - 20 min):
+[ ] Section 6: Patterns 60-65 (routes/endpoints)
+    Scope: frontend/src/**/*.vue + frontend/src/services/*.js
+    
+[ ] npm run build
+[ ] npm run lint
+[ ] Commit: "refactor: convert API routes to English"
+
+---
+
+ÉTAPE 7 (Cleanup - 10 min):
+[ ] Vérifier les imports
+[ ] Vérifier les migrations (rester en français dans DB)
+[ ] Tests finaux
+[ ] Commit final: "refactor: complete English conversion"
+
+================================================================================
+⚠️ POINTS CRITIQUES À NE PAS OUBLIER:
+================================================================================
+
+✅ Convertir:
+- Noms de variables ($variable)
+- Clés API JSON ('key' => 'value')
+- Noms de méthodes helpers
+- Commentaires
+
+❌ NE PAS Convertir:
+- Noms de colonnes SQL (restent en français dans la DB)
+- Noms de tables SQL
+- Valeurs enum en DB (ex: 'faible', 'moyenne', 'elevee')
+- Route model binding names
+- Migration file names
+
+================================================================================
+VALIDATION APRÈS CONVERSION:
+================================================================================
+
+```bash
+# PHP Tests
+cd backend && php artisan test
+
+# Linting
+./vendor/bin/pint
+
+# Frontend
+cd frontend
+npm run build
+npm run lint
+
+# Vérifier pas de broken imports
+grep -r "error\|Error" storage/logs/laravel.log | head -20
+```
+
+================================================================================

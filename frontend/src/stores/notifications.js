@@ -6,7 +6,7 @@ let seq = 0;
 export const useNotificationsStore = defineStore("notifications", () => {
     const items = ref([]);
 
-    function ajouter({
+    function add({
         type = "info",
         title = "",
         message = "",
@@ -23,64 +23,64 @@ export const useNotificationsStore = defineStore("notifications", () => {
         });
 
         if (duration > 0) {
-            setTimeout(() => retirer(id), duration);
+            setTimeout(() => remove(id), duration);
         }
 
         return id;
     }
 
-    function retirer(id) {
+    function remove(id) {
         items.value = items.value.filter((item) => item.id !== id);
     }
 
-    function vider() {
+    function clear() {
         items.value = [];
     }
 
-    function succes(message, title = "Succes") {
-        return ajouter({ type: "success", title, message });
+    function success(message, title = "Success") {
+        return add({ type: "success", title, message });
     }
 
-    function erreur(message, title = "Erreur") {
-        return ajouter({ type: "error", title, message, duration: 6000 });
+    function error(message, title = "Error") {
+        return add({ type: "error", title, message, duration: 6000 });
     }
 
-    function avertissement(message, title = "Attention") {
-        return ajouter({ type: "warning", title, message, duration: 5000 });
+    function warning(message, title = "Warning") {
+        return add({ type: "warning", title, message, duration: 5000 });
     }
 
-    function information(message, title = "Information") {
-        return ajouter({ type: "info", title, message });
+    function info(message, title = "Information") {
+        return add({ type: "info", title, message });
     }
 
-    function actionAjoutee(message = "Element ajoute avec succes.") {
-        return succes(message, "Ajout");
+    function itemAdded(message = "Item added successfully.") {
+        return success(message, "Added");
     }
 
-    function actionModifiee(message = "Element modifie avec succes.") {
-        return information(message, "Modification");
+    function itemUpdated(message = "Item updated successfully.") {
+        return info(message, "Updated");
     }
 
-    function actionSupprimee(message = "Element supprime avec succes.") {
-        return erreur(message, "Suppression");
+    function itemDeleted(message = "Item deleted successfully.") {
+        return success(message, "Deleted");
     }
 
-    function actionAnnulee(message = "Action annulee avec succes.") {
-        return avertissement(message, "Annulation");
+    function actionCancelled(message = "Action cancelled successfully.") {
+        return warning(message, "Cancelled");
     }
 
     return {
         items,
-        ajouter,
-        retirer,
-        vider,
-        succes,
-        erreur,
-        avertissement,
-        information,
-        actionAjoutee,
-        actionModifiee,
-        actionSupprimee,
-        actionAnnulee,
+        add,
+        remove,
+        clear,
+        success,
+        error,
+        warning,
+        info,
+        itemAdded,
+        itemUpdated,
+        itemDeleted,
+        actionCancelled,
     };
 });

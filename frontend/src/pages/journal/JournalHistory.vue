@@ -56,18 +56,18 @@
                 </div>
             </div>
         </div>
-        <NotificationsEnLigne />
+        <NotificationsOnline />
 
         <p
-            v-if="messageAvis"
+            v-if="noticeMessage"
             class="mb-4 rounded-xl border px-4 py-3 text-[15px] font-semibold"
             :class="
-                tonAvis === 'success'
+                noticeTone === 'success'
                     ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
                     : 'border-amber-300 bg-amber-50 text-amber-700'
             "
         >
-            {{ messageAvis }}
+            {{ noticeMessage }}
         </p>
 
         <div
@@ -77,12 +77,12 @@
             <span class="text-slate-500">Filtre actif :</span>
             <span
                 class="rounded-full bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-3 py-1 font-semibold text-white"
-                >{{ libelleFiltreActif }}</span
+                >{{ activeFilterLabel }}</span
             >
             <button
                 type="button"
                 class="font-semibold text-slate-500 underline"
-                @click="store.reinitialiserFiltre()"
+                @click="store.resetFilter()"
             >
                 Réinitialiser filtre
             </button>
@@ -90,18 +90,13 @@
 
         <div class="space-y-3">
             <CarteEntreeHistorique
-                v-for="entree in store.entreesFiltrees"
-                :key="entree.id"
-                :entree="entree"
+                v-for="entry in store.filteredEntries"
+                :key="entry.id"
+                :entree="entry"
                 :editing="false"
                 :filter-type="store.filter.type"
-                @edit="
-                    router.push({
-                        name: 'assistant-journal',
-                        query: { edit: entree.id },
-                    })
-                "
-                @request-delete="demanderSuppression(entree.id)"
+                @edit="router.push({ name: 'journal-assistant', query: { edit: entry.id } })"
+                @request-delete="requestDeletion(entry.id)"
             />
         </div>
 
@@ -113,12 +108,12 @@
                 Aucune entrée trouvée avec ce filtre.
             </p>
             <p class="mt-1 text-sm text-slate-500">
-                Réinitialise le filtre pour afficher tout l’historique.
+                Réinitialise le filtre pour afficher tout l'historique.
             </p>
             <button
                 type="button"
                 class="mt-4 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 py-2 text-sm font-semibold text-white"
-                @click="reinitialiserFiltre"
+                @click="resetFilter"
             >
                 Réinitialiser le filtre
             </button>
@@ -134,45 +129,39 @@
             <button
                 type="button"
                 class="mt-4 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 py-2 text-sm font-semibold text-white"
-                @click="router.push({ name: 'assistant-journal' })"
+                @click="router.push({ name: 'journal-assistant' })"
             >
                 Ajouter une entrée
             </button>
         </div>
 
-        <ModalFiltre
+        <FilterModal
             :open="showFilter"
             :filter="store.filter"
             @close="showFilter = false"
-            @apply="appliquerFiltre"
-            @reset="reinitialiserFiltre"
+            @apply="applyFilter"
+            @reset="resetFilter"
         />
 
-        <DialogueConfirmation
+        <ConfirmationDialog
             :open="showDeleteConfirm"
             title="Supprimer l'entree"
             message="Cette action est definitive. Voulez-vous continuer ?"
             confirm-label="Supprimer"
             cancel-label="Annuler"
-            @cancel="annulerSuppression"
-            @confirm="confirmerSuppression"
+            @cancel="cancelDeletion"
+            @confirm="confirmDeletion"
         />
     </div>
 </template>
 
 <script setup>
-/*
-  Page historique du journal.
-  Elle affiche les entrees avec filtres et actions (editer/supprimer).
-  Les donnees sont centralisees dans le store journal.
-*/
-
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import ModalFiltre from "@/components/journal/ModalFiltre.vue";
-import CarteEntreeHistorique from "@/components/journal/CarteEntreeHistorique.vue";
-import DialogueConfirmation from "@/components/ui/DialogueConfirmation.vue";
-import NotificationsEnLigne from "@/components/ui/NotificationsEnLigne.vue";
+import FilterModal from "@/components/journal-entries/FilterModal.vue";
+import CarteEntreeHistorique from "@/components/journal-entries/EntryHistoryCard.vue";
+import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
+import NotificationsOnline from "@/components/ui/NotificationsOnline.vue";
 import { useJournalStore } from "@/stores/journal";
 import { useNotificationsStore } from "@/stores/notifications";
 
@@ -188,7 +177,7 @@ onMounted(async () => {
     await store.initialiser();
 });
 
-const libelleFiltreActif = computed(() => {
+const activeFilterLabel = computed(() => {
     const map = {
         all: "Toutes les données",
         date: "Par date",
@@ -204,54 +193,47 @@ const libelleFiltreActif = computed(() => {
 });
 
 const hasEntries = computed(() => store.entries.length > 0);
-const hasFilteredEntries = computed(() => store.entreesFiltrees.length > 0);
-const showNoResults = computed(
-    () => hasEntries.value && !hasFilteredEntries.value,
+const hasFilteredEntries = computed(() => store.filteredEntries.length > 0);
+const showNoResults = computed(() => hasEntries.value && !hasFilteredEntries.value);
+
+const noticeTone = computed(() =>
+    route.query.notice === "saved" ? "success" : route.query.notice === "canceled" ? "info" : "",
 );
-const tonAvis = computed(() =>
-    route.query.notice === "saved"
-        ? "success"
-        : route.query.notice === "canceled"
-          ? "info"
-          : "",
-);
-const messageAvis = computed(() => {
-    if (route.query.notice === "saved")
-        return "Modifications enregistrées avec succès.";
+const noticeMessage = computed(() => {
+    if (route.query.notice === "saved") return "Modifications enregistrées avec succès.";
     if (route.query.notice === "canceled") return "Modifications annulées.";
     return "";
 });
 
-const appliquerFiltre = (nextFilter) => {
+const applyFilter = (nextFilter) => {
     store.definirFiltre(nextFilter);
     showFilter.value = false;
 };
 
-const reinitialiserFiltre = () => {
+const resetFilter = () => {
     store.reinitialiserFiltre();
     showFilter.value = false;
 };
 
-const demanderSuppression = (id) => {
+const requestDeletion = (id) => {
     pendingDeleteId.value = id;
     showDeleteConfirm.value = true;
 };
 
-const annulerSuppression = () => {
+const cancelDeletion = () => {
     pendingDeleteId.value = null;
     showDeleteConfirm.value = false;
-    notifications.actionAnnulee();
+    notifications.actionCancelled();
 };
 
-const confirmerSuppression = async () => {
+const confirmDeletion = async () => {
     if (!pendingDeleteId.value) return;
     try {
         await store.supprimerEntree(pendingDeleteId.value);
-        notifications.actionSupprimee();
+        notifications.itemDeleted();
     } catch (error) {
-        const message =
-            error?.response?.data?.message || "Erreur lors de la suppression.";
-        notifications.erreur(message);
+        const message = error?.response?.data?.message || "Erreur lors de la suppression.";
+        notifications.error(message);
     } finally {
         pendingDeleteId.value = null;
         showDeleteConfirm.value = false;

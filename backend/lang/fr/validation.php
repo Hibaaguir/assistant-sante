@@ -84,6 +84,14 @@ return [
     'unique' => 'Le champ :attribute est deja utilise.',
     'url' => 'Le format de :attribute est invalide.',
 
+    'password' => [
+        'letters'       => 'Le :attribute doit contenir au moins une lettre.',
+        'mixed'         => 'Le :attribute doit contenir au moins une lettre majuscule et une lettre minuscule.',
+        'numbers'       => 'Le :attribute doit contenir au moins un chiffre.',
+        'symbols'       => 'Le :attribute doit contenir au moins un symbole.',
+        'uncompromised' => 'Ce :attribute est apparu dans une fuite de donnees. Veuillez choisir un autre :attribute.',
+    ],
+
     'attributes' => [
         'name' => 'nom',
         'email' => 'email',

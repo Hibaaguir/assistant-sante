@@ -1,38 +1,39 @@
-// Importation de la bibliothèque Axios pour effectuer des requêtes HTTP vers l'API
+// Import Axios for HTTP requests to the API
 import axios from "axios";
 
-// Création d'une instance Axios configurée avec l'URL de base de l'API et les headers par défaut
+// Create an Axios instance configured with the API base URL and default headers
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
-  headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-    "X-Requested-With": "XMLHttpRequest",
-  },
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
+    headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+    },
 });
 
-// Intercepteur de requête permettant d'ajouter automatiquement le token d'authentification dans le header Authorization
+// Request interceptor: attach the auth token to every outgoing request
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("auth_token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
+    const token = localStorage.getItem("auth_token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
 });
 
-// Intercepteur de reponse pour eviter les boucles de requetes 401.
+// Response interceptor: clear token on 401 to avoid infinite redirect loops
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const status = error?.response?.status;
-    const requeteUrl = String(error?.config?.url || "");
-    const estTentativeConnexion = /\/auth\/(login|connexion|register|inscription)/.test(requeteUrl);
+    (response) => response,
+    (error) => {
+        const status = error?.response?.status;
+        const requestUrl = String(error?.config?.url || "");
+        const isLoginAttempt =
+            /\/auth\/(login|connexion|register|inscription)/.test(requestUrl);
 
-    if (status === 401 && !estTentativeConnexion) {
-      localStorage.removeItem("auth_token");
-    }
+        if (status === 401 && !isLoginAttempt) {
+            localStorage.removeItem("auth_token");
+        }
 
-    return Promise.reject(error);
-  }
+        return Promise.reject(error);
+    },
 );
 
-// Export de l'instance Axios configurée pour être utilisée dans toute l'application
+// Export the configured Axios instance
 export default api;

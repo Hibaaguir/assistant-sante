@@ -29,10 +29,7 @@
         </p>
 
         <!-- Display / Edit Mode -->
-        <div
-            class="mt-3 flex items-baseline gap-2 cursor-pointer"
-            @click="!isEditing && canEdit && toggleEdit()"
-        >
+        <div class="mt-3 flex items-baseline gap-2">
             <template v-if="isEditing">
                 <!-- Edit Mode: Two separate number inputs -->
                 <input
@@ -69,13 +66,21 @@
             </template>
 
             <template v-else>
-                <!-- Display Mode: Read-only values -->
-                <span class="text-[36px] font-bold leading-none text-slate-900">
-                    {{ displayValue }}
-                    <span class="text-[14px] font-medium text-slate-400 ml-2">{{
-                        unit
-                    }}</span>
-                </span>
+                <!-- Display Mode: separate clickable areas per value -->
+                <span
+                    class="text-[36px] font-bold leading-none text-slate-900"
+                    :class="canEdit ? 'cursor-pointer' : ''"
+                    @click="canEdit && focusSystolic()"
+                >{{ systolic !== '' ? Number(systolic) : '--' }}</span>
+                <span class="text-[36px] font-bold leading-none text-slate-500">/</span>
+                <span
+                    class="text-[36px] font-bold leading-none text-slate-900"
+                    :class="canEdit ? 'cursor-pointer' : ''"
+                    @click="canEdit && focusDiastolic()"
+                >{{ diastolic !== '' ? Number(diastolic) : '--' }}</span>
+                <span class="text-[14px] font-medium text-slate-400 ml-2">{{
+                    unit
+                }}</span>
             </template>
         </div>
     </article>
@@ -133,12 +138,6 @@ watch(
 );
 
 // ─── Computed ─────────────────────────────────────────────────────────────
-const displayValue = computed(() => {
-    const sys = props.systolic !== "" ? Number(props.systolic) : "--";
-    const dia = props.diastolic !== "" ? Number(props.diastolic) : "--";
-    return `${sys}/${dia}`;
-});
-
 const isValid = computed(() => {
     return (
         Number.isFinite(localSystolic.value) &&
@@ -151,11 +150,17 @@ const isValid = computed(() => {
 });
 
 // ─── Methods ──────────────────────────────────────────────────────────────
-function toggleEdit() {
+function focusSystolic() {
     if (!isEditing.value) {
         isEditing.value = true;
-        // Auto-focus systolic input
         setTimeout(() => systolicInput.value?.focus?.(), 0);
+    }
+}
+
+function focusDiastolic() {
+    if (!isEditing.value) {
+        isEditing.value = true;
+        setTimeout(() => diastolicInput.value?.focus?.(), 0);
     }
 }
 

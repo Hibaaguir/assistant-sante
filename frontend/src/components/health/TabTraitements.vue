@@ -531,6 +531,8 @@ const props = defineProps({
     treatmentDays: { type: Array, default: () => [] },
 });
 
+defineEmits(["refresh"]);
+
 const notifications = useNotificationsStore();
 
 const showTreatmentModal = ref(false);
@@ -857,7 +859,7 @@ async function synchroniserSuiviTraitements() {
         }
     }
 
-    await api.post("/donnees-sante/treatment-checks/sync", { checks });
+    await api.post("/health-data/treatment-checks/sync", { checks });
 }
 
 async function basculerPrise(dayKey, med, doseIndex) {
@@ -873,12 +875,12 @@ async function basculerPrise(dayKey, med, doseIndex) {
 
     try {
         await synchroniserSuiviTraitements();
-        notifications.actionModifiee();
+        notifications.itemUpdated();
     } catch (error) {
         props.treatmentChecks[dayKey][key] = previousValue;
         const message =
             error?.response?.data?.message || "Erreur lors de la mise a jour.";
-        notifications.erreur(message);
+        notifications.error(message);
     }
 }
 

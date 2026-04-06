@@ -5,11 +5,11 @@
     Cette structure minimale simplifie l'organisation globale.
   -->
   <router-view />
-  <ToastsApplication />
+  <AppToasts />
 </template>
 
 <script setup>
-import ToastsApplication from "@/components/ui/ToastsApplication.vue";
+import AppToasts from "@/components/ui/AppToasts.vue";
 /*
   Aucun state local ici.
   Le routeur pilote l'ensemble des pages.

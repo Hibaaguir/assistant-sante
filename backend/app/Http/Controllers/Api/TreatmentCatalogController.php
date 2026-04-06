@@ -3,22 +3,50 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Services\TraitementCatalogueService;
+use App\Models\TreatmentCatalog;
+use App\Services\TreatmentCatalogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
 
 class TreatmentCatalogController extends Controller
 {
     public function __construct(
-        private readonly TraitementCatalogueService $traitementCatalogueService,
+        private readonly TreatmentCatalogService $treatmentCatalogService,
     ) {}
+
+    // Returns all distinct medication types as a flat array of strings
+    public function medicationTypes(): JsonResponse
+    {
+        $types = TreatmentCatalog::query()
+            ->pluck('medication_type')
+            ->filter(fn($type) => !is_null($type) && $type !== '')
+            ->unique()
+            ->sort()
+            ->values();
+
+        return response()->json($types);
+    }
+
+    // Returns all medication names for a given type as a flat array of strings
+    public function medicationNames(Request $request): JsonResponse
+    {
+        $type = $request->query('type', '');
+
+        $names = TreatmentCatalog::query()
+            ->where('medication_type', $type)
+            ->pluck('medication_name')
+            ->filter(fn($name) => !is_null($name) && $name !== '')
+            ->unique()
+            ->sort()
+            ->values();
+
+        return response()->json($names);
+    }
 
     public function index(): JsonResponse
     {
         return response()->json([
-            'data' => $this->traitementCatalogueService->buildCatalog(),
+            'data' => $this->treatmentCatalogService->buildCatalog(),
         ]);
     }
 
@@ -29,15 +57,17 @@ class TreatmentCatalogController extends Controller
             'name' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $this->traitementCatalogueService->saveEntry(
+        $userId = $request->user()?->id;
+
+        $this->treatmentCatalogService->saveEntry(
             $validated['type'],
             $validated['name'] ?? null,
-            Auth::id(),
+            $userId,
         );
 
         return response()->json([
-            'message' => 'Catalogue de traitements mis a jour.',
-            'data' => $this->traitementCatalogueService->buildCatalog(),
+            'message' => 'Treatment catalog updated.',
+            'data' => $this->treatmentCatalogService->buildCatalog(),
         ]);
     }
 }

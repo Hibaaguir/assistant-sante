@@ -277,7 +277,7 @@
 import { computed, reactive, ref } from "vue";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
-import DialogueConfirmation from "@/components/ui/DialogueConfirmation.vue";
+import DialogueConfirmation from "@/components/ui/ConfirmationDialog.vue";
 
 // ─── Icônes inline légères ────────────────────────────────────────────────────
 const CalendarIcon = {
@@ -507,7 +507,7 @@ async function saveAnalysis() {
         }
         rows.push({
             analysis_type: form.category,
-            analysis_result: result,
+            result_name: result,
             value,
             unit: row.unit || null,
             analysis_date: isoDate(form.date),
@@ -520,13 +520,13 @@ async function saveAnalysis() {
 
     try {
         if (editingId.value) {
-            await api.put(`/donnees-sante/labs/${editingId.value}`, rows[0]);
-            notifications.actionModifiee();
+            await api.put(`/health-data/labs/${editingId.value}`, rows[0]);
+            notifications.itemUpdated();
         } else {
             await Promise.all(
-                rows.map((p) => api.post("/donnees-sante/labs", p)),
+                rows.map((p) => api.post("/health-data/labs", p)),
             );
-            notifications.actionAjoutee();
+            notifications.itemAdded();
             Object.assign(filters, { type: "", date: "", query: "" });
         }
         editingId.value = null;
@@ -534,7 +534,7 @@ async function saveAnalysis() {
         showAnalysisModal.value = false;
         emit("refresh");
     } catch (err) {
-        notifications.erreur(
+        notifications.error(
             err?.response?.data?.message ?? "Erreur lors de l'enregistrement.",
         );
     }
@@ -569,11 +569,11 @@ function cancelDelete() {
 async function confirmDelete() {
     if (!pendingDelete.value?.id) return;
     try {
-        await api.delete(`/donnees-sante/labs/${pendingDelete.value.id}`);
-        notifications.actionSupprimee();
+        await api.delete(`/health-data/labs/${pendingDelete.value.id}`);
+        notifications.itemDeleted();
         emit("refresh");
     } catch (err) {
-        notifications.erreur(
+        notifications.error(
             err?.response?.data?.message ?? "Erreur lors de la suppression.",
         );
     } finally {

@@ -2,27 +2,26 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DoctorInvitationController;
-use App\Http\Controllers\Api\DonneesSanteController;
-use App\Http\Controllers\Api\JournalQuotidienController;
-use App\Http\Controllers\Api\MotDePasseOubliController;
+use App\Http\Controllers\Api\HealthDataController;
+use App\Http\Controllers\Api\JournalEntryController;
+use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\NotificationController;
-use App\Http\Controllers\Api\ProfilSanteController;
-use App\Http\Controllers\Api\ProfilUtilisateurController;
+use App\Http\Controllers\Api\HealthProfileController;
+use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\TreatmentCatalogController;
-use App\Http\Controllers\Api\UtilisateurAdminController;
-use App\Http\Controllers\Api\CatalogueTraitementController;
+use App\Http\Controllers\Api\UserAdminController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Routes publiques (sans Sanctum)
+| Public Routes (without Sanctum)
 |--------------------------------------------------------------------------
 */
 Route::post('/doctor-invitations/create', [DoctorInvitationController::class, 'createInvitation']);
 
 /*
 |--------------------------------------------------------------------------
-| Authentification (publique)
+| Authentication (public)
 |--------------------------------------------------------------------------
 */
 Route::prefix('auth')->group(function () {
@@ -30,13 +29,17 @@ Route::prefix('auth')->group(function () {
     Route::post('/login',            [AuthController::class, 'login']);
     Route::post('/doctor/register',  [AuthController::class, 'registerDoctor']);
     Route::post('/doctor/login',     [AuthController::class, 'loginDoctor']);
-    Route::post('/forgot-password',  [MotDePasseOubliController::class, 'requestReset']);
-    Route::post('/reset-password',   [MotDePasseOubliController::class, 'resetPassword']);
+    Route::post('/forgot-password',  [ForgotPasswordController::class, 'requestReset']);
+    Route::post('/reset-password',   [ForgotPasswordController::class, 'resetPassword']);
 });
+
+// Routes treatment catalogs (public, used during profile creation)
+Route::get('/treatment-catalogs/medication-types', [TreatmentCatalogController::class, 'medicationTypes']);
+Route::get('/treatment-catalogs/medication-names',  [TreatmentCatalogController::class, 'medicationNames']);
 
 /*
 |--------------------------------------------------------------------------
-| Routes protégées (Sanctum)
+| Protected Routes (Sanctum)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth:sanctum')->group(function () {
@@ -46,30 +49,26 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me',           [AuthController::class, 'getCurrentUser']);
     Route::post('/auth/logout',      [AuthController::class, 'logout']);
 
-    // --- Profil utilisateur ---
-    Route::prefix('profil-utilisateur')->group(function () {
-        Route::get('/',                      [ProfilUtilisateurController::class, 'getProfile']);
-        Route::put('/nom',                   [ProfilUtilisateurController::class, 'updateName']);
-        Route::put('/photo',                 [ProfilUtilisateurController::class, 'updatePhoto']);
-        Route::delete('/photo',              [ProfilUtilisateurController::class, 'deletePhoto']);
-        Route::post('/changer-mot-de-passe', [ProfilUtilisateurController::class, 'changePassword']);
+    // --- User Profile ---
+    Route::prefix('user-profile')->group(function () {
+        Route::get('/',                      [UserProfileController::class, 'show']);
+        Route::put('/name',                   [UserProfileController::class, 'updateName']);
+        Route::put('/photo',                 [UserProfileController::class, 'updatePhoto']);
+        Route::delete('/photo',              [UserProfileController::class, 'deletePhoto']);
+        Route::post('/change-password', [UserProfileController::class, 'changePassword']);
     });
 
-    // --- Profil santé ---
-    Route::prefix('profil-sante')->group(function () {
-        Route::post('/', [ProfilSanteController::class, 'store']);
-        Route::get('/',  [ProfilSanteController::class, 'show']);
+    // --- Health Profile ---
+    Route::prefix('health-profile')->group(function () {
+        Route::post('/', [HealthProfileController::class, 'store']);
+        Route::get('/',  [HealthProfileController::class, 'show']);
     });
 
-    // --- Catalogue traitements ---
+    // --- Treatment Catalog ---
     Route::prefix('treatment-catalog')->group(function () {
         Route::get('/',  [TreatmentCatalogController::class, 'index']);
         Route::post('/', [TreatmentCatalogController::class, 'store']);
     });
-
-    // Routes catalogue traitements
-    Route::get('/catalogue-traitements/types', [CatalogueTraitementController::class, 'types']);
-    Route::get('/catalogue-traitements/noms', [CatalogueTraitementController::class, 'noms']);
 
     // --- Notifications ---
     Route::prefix('notifications')->group(function () {
@@ -79,41 +78,42 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // --- Administration ---
-    Route::prefix('admin/utilisateurs')->group(function () {
-        Route::get('/',               [UtilisateurAdminController::class, 'index']);
-        Route::put('/{user}/statut',  [UtilisateurAdminController::class, 'updateStatus']);
-        Route::delete('/{user}',      [UtilisateurAdminController::class, 'destroy']);
+    Route::prefix('admin/users')->group(function () {
+        Route::get('/',               [UserAdminController::class, 'index']);
+        Route::put('/{user}/status',  [UserAdminController::class, 'updateStatus']);
+        Route::delete('/{user}',      [UserAdminController::class, 'destroy']);
     });
 
-    // --- Journal Quotidien ---
+    // --- Journal Entries ---
     Route::prefix('journal')->group(function () {
-        Route::get('/',                [JournalQuotidienController::class, 'index']);
-        Route::post('/',               [JournalQuotidienController::class, 'store']);
-        Route::get('/{journalQuotidien}',  [JournalQuotidienController::class, 'show']);
-        Route::put('/{journalQuotidien}',  [JournalQuotidienController::class, 'update']);
-        Route::delete('/{journalQuotidien}', [JournalQuotidienController::class, 'destroy']);
+        Route::get('/',                [JournalEntryController::class, 'index']);
+        Route::post('/',               [JournalEntryController::class, 'store']);
+        Route::get('/{journalEntry}',  [JournalEntryController::class, 'show']);
+        Route::put('/{journalEntry}',  [JournalEntryController::class, 'update']);
+        Route::delete('/{journalEntry}', [JournalEntryController::class, 'destroy']);
     });
 
-    // --- Données de santé ---
-    Route::prefix('donnees-sante')->group(function () {
-        Route::get('/overview',      [DonneesSanteController::class, 'vueEnsemble']);
-        Route::get('/vitals',        [DonneesSanteController::class, 'indexVitals']);
-        Route::post('/vitals',       [DonneesSanteController::class, 'storeVital']);
-        Route::get('/labs',          [DonneesSanteController::class, 'indexLabResults']);
-        Route::post('/labs',         [DonneesSanteController::class, 'storeLabResult']);
-        Route::put('/labs/{resultatAnalyse}',    [DonneesSanteController::class, 'updateLabResult']);
-        Route::delete('/labs/{resultatAnalyse}', [DonneesSanteController::class, 'destroyLabResult']);
-        Route::get('/treatment-checks',    [DonneesSanteController::class, 'indexTreatmentChecks']);
-        Route::post('/treatment-checks/sync', [DonneesSanteController::class, 'syncTreatmentChecks']);
+    // --- Health Data ---
+    Route::prefix('health-data')->group(function () {
+        Route::get('/overview',      [HealthDataController::class, 'overview']);
+        Route::get('/vitals',        [HealthDataController::class, 'indexVitals']);
+        Route::post('/vitals',       [HealthDataController::class, 'storeVital']);
+        Route::get('/labs',          [HealthDataController::class, 'indexLabResults']);
+        Route::post('/labs',         [HealthDataController::class, 'storeLabResult']);
+        Route::put('/labs/{analysisResult}',    [HealthDataController::class, 'updateLabResult']);
+        Route::delete('/labs/{analysisResult}', [HealthDataController::class, 'destroyLabResult']);
+        Route::get('/treatment-checks',    [HealthDataController::class, 'indexTreatmentChecks']);
+        Route::post('/treatment-checks/sync', [HealthDataController::class, 'syncTreatmentChecks']);
     });
 
     // --- Doctor Invitations ---
     Route::prefix('doctor-invitations')->group(function () {
         Route::get('/',    [DoctorInvitationController::class, 'index']);
-        Route::post('/{doctorInvitation}/accept',   [DoctorInvitationController::class, 'accept']);
-        Route::post('/{doctorInvitation}/reject',   [DoctorInvitationController::class, 'reject']);
+        Route::post('/{invitation}/accept',   [DoctorInvitationController::class, 'accept']);
+        Route::post('/{invitation}/reject',   [DoctorInvitationController::class, 'reject']);
         Route::get('/patients',                      [DoctorInvitationController::class, 'indexPatients']);
         Route::get('/patients/{patient}',            [DoctorInvitationController::class, 'showPatient']);
-        Route::put('/patients/{patient}/observation', [DoctorInvitationController::class, 'storeObservation']);
+        Route::put('/patients/{patient}/observations',              [DoctorInvitationController::class, 'upsertObservation']);
+        Route::delete('/patients/{patient}/observations/{date}',    [DoctorInvitationController::class, 'destroyObservation']);
     });
 });

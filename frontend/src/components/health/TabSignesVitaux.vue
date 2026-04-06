@@ -17,11 +17,8 @@
         </div>
     </div>
 
-    <!-- Cartes des dernières valeurs -->
-    <section
-        v-if="peutModifierDerniereMesure"
-        class="mt-6 grid gap-5 xl:grid-cols-3"
-    >
+    <!-- Cartes des dernières valeurs — toujours visibles -->
+    <section class="mt-6 grid gap-5 xl:grid-cols-3">
         <!-- Heart Rate Card -->
         <VitalCard
             v-bind="VITAL_META.heart"
@@ -35,7 +32,7 @@
         >
             <template #value>
                 <span class="text-[36px] font-bold leading-none text-slate-900">
-                    {{ draft.heartRate }}
+                    {{ draft.heartRate || '--' }}
                     <span class="text-[14px] font-medium text-slate-400 ml-2"
                         >bpm</span
                     >
@@ -43,7 +40,7 @@
             </template>
         </VitalCard>
 
-        <!-- Blood Pressure Card (NEW) -->
+        <!-- Blood Pressure Card -->
         <BloodPressureCard
             v-bind="VITAL_META.pressure"
             unit="mmHg"
@@ -71,7 +68,7 @@
         >
             <template #value>
                 <span class="text-[36px] font-bold leading-none text-slate-900">
-                    {{ draft.oxygen }}
+                    {{ draft.oxygen || '--' }}
                     <span class="text-[14px] font-medium text-slate-400 ml-2"
                         >%</span
                     >
@@ -310,7 +307,7 @@
                         type="number"
                         min="0"
                         max="100"
-                        step="0.1"
+                        step="1"
                         placeholder="98"
                         :disabled="form.skipOxygen"
                         class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60"
@@ -650,15 +647,6 @@ watch(
 );
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
-const latestHeartRate = computed(() => props.latestVital?.heart_rate ?? "--");
-const latestOxygen = computed(
-    () => props.latestVital?.oxygen_saturation ?? "--",
-);
-const latestPressure = computed(() => {
-    const { systolic_pressure: s, diastolic_pressure: d } =
-        props.latestVital ?? {};
-    return s && d ? `${s}/${d}` : "--/--";
-});
 const latestVitalDate = computed(() => isoDate(props.latestVital?.measured_at));
 const latestVitalMeasuredAtLabel = computed(() =>
     props.latestVital?.measured_at ? formatDate(latestVitalDate.value) : "",
@@ -721,6 +709,11 @@ function today() {
 function isoDate(v) {
     return v ? String(v).slice(0, 10) : today();
 }
+// Format YYYY-MM-DD → YYYY-MM-DD 00:00:00 for the API
+function toDatetime(dateStr) {
+    const d = dateStr ? String(dateStr).slice(0, 10) : today();
+    return `${d} 00:00:00`;
+}
 function toNumber(v) {
     if (v === null || v === undefined || v === "") return null;
     const n = Number(String(v).trim().replace(",", "."));
@@ -753,7 +746,8 @@ function syncDraft() {
     draft.heartRate = String(v?.heart_rate ?? "");
     draft.systolic = String(v?.systolic_pressure ?? "");
     draft.diastolic = String(v?.diastolic_pressure ?? "");
-    draft.oxygen = String(v?.oxygen_saturation ?? "");
+    const ox = v?.oxygen_saturation;
+    draft.oxygen = ox != null ? String(Math.round(Number(ox))) : "";
 }
 
 function mettreAJourDraft(cardKey, value) {
@@ -805,7 +799,8 @@ async function enregistrerMesure() {
     const heartRate = form.skipHeartRate ? null : toNumber(form.heartRate);
     const systolic = form.skipPressure ? null : toNumber(form.systolic);
     const diastolic = form.skipPressure ? null : toNumber(form.diastolic);
-    const oxygen = form.skipOxygen ? null : toNumber(form.oxygen);
+    const rawOxygen = form.skipOxygen ? null : toNumber(form.oxygen);
+    const oxygen = rawOxygen !== null ? Math.round(rawOxygen) : null;
 
     if (
         heartRate === null &&
@@ -822,14 +817,14 @@ async function enregistrerMesure() {
     }
 
     try {
-        await api.post("/donnees-sante/vitals", {
-            measured_at: isoDate(form.date),
+        await api.post("/health-data/vitals", {
+            measured_at: toDatetime(form.date),
             heart_rate: heartRate,
             systolic_pressure: systolic,
             diastolic_pressure: diastolic,
             oxygen_saturation: oxygen,
         });
-        notifications.actionAjoutee();
+        notifications.itemAdded();
         // Mettre à jour le draft avec les nouvelles valeurs pour affichage immédiat
         draft.heartRate = String(heartRate ?? "");
         draft.systolic = String(systolic ?? "");
@@ -839,7 +834,7 @@ async function enregistrerMesure() {
         showModal.value = false;
         emit("refresh");
     } catch (err) {
-        notifications.erreur(
+        notifications.error(
             err?.response?.data?.message ?? "Erreur lors de l'enregistrement.",
         );
     }
@@ -851,7 +846,8 @@ async function enregistrerDepuisCartes() {
     const heartRate = toNumber(draft.heartRate);
     const systolic = toNumber(draft.systolic);
     const diastolic = toNumber(draft.diastolic);
-    const oxygen = toNumber(draft.oxygen);
+    const rawOxygen = toNumber(draft.oxygen);
+    const oxygen = rawOxygen !== null ? Math.round(rawOxygen) : null;
 
     if (
         heartRate === null &&
@@ -859,11 +855,11 @@ async function enregistrerDepuisCartes() {
         diastolic === null &&
         oxygen === null
     ) {
-        notifications.avertissement("Veuillez renseigner au moins une valeur.");
+        notifications.warning("Veuillez renseigner au moins une valeur.");
         return;
     }
     if ((systolic === null) !== (diastolic === null)) {
-        notifications.avertissement(
+        notifications.warning(
             "Veuillez remplir les deux champs de tension.",
         );
         return;
@@ -871,14 +867,14 @@ async function enregistrerDepuisCartes() {
 
     enregistrementEnCours.value = true;
     try {
-        await api.post("/donnees-sante/vitals", {
-            measured_at: today(),
+        await api.post("/health-data/vitals", {
+            measured_at: toDatetime(today()),
             heart_rate: heartRate,
             systolic_pressure: systolic,
             diastolic_pressure: diastolic,
             oxygen_saturation: oxygen,
         });
-        notifications.actionModifiee("Dernière entrée modifiée avec succès.");
+        notifications.itemUpdated("Dernière entrée modifiée avec succès.");
         // Mettre à jour le draft avec les nouvelles valeurs pour affichage immédiat
         draft.heartRate = String(heartRate ?? "");
         draft.systolic = String(systolic ?? "");
@@ -891,7 +887,7 @@ async function enregistrerDepuisCartes() {
             ? Object.values(err.response.data.errors).flat()[0]
             : (err?.response?.data?.message ??
               "Erreur lors de la modification.");
-        notifications.erreur(msg);
+        notifications.error(msg);
     } finally {
         enregistrementEnCours.value = false;
     }

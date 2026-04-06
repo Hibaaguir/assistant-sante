@@ -2,27 +2,30 @@
 
 namespace Database\Seeders;
 
-use App\Models\ProfilSante;
-use App\Models\CatalogueTraitement;
+use App\Models\HealthProfile;
+use App\Models\TreatmentCatalog;
 use Illuminate\Database\Seeder;
 
 class TreatmentCatalogSeeder extends Seeder
 {
     public function run(): void
     {
+        // Delete existing catalog entries to allow fresh seed
+        TreatmentCatalog::query()->delete();
+
         $defaultCatalog = [
-            'Anti-inflammatoire' => ['Ibuprofene', 'Diclofenac', 'Ketoprofene', 'Naproxene'],
-            'Antibiotique' => ['Amoxicilline', 'Azithromycine', 'Cefixime', 'Ciprofloxacine'],
-            'Antidouleur' => ['Paracetamol', 'Tramadol', 'Codeine'],
+            'Anti-inflammatoire' => ['Ibuprofène', 'Diclofénac', 'Kétoprofène', 'Naproxène'],
+            'Antibiotique' => ['Amoxicilline', 'Azithromycine', 'Céfixime', 'Ciprofloxacine'],
+            'Antidouleur' => ['Paracétamol', 'Tramadol', 'Codéine'],
             'Antihypertenseur' => ['Amlodipine', 'Ramipril', 'Losartan', 'Bisoprolol'],
-            'Antidiabetique' => ['Metformine', 'Insuline', 'Gliclazide'],
-            'Anticoagulant' => ['Heparine', 'Warfarine', 'Rivaroxaban'],
-            'Antiallergique' => ['Cetirizine', 'Loratadine', 'Desloratadine'],
-            'Antidepresseur' => ['Sertraline', 'Fluoxetine', 'Escitalopram'],
-            'Corticoide' => ['Prednisone', 'Dexamethasone', 'Hydrocortisone'],
-            'Traitement hormonal' => ['Levothyrox', 'Estradiol', 'Progesterone'],
-            'Supplement vitaminique' => ['Vitamine D', 'Vitamine C', 'Fer'],
-            'Inhalateur respiratoire' => ['Ventoline', 'Symbicort', 'Seretide'],
+            'Antidiabétique' => ['Metformine', 'Insuline', 'Gliclazide'],
+            'Anticoagulant' => ['Héparine', 'Warfarine', 'Rivaroxaban'],
+            'Antihistaminique' => ['Cétirizine', 'Loratadine', 'Desloratadine'],
+            'Antidépresseur' => ['Sertraline', 'Fluoxétine', 'Escitalopram'],
+            'Corticostéroïde' => ['Prednisone', 'Dexaméthasone', 'Hydrocortisone'],
+            'Thérapie hormonale' => ['Lévothyroxine', 'Estradiol', 'Progestérone'],
+            'Supplément vitaminé' => ['Vitamine D', 'Vitamine C', 'Fer'],
+            'Inhalateur respiratoire' => ['Albutérol', 'Budésonide/Formotérol', 'Fluticasone/Salmétérol'],
         ];
 
         foreach ($defaultCatalog as $type => $names) {
@@ -33,38 +36,19 @@ class TreatmentCatalogSeeder extends Seeder
 
             foreach ($names as $name) {
                 $normalizedName = $this->normalizeText($name) ?? '';
-                CatalogueTraitement::query()->firstOrCreate([
-                    'type' => $normalizedType,
-                    'name' => $normalizedName,
+                TreatmentCatalog::query()->firstOrCreate([
+                    'medication_type' => $normalizedType,
+                    'medication_name' => $normalizedName,
                 ], [
-                    'created_by_id_utilisateur' => null,
+                    'created_by_user_id' => null,
                 ]);
             }
         }
 
-        ProfilSante::query()->select('id', 'id_utilisateur', 'traitements')->chunkById(200, function ($profiles): void {
+        HealthProfile::query()->select('id', 'user_id')->chunkById(200, function ($profiles): void {
             foreach ($profiles as $profile) {
-                $treatments = is_array($profile->traitements) ? $profile->traitements : [];
-
-                foreach ($treatments as $item) {
-                    if (! is_array($item)) {
-                        continue;
-                    }
-
-                    $type = $this->normalizeText($item['type'] ?? null);
-                    $name = $this->normalizeText($item['name'] ?? null) ?? '';
-
-                    if ($type === null) {
-                        continue;
-                    }
-
-                    CatalogueTraitement::query()->firstOrCreate([
-                        'type' => $type,
-                        'name' => $name,
-                    ], [
-                        'created_by_id_utilisateur' => $profile->id_utilisateur,
-                    ]);
-                }
+                // Treatment data is managed through the treatments() relationship
+                // Catalog seeding is primarily for default medications
             }
         });
     }

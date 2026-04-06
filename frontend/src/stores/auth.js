@@ -1,7 +1,7 @@
 /*
-  Store d'authentification centralisé.
-  Source unique de vérité pour l'utilisateur connecté, son rôle, son
-  niveau d'accès, et la gestion du token.
+  Centralized authentication store.
+  Single source of truth for the logged-in user, their role, access level,
+  and token management.
 */
 
 import { defineStore } from "pinia";
@@ -9,78 +9,85 @@ import { computed, ref } from "vue";
 import api from "@/services/api";
 
 export const useAuthStore = defineStore("auth", () => {
-    const utilisateur = ref(null);
+    const user = ref(null);
     const resolved = ref(false);
 
     let fetchInFlight = null;
-    let deconnexionInFlight = null;
+    let logoutInFlight = null;
 
-    const estConnecte = computed(() =>
+    const isAuthenticated = computed(() =>
         Boolean(localStorage.getItem("auth_token")),
     );
-    const nomUtilisateur = computed(() => utilisateur.value?.nom || "");
-    const photoProfil = computed(() => utilisateur.value?.photo_profil || "");
-    const roleUtilisateur = computed(
-        () => utilisateur.value?.role?.toLowerCase() || null,
+    const userName = computed(() => user.value?.name || "");
+    const profilePhoto = computed(() => user.value?.photo_profil || "");
+    const userRole = computed(
+        () => user.value?.role?.toLowerCase() || null,
     );
-    const estAdministrateur = computed(
+    const isAdmin = computed(
         () =>
-            roleUtilisateur.value === "administrateur" ||
-            roleUtilisateur.value === "admin",
+            userRole.value === "administrateur" ||
+            userRole.value === "admin",
     );
-    const estMedecin = computed(
+    const isDoctor = computed(
         () =>
-            roleUtilisateur.value === "medecin" ||
-            roleUtilisateur.value === "doctor",
+            userRole.value === "medecin" ||
+            userRole.value === "doctor",
     );
-    const aProfilSante = computed(() =>
-        Boolean(utilisateur.value?.has_profil_sante),
+    const hasHealthProfile = computed(() =>
+        Boolean(user.value?.has_profil_sante),
     );
-    const espaceCourant = computed(() =>
-        estMedecin.value
+    const currentSpace = computed(() =>
+        isDoctor.value
             ? "medecin"
-            : estAdministrateur.value
+            : isAdmin.value
               ? "administrateur"
               : "personnel",
     );
-    const estDansEspaceMedecin = computed(() => estMedecin.value);
-    const estDansEspacePersonnel = computed(
-        () => !estMedecin.value && !estAdministrateur.value,
+    const isInDoctorSpace = computed(() => isDoctor.value);
+    const isInUserSpace = computed(
+        () => !isDoctor.value && !isAdmin.value,
     );
 
-    function definirPresenceProfilSante(hasProfile) {
-        if (!utilisateur.value) return;
-        utilisateur.value.has_profil_sante = Boolean(hasProfile);
+    function setHealthProfile(hasProfile) {
+        if (!user.value) return;
+        user.value.has_profil_sante = Boolean(hasProfile);
     }
 
-    function mettreAJourUtilisateur(changements = {}) {
-        if (!utilisateur.value) return;
-        utilisateur.value = {
-            ...utilisateur.value,
-            ...changements,
+    function updateUser(changes = {}) {
+        if (!user.value) return;
+        // Map profile_photo to photo_profil for consistency
+        if (changes.profile_photo !== undefined) {
+            changes.photo_profil = changes.profile_photo;
+        }
+        user.value = {
+            ...user.value,
+            ...changes,
         };
     }
 
-    function appliquerAuthentification(data) {
+    function applyAuth(data) {
         if (data?.token) {
-            definirToken(data.token);
+            setToken(data.token);
         }
 
-        utilisateur.value = data?.utilisateur ?? null;
-        if (utilisateur.value) {
-            utilisateur.value.has_profil_sante = Boolean(
-                data?.has_profil_sante,
+        user.value = data?.user ?? null;
+        if (user.value) {
+            // Map backend attribute names to frontend attribute names
+            user.value.photo_profil =
+                user.value.profile_photo || null;
+            user.value.has_profil_sante = Boolean(
+                data?.has_health_profile || data?.has_profil_sante,
             );
         }
 
         resolved.value = true;
 
-        return utilisateur.value;
+        return user.value;
     }
 
-    async function chargerUtilisateur() {
+    async function loadUser() {
         if (!localStorage.getItem("auth_token")) {
-            utilisateur.value = null;
+            user.value = null;
             resolved.value = true;
             return null;
         }
@@ -88,10 +95,10 @@ export const useAuthStore = defineStore("auth", () => {
         if (!fetchInFlight) {
             fetchInFlight = api
                 .get("/auth/me")
-                .then((res) => appliquerAuthentification(res?.data))
+                .then((res) => applyAuth(res?.data))
                 .catch(() => {
-                    supprimerToken();
-                    utilisateur.value = null;
+                    removeToken();
+                    user.value = null;
                     resolved.value = true;
                     return null;
                 })
@@ -103,64 +110,67 @@ export const useAuthStore = defineStore("auth", () => {
         return fetchInFlight;
     }
 
-    async function deconnexion(options = {}) {
-        const { appelerApi = true } = options;
+    async function logout(options = {}) {
+        const { callApi = true } = options;
 
-        if (deconnexionInFlight) {
-            return deconnexionInFlight;
+        if (logoutInFlight) {
+            return logoutInFlight;
         }
 
-        deconnexionInFlight = (async () => {
-            const tokenPresent = Boolean(localStorage.getItem("auth_token"));
+        logoutInFlight = (async () => {
+            const hasToken = Boolean(localStorage.getItem("auth_token"));
 
-            if (appelerApi && tokenPresent) {
+            if (callApi && hasToken) {
                 try {
                     await api.post("/auth/logout");
                 } catch (_) {
-                    // La déconnexion locale doit toujours fonctionner même si l'API échoue.
+                    // Local logout must always succeed even if the API call fails.
                 }
             }
 
-            supprimerToken();
-            utilisateur.value = null;
+            removeToken();
+            user.value = null;
             resolved.value = false;
         })();
 
         try {
-            await deconnexionInFlight;
+            await logoutInFlight;
         } finally {
-            deconnexionInFlight = null;
+            logoutInFlight = null;
         }
     }
 
-    function supprimerToken() {
+    function removeToken() {
         localStorage.removeItem("auth_token");
         delete api.defaults.headers.common.Authorization;
     }
 
-    function definirToken(token) {
+    function setToken(token) {
         localStorage.setItem("auth_token", token);
     }
 
     return {
-        utilisateur,
+        // State
+        user,
         resolved,
-        espaceCourant,
-        estConnecte,
-        estAdministrateur,
-        estMedecin,
-        estDansEspaceMedecin,
-        estDansEspacePersonnel,
-        nomUtilisateur,
-        photoProfil,
-        roleUtilisateur,
-        aProfilSante,
-        appliquerAuthentification,
-        chargerUtilisateur,
-        deconnexion,
-        definirPresenceProfilSante,
-        mettreAJourUtilisateur,
-        supprimerToken,
-        definirToken,
+        // Computed
+        currentSpace,
+        isAuthenticated,
+        isAdmin,
+        isDoctor,
+        isInDoctorSpace,
+        isInUserSpace,
+        userName,
+        profilePhoto,
+        userRole,
+        hasHealthProfile,
+        // Actions
+        applyAuth,
+        loadUser,
+        logout,
+        setHealthProfile,
+        updateUser,
+        removeToken,
+        setToken,
     };
 });

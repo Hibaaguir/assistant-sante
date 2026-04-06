@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\InvitationMedecin;
-use App\Models\ResultatAnalyse;
-use App\Models\SuiviTraitement;
-use App\Models\SignesVitaux;
-use App\Models\Utilisateur;
+use App\Models\DoctorInvitation;
+use App\Models\AnalysisResult;
+use App\Models\HealthObservation;
+use App\Models\TreatmentCheck;
+use App\Models\VitalSigns;
+use App\Models\User;
 use App\Services\HealthDataService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -18,9 +19,9 @@ use Illuminate\Support\Collection;
 
 class DoctorInvitationController extends Controller
 {
-    public function __construct(private readonly HealthDataService $serviceDonneesSante) {}
+    public function __construct(private readonly HealthDataService $healthDataService) {}
 
-    // Créer une invitation pour un médecin qui veut s'inscrire
+    // Create an invitation for a doctor who wants to register
     public function createInvitation(Request $request): JsonResponse
     {
         try {
@@ -30,12 +31,12 @@ class DoctorInvitationController extends Controller
 
             $doctorEmail = strtolower(trim($validated['doctor_email']));
 
-            // Vérifier si une invitation existe déjà pour cet email
-            $existing = InvitationMedecin::whereRaw('LOWER(doctor_email) = ?', [$doctorEmail])->first();
+            // Check if invitation already exists for this email
+            $existing = DoctorInvitation::whereRaw('LOWER(doctor_email) = ?', [$doctorEmail])->first();
 
             if ($existing) {
                 return response()->json([
-                    'message' => 'Une invitation existe deja pour cet email.',
+                    'message' => 'An invitation already exists for this email.',
                     'data'    => [
                         'id'            => $existing->id,
                         'doctor_email'  => $existing->doctor_email,
@@ -45,17 +46,17 @@ class DoctorInvitationController extends Controller
                 ], 200);
             }
 
-            // Créer une nouvelle invitation pour un médecin sans patient (phase d'inscription)
-            $invitation = InvitationMedecin::create([
-                'id_patient_utilisateur' => null,
-                'id_medecin_utilisateur'  => null,
+            // Create new invitation for a doctor without patient (registration phase)
+            $invitation = DoctorInvitation::create([
+                'patient_user_id' => null,
+                'doctor_user_id'  => null,
                 'doctor_email'    => $doctorEmail,
                 'status'          => 'pending',
                 'token'           => \Illuminate\Support\Str::uuid(),
             ]);
 
             return response()->json([
-                'message' => 'Invitation créee avec succes.',
+                'message' => 'Invitation created successfully.',
                 'data'    => [
                     'id'            => $invitation->id,
                     'doctor_email'  => $invitation->doctor_email,
@@ -66,191 +67,210 @@ class DoctorInvitationController extends Controller
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'message' => 'Validation échouée.',
+                'message' => 'Validation failed.',
                 'errors'  => $e->errors(),
             ], 422);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Doctor invitation error: ' . $e->getMessage());
-            return response()->json(['message' => 'Erreur lors de la création de l\'invitation.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json(['message' => 'Error creating invitation.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    // Lister toutes les invitations médicales
+    // List all doctor invitations
     public function index(Request $request): JsonResponse
     {
-        $compte = $request->user();
-        $utilisateur = $compte->utilisateur;
+        $user = $request->user();
         
-        $invitations = InvitationMedecin::with($this->withPatient())
-            ->where('id_medecin_utilisateur', $utilisateur->id)
+        $invitations = DoctorInvitation::with($this->withPatient())
+            ->where('doctor_user_id', $user->id)
             ->orderByRaw("case when status = 'pending' then 0 else 1 end")
             ->orderByDesc('id')
             ->get()
-            ->map(fn (InvitationMedecin $inv) => $this->serializeInvitation($inv))
+            ->map(fn (DoctorInvitation $inv) => $this->serializeInvitation($inv))
             ->values();
 
-        return response()->json(['message' => 'Invitations recuperees avec succes.', 'data' => $invitations]);
+        return response()->json(['message' => 'Invitations retrieved successfully.', 'data' => $invitations]);
     }
 
-    // Accepter une invitation médicale
-    public function accept(Request $request, InvitationMedecin $invitationMedecin): JsonResponse
+    // Accept a doctor invitation
+    public function accept(Request $request, DoctorInvitation $invitation): JsonResponse
     {
-        // Vérifier que le médecin est propriétaire de l'invitation
-        if ($error = $this->authorizeInvitation($invitationMedecin, $request)) return $error;
+        // Check that doctor owns the invitation
+        if ($error = $this->authorizeInvitation($invitation, $request)) return $error;
 
-        // Mettre à jour le statut seulement s'il n'est pas déjà accepté
-        if ($invitationMedecin->status !== 'accepted') {
-            $invitationMedecin->update(['status' => 'accepted', 'accepted_at' => now(), 'rejected_at' => null, 'revoked_at' => null]);
+        // Update status only if not already accepted
+        if ($invitation->status !== 'accepted') {
+            $invitation->update(['status' => 'accepted', 'accepted_at' => now(), 'rejected_at' => null, 'revoked_at' => null]);
         }
 
-        // Synchroniser le rôle de l'utilisateur en médecin
-        $utilisateur = $request->user()->utilisateur;
-        if ($utilisateur->role !== 'medecin') {
-            $utilisateur->update(['role' => 'medecin']);
+        // Synchronize user role as doctor
+        $user = $request->user();
+        if ($user->role !== 'doctor') {
+            $user->update(['role' => 'doctor']);
         }
 
         return response()->json([
-            'message' => 'Invitation acceptee.',
-            'data'    => $this->serializeInvitation($invitationMedecin->fresh($this->withPatient())),
+            'message' => 'Invitation accepted.',
+            'data'    => $this->serializeInvitation($invitation->fresh($this->withPatient())),
         ]);
     }
 
-    // Refuser une invitation médicale
-    public function reject(Request $request, InvitationMedecin $invitationMedecin): JsonResponse
+    // Reject a doctor invitation
+    public function reject(Request $request, DoctorInvitation $invitation): JsonResponse
     {
-        // Vérifier que le médecin est propriétaire de l'invitation
-        if ($error = $this->authorizeInvitation($invitationMedecin, $request)) return $error;
+        // Check that doctor owns the invitation
+        if ($error = $this->authorizeInvitation($invitation, $request)) return $error;
 
-        $invitationMedecin->update(['status' => 'rejected', 'rejected_at' => now()]);
+        $invitation->update(['status' => 'rejected', 'rejected_at' => now()]);
 
         return response()->json([
-            'message' => 'Invitation refusee.',
-            'data'    => $this->serializeInvitation($invitationMedecin->fresh($this->withPatient())),
+            'message' => 'Invitation rejected.',
+            'data'    => $this->serializeInvitation($invitation->fresh($this->withPatient())),
         ]);
     }
 
-    // Lister tous les patients du médecin
+    // List all doctor's patients
     public function indexPatients(Request $request): JsonResponse
     {
-        $compte = $request->user();
-        $utilisateur = $compte->utilisateur;
+        $user = $request->user();
         
-        $patients = InvitationMedecin::with($this->withPatient())
-            ->where('id_medecin_utilisateur', $utilisateur->id)
+        $patients = DoctorInvitation::with($this->withPatient())
+            ->where('doctor_user_id', $user->id)
             ->where('status', 'accepted')
             ->orderByDesc('accepted_at')
             ->get()
-            ->map(function (InvitationMedecin $invitation) {
+            ->map(function (DoctorInvitation $invitation) {
                 $patient = $invitation->patient;
-                // Filtrer les invitations sans patient valide
+                // Filter out invitations without valid patient
                 if (! $patient) return null;
 
                 $latestVitals  = $this->latestVitals($patient->id);
-                $labResults    = ResultatAnalyse::where('id_utilisateur', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->limit(5)->get();
+                $labResults    = AnalysisResult::where('user_id', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->limit(5)->get();
 
                 return [
                     'invitation_id' => $invitation->id,
                     'accepted_at'   => $invitation->accepted_at?->toISOString(),
-                    'patient'       => $patient,
-                    'profile'       => $patient->profilSante,
+                    'patient'       => array_merge($patient->toArray(), ['email' => $patient->account?->email]),
+                    'profile'       => $patient->healthProfile,
                     'latest_vitals' => $latestVitals,
-                    'alerts'        => $this->buildPatientAlerts($patient, $latestVitals, $labResults),
+                    'alerts'        => $this->buildPatientAlerts($latestVitals, $labResults),
                 ];
             })
             ->filter()
             ->values();
 
-        return response()->json(['message' => 'Patients du medecin recuperes avec succes.', 'data' => $patients]);
+        return response()->json(['message' => 'Doctor\'s patients retrieved successfully.', 'data' => $patients]);
     }
 
-    // Afficher détail complet d'un patient
-    public function showPatient(Request $request, Utilisateur $patient): JsonResponse
+    // Show complete patient details
+    public function showPatient(Request $request, User $patient): JsonResponse
     {
         $invitation = $this->findAuthorizedInvitation($request, $patient);
-        // Vérifier que le médecin a accès à ce patient
+        // Check that doctor has access to this patient
         if (! $invitation) {
-            return response()->json(['message' => 'Acces non autorise a ce patient.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['message' => 'Unauthorized access to this patient.'], Response::HTTP_FORBIDDEN);
         }
 
         $vitalsDays  = max(1, min((int) $request->query('vitals_days', 30), 90));
         $vitalsStart = Carbon::today()->subDays($vitalsDays - 1)->startOfDay();
 
+        $doctor = $request->user();
+        $observations = HealthObservation::where('doctor_user_id', $doctor->id)
+            ->where('patient_user_id', $patient->id)
+            ->orderByDesc('observation_date')
+            ->get()
+            ->map(fn ($o) => [
+                'observation_date' => $o->observation_date->toDateString(),
+                'note'             => $o->note,
+                'updated_at'       => $o->updated_at?->toISOString(),
+            ]);
+
         return response()->json([
-            'message' => 'Detail du patient recupere avec succes.',
+            'message' => 'Patient details retrieved successfully.',
             'data'    => [
                 'invitation_id'       => $invitation->id,
                 'accepted_at'         => $invitation->accepted_at?->toISOString(),
                 'patient'             => $patient,
-                'profile'             => $patient->profilSante,
+                'profile'             => $patient->healthProfile,
                 'latest_vitals'       => $this->latestVitals($patient->id),
-                'vitals'              => SignesVitaux::where('id_utilisateur', $patient->id)->where('measured_at', '>=', $vitalsStart)->orderByDesc('measured_at')->get(),
-                'lab_results'         => ResultatAnalyse::where('id_utilisateur', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->get(),
-                'treatment_medicines' => $this->serviceDonneesSante->resoudreMedicamentsTraitement($patient->id),
-                'treatment_checks'    => SuiviTraitement::where('id_utilisateur', $patient->id)->where('check_date', '>=', Carbon::today()->subDays(29)->toDateString())->orderBy('check_date')->get(),
-                'general_observation' => [
-                    'text'       => $invitation->general_observation,
-                    'updated_at' => $invitation->general_observation_updated_at?->toISOString(),
-                ],
+                'vitals'              => VitalSigns::where('user_id', $patient->id)->where('measured_at', '>=', $vitalsStart)->orderByDesc('measured_at')->get(),
+                'lab_results'         => AnalysisResult::where('user_id', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->get(),
+                'treatment_medicines' => $this->healthDataService->resolveTreatmentMedicines($patient->id),
+                'treatment_checks'    => TreatmentCheck::where('user_id', $patient->id)->where('check_date', '>=', Carbon::today()->subDays(29)->toDateString())->orderBy('check_date')->get(),
+                'observations'        => $observations,
             ],
         ]);
     }
 
-    // Enregistrer observation générale sur un patient
-    public function storeObservation(Request $request, Utilisateur $patient): JsonResponse
+    // Create or update an observation for a specific date
+    public function upsertObservation(Request $request, User $patient): JsonResponse
     {
-        $invitation = $this->findAuthorizedInvitation($request, $patient);
-        // Vérifier que le médecin a accès à ce patient
-        if (! $invitation) {
-            return response()->json(['message' => 'Acces non autorise a ce patient.'], Response::HTTP_FORBIDDEN);
+        if (! $this->findAuthorizedInvitation($request, $patient)) {
+            return response()->json(['message' => 'Unauthorized access to this patient.'], Response::HTTP_FORBIDDEN);
         }
 
-        $validated   = $request->validate(
-            ['observation' => ['nullable', 'string', 'max:3000']],
-            ['observation.max' => "L'observation generale ne doit pas depasser 3000 caracteres."],
-        );
-        $observation = trim((string) ($validated['observation'] ?? ''));
-        // Vérifier s'il y a du texte pour déterminer la date mise à jour
-        $hasText     = $observation !== '';
-
-        $invitation->update([
-            'general_observation'            => $hasText ? $observation : null,
-            'general_observation_updated_at' => $hasText ? now() : null,
+        $validated = $request->validate([
+            'observation_date' => ['required', 'date_format:Y-m-d'],
+            'note'             => ['required', 'string', 'max:3000'],
         ]);
 
-        $invitation->refresh();
+        $obs = HealthObservation::updateOrCreate(
+            [
+                'doctor_user_id'   => $request->user()->id,
+                'patient_user_id'  => $patient->id,
+                'observation_date' => $validated['observation_date'],
+            ],
+            ['note' => trim($validated['note'])],
+        );
 
         return response()->json([
-            'message' => $hasText ? 'Observation generale enregistree.' : 'Observation generale effacee.',
+            'message' => 'Observation saved.',
             'data'    => [
-                'general_observation' => [
-                    'text'       => $invitation->general_observation,
-                    'updated_at' => $invitation->general_observation_updated_at?->toISOString(),
-                ],
+                'observation_date' => $obs->observation_date->toDateString(),
+                'note'             => $obs->note,
+                'updated_at'       => $obs->updated_at?->toISOString(),
             ],
         ]);
     }
 
-    // ─── Helpers privés ───────────────────────────────────────────────────────
-
-    // Récupérer les colonnes des patients
-    private function withPatient(): array
+    // Delete an observation for a specific date
+    public function destroyObservation(Request $request, User $patient, string $date): JsonResponse
     {
-        return ['patient:id,name,email,date_of_birth,created_at', 'patient.profilSante'];
+        if (! $this->findAuthorizedInvitation($request, $patient)) {
+            return response()->json(['message' => 'Unauthorized access to this patient.'], Response::HTTP_FORBIDDEN);
+        }
+
+        HealthObservation::where([
+            'doctor_user_id'   => $request->user()->id,
+            'patient_user_id'  => $patient->id,
+            'observation_date' => $date,
+        ])->delete();
+
+        return response()->json(['message' => 'Observation deleted.']);
     }
 
-    // Récupérer les derniers signes vitaux du patient
-    private function latestVitals(int $userId): ?SignesVitaux
+    // ─── Private Helpers ───────────────────────────────────────────────────────
+
+    // Get patient columns
+    private function withPatient(): array
     {
-        return SignesVitaux::where('id_utilisateur', $userId)
+        return ['patient:id,account_id,name,date_of_birth,created_at', 'patient.account:id,email', 'patient.healthProfile'];
+    }
+
+    // Get latest vital signs for patient
+    private function latestVitals(int $userId): ?VitalSigns
+    {
+        return VitalSigns::where('user_id', $userId)
             ->where(fn ($q) => $q->whereNotNull('heart_rate')->orWhereNotNull('systolic_pressure')->orWhereNotNull('diastolic_pressure')->orWhereNotNull('oxygen_saturation'))
             ->orderByDesc('measured_at')
             ->orderByDesc('id')
             ->first();
     }
 
-    // Sérialiser une invitation médicale
-    private function serializeInvitation(InvitationMedecin $invitation): array
+    // Serialize doctor invitation
+    private function serializeInvitation(DoctorInvitation $invitation): array
     {
+        $patient = $invitation->patient;
         return [
             'id'           => $invitation->id,
             'status'       => $invitation->status,
@@ -258,49 +278,48 @@ class DoctorInvitationController extends Controller
             'created_at'   => $invitation->created_at?->toISOString(),
             'accepted_at'  => $invitation->accepted_at?->toISOString(),
             'rejected_at'  => $invitation->rejected_at?->toISOString(),
-            'patient'      => $invitation->patient,
-            'profile'      => $invitation->patient?->profilSante,
+            'patient'      => $patient ? array_merge($patient->toArray(), ['email' => $patient->account?->email]) : null,
+            'profile'      => $patient?->healthProfile,
         ];
     }
 
-    // Trouver invitation autorisée pour un patient
-    private function findAuthorizedInvitation(Request $request, Utilisateur $patient): ?InvitationMedecin
+    // Find authorized invitation for a patient
+    private function findAuthorizedInvitation(Request $request, User $patient): ?DoctorInvitation
     {
-        $compte = $request->user();
-        $utilisateur = $compte->utilisateur;
-        return InvitationMedecin::where('id_medecin_utilisateur', $utilisateur->id)
-            ->where('id_patient_utilisateur', $patient->id)
+        $user = $request->user();
+        return DoctorInvitation::where('doctor_user_id', $user->id)
+            ->where('patient_user_id', $patient->id)
             ->where('status', 'accepted')
             ->latest('accepted_at')
             ->latest('id')
             ->first();
     }
 
-    // Construire alertes pour un patient
-    private function buildPatientAlerts(Utilisateur $patient, ?SignesVitaux $latestVitals, Collection $labResults): array
+    // Build alerts for a patient
+    private function buildPatientAlerts(?VitalSigns $latestVitals, Collection $labResults): array
     {
         $alerts = [];
 
-        // Détecter la tension artérielle élevée
+        // Detect high blood pressure
         if ($latestVitals?->systolic_pressure >= 140) {
             $alerts[] = [
                 'severity'       => 'warning',
-                'title'          => 'Alerte',
-                'message'        => 'Tension arterielle elevee : ' . (int) $latestVitals->systolic_pressure . '/' . (int) ($latestVitals->diastolic_pressure ?? 0) . ' mmHg',
-                'recommendation' => 'Surveiller la tension et contacter le patient si la hausse persiste.',
+                'title'          => 'Alert',
+                'message'        => 'Elevated blood pressure: ' . (int) $latestVitals->systolic_pressure . '/' . (int) ($latestVitals->diastolic_pressure ?? 0) . ' mmHg',
+                'recommendation' => 'Monitor blood pressure and contact patient if elevation persists.',
                 'measured_at'    => $latestVitals->measured_at?->toISOString(),
             ];
         }
 
-        $glucose = $labResults->first(fn (ResultatAnalyse $r) => str_contains(strtolower((string) $r->analysis_type), 'glucose'));
+        $glucose = $labResults->first(fn (AnalysisResult $r) => str_contains(strtolower((string) $r->analysis_type), 'glucose'));
 
-        // Détecter une glycémie dangeureusement basse (critique)
-        if ($glucose && is_numeric($glucose->value) && $glucose->value < 3.9) {
+        // Detect dangerously low blood glucose (critical)
+        if ($glucose && is_numeric($glucose->analysis_result) && $glucose->analysis_result < 3.9) {
             $alerts[] = [
                 'severity'       => 'critical',
-                'title'          => 'Alerte critique',
-                'message'        => 'Glycemie tres basse detectee : ' . rtrim(rtrim((string) $glucose->value, '0'), '.') . ' ' . ($glucose->unit ?: 'mmol/L'),
-                'recommendation' => 'Contacter immediatement le patient. Resucrage urgent recommande.',
+                'title'          => 'Critical Alert',
+                'message'        => 'Very low blood glucose detected: ' . rtrim(rtrim((string) $glucose->analysis_result, '0'), '.') . ' ' . ($glucose->normal_range ?: 'mmol/L'),
+                'recommendation' => 'Contact patient immediately. Emergency sugar intake recommended.',
                 'measured_at'    => $glucose->analysis_date?->toISOString(),
             ];
         }
@@ -308,15 +327,28 @@ class DoctorInvitationController extends Controller
         return $alerts;
     }
 
-    // Vérifier authorization pour une invitation
-    private function authorizeInvitation(InvitationMedecin $invitation, Request $request): ?JsonResponse
+    // Check authorization for an invitation
+    private function authorizeInvitation(DoctorInvitation $invitation, Request $request): ?JsonResponse
     {
-        // Vérifier que l'utilisateur est le propriétaire de l'invitation
-        $compte = $request->user();
-        $utilisateur = $compte->utilisateur;
-        if ($invitation->id_medecin_utilisateur !== $utilisateur->id) {
-            return response()->json(['message' => 'Acces non autorise a cette invitation.'], Response::HTTP_FORBIDDEN);
+        $user = $request->user();
+
+        // Primary check: doctor_user_id already linked to this user
+        if ($invitation->doctor_user_id === $user->id) {
+            return null;
         }
-        return null;
+
+        // Fallback: doctor_user_id not yet set — check by email
+        $doctorEmail = strtolower((string) ($user->account?->email ?? ''));
+        if (
+            $doctorEmail !== '' &&
+            strtolower((string) $invitation->doctor_email) === $doctorEmail &&
+            is_null($invitation->doctor_user_id)
+        ) {
+            // Link now so subsequent checks work
+            $invitation->update(['doctor_user_id' => $user->id]);
+            return null;
+        }
+
+        return response()->json(['message' => 'Unauthorized access to this invitation.'], Response::HTTP_FORBIDDEN);
     }
 }

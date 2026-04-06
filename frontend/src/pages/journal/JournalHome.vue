@@ -38,7 +38,7 @@
                         <button
                             type="button"
                             class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-5 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/25 transition hover:-translate-y-0.5"
-                            @click="router.push({ name: 'assistant-journal' })"
+                            @click="router.push({ name: 'journal-assistant' })"
                         >
                             <svg
                                 viewBox="0 0 24 24"
@@ -58,7 +58,7 @@
                         <button
                             type="button"
                             class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                            @click="router.push({ name: 'historique-journal' })"
+                            @click="router.push({ name: 'journal-history' })"
                         >
                             Voir l'historique
                         </button>
@@ -85,7 +85,7 @@
                     🗓️ Derniere entree
                 </h3>
                 <div
-                    v-if="latest"
+                    v-if="latestEntry"
                     class="mt-6 space-y-4 text-base text-slate-700"
                 >
                     <div
@@ -93,7 +93,7 @@
                     >
                         <span>Date</span>
                         <span class="font-semibold text-slate-900">{{
-                            latest.dateLabel
+                            latestEntry.dateLabel
                         }}</span>
                     </div>
                     <div
@@ -101,7 +101,7 @@
                     >
                         <span>Sommeil</span>
                         <span class="font-semibold text-slate-900">{{
-                            libelleSommeil(latest.sleep)
+                            sleepLabel(latestEntry.sleep)
                         }}</span>
                     </div>
                     <div
@@ -109,13 +109,13 @@
                     >
                         <span>Stress</span>
                         <span class="font-semibold text-slate-900">{{
-                            libelleStress(latest.stress)
+                            stressLabel(latestEntry.stress)
                         }}</span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span>Energie</span>
                         <span class="font-semibold text-slate-900">{{
-                            libelleEnergie(latest.energy)
+                            energyLabel(latestEntry.energy)
                         }}</span>
                     </div>
                 </div>
@@ -127,7 +127,7 @@
                 </div>
             </div>
 
-            <CarteInfosDerniereEntree :derniere-entree="latest" />
+            <CarteInfosDerniereEntree :derniere-entree="latestEntry" />
 
             <div
                 class="rounded-[28px] border border-[#d9ccff] bg-gradient-to-br from-[#f1eaff] via-[#f8f3ff] to-[#ecf2ff] p-8 shadow-sm shadow-violet-200/50"
@@ -156,39 +156,33 @@
 </template>
 
 <script setup>
-/*
-  Page d'accueil du module Journal.
-  Elle propose la creation d'une nouvelle entree et resume la derniere.
-  Les informations affichees proviennent du store journal.
-*/
-
 import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import CarteInfosDerniereEntree from "@/components/journal/CarteInfosDerniereEntree.vue";
+import CarteInfosDerniereEntree from "@/components/journal-entries/LastEntryInfoCard.vue";
 import { useJournalStore } from "@/stores/journal";
 
 const router = useRouter();
 const store = useJournalStore();
-const { derniereEntree: latest } = storeToRefs(store);
+const { derniereEntree: latestEntry } = storeToRefs(store);
 
 onMounted(async () => {
     await store.initialiser();
 });
 
-const libelleSommeil = (hours) => {
+const sleepLabel = (hours) => {
     const h = Math.floor(hours);
     const m = Math.round((hours - h) * 60);
     return m ? `${h}h ${m}min` : `${h}h`;
 };
 
-const libelleStress = (value) => {
+const stressLabel = (value) => {
     if (value >= 8) return "Eleve";
     if (value <= 3) return "Faible";
     return "Modere";
 };
 
-const libelleEnergie = (value) => {
+const energyLabel = (value) => {
     if (value >= 8) return "Excellente";
     if (value <= 4) return "Faible";
     return "Bonne";

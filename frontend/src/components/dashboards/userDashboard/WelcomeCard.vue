@@ -7,7 +7,7 @@
         class="mb-6 rounded-3xl bg-gradient-to-r from-purple-100 via-purple-100 to-purple-200 p-6 shadow-lg md:p-8"
     >
         <div class="flex items-center justify-between gap-4">
-            <!-- Contenu texte -->
+            <!-- Text content -->
             <div class="flex-1">
                 <p class="text-sm font-medium text-purple-800">
                     {{ currentDate }}
@@ -15,10 +15,10 @@
                 <h2
                     class="mt-3 text-3xl font-bold text-purple-900 md:text-4xl leading-tight"
                 >
-                    Bienvenue, {{ userName }}!
+                    Welcome, {{ userName }}!
                 </h2>
                 <p class="mt-2 text-base font-medium text-purple-800">
-                    Continuez à surveiller votre santé quotidiennement
+                    Continue monitoring your health daily
                 </p>
             </div>
 
@@ -44,7 +44,7 @@ import { useAuthStore } from "@/stores/auth";
 
 const authStore = useAuthStore();
 
-const userName = computed(() => authStore.nomUtilisateur || "Utilisateur");
+const userName = computed(() => authStore.userName || "User");
 
 const currentDate = computed(() => {
     const options = {
@@ -53,6 +53,6 @@ const currentDate = computed(() => {
         month: "long",
         day: "numeric",
     };
-    return new Date().toLocaleDateString("fr-FR", options);
+    return new Date().toLocaleDateString("en-US", options);
 });
 </script>

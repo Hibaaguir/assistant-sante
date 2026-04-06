@@ -1,15 +1,15 @@
 <!--
   HealthChart.vue
-  Graphique interactif des signes vitaux (rythme cardiaque, tension, saturation O₂) sur 7 jours.
+  Interactive chart of vital signs (heart rate, blood pressure, oxygen saturation) over 7 days.
 -->
 <template>
     <section
         class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
     >
-        <!-- En-tête + toggles -->
+        <!-- Header + toggles -->
         <div class="mb-3 flex items-center justify-between">
             <h2 class="text-[34px] font-semibold leading-none text-slate-900">
-                Évolution - 7 derniers jours
+                Progress - Last 7 days
             </h2>
             <div class="flex items-center gap-2 text-[12px] font-medium">
                 <button
@@ -40,7 +40,7 @@
                 :viewBox="`0 0 ${C.width} ${C.height}`"
                 class="h-[300px] w-full min-w-[980px]"
             >
-                <!-- Grille -->
+                <!-- Grid -->
                 <g stroke="#e2e8f0" stroke-dasharray="4 4">
                     <line
                         v-for="t in Y_TICKS"
@@ -60,7 +60,7 @@
                     />
                 </g>
 
-                <!-- Ligne de survol -->
+                <!-- Hover line -->
                 <line
                     v-if="hoverIndex !== null"
                     :x1="toX(hoverIndex)"
@@ -71,7 +71,7 @@
                     stroke-width="1.5"
                 />
 
-                <!-- Courbes + points -->
+                <!-- Curves + points -->
                 <template v-for="s in visibleSeries" :key="s.key">
                     <polyline
                         fill="none"
@@ -96,7 +96,7 @@
                     </g>
                 </template>
 
-                <!-- Labels Y -->
+                <!-- Y Labels -->
                 <g fill="#94a3b8" font-size="13">
                     <text
                         v-for="t in Y_TICKS"
@@ -108,7 +108,7 @@
                     </text>
                 </g>
 
-                <!-- Labels X -->
+                <!-- X Labels -->
                 <g fill="#94a3b8" font-size="14">
                     <text
                         v-for="(l, i) in labels"
@@ -136,7 +136,7 @@
             </div>
         </div>
 
-        <!-- Légende -->
+        <!-- Legend -->
         <div
             class="mt-1.5 flex items-center justify-center gap-3 text-[12px] font-medium"
         >
@@ -160,7 +160,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import api from "@/services/api";
 
-// ─── Config graphique ─────────────────────────────────────────────────────────
+// ─── Chart Config ────────────────────────────────────────────────────────
 const C = {
     width: 980,
     height: 300,
@@ -175,27 +175,27 @@ const Y_TICKS = [0, 35, 70, 105, 140];
 
 const SERIES = [
     {
-        key: "rhythm",
-        label: "Rythme",
-        tooltipLabel: "Rythme cardiaque (bpm)",
+        key: "heartRate",
+        label: "Heart Rate",
+        tooltipLabel: "Heart rate (bpm)",
         color: "#f43f5e",
         shade: "rose",
         field: "heart_rate",
         fallback: 70,
     },
     {
-        key: "tension",
-        label: "Tension",
-        tooltipLabel: "Tension systolique (mmHg)",
+        key: "bloodPressure",
+        label: "Blood Pressure",
+        tooltipLabel: "Systolic pressure (mmHg)",
         color: "#3b82f6",
         shade: "blue",
         field: "systolic_pressure",
         fallback: 120,
     },
     {
-        key: "saturation",
-        label: "Saturation",
-        tooltipLabel: "Saturation O₂ (%)",
+        key: "oxygenSaturation",
+        label: "Oxygen",
+        tooltipLabel: "Oxygen saturation (%)",
         color: "#8b5cf6",
         shade: "violet",
         field: "oxygen_saturation",
@@ -203,14 +203,22 @@ const SERIES = [
     },
 ];
 
-// ─── État ─────────────────────────────────────────────────────────────────────
+// ─── State ───────────────────────────────────────────────────────────────
 const chartRef = ref(null);
 const hoverIndex = ref(null);
 const labels = ref([]);
-const data = reactive({ rhythm: [], tension: [], saturation: [] });
-const active = reactive({ rhythm: true, tension: true, saturation: true });
+const data = reactive({
+    heartRate: [],
+    bloodPressure: [],
+    oxygenSaturation: [],
+});
+const active = reactive({
+    heartRate: true,
+    bloodPressure: true,
+    oxygenSaturation: true,
+});
 
-// ─── Séries visibles ──────────────────────────────────────────────────────────
+// ─── Visible Series ──────────────────────────────────────────────────────────
 const visibleSeries = computed(() =>
     SERIES.filter((s) => active[s.key]).map((s) => ({
         ...s,
@@ -223,7 +231,7 @@ const tooltipLeft = computed(() =>
     Math.max(8, Math.min(toX(hoverIndex.value) + 12, C.width - 230)),
 );
 
-// ─── Coordonnées ─────────────────────────────────────────────────────────────
+// ─── Coordinates ──────────────────────────────────────────────────────────────
 const toX = (i) => {
     if (labels.value.length <= 1) return C.left;
     return (
@@ -241,8 +249,8 @@ const toY = (v) => {
     );
 };
 
-// ─── Données ──────────────────────────────────────────────────────────────────
-function normaliser(values, fallback) {
+// ─── Data ────────────────────────────────────────────────────────────────────
+function normalize(values, fallback) {
     let last = fallback;
     return (Array.isArray(values) ? values : []).map((v) => {
         const n = Number(v);
@@ -260,18 +268,18 @@ function formatLabel(str) {
     return isNaN(d)
         ? String(str)
         : d
-              .toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })
+              .toLocaleDateString("en-US", { day: "2-digit", month: "short" })
               .replace(".", "");
 }
 
-async function chargerDonnees() {
-    const { data: res } = await api.get("/donnees-sante/overview", {
+async function loadData() {
+    const { data: res } = await api.get("/health-data/overview", {
         params: { days: 7 },
     });
     const chart = res?.data?.vitals_chart ?? {};
     labels.value = (chart.labels ?? []).map(formatLabel);
     SERIES.forEach((s) => {
-        data[s.key] = normaliser(chart[s.field], s.fallback);
+        data[s.key] = normalize(chart[s.field], s.fallback);
     });
 }
 
@@ -296,5 +304,5 @@ function toggle(key) {
     active[key] = !active[key];
 }
 
-onMounted(chargerDonnees);
+onMounted(loadData);
 </script>

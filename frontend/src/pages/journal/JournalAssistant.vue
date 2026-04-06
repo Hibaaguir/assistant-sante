@@ -13,7 +13,7 @@
                 clair et régulier.
             </p>
         </div>
-        <NotificationsEnLigne />
+        <NotificationsOnline />
 
         <div
             class="mt-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6"
@@ -21,6 +21,7 @@
             <IndicateurEtapes :current="step" :steps="steps" />
 
             <div class="mt-6 space-y-6">
+                <!-- Step 1: Body & energy -->
                 <div v-if="step === 1" class="space-y-6">
                     <div
                         class="rounded-2xl border border-violet-200 bg-violet-50/50 p-4 sm:p-5"
@@ -92,6 +93,7 @@
                     </div>
                 </div>
 
+                <!-- Step 2: Nutrition -->
                 <div v-else-if="step === 2" class="space-y-6">
                     <div
                         class="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4 sm:p-5"
@@ -153,7 +155,7 @@
                                 type="button"
                                 class="mt-3 w-full rounded-lg bg-gradient-to-r from-[#2563eb] to-[#7c3aed] py-2 text-sm font-semibold text-white disabled:opacity-50"
                                 :disabled="!mealDraft.label.trim()"
-                                @click="ajouterRepas"
+                                @click="addMeal"
                             >
                                 Ajouter
                             </button>
@@ -173,7 +175,7 @@
                                 >
                                     <span class="text-slate-700">
                                         <strong>{{
-                                            mealTypeLabel(meal.type)
+                                            getMealTypeLabel(meal.type)
                                         }}</strong>
                                         - {{ meal.label
                                         }}<span
@@ -188,7 +190,7 @@
                                     <button
                                         type="button"
                                         class="text-xs font-semibold text-rose-400 hover:text-rose-500"
-                                        @click="supprimerRepas(index)"
+                                        @click="deleteMeal(index)"
                                     >
                                         Supprimer
                                     </button>
@@ -218,14 +220,14 @@
                             <button
                                 type="button"
                                 class="rounded-lg bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-400"
-                                @click="ajusterCafeine(-1)"
+                                @click="adjustCaffeine(-1)"
                             >
                                 -
                             </button>
                             <button
                                 type="button"
                                 class="rounded-lg bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-2 text-sm font-semibold text-white"
-                                @click="ajusterCafeine(1)"
+                                @click="adjustCaffeine(1)"
                             >
                                 +
                             </button>
@@ -242,49 +244,18 @@
                             >
                                 <div class="flex items-start justify-between">
                                     <div>
-                                        <p
-                                            class="text-sm font-semibold text-slate-800"
-                                        >
-                                            Verre
-                                        </p>
-                                        <p class="text-xs text-slate-500">
-                                            0.5L par unité
-                                        </p>
+                                        <p class="text-sm font-semibold text-slate-800">Verre</p>
+                                        <p class="text-xs text-slate-500">0.5L par unité</p>
                                     </div>
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        class="h-4 w-4 text-sky-600"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            d="M7 3h10l-1 16a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2L7 3z"
-                                        />
+                                    <svg viewBox="0 0 24 24" class="h-4 w-4 text-sky-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <path d="M7 3h10l-1 16a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2L7 3z" />
                                         <path d="M8 8h8" />
                                     </svg>
                                 </div>
-                                <div
-                                    class="mt-3 flex items-center justify-between"
-                                >
-                                    <button
-                                        type="button"
-                                        class="h-7 w-7 rounded-md border bg-slate-100 text-sm text-slate-500"
-                                        @click="ajusterVerres(-1)"
-                                    >
-                                        -
-                                    </button>
-                                    <span class="text-lg font-bold">{{
-                                        form.cupCount
-                                    }}</span>
-                                    <button
-                                        type="button"
-                                        class="h-7 w-7 rounded-md bg-indigo-600 text-sm font-semibold text-white"
-                                        @click="ajusterVerres(1)"
-                                    >
-                                        +
-                                    </button>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <button type="button" class="h-7 w-7 rounded-md border bg-slate-100 text-sm text-slate-500" @click="adjustCups(-1)">-</button>
+                                    <span class="text-lg font-bold">{{ form.cupCount }}</span>
+                                    <button type="button" class="h-7 w-7 rounded-md bg-indigo-600 text-sm font-semibold text-white" @click="adjustCups(1)">+</button>
                                 </div>
                             </div>
 
@@ -293,47 +264,18 @@
                             >
                                 <div class="flex items-start justify-between">
                                     <div>
-                                        <p
-                                            class="text-sm font-semibold text-slate-800"
-                                        >
-                                            Bouteille
-                                        </p>
-                                        <p class="text-xs text-slate-500">
-                                            1.5L par unité
-                                        </p>
+                                        <p class="text-sm font-semibold text-slate-800">Bouteille</p>
+                                        <p class="text-xs text-slate-500">1.5L par unité</p>
                                     </div>
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        class="h-4 w-4 text-cyan-600"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        aria-hidden="true"
-                                    >
+                                    <svg viewBox="0 0 24 24" class="h-4 w-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                         <path d="M10 3h4v3h2v15H8V6h2z" />
                                         <path d="M10 11h4" />
                                     </svg>
                                 </div>
-                                <div
-                                    class="mt-3 flex items-center justify-between"
-                                >
-                                    <button
-                                        type="button"
-                                        class="h-7 w-7 rounded-md border bg-slate-100 text-sm text-slate-500"
-                                        @click="ajusterBouteilles(-1)"
-                                    >
-                                        -
-                                    </button>
-                                    <span class="text-lg font-bold">{{
-                                        form.bottleCount
-                                    }}</span>
-                                    <button
-                                        type="button"
-                                        class="h-7 w-7 rounded-md bg-cyan-600 text-sm font-semibold text-white"
-                                        @click="ajusterBouteilles(1)"
-                                    >
-                                        +
-                                    </button>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <button type="button" class="h-7 w-7 rounded-md border bg-slate-100 text-sm text-slate-500" @click="adjustBottles(-1)">-</button>
+                                    <span class="text-lg font-bold">{{ form.bottleCount }}</span>
+                                    <button type="button" class="h-7 w-7 rounded-md bg-cyan-600 text-sm font-semibold text-white" @click="adjustBottles(1)">+</button>
                                 </div>
                             </div>
                         </div>
@@ -363,10 +305,10 @@
                         <p class="text-xl font-semibold">Apport en sucre</p>
                         <div
                             class="mt-3 inline-flex min-w-[160px] flex-col rounded-xl border px-3 py-2 text-left"
-                            :class="sugarBadgeClass"
+                            :class="sugarBadgeClasses"
                         >
                             <span class="text-sm font-semibold">{{
-                                sugarLabel[form.sugar]
+                                sugarLabels[form.sugar]
                             }}</span>
                             <span class="text-[11px] opacity-80"
                                 >Détecté automatiquement</span
@@ -375,6 +317,7 @@
                     </div>
                 </div>
 
+                <!-- Step 3: Habits & sport -->
                 <div v-else class="space-y-6">
                     <div
                         class="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-4 sm:p-5"
@@ -386,7 +329,7 @@
                             id="activity"
                             v-model="form.activityType"
                             class="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm"
-                            @change="gererSelectionActivite"
+                            @change="handleActivitySelection"
                         >
                             <option disabled value="">
                                 Sélectionnez une activité
@@ -414,7 +357,7 @@
                                 <button
                                     type="button"
                                     class="text-sm font-semibold text-slate-500 hover:text-slate-700"
-                                    @click="annulerNouvelleActivite"
+                                    @click="cancelNewActivity"
                                 >
                                     ×
                                 </button>
@@ -430,7 +373,7 @@
                                     type="button"
                                     class="rounded-lg bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
                                     :disabled="!newActivityName.trim()"
-                                    @click="ajouterNouvelleActivite"
+                                    @click="addNewActivity"
                                 >
                                     Valider
                                 </button>
@@ -487,7 +430,7 @@
                                     "
                                     @click="form.intensity = value"
                                 >
-                                    {{ intensityLabel[value] }}
+                                    {{ intensityLabels[value] }}
                                 </button>
                             </div>
                         </div>
@@ -500,81 +443,52 @@
                             <button
                                 type="button"
                                 class="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
-                                @click="basculerTabac"
+                                @click="toggleTobacco"
                             >
                                 <span>Tabac</span>
                                 <span
                                     class="relative h-6 w-10 rounded-full transition-colors"
-                                    :class="
-                                        form.tobacco
-                                            ? 'bg-pink-600'
-                                            : 'bg-slate-300'
-                                    "
+                                    :class="form.tobacco ? 'bg-pink-600' : 'bg-slate-300'"
                                     aria-hidden="true"
                                 >
                                     <span
                                         class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform"
-                                        :class="
-                                            form.tobacco
-                                                ? 'translate-x-4'
-                                                : 'translate-x-0'
-                                        "
+                                        :class="form.tobacco ? 'translate-x-4' : 'translate-x-0'"
                                     />
                                 </span>
                             </button>
 
                             <div v-if="form.tobacco" class="mt-4 space-y-3">
                                 <div>
-                                    <label
-                                        class="text-xs font-semibold text-slate-700"
-                                    >
+                                    <label class="text-xs font-semibold text-slate-700">
                                         Type <span class="text-red-500">*</span>
                                     </label>
                                     <div class="mt-2 flex flex-wrap gap-2">
                                         <button
                                             type="button"
                                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors"
-                                            :class="
-                                                form.tobaccoTypes.cigarette
-                                                    ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
-                                                    : 'border-slate-300 bg-white text-slate-700'
-                                            "
-                                            @click="
-                                                basculerTypeTabac('cigarette')
-                                            "
+                                            :class="form.tobaccoTypes.cigarette ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-300 bg-white text-slate-700'"
+                                            @click="toggleTobaccoType('cigarette')"
                                         >
                                             Cigarette
                                         </button>
                                         <button
                                             type="button"
                                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors"
-                                            :class="
-                                                form.tobaccoTypes.vape
-                                                    ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
-                                                    : 'border-slate-300 bg-white text-slate-700'
-                                            "
-                                            @click="basculerTypeTabac('vape')"
+                                            :class="form.tobaccoTypes.vape ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-300 bg-white text-slate-700'"
+                                            @click="toggleTobaccoType('vape')"
                                         >
                                             Vape
                                         </button>
                                     </div>
-                                    <p
-                                        v-if="
-                                            submitAttempted &&
-                                            tobaccoErrors.types
-                                        "
-                                        class="mt-1 text-sm text-red-500"
-                                    >
+                                    <p v-if="submitAttempted && tobaccoErrors.types" class="mt-1 text-sm text-red-500">
                                         {{ tobaccoErrors.types }}
                                     </p>
                                 </div>
 
                                 <div v-if="form.tobaccoTypes.cigarette">
-                                    <label
-                                        class="text-xs font-semibold text-slate-700"
-                                    >
-                                        Nombre de cigarettes par jour
-                                        <span class="text-red-500">*</span>
+                                    <label class="text-xs font-semibold text-slate-700">
+                                        Nombre de cigarettes par jour <span class="text-red-500">*</span>
                                     </label>
                                     <input
                                         v-model.number="form.cigarettesPerDay"
@@ -583,27 +497,15 @@
                                         placeholder="Ex: 5"
                                         class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                                     />
-                                    <p
-                                        v-if="
-                                            submitAttempted &&
-                                            tobaccoErrors.cigarettesPerDay
-                                        "
-                                        class="mt-1 text-sm text-red-500"
-                                    >
+                                    <p v-if="submitAttempted && tobaccoErrors.cigarettesPerDay" class="mt-1 text-sm text-red-500">
                                         {{ tobaccoErrors.cigarettesPerDay }}
                                     </p>
                                 </div>
 
-                                <div
-                                    v-if="form.tobaccoTypes.vape"
-                                    class="space-y-3"
-                                >
+                                <div v-if="form.tobaccoTypes.vape" class="space-y-3">
                                     <div>
-                                        <label
-                                            class="text-xs font-semibold text-slate-700"
-                                        >
-                                            Nombre de taffes prise par jour
-                                            <span class="text-red-500">*</span>
+                                        <label class="text-xs font-semibold text-slate-700">
+                                            Nombre de taffes prise par jour <span class="text-red-500">*</span>
                                         </label>
                                         <input
                                             v-model.number="form.vapeLiquidMl"
@@ -612,13 +514,7 @@
                                             placeholder="Ex: 3"
                                             class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                                         />
-                                        <p
-                                            v-if="
-                                                submitAttempted &&
-                                                tobaccoErrors.vapeLiquidMl
-                                            "
-                                            class="mt-1 text-sm text-red-500"
-                                        >
+                                        <p v-if="submitAttempted && tobaccoErrors.vapeLiquidMl" class="mt-1 text-sm text-red-500">
                                             {{ tobaccoErrors.vapeLiquidMl }}
                                         </p>
                                     </div>
@@ -632,42 +528,24 @@
                             <button
                                 type="button"
                                 class="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
-                                @click="basculerAlcool"
+                                @click="toggleAlcohol"
                             >
-                                <span
-                                    >Alcool
-                                    <span
-                                        v-if="form.alcohol"
-                                        class="text-red-500"
-                                        >*</span
-                                    ></span
-                                >
+                                <span>Alcool <span v-if="form.alcohol" class="text-red-500">*</span></span>
                                 <span
                                     class="relative h-6 w-10 rounded-full transition-colors"
-                                    :class="
-                                        form.alcohol
-                                            ? 'bg-pink-600'
-                                            : 'bg-slate-300'
-                                    "
+                                    :class="form.alcohol ? 'bg-pink-600' : 'bg-slate-300'"
                                     aria-hidden="true"
                                 >
                                     <span
                                         class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform"
-                                        :class="
-                                            form.alcohol
-                                                ? 'translate-x-4'
-                                                : 'translate-x-0'
-                                        "
+                                        :class="form.alcohol ? 'translate-x-4' : 'translate-x-0'"
                                     />
                                 </span>
                             </button>
 
                             <div v-if="form.alcohol" class="mt-4">
-                                <label
-                                    class="text-xs font-semibold text-slate-700"
-                                >
-                                    Nombre de verres par jour
-                                    <span class="text-red-500">*</span>
+                                <label class="text-xs font-semibold text-slate-700">
+                                    Nombre de verres par jour <span class="text-red-500">*</span>
                                 </label>
                                 <input
                                     v-model.number="form.alcoholDrinks"
@@ -676,12 +554,7 @@
                                     placeholder="Ex: 2"
                                     class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
                                 />
-                                <p
-                                    v-if="
-                                        submitAttempted && alcoholErrors.drinks
-                                    "
-                                    class="mt-1 text-sm text-red-500"
-                                >
+                                <p v-if="submitAttempted && alcoholErrors.drinks" class="mt-1 text-sm text-red-500">
                                     {{ alcoholErrors.drinks }}
                                 </p>
                             </div>
@@ -689,83 +562,83 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="mt-6 flex items-center justify-between gap-3">
-            <button
-                type="button"
-                class="rounded-xl border px-5 py-3 text-sm font-semibold transition-colors"
-                :class="
-                    step === 1
-                        ? 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
-                        : 'border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100'
-                "
-                @click="allerPrecedent"
-            >
-                {{ step === 1 ? "‹ Retour" : "‹ Précédent" }}
-            </button>
-            <button
-                v-if="step < 3"
-                type="button"
-                class="rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
-                @click="allerSuivant"
-            >
-                Suivant ›
-            </button>
-            <template v-else>
-                <div v-if="isEditMode" class="flex items-center gap-2">
-                    <button
-                        type="button"
-                        class="rounded-xl border border-amber-300 bg-amber-50 px-6 py-3 text-sm font-semibold text-amber-700 transition-colors hover:bg-amber-100"
-                        @click="annulerModification"
-                    >
-                        Annuler les modifications
-                    </button>
-                    <button
-                        type="button"
-                        class="rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
-                        @click="enregistrer"
-                    >
-                        ✓ Enregistrer les modifications
-                    </button>
-                </div>
+            <div class="mt-6 flex items-center justify-between gap-3">
                 <button
-                    v-else
+                    type="button"
+                    class="rounded-xl border px-5 py-3 text-sm font-semibold transition-colors"
+                    :class="
+                        step === 1
+                            ? 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                            : 'border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100'
+                    "
+                    @click="goBack"
+                >
+                    {{ step === 1 ? "‹ Retour" : "‹ Précédent" }}
+                </button>
+                <button
+                    v-if="step < 3"
                     type="button"
                     class="rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
-                    @click="enregistrer"
+                    @click="goNext"
                 >
-                    ✓ Enregistrer la journée
+                    Suivant ›
                 </button>
-            </template>
-        </div>
-        <p
-            v-if="saveError"
-            class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-        >
-            {{ saveError }}
-        </p>
+                <template v-else>
+                    <div v-if="isEditMode" class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            class="rounded-xl border border-amber-300 bg-amber-50 px-6 py-3 text-sm font-semibold text-amber-700 transition-colors hover:bg-amber-100"
+                            @click="cancelEdit"
+                        >
+                            Annuler les modifications
+                        </button>
+                        <button
+                            type="button"
+                            class="rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
+                            @click="save"
+                        >
+                            ✓ Enregistrer les modifications
+                        </button>
+                    </div>
+                    <button
+                        v-else
+                        type="button"
+                        class="rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
+                        @click="save"
+                    >
+                        ✓ Enregistrer la journée
+                    </button>
+                </template>
+            </div>
+            <p
+                v-if="saveError"
+                class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
+                {{ saveError }}
+            </p>
 
-        <DialogueConfirmation
-            :open="confirmDeleteMealOpen"
-            title="Confirmer la suppression"
-            message="Voulez-vous supprimer ce repas ?"
-            confirm-label="Supprimer"
-            cancel-label="Annuler"
-            @confirm="confirmSupprimerRepas"
-            @cancel="cancelSupprimerRepas"
-        />
+            <ConfirmationDialog
+                :open="confirmDeleteMealOpen"
+                title="Confirmer la suppression"
+                message="Voulez-vous supprimer ce repas ?"
+                confirm-label="Supprimer"
+                cancel-label="Annuler"
+                @confirm="confirmDeleteMeal"
+                @cancel="cancelDeleteMeal"
+            />
+        </div>
     </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import IndicateurEtapes from "@/components/journal/IndicateurEtapes.vue";
+import IndicateurEtapes from "@/components/journal-entries/StepIndicator.vue";
 import { useJournalStore } from "@/stores/journal";
 import { useNotificationsStore } from "@/stores/notifications";
-import NotificationsEnLigne from "@/components/ui/NotificationsEnLigne.vue";
-import DialogueConfirmation from "@/components/ui/DialogueConfirmation.vue";
+import NotificationsOnline from "@/components/ui/NotificationsOnline.vue";
+import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -788,16 +661,10 @@ const meals = [
 ];
 
 const activities = ref([
-    "Marche",
-    "Course",
-    "Vélo",
-    "Natation",
-    "Yoga",
-    "Musculation",
-    "Sport collectif",
+    "Marche","Course","Vélo","Natation","Yoga","Musculation","Sport collectif",
 ]);
-const sugarLabel = { low: "Faible", medium: "Modéré", high: "Élevé" };
-const intensityLabel = { light: "Légère", medium: "Modérée", high: "Intense" };
+const sugarLabels = { low: "Faible", medium: "Modéré", high: "Élevé" };
+const intensityLabels = { light: "Légère", medium: "Modérée", high: "Intense" };
 const intensityOptions = ["light", "medium", "high"];
 
 const step = ref(1);
@@ -840,172 +707,137 @@ const hydrationTotal = computed(() => {
     const extra = Math.max(0, Number(form.customHydration) || 0);
     return form.cupCount * 0.5 + form.bottleCount * 1.5 + extra;
 });
-const normaliserCaloriesRepas = (value) => {
+const normalizeMealCalories = (value) => {
     const parsed = Number(value);
     if (!Number.isFinite(parsed) || parsed < 0) return null;
     return Math.round(parsed);
 };
-const mealsCaloriesTotal = computed(() => {
-    return form.meals.reduce((sum, meal) => {
-        const calories = normaliserCaloriesRepas(meal?.calories);
+const mealsCaloriesTotal = computed(() =>
+    form.meals.reduce((sum, meal) => {
+        const calories = normalizeMealCalories(meal?.calories);
         return sum + (calories ?? 0);
-    }, 0);
-});
+    }, 0),
+);
 const SUGAR_BADGE = {
     high: "border-rose-300 bg-rose-100 text-rose-800",
     medium: "border-amber-300 bg-amber-100 text-amber-800",
     low: "border-emerald-300 bg-emerald-100 text-emerald-800",
 };
-const sugarBadgeClass = computed(
-    () => SUGAR_BADGE[form.sugar] ?? SUGAR_BADGE.low,
-);
+const sugarBadgeClasses = computed(() => SUGAR_BADGE[form.sugar] ?? SUGAR_BADGE.low);
 const tobaccoErrors = computed(() => {
-    const errors = {
-        types: null,
-        cigarettesPerDay: null,
-        vapeLiquidMl: null,
-    };
+    const errors = { types: null, cigarettesPerDay: null, vapeLiquidMl: null };
     if (!form.tobacco) return errors;
-    const hasCigarette = form.tobaccoTypes.cigarette;
-    const hasVape = form.tobaccoTypes.vape;
-    if (!hasCigarette && !hasVape)
+    if (!form.tobaccoTypes.cigarette && !form.tobaccoTypes.vape)
         errors.types = "Veuillez selectionner un type.";
-    if (
-        hasCigarette &&
-        (form.cigarettesPerDay === null || form.cigarettesPerDay <= 0)
-    ) {
+    if (form.tobaccoTypes.cigarette && (form.cigarettesPerDay === null || form.cigarettesPerDay <= 0))
         errors.cigarettesPerDay = "Veuillez remplir le champ.";
-    }
-    if (hasVape && (form.vapeLiquidMl === null || form.vapeLiquidMl <= 0)) {
+    if (form.tobaccoTypes.vape && (form.vapeLiquidMl === null || form.vapeLiquidMl <= 0))
         errors.vapeLiquidMl = "Veuillez remplir le champ.";
-    }
     return errors;
 });
-const hasTobaccoErrors = computed(() =>
-    Object.values(tobaccoErrors.value).some(Boolean),
-);
+const hasTobaccoErrors = computed(() => Object.values(tobaccoErrors.value).some(Boolean));
 const isDurationRequired = computed(() => Boolean(form.activityType));
 const activityErrors = computed(() => {
-    const errors = {
-        duration: null,
-    };
+    const errors = { duration: null };
     if (!isDurationRequired.value) return errors;
-
-    const duration = Number(form.activityDuration);
-    if (!Number.isFinite(duration) || duration <= 0) {
+    if (!Number.isFinite(Number(form.activityDuration)) || Number(form.activityDuration) <= 0)
         errors.duration = "Veuillez remplir la durée (minutes).";
-    }
     return errors;
 });
-const hasActivityErrors = computed(() =>
-    Object.values(activityErrors.value).some(Boolean),
-);
+const hasActivityErrors = computed(() => Object.values(activityErrors.value).some(Boolean));
 const alcoholErrors = computed(() => {
-    const errors = {
-        drinks: null,
-    };
+    const errors = { drinks: null };
     if (!form.alcohol) return errors;
-    if (form.alcoholDrinks === null || form.alcoholDrinks <= 0) {
+    if (form.alcoholDrinks === null || form.alcoholDrinks <= 0)
         errors.drinks = "Veuillez remplir le champ.";
-    }
     return errors;
 });
-const hasAlcoholErrors = computed(() =>
-    Object.values(alcoholErrors.value).some(Boolean),
-);
+const hasAlcoholErrors = computed(() => Object.values(alcoholErrors.value).some(Boolean));
 
 onMounted(async () => {
     await store.initialiser();
     if (!isEditMode.value) return;
-
-    const entree = store.obtenirParId(editEntryId.value);
-    if (!entree) return;
-
-    form.sleep = Number(entree.sleep ?? 7);
-    form.stress = Number(entree.stress ?? 5);
+    // If the store was loading when we called initialiser(), the entry may not
+    // be in memory yet — force a reload in that case.
+    let entry = store.obtenirParId(editEntryId.value);
+    if (!entry) {
+        await store.chargerEntrees();
+        entry = store.obtenirParId(editEntryId.value);
+    }
+    if (!entry) return;
+    form.sleep = Number(entry.sleep ?? 7);
+    form.stress = Number(entry.stress ?? 5);
     form.energy = STATIC_ENERGY;
-    form.sugar = entree.sugar ?? "low";
-    form.caffeine = Number(entree.caffeine ?? 0);
-    form.meals = Array.isArray(entree.meals) ? [...entree.meals] : [];
-    form.activityType = entree.activityType ?? "";
-    form.activityDuration = Number(entree.activityDuration ?? 0);
-    form.intensity = entree.intensity ?? "medium";
-    form.tobacco = Boolean(entree.tobacco);
-    form.alcohol = Boolean(entree.alcohol);
-    form.tobaccoTypes = entree.tobaccoTypes ?? {
-        cigarette: false,
-        vape: false,
-    };
-    form.cigarettesPerDay = entree.cigarettesPerDay ?? null;
-    form.vapeLiquidMl = entree.vapeLiquidMl ?? null;
-    form.alcoholDrinks = entree.alcoholDrinks ?? null;
-
-    // Preserve previously saved hydration in a simple way while keeping the current UI.
+    form.sugar = entry.sugar ?? "low";
+    form.caffeine = Number(entry.caffeine ?? 0);
+    // Normalize meal keys: API returns meal_type/description, addMeal uses type/label
+    form.meals = (Array.isArray(entry.meals) ? entry.meals : []).map((m) => ({
+        type: m.type || m.meal_type || "",
+        label: m.label || m.description || "",
+        calories: m.calories ?? null,
+    }));
+    form.activityType = entry.activityType ?? "";
+    form.activityDuration = Number(entry.activityDuration ?? 0);
+    form.intensity = entry.intensity ?? "medium";
+    form.tobacco = Boolean(entry.tobacco);
+    form.alcohol = Boolean(entry.alcohol);
+    form.tobaccoTypes = entry.tobaccoTypes ?? { cigarette: false, vape: false };
+    form.cigarettesPerDay = entry.cigarettesPerDay ?? null;
+    form.vapeLiquidMl = entry.vapeLiquidMl ?? null;
+    form.alcoholDrinks = entry.alcoholDrinks ?? null;
     form.cupCount = 0;
     form.bottleCount = 0;
-    form.customHydration = Number(entree.hydration ?? 0);
+    form.customHydration = Number(entry.hydration ?? 0);
 });
 
-const ajouterRepas = () => {
+const addMeal = () => {
     if (!form.selectedMeal || !mealDraft.label.trim()) return;
-
     form.meals.push({
         type: form.selectedMeal,
         label: mealDraft.label.trim(),
-        calories: normaliserCaloriesRepas(mealDraft.calories),
+        calories: normalizeMealCalories(mealDraft.calories),
     });
-
     mealDraft.label = "";
     mealDraft.calories = null;
     form.selectedMeal = "";
-    notifications.actionAjoutee();
+    notifications.itemAdded();
 };
 
-const mealTypeLabel = (type) => {
-    return meals.find((item) => item.id === type)?.label ?? type;
-};
+const getMealTypeLabel = (type) =>
+    meals.find((item) => item.id === type)?.label ?? type;
 
-const supprimerRepas = (index) => {
+const deleteMeal = (index) => {
     pendingDeleteMealIndex.value = index;
     confirmDeleteMealOpen.value = true;
 };
 
-const confirmSupprimerRepas = () => {
+const confirmDeleteMeal = () => {
     const index = pendingDeleteMealIndex.value;
     confirmDeleteMealOpen.value = false;
     pendingDeleteMealIndex.value = -1;
     if (index < 0 || index >= form.meals.length) return;
     form.meals.splice(index, 1);
-    notifications.actionSupprimee();
+    notifications.itemDeleted();
 };
 
-const cancelSupprimerRepas = () => {
+const cancelDeleteMeal = () => {
     confirmDeleteMealOpen.value = false;
     pendingDeleteMealIndex.value = -1;
-    notifications.actionAnnulee();
+    notifications.actionCancelled();
 };
 
-const ajusterCafeine = (delta) => {
-    form.caffeine = Math.min(
-        20,
-        Math.max(0, Number(form.caffeine || 0) + delta),
-    );
+const adjustCaffeine = (delta) => {
+    form.caffeine = Math.min(20, Math.max(0, Number(form.caffeine || 0) + delta));
 };
+const adjustCups = (delta) => { form.cupCount = Math.max(0, form.cupCount + delta); };
+const adjustBottles = (delta) => { form.bottleCount = Math.max(0, form.bottleCount + delta); };
 
-const ajusterVerres = (delta) => {
-    form.cupCount = Math.max(0, form.cupCount + delta);
-};
-
-const ajusterBouteilles = (delta) => {
-    form.bottleCount = Math.max(0, form.bottleCount + delta);
-};
-
-const allerSuivant = () => {
+const goNext = () => {
     submitAttempted.value = false;
     step.value = Math.min(3, step.value + 1);
 };
 
-const allerPrecedent = () => {
+const goBack = () => {
     if (step.value === 1) {
         router.push({ name: "journal" });
         return;
@@ -1013,7 +845,7 @@ const allerPrecedent = () => {
     step.value = Math.max(1, step.value - 1);
 };
 
-const gererSelectionActivite = () => {
+const handleActivitySelection = () => {
     if (form.activityType === "__add_new__") {
         showNewActivityForm.value = true;
         form.activityType = "";
@@ -1022,25 +854,23 @@ const gererSelectionActivite = () => {
     showNewActivityForm.value = false;
 };
 
-const annulerNouvelleActivite = () => {
+const cancelNewActivity = () => {
     showNewActivityForm.value = false;
     newActivityName.value = "";
-    notifications.actionAnnulee();
+    notifications.actionCancelled();
 };
 
-const ajouterNouvelleActivite = () => {
+const addNewActivity = () => {
     const name = newActivityName.value.trim();
     if (!name) return;
-    if (!activities.value.includes(name)) {
-        activities.value.push(name);
-    }
+    if (!activities.value.includes(name)) activities.value.push(name);
     form.activityType = name;
     showNewActivityForm.value = false;
     newActivityName.value = "";
-    notifications.actionAjoutee();
+    notifications.itemAdded();
 };
 
-const basculerTabac = () => {
+const toggleTobacco = () => {
     form.tobacco = !form.tobacco;
     if (!form.tobacco) {
         form.tobaccoTypes.cigarette = false;
@@ -1051,33 +881,26 @@ const basculerTabac = () => {
     }
 };
 
-const basculerTypeTabac = (type) => {
+const toggleTobaccoType = (type) => {
     form.tobaccoTypes[type] = !form.tobaccoTypes[type];
     if (!form.tobaccoTypes.cigarette) form.cigarettesPerDay = null;
     if (!form.tobaccoTypes.vape) form.vapeLiquidMl = null;
 };
 
-const basculerAlcool = () => {
+const toggleAlcohol = () => {
     form.alcohol = !form.alcohol;
-    if (!form.alcohol) {
-        form.alcoholDrinks = null;
-    }
+    if (!form.alcohol) form.alcoholDrinks = null;
 };
 
-const annulerModification = async () => {
+const cancelEdit = async () => {
     if (!isEditMode.value) return;
-    await store.chargerEntrees();
-    router.push({ name: "historique-journal", query: { notice: "canceled" } });
+    await store.loadEntries();
+    router.push({ name: "journal-history", query: { notice: "canceled" } });
 };
 
-const enregistrer = async () => {
+const save = async () => {
     submitAttempted.value = true;
-    if (
-        hasActivityErrors.value ||
-        hasTobaccoErrors.value ||
-        hasAlcoholErrors.value
-    )
-        return;
+    if (hasActivityErrors.value || hasTobaccoErrors.value || hasAlcoholErrors.value) return;
     saveError.value = "";
     try {
         const payload = {
@@ -1091,8 +914,7 @@ const enregistrer = async () => {
             calories: mealsCaloriesTotal.value,
             activityType: form.activityType || "Marche",
             activityDuration: Number.isFinite(Number(form.activityDuration))
-                ? Number(form.activityDuration)
-                : 0,
+                ? Number(form.activityDuration) : 0,
             intensity: form.intensity,
             tobacco: form.tobacco,
             alcohol: form.alcohol,
@@ -1102,47 +924,38 @@ const enregistrer = async () => {
             },
             cigarettesPerDay:
                 form.tobacco && form.tobaccoTypes.cigarette
-                    ? Number(form.cigarettesPerDay)
-                    : null,
+                    ? Number(form.cigarettesPerDay) : null,
             vapeLiquidMl:
                 form.tobacco && form.tobaccoTypes.vape
-                    ? Number(form.vapeLiquidMl)
-                    : null,
+                    ? Number(form.vapeLiquidMl) : null,
             alcoholDrinks:
                 form.alcohol && form.alcoholDrinks !== null
-                    ? Number(form.alcoholDrinks)
-                    : 0,
+                    ? Number(form.alcoholDrinks) : 0,
         };
 
         if (isEditMode.value) {
             await store.mettreAJourEntree(editEntryId.value, payload);
-            router.push({
-                name: "historique-journal",
-                query: { notice: "saved" },
-            });
+            router.push({ name: "journal-history", query: { notice: "saved" } });
             return;
         }
 
         await store.ajouterEntree(payload);
-        notifications.actionAjoutee();
+        notifications.itemAdded();
         router.push({ name: "journal" });
     } catch (error) {
-        console.error("Journal save error:", error);
         if (error?.response?.status === 422 && error?.response?.data?.errors) {
             const firstError = Object.values(error.response.data.errors)?.[0];
-            saveError.value = Array.isArray(firstError)
-                ? firstError[0]
-                : "Validation invalide.";
-            notifications.avertissement(saveError.value);
+            saveError.value = Array.isArray(firstError) ? firstError[0] : "Validation invalide.";
+            notifications.warning(saveError.value);
             return;
         }
         if (error?.response?.status === 401) {
             saveError.value = "Session expiree. Reconnectez-vous.";
-            notifications.erreur(saveError.value);
+            notifications.error(saveError.value);
             return;
         }
         saveError.value = "Erreur lors de l'enregistrement du journal.";
-        notifications.erreur(saveError.value);
+        notifications.error(saveError.value);
     }
 };
 </script>
@@ -1157,13 +970,11 @@ const enregistrer = async () => {
     cursor: pointer;
     background: #dbeafe;
 }
-
 .range-base::-webkit-slider-runnable-track {
     height: 8px;
     border-radius: 999px;
     background: linear-gradient(90deg, #bfdbfe 0%, #ddd6fe 100%);
 }
-
 .range-base::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -1172,27 +983,21 @@ const enregistrer = async () => {
     border: 2px solid #4338ca;
     border-radius: 999px;
     background: #4338ca;
-    box-shadow:
-        0 0 0 3px rgba(224, 231, 255, 0.95),
-        0 2px 8px rgba(55, 48, 163, 0.45);
+    box-shadow: 0 0 0 3px rgba(224, 231, 255, 0.95), 0 2px 8px rgba(55, 48, 163, 0.45);
     margin-top: -6px;
 }
-
 .range-base::-moz-range-track {
     height: 8px;
     border: none;
     border-radius: 999px;
     background: linear-gradient(90deg, #bfdbfe 0%, #ddd6fe 100%);
 }
-
 .range-base::-moz-range-thumb {
     width: 20px;
     height: 20px;
     border: 2px solid #4338ca;
     border-radius: 999px;
     background: #4338ca;
-    box-shadow:
-        0 0 0 3px rgba(224, 231, 255, 0.95),
-        0 2px 8px rgba(55, 48, 163, 0.45);
+    box-shadow: 0 0 0 3px rgba(224, 231, 255, 0.95), 0 2px 8px rgba(55, 48, 163, 0.45);
 }
 </style>

@@ -2,27 +2,27 @@
 
 namespace App\Services;
 
-use App\Models\InvitationMedecin;
-use App\Models\Utilisateur;
+use App\Models\DoctorInvitation;
+use App\Models\User;
 
 class DoctorInvitationLinker
 {
     // Link pending doctor invitations to a user account
-    public function linkForUser(Utilisateur $utilisateur): bool
+    public function linkForUser(User $user): bool
     {
-        if ($utilisateur->role !== 'medecin') {
+        if ($user->role !== 'doctor') {
             return false;
         }
 
-        // Accéder à l'email via la relation compte
-        $email = $utilisateur->compte?->email;
+        // Access email via the account relation
+        $email = $user->account?->email;
         if (!$email) {
             return false;
         }
 
-        return InvitationMedecin::query()
-            ->whereRaw('LOWER(medecin_email) = ?', [strtolower($email)])
-            ->where(fn ($q) => $q->whereNull('id_medecin_utilisateur')->orWhere('id_medecin_utilisateur', '!=', $utilisateur->id))
-            ->update(['id_medecin_utilisateur' => $utilisateur->id]) > 0;
+        return DoctorInvitation::query()
+            ->whereRaw('LOWER(doctor_email) = ?', [strtolower($email)])
+            ->where(fn ($q) => $q->whereNull('doctor_user_id')->orWhere('doctor_user_id', '!=', $user->id))
+            ->update(['doctor_user_id' => $user->id]) > 0;
     }
 }
