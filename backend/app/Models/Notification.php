@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notification extends Model
 {
@@ -16,20 +16,19 @@ class Notification extends Model
     protected $fillable = [
         'id',
         'type',
-        'notifiable_type',
-        'notifiable_id',
+        'treatment_id',
         'data',
         'read_at',
     ];
 
     protected $casts = [
-        'data' => 'array',
+        'data'    => 'array',
         'read_at' => 'datetime',
     ];
 
-    public function notifiable(): MorphTo
+    // Relation: notification belongs to a treatment
+    public function treatment(): BelongsTo
     {
-        return $this->morphTo();
+        return $this->belongsTo(Treatment::class, 'treatment_id');
     }
 }
-

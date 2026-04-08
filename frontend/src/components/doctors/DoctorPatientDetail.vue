@@ -1,6 +1,7 @@
 <!--
   DoctorPatientDetail.vue
-  Patient details: vital signs, analyses, treatment history, general observation.
+  Patient details: vital signs (+ doctor observation per entry), analyses (+ doctor note per result),
+  treatment history (+ doctor report per day).
 -->
 <template>
     <section class="mt-8">
@@ -25,9 +26,7 @@
 
             <div>
                 <div class="flex items-center gap-3">
-                    <h2
-                        class="text-[28px] font-bold leading-none text-[#031a46]"
-                    >
+                    <h2 class="text-[28px] font-bold leading-none text-[#031a46]">
                         {{ patient.name }}
                     </h2>
                     <span
@@ -36,9 +35,7 @@
                     />
                 </div>
 
-                <div
-                    class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[15px] text-[#41506b]"
-                >
+                <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[15px] text-[#41506b]">
                     <span>{{ patient.age }} years</span>
                     <span>•</span>
                     <span>{{ patient.gender }}</span>
@@ -59,106 +56,11 @@
                         {{ tag.label }}
                     </span>
                 </div>
-
-                <!-- Observation résumée -->
-                <div
-                    class="mt-3 rounded-[10px] border border-[#dde3ee] bg-[#f8faff] px-3 py-2"
-                >
-                    <p
-                        class="text-[11px] font-semibold uppercase tracking-[0.04em] text-[#5f7190]"
-                    >
-                        Observation
-                    </p>
-                    <p class="mt-0.5 text-[13px] leading-5 text-[#1f345c]">
-                        {{ observationResume }}
-                    </p>
-                </div>
             </div>
         </div>
 
-        <!-- Bloc observations par date -->
-        <section
-            class="mt-6 rounded-[16px] border border-[#d4d9e1] bg-white p-3 shadow-[0_1px_3px_rgba(15,23,42,0.05)]"
-        >
-            <article class="rounded-[12px] border border-[#d4d9e1] bg-[#fcfdff] p-3">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                    <div class="flex items-center gap-2">
-                        <p class="text-[15px] font-bold text-[#041c49]">Observations médicales</p>
-                        <span class="rounded-full bg-[#f3f6fb] px-2 py-0.5 text-[11px] text-[#5c6d89]">Interne</span>
-                    </div>
-                    <button type="button" class="btn-outline" @click="obsOpen = !obsOpen">
-                        {{ obsOpen ? "Fermer" : "Ajouter" }}
-                    </button>
-                </div>
-
-                <!-- Formulaire ajout/édition -->
-                <div v-if="obsOpen" class="mt-3 space-y-2.5">
-                    <div class="flex items-center gap-3">
-                        <label class="text-[13px] font-semibold text-[#374867]">Date</label>
-                        <input v-model="obsDate" type="date" class="input-field h-[38px] flex-1" />
-                    </div>
-                    <textarea
-                        v-model.trim="obsText"
-                        rows="3"
-                        placeholder="Exemple : état général stable, surveillance clinique recommandée."
-                        class="input-field"
-                        style="height:auto"
-                    />
-                    <div class="flex flex-wrap justify-end gap-2">
-                        <button
-                            v-if="obsDateHasEntry"
-                            type="button"
-                            class="btn-outline text-red-600 border-red-200 hover:border-red-400"
-                            @click="supprimerObs"
-                        >
-                            Supprimer
-                        </button>
-                        <button type="button" class="btn-primary" @click="enregistrerObs">
-                            Enregistrer
-                        </button>
-                    </div>
-                </div>
-
-                <div
-                    v-if="obsMessage"
-                    class="mt-2.5 rounded-[12px] border px-3 py-2 text-[12px]"
-                    :class="obsMessageType === 'success'
-                        ? 'border-[#c6ead0] bg-[#f2fcf4] text-[#118445]'
-                        : 'border-[#f1d4ae] bg-[#fff8ef] text-[#b46910]'"
-                >
-                    {{ obsMessage }}
-                </div>
-
-                <!-- Liste des observations existantes -->
-                <div v-if="localObservations.length" class="mt-3 space-y-2">
-                    <div
-                        v-for="o in localObservations"
-                        :key="o.date"
-                        class="rounded-[10px] border border-[#e2e8f0] bg-white px-3 py-2"
-                    >
-                        <div class="flex items-start justify-between gap-2">
-                            <div>
-                                <p class="text-[12px] font-semibold text-[#374867]">{{ formatObsDate(o.date) }}</p>
-                                <p class="mt-0.5 text-[13px] leading-5 text-[#1f345c]">{{ o.note }}</p>
-                            </div>
-                            <button
-                                type="button"
-                                class="shrink-0 text-[11px] text-[#5c6d89] hover:text-[#374867]"
-                                @click="chargerObs(o)"
-                            >
-                                Modifier
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <p v-else class="mt-3 text-[13px] text-[#7b8faa]">Aucune observation enregistrée.</p>
-            </article>
-        </section>
-
         <!-- Onglets -->
-        <nav
-            class="mt-8 rounded-[18px] border border-[#d4d9e1] bg-white p-[10px] shadow-[0_1px_4px_rgba(15,23,42,0.05)]"
-        >
+        <nav class="mt-8 rounded-[18px] border border-[#d4d9e1] bg-white p-[10px] shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
             <div class="flex flex-wrap gap-2">
                 <button
                     v-for="tab in TABS"
@@ -184,10 +86,7 @@
                 title="Filtrer les signes vitaux"
                 subtitle="Affinez l'historique par date et par type de mesure."
                 :show-reset="!!(vitalDate || vitalSign !== 'all')"
-                @reset="
-                    vitalDate = '';
-                    vitalSign = 'all';
-                "
+                @reset="vitalDate = ''; vitalSign = 'all';"
             >
                 <input v-model="vitalDate" type="date" class="input-field" />
                 <select v-model="vitalSign" class="input-field">
@@ -203,12 +102,8 @@
                 :key="entry.isoDate || entry.date"
                 class="card"
             >
-                <div
-                    class="flex items-center gap-2 text-[16px] font-bold text-[#061a45]"
-                >
-                    <IconeCalendrier class="h-[18px] w-[18px]" />{{
-                        entry.date
-                    }}
+                <div class="flex items-center gap-2 text-[16px] font-bold text-[#061a45]">
+                    <IconeCalendrier class="h-[18px] w-[18px]" />{{ entry.date }}
                 </div>
                 <div class="mt-4 grid gap-4 lg:grid-cols-3">
                     <div
@@ -217,12 +112,34 @@
                         class="rounded-[16px] border px-5 py-4"
                         :class="card.class"
                     >
-                        <p class="text-[14px] text-[#455572]">
-                            {{ card.label }}
-                        </p>
-                        <p class="mt-2 text-[18px] font-bold text-[#061a45]">
-                            {{ card.value }}
-                        </p>
+                        <p class="text-[14px] text-[#455572]">{{ card.label }}</p>
+                        <p class="mt-2 text-[18px] font-bold text-[#061a45]">{{ card.value }}</p>
+                    </div>
+                </div>
+
+                <!-- Doctor observation for this vital entry -->
+                <div class="mt-4 border-t border-[#e8edf5] pt-4">
+                    <p class="mb-2 text-[12px] font-semibold uppercase tracking-wide text-[#5c6d89]">
+                        Observation médicale
+                    </p>
+                    <textarea
+                        :value="vitalObservations[entry.id] ?? entry.doctorObservation"
+                        rows="2"
+                        placeholder="Ajouter une observation sur ces signes vitaux…"
+                        class="input-field-textarea"
+                        @input="vitalObservations[entry.id] = $event.target.value"
+                    />
+                    <div class="mt-2 flex items-center justify-between gap-2">
+                        <span v-if="vitalSaveMsg[entry.id]" class="text-[12px]" :class="vitalSaveMsg[entry.id].ok ? 'text-[#118445]' : 'text-[#b46910]'">
+                            {{ vitalSaveMsg[entry.id].text }}
+                        </span>
+                        <button
+                            type="button"
+                            class="btn-primary ml-auto"
+                            @click="saveVitalObservation(entry)"
+                        >
+                            Enregistrer
+                        </button>
                     </div>
                 </div>
             </article>
@@ -238,49 +155,58 @@
         <section v-else-if="activeTab === 'analyses'" class="mt-8 space-y-4">
             <FilterCard
                 title="Filtrer les analyses"
-                subtitle="Affinez les résultats par date et par type d'analyse. Les 7 derniers jours sont affichés par défaut."
+                subtitle="Affinez les résultats par date et par type d'analyse."
                 :show-reset="!!(analysisDate || analysisType !== 'all')"
-                @reset="
-                    analysisDate = '';
-                    analysisType = 'all';
-                "
+                @reset="analysisDate = ''; analysisType = 'all';"
             >
                 <input v-model="analysisDate" type="date" class="input-field" />
                 <select v-model="analysisType" class="input-field">
                     <option value="all">Tous les types</option>
-                    <option v-for="t in analysisTypes" :key="t" :value="t">
-                        {{ t }}
-                    </option>
+                    <option v-for="t in analysisTypes" :key="t" :value="t">{{ t }}</option>
                 </select>
             </FilterCard>
 
             <article
                 v-for="a in filteredAnalyses"
-                :key="`${a.name}-${a.isoDate}`"
+                :key="`${a.id}-${a.isoDate}`"
                 class="card px-6 py-5"
             >
                 <div class="flex flex-wrap items-center gap-3">
-                    <h3 class="text-[18px] font-bold text-[#061a45]">
-                        {{ a.name }}
-                    </h3>
-                    <span
-                        class="inline-flex rounded-full px-3 py-1 text-[13px] font-medium"
-                        :class="a.badgeClass"
-                        >{{ a.status }}</span
-                    >
+                    <h3 class="text-[18px] font-bold text-[#061a45]">{{ a.name }}</h3>
+                    <span class="inline-flex rounded-full px-3 py-1 text-[13px] font-medium" :class="a.badgeClass">{{ a.status }}</span>
                 </div>
-                <div
-                    class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-[15px] text-[#455572]"
-                >
-                    <span class="text-[20px] font-bold text-[#061a45]">{{
-                        a.value
-                    }}</span>
+                <div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-[15px] text-[#455572]">
+                    <span class="text-[20px] font-bold text-[#061a45]">{{ a.value }}</span>
                     <span>{{ a.range }}</span>
-                    <span class="inline-flex items-center gap-2"
-                        ><IconeCalendrier class="h-[16px] w-[16px]" />{{
-                            a.date
-                        }}</span
-                    >
+                    <span class="inline-flex items-center gap-2">
+                        <IconeCalendrier class="h-[16px] w-[16px]" />{{ a.date }}
+                    </span>
+                </div>
+
+                <!-- Doctor note for this analysis result -->
+                <div class="mt-4 border-t border-[#e8edf5] pt-4">
+                    <p class="mb-2 text-[12px] font-semibold uppercase tracking-wide text-[#5c6d89]">
+                        Note médicale
+                    </p>
+                    <textarea
+                        :value="labNotes[a.id] ?? a.doctorNote"
+                        rows="2"
+                        placeholder="Ajouter une note sur ce résultat d'analyse…"
+                        class="input-field-textarea"
+                        @input="labNotes[a.id] = $event.target.value"
+                    />
+                    <div class="mt-2 flex items-center justify-between gap-2">
+                        <span v-if="labSaveMsg[a.id]" class="text-[12px]" :class="labSaveMsg[a.id].ok ? 'text-[#118445]' : 'text-[#b46910]'">
+                            {{ labSaveMsg[a.id].text }}
+                        </span>
+                        <button
+                            type="button"
+                            class="btn-primary ml-auto"
+                            @click="saveLabNote(a)"
+                        >
+                            Enregistrer
+                        </button>
+                    </div>
                 </div>
             </article>
 
@@ -296,54 +222,28 @@
             <article class="card p-6">
                 <div class="flex items-center justify-between gap-3">
                     <div>
-                        <h3 class="text-[22px] font-extrabold text-slate-900">
-                            Historique des prises
-                        </h3>
+                        <h3 class="text-[22px] font-extrabold text-slate-900">Historique des prises</h3>
                         <p class="mt-1 text-[14px] text-[#5b6b84]">
-                            Historique réel des traitements pris par le patient,
-                            avec 7 derniers jours affichés par défaut.
+                            Historique réel des traitements pris par le patient, avec 7 derniers jours affichés par défaut.
                         </p>
                     </div>
-                    <span
-                        class="rounded-full bg-[#eef4ff] px-3 py-1 text-[12px] font-semibold text-[#3257d6]"
-                    >
-                        {{ patient.treatmentHistoryRows?.length || 0 }} jour{{
-                            (patient.treatmentHistoryRows?.length || 0) > 1
-                                ? "s"
-                                : ""
-                        }}
+                    <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-[12px] font-semibold text-[#3257d6]">
+                        {{ patient.treatmentHistoryRows?.length || 0 }} jour{{ (patient.treatmentHistoryRows?.length || 0) > 1 ? "s" : "" }}
                     </span>
                 </div>
 
                 <!-- Filtres traitements -->
-                <article
-                    class="mt-6 rounded-[18px] border border-[#dbe2ec] bg-[#fbfcfe] p-5"
-                >
-                    <div
-                        class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"
-                    >
+                <article class="mt-6 rounded-[18px] border border-[#dbe2ec] bg-[#fbfcfe] p-5">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
-                            <h4 class="text-[17px] font-bold text-[#10254f]">
-                                Filtrer l'historique des traitements
-                            </h4>
-                            <p class="mt-1 text-[14px] text-[#60708b]">
-                                Affinez l'affichage par date, traitement ou
-                                statut d'observance.
-                            </p>
+                            <h4 class="text-[17px] font-bold text-[#10254f]">Filtrer l'historique des traitements</h4>
+                            <p class="mt-1 text-[14px] text-[#60708b]">Affinez l'affichage par date, traitement ou statut d'observance.</p>
                         </div>
                         <button
-                            v-if="
-                                treatDate ||
-                                treatMed !== 'all' ||
-                                treatStatus !== 'all'
-                            "
+                            v-if="treatDate || treatMed !== 'all' || treatStatus !== 'all'"
                             type="button"
                             class="btn-outline"
-                            @click="
-                                treatDate = '';
-                                treatMed = 'all';
-                                treatStatus = 'all';
-                            "
+                            @click="treatDate = ''; treatMed = 'all'; treatStatus = 'all';"
                         >
                             Réinitialiser
                         </button>
@@ -351,26 +251,14 @@
 
                     <div class="mt-5 grid gap-4 md:grid-cols-3">
                         <div>
-                            <label class="filter-label">Date</label
-                            ><input
-                                v-model="treatDate"
-                                type="date"
-                                class="input-field"
-                            />
+                            <label class="filter-label">Date</label>
+                            <input v-model="treatDate" type="date" class="input-field" />
                         </div>
                         <div>
                             <label class="filter-label">Traitement</label>
                             <select v-model="treatMed" class="input-field">
-                                <option value="all">
-                                    Tous les traitements
-                                </option>
-                                <option
-                                    v-for="m in treatMedOptions"
-                                    :key="m"
-                                    :value="m"
-                                >
-                                    {{ m }}
-                                </option>
+                                <option value="all">Tous les traitements</option>
+                                <option v-for="m in treatMedOptions" :key="m" :value="m">{{ m }}</option>
                             </select>
                         </div>
                         <div>
@@ -391,33 +279,16 @@
                         :key="day.dateKey"
                         class="rounded-[18px] border border-[#dbe2ec] bg-[#fbfcfe] p-5"
                     >
-                        <div
-                            class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
-                        >
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div>
-                                <h4
-                                    class="text-[16px] font-bold text-[#10254f]"
-                                >
-                                    {{ longDate(day.dateKey) }}
-                                </h4>
-                                <p class="mt-1 text-[14px] text-[#60708b]">
-                                    {{ day.taken }}/{{ day.total }} prises
-                                    effectuées
-                                </p>
+                                <h4 class="text-[16px] font-bold text-[#10254f]">{{ longDate(day.dateKey) }}</h4>
+                                <p class="mt-1 text-[14px] text-[#60708b]">{{ day.taken }}/{{ day.total }} prises effectuées</p>
                             </div>
                             <span
                                 class="inline-flex h-[34px] items-center rounded-full px-3 text-[12px] font-semibold"
-                                :class="
-                                    day.isComplete
-                                        ? 'bg-[#dff6e7] text-[#15803d]'
-                                        : 'bg-[#e9eef7] text-[#42526b]'
-                                "
+                                :class="day.isComplete ? 'bg-[#dff6e7] text-[#15803d]' : 'bg-[#e9eef7] text-[#42526b]'"
                             >
-                                {{
-                                    day.isComplete
-                                        ? "Jour complet"
-                                        : "Jour partiel"
-                                }}
+                                {{ day.isComplete ? "Jour complet" : "Jour partiel" }}
                             </span>
                         </div>
 
@@ -427,61 +298,59 @@
                                 :key="`${day.dateKey}-${med.id}`"
                                 class="rounded-[16px] border border-[#e2e8f0] bg-white px-4 py-4"
                             >
-                                <div
-                                    class="flex items-start justify-between gap-3"
-                                >
+                                <div class="flex items-start justify-between gap-3">
                                     <div>
-                                        <p
-                                            class="text-[15px] font-bold text-[#112652]"
-                                        >
-                                            {{ med.name }}
-                                        </p>
-                                        <p
-                                            class="mt-1 text-[13px] text-[#63758d]"
-                                        >
-                                            {{ med.dose }}
-                                        </p>
+                                        <p class="text-[15px] font-bold text-[#112652]">{{ med.name }}</p>
+                                        <p class="mt-1 text-[13px] text-[#63758d]">{{ med.dose }}</p>
                                     </div>
                                     <span
                                         class="inline-flex h-[30px] min-w-[52px] items-center justify-center rounded-full px-3 text-[12px] font-semibold"
-                                        :class="
-                                            med.isComplete
-                                                ? 'bg-[#dff6e7] text-[#15803d]'
-                                                : 'bg-[#edf2ff] text-[#3257d6]'
-                                        "
+                                        :class="med.isComplete ? 'bg-[#dff6e7] text-[#15803d]' : 'bg-[#edf2ff] text-[#3257d6]'"
                                     >
                                         {{ med.taken }}/{{ med.total }}
                                     </span>
                                 </div>
-                                <div
-                                    class="mt-4 h-[8px] rounded-full bg-[#dfe5ee]"
-                                >
+                                <div class="mt-4 h-[8px] rounded-full bg-[#dfe5ee]">
                                     <div
                                         class="h-[8px] rounded-full transition-all"
-                                        :class="
-                                            med.isComplete
-                                                ? 'bg-[#16a34a]'
-                                                : 'bg-[#4f46e5]'
-                                        "
+                                        :class="med.isComplete ? 'bg-[#16a34a]' : 'bg-[#4f46e5]'"
                                         :style="{ width: `${med.progress}%` }"
                                     />
                                 </div>
                             </article>
                         </div>
+
+                        <!-- Doctor report for this treatment day -->
+                        <div class="mt-4 border-t border-[#e8edf5] pt-4">
+                            <p class="mb-2 text-[12px] font-semibold uppercase tracking-wide text-[#5c6d89]">
+                                Rapport médical (traitements)
+                            </p>
+                            <textarea
+                                :value="treatmentReports[day.dateKey] ?? day.doctorReport"
+                                rows="2"
+                                placeholder="Ajouter un rapport sur l'observance du traitement ce jour…"
+                                class="input-field-textarea"
+                                @input="treatmentReports[day.dateKey] = $event.target.value"
+                            />
+                            <div class="mt-2 flex items-center justify-between gap-2">
+                                <span v-if="treatSaveMsg[day.dateKey]" class="text-[12px]" :class="treatSaveMsg[day.dateKey].ok ? 'text-[#118445]' : 'text-[#b46910]'">
+                                    {{ treatSaveMsg[day.dateKey].text }}
+                                </span>
+                                <button
+                                    type="button"
+                                    class="btn-primary ml-auto"
+                                    @click="saveTreatmentReport(day.dateKey)"
+                                >
+                                    Enregistrer
+                                </button>
+                            </div>
+                        </div>
                     </article>
                 </div>
 
-                <div
-                    v-else
-                    class="mt-6 rounded-[16px] border border-dashed border-[#d3dbe7] bg-[#fbfcff] px-5 py-8 text-center"
-                >
-                    <p class="text-[15px] font-semibold text-[#10254f]">
-                        Aucun historique de prise disponible.
-                    </p>
-                    <p class="mt-2 text-[13px] text-[#697892]">
-                        Essayez une autre date, un autre traitement ou un autre
-                        filtre d'observance.
-                    </p>
+                <div v-else class="mt-6 rounded-[16px] border border-dashed border-[#d3dbe7] bg-[#fbfcff] px-5 py-8 text-center">
+                    <p class="text-[15px] font-semibold text-[#10254f]">Aucun historique de prise disponible.</p>
+                    <p class="mt-2 text-[13px] text-[#697892]">Essayez une autre date, un autre traitement ou un autre filtre d'observance.</p>
                 </div>
             </article>
         </section>
@@ -500,7 +369,6 @@ import {
     IconWave,
 } from "@/components/doctors/DoctorIcons.js";
 
-// Aliases for French names still used in template/config
 const IconeCalendrier = IconCalendar;
 const IconeCoeur = IconHeart;
 const IconeOnde = IconWave;
@@ -553,42 +421,22 @@ const treatDate = ref("");
 const treatMed = ref("all");
 const treatStatus = ref("all");
 
-// ─── Observation ──────────────────────────────────────────────────────────────
-const obsText = ref("");
-const obsDate = ref(new Date().toISOString().slice(0, 10));
-const obsOpen = ref(false);
-const obsMessage = ref("");
-const obsMessageType = ref("success");
-const localObservations = ref([]);
+// ─── Local doctor note state (keyed by record id / date) ─────────────────────
+// We use plain reactive objects so $event.target.value works with :value binding
+const vitalObservations = ref({});   // { [vitalId]: string }
+const labNotes = ref({});            // { [analysisId]: string }
+const treatmentReports = ref({});    // { [dateKey]: string }
 
-const obsDateHasEntry = computed(() =>
-    localObservations.value.some((o) => o.date === obsDate.value),
-);
+// Feedback messages per record
+const vitalSaveMsg = ref({});   // { [vitalId]: { ok, text } }
+const labSaveMsg = ref({});     // { [analysisId]: { ok, text } }
+const treatSaveMsg = ref({});   // { [dateKey]: { ok, text } }
 
-const observationResume = computed(() => {
-    const latest = localObservations.value[0];
-    if (!latest) return "Aucune observation médicale pour le moment.";
-    const t = latest.note;
-    return t.length > 140 ? `${t.slice(0, 140).trim()}…` : t;
-});
-
-// ─── Signes vitaux filtrés ────────────────────────────────────────────────────
+// ─── Vitals filtrés ───────────────────────────────────────────────────────────
 const VITAL_CARDS = [
-    {
-        key: "heartRate",
-        label: "Rythme cardiaque",
-        class: "border-[#f4bcc3] bg-[#fff5f6]",
-    },
-    {
-        key: "bloodPressure",
-        label: "Tension",
-        class: "border-[#aac8ff] bg-[#eff6ff]",
-    },
-    {
-        key: "saturation",
-        label: "Saturation O2",
-        class: "border-[#dcc5ff] bg-[#faf4ff]",
-    },
+    { key: "heartRate",    label: "Rythme cardiaque", class: "border-[#f4bcc3] bg-[#fff5f6]" },
+    { key: "bloodPressure",label: "Tension",          class: "border-[#aac8ff] bg-[#eff6ff]" },
+    { key: "saturation",   label: "Saturation O2",    class: "border-[#dcc5ff] bg-[#faf4ff]" },
 ];
 
 const filteredVitals = computed(() => {
@@ -608,28 +456,15 @@ const filteredVitals = computed(() => {
 // ─── Analyses filtrées ────────────────────────────────────────────────────────
 const analysisTypes = computed(() => {
     const analyses = props.patient?.analyses ?? [];
-    return [
-        ...new Set(
-            analyses.map((a) => String(a.type || "").trim()).filter(Boolean),
-        ),
-    ];
+    return [...new Set(analyses.map((a) => String(a.type || "").trim()).filter(Boolean))];
 });
 
 const filteredAnalyses = computed(() => {
     const analyses = props.patient?.analyses ?? [];
-    const recentKeys = [
-        ...new Set(analyses.map((a) => a.isoDate).filter(Boolean)),
-    ].slice(0, 7);
+    const recentKeys = [...new Set(analyses.map((a) => a.isoDate).filter(Boolean))].slice(0, 7);
     return analyses
-        .filter((a) =>
-            analysisDate.value
-                ? a.isoDate === analysisDate.value
-                : recentKeys.includes(a.isoDate),
-        )
-        .filter(
-            (a) =>
-                analysisType.value === "all" || a.type === analysisType.value,
-        );
+        .filter((a) => analysisDate.value ? a.isoDate === analysisDate.value : recentKeys.includes(a.isoDate))
+        .filter((a) => analysisType.value === "all" || a.type === analysisType.value);
 });
 
 // ─── Traitements filtrés ──────────────────────────────────────────────────────
@@ -647,133 +482,94 @@ const filteredTreatments = computed(() => {
     return pool
         .filter((d) => !treatDate.value || d.dateKey === treatDate.value)
         .map((d) => {
-            const meds = d.meds.filter(
-                (m) => treatMed.value === "all" || m.name === treatMed.value,
-            );
+            const meds = d.meds.filter((m) => treatMed.value === "all" || m.name === treatMed.value);
             const total = meds.reduce((s, m) => s + +(m.total || 0), 0);
             const taken = meds.reduce((s, m) => s + +(m.taken || 0), 0);
-            return {
-                ...d,
-                meds,
-                total,
-                taken,
-                isComplete: total > 0 && taken >= total,
-            };
+            return { ...d, meds, total, taken, isComplete: total > 0 && taken >= total };
         })
         .filter((d) => d.meds.length)
-        .filter(
-            (d) =>
-                treatStatus.value === "all" ||
-                (treatStatus.value === "complete") === d.isComplete,
-        );
+        .filter((d) => treatStatus.value === "all" || (treatStatus.value === "complete") === d.isComplete);
 });
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 function longDate(iso) {
     if (!iso) return "-";
     const d = new Date(`${iso}T00:00:00`);
-    return isNaN(d)
-        ? iso
-        : d.toLocaleDateString("fr-FR", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-          });
+    return isNaN(d) ? iso : d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 }
 
-function formatObsDate(str) {
-    if (!str) return "";
-    const d = new Date(`${str}T00:00:00`);
-    return isNaN(d)
-        ? str
-        : d.toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-          });
-}
-
-// ─── Observation API ──────────────────────────────────────────────────────────
-async function enregistrerObs() {
-    const note = obsText.value.trim();
-    if (!note) {
-        obsMessageType.value = "warning";
-        obsMessage.value = "Écrivez une observation avant de l'enregistrer.";
-        return;
-    }
+// ─── API — save vital observation ────────────────────────────────────────────
+async function saveVitalObservation(entry) {
+    const observation = (vitalObservations.value[entry.id] ?? entry.doctorObservation ?? "").trim() || null;
     try {
-        const { data } = await api.put(
-            `/doctor-invitations/patients/${props.patient.id}/observations`,
-            { observation_date: obsDate.value, note },
+        await api.put(
+            `/doctor-invitations/patients/${props.patient.id}/vitals/${entry.id}/observation`,
+            { observation },
         );
-        const saved = data?.data;
-        const idx = localObservations.value.findIndex((o) => o.date === saved.observation_date);
-        const entry = { date: saved.observation_date, note: saved.note, updatedAt: saved.updated_at };
-        if (idx >= 0) localObservations.value.splice(idx, 1, entry);
-        else localObservations.value.unshift(entry);
-        localObservations.value.sort((a, b) => b.date.localeCompare(a.date));
-        obsMessageType.value = "success";
-        obsMessage.value = "Observation enregistrée.";
-        obsOpen.value = false;
-        obsText.value = "";
+        vitalSaveMsg.value[entry.id] = { ok: true, text: "Observation enregistrée." };
     } catch {
-        obsMessageType.value = "warning";
-        obsMessage.value = "Impossible d'enregistrer l'observation pour le moment.";
+        vitalSaveMsg.value[entry.id] = { ok: false, text: "Erreur lors de l'enregistrement." };
     }
+    setTimeout(() => { delete vitalSaveMsg.value[entry.id]; }, 3000);
 }
 
-async function supprimerObs() {
+// ─── API — save lab note ──────────────────────────────────────────────────────
+async function saveLabNote(analysis) {
+    const note = (labNotes.value[analysis.id] ?? analysis.doctorNote ?? "").trim() || null;
     try {
-        await api.delete(
-            `/doctor-invitations/patients/${props.patient.id}/observations/${obsDate.value}`,
+        await api.put(
+            `/doctor-invitations/patients/${props.patient.id}/labs/${analysis.id}/note`,
+            { note },
         );
-        localObservations.value = localObservations.value.filter((o) => o.date !== obsDate.value);
-        obsText.value = "";
-        obsMessageType.value = "success";
-        obsMessage.value = "Observation supprimée.";
-        obsOpen.value = false;
+        labSaveMsg.value[analysis.id] = { ok: true, text: "Note enregistrée." };
     } catch {
-        obsMessageType.value = "warning";
-        obsMessage.value = "Impossible de supprimer l'observation pour le moment.";
+        labSaveMsg.value[analysis.id] = { ok: false, text: "Erreur lors de l'enregistrement." };
     }
+    setTimeout(() => { delete labSaveMsg.value[analysis.id]; }, 3000);
 }
 
-function chargerObs(entry) {
-    obsDate.value = entry.date;
-    obsText.value = entry.note;
-    obsOpen.value = true;
-    obsMessage.value = "";
+// ─── API — save treatment report ─────────────────────────────────────────────
+async function saveTreatmentReport(dateKey) {
+    const dayRow = (props.patient?.treatmentHistoryRows ?? []).find((d) => d.dateKey === dateKey);
+    const report = (treatmentReports.value[dateKey] ?? dayRow?.doctorReport ?? "").trim() || null;
+    try {
+        await api.put(
+            `/doctor-invitations/patients/${props.patient.id}/treatment-report`,
+            { check_date: dateKey, report },
+        );
+        treatSaveMsg.value[dateKey] = { ok: true, text: "Rapport enregistré." };
+    } catch {
+        treatSaveMsg.value[dateKey] = { ok: false, text: "Erreur lors de l'enregistrement." };
+    }
+    setTimeout(() => { delete treatSaveMsg.value[dateKey]; }, 3000);
 }
 
-// ─── Init observations depuis patient ────────────────────────────────────────
+// ─── Reset local state when patient changes ───────────────────────────────────
 watch(
     () => props.patient?.id,
     () => {
-        obsMessage.value = "";
-        obsText.value = "";
-        obsOpen.value = false;
-        obsDate.value = new Date().toISOString().slice(0, 10);
-        localObservations.value = (props.patient?.observations ?? []).slice();
+        vitalObservations.value = {};
+        labNotes.value = {};
+        treatmentReports.value = {};
+        vitalSaveMsg.value = {};
+        labSaveMsg.value = {};
+        treatSaveMsg.value = {};
     },
     { immediate: true },
 );
-
-// When date changes in the form, prefill text if an entry exists for that date
-watch(obsDate, (date) => {
-    const existing = localObservations.value.find((o) => o.date === date);
-    obsText.value = existing ? existing.note : "";
-    obsMessage.value = "";
-});
 </script>
 
 <style scoped>
 @reference "../../index.css";
 .card {
-    @apply rounded-[20px] border border-[#d4d9e1] bg-white shadow-[0_1px_4px_rgba(15,23,42,0.05)];
+    @apply rounded-[20px] border border-[#d4d9e1] bg-white p-5 shadow-[0_1px_4px_rgba(15,23,42,0.05)];
 }
 .input-field {
     @apply h-[52px] w-full rounded-[16px] border border-[#d7dce6] bg-[#fbfcfd] px-4 text-[15px] text-[#061a45] outline-none transition focus:border-[#4a55f5];
+}
+.input-field-textarea {
+    @apply w-full rounded-[12px] border border-[#d7dce6] bg-[#fbfcfd] px-4 py-3 text-[14px] text-[#061a45] outline-none transition focus:border-[#4a55f5];
+    resize: vertical;
 }
 .btn-outline {
     @apply inline-flex h-[34px] items-center justify-center rounded-[12px] border border-[#d4d9e1] px-3 text-[13px] font-semibold text-[#40506a] transition hover:border-[#aeb9ca] hover:text-[#1a2c52];

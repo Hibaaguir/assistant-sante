@@ -111,9 +111,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/',    [DoctorInvitationController::class, 'index']);
         Route::post('/{invitation}/accept',   [DoctorInvitationController::class, 'accept']);
         Route::post('/{invitation}/reject',   [DoctorInvitationController::class, 'reject']);
-        Route::get('/patients',                      [DoctorInvitationController::class, 'indexPatients']);
-        Route::get('/patients/{patient}',            [DoctorInvitationController::class, 'showPatient']);
-        Route::put('/patients/{patient}/observations',              [DoctorInvitationController::class, 'upsertObservation']);
-        Route::delete('/patients/{patient}/observations/{date}',    [DoctorInvitationController::class, 'destroyObservation']);
+        Route::get('/patients',                [DoctorInvitationController::class, 'indexPatients']);
+        Route::get('/patients/{patient}',      [DoctorInvitationController::class, 'showPatient']);
+        // Per-section doctor observations
+        Route::put('/patients/{patient}/vitals/{vitalSign}/observation', [DoctorInvitationController::class, 'updateVitalObservation']);
+        Route::put('/patients/{patient}/labs/{analysisResult}/note',     [DoctorInvitationController::class, 'updateLabNote']);
+        Route::put('/patients/{patient}/treatment-report',               [DoctorInvitationController::class, 'updateTreatmentReport']);
     });
 });

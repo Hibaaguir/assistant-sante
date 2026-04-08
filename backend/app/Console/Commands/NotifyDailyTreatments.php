@@ -2,13 +2,15 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Notification;
+use App\Models\Treatment;
 use App\Models\TreatmentCheck;
 use App\Models\User;
 use App\Notifications\DailyTreatmentNotification;
 use App\Services\HealthDataService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class NotifyDailyTreatments extends Command
 {
@@ -16,7 +18,7 @@ class NotifyDailyTreatments extends Command
                             {--mode=all : reminder|missed|all}
                             {--date= : Target date in YYYY-MM-DD format}';
 
-    protected $description = 'Send reminder and missed-dose notifications for today\'s treatments';
+    protected $description = 'Send reminder and missed-dose notifications per treatment for today';
 
     public function __construct(private readonly HealthDataService $healthDataService)
     {
@@ -28,22 +30,36 @@ class NotifyDailyTreatments extends Command
         $mode = strtolower((string) $this->option('mode'));
 
         if (! in_array($mode, ['all', 'reminder', 'missed'], true)) {
-            $this->error('Invalid --mode option. Allowed values: all, reminder, missed.');
+            $this->error('Invalid --mode. Allowed: all, reminder, missed.');
             return self::FAILURE;
         }
 
-        $date = $this->resolveDate();
-        $counts = ['reminder' => 0, 'missed' => 0];
+        $date    = $this->resolveDate();
+        $dateKey = $date->toDateString();
+        $counts  = ['reminder' => 0, 'missed' => 0];
 
-        User::whereHas('healthProfile')->get()->each(function (User $user) use ($mode, $date, &$counts) {
+        User::whereHas('healthProfile')->get()->each(function (User $user) use ($mode, $date, $dateKey, &$counts) {
             $medicines = collect($this->healthDataService->resolveTreatmentMedicines($user->id));
+            if ($medicines->isEmpty()) {
+                return;
+            }
 
-            if ($medicines->isEmpty()) return;
+            // Load all checks for this user and date at once
+            $checks = TreatmentCheck::where('user_id', $user->id)
+                ->whereDate('check_date', $dateKey)
+                ->get();
 
-            $stats = $this->buildStats($user->id, $date, $medicines);
+            foreach ($medicines as $medicine) {
+                $treatment = Treatment::find($medicine['id'] ?? null);
+                if (! $treatment) {
+                    continue;
+                }
 
-            $this->maybeNotify($user, 'reminder', $mode, $date, $stats, $counts);
-            $this->maybeNotify($user, 'missed',   $mode, $date, $stats, $counts);
+                $stats = $this->buildStats($medicine, $checks);
+
+                $this->maybeNotify($treatment->id, 'reminder', $mode, $date, $stats, $counts);
+                $this->maybeNotify($treatment->id, 'missed',   $mode, $date, $stats, $counts);
+            }
         });
 
         $this->info("Reminder notifications sent: {$counts['reminder']}");
@@ -52,24 +68,62 @@ class NotifyDailyTreatments extends Command
         return self::SUCCESS;
     }
 
-    private function maybeNotify(User $user, string $type, string $mode, Carbon $date, array $stats, array &$counts): void
+    private function maybeNotify(int $traitementId, string $type, string $mode, Carbon $date, array $stats, array &$counts): void
     {
         $guard = $type === 'reminder' ? $stats['expected_total'] > 0 : $stats['missing_total'] > 0;
 
-        if (! in_array($mode, ['all', $type], true) || ! $guard || $this->alreadyNotified($user, $type, $date)) {
+        if (! in_array($mode, ['all', $type], true) || ! $guard || $this->alreadyNotified($traitementId, $type, $date)) {
             return;
         }
 
-        $user->notify(new DailyTreatmentNotification(
-            notificationType: $type,
-            targetDate:       $date,
-            items:            $stats['items'],
-            expectedTotal:    $stats['expected_total'],
-            takenTotal:       $stats['taken_total'],
-            missingTotal:     $stats['missing_total'],
-        ));
+        $isMissed = $type === 'missed';
+
+        Notification::create([
+            'id'            => Str::uuid()->toString(),
+            'type'          => DailyTreatmentNotification::class,
+            'treatment_id' => $traitementId,
+            'data'          => [
+                'notification_kind' => $type,
+                'target_date'       => $date->toDateString(),
+                'title'             => $isMissed ? 'Forgotten treatments today' : 'Treatment reminders for today',
+                'message'           => $isMissed
+                    ? "You missed {$stats['missing_total']} dose(s) out of {$stats['expected_total']} expected."
+                    : "You have {$stats['expected_total']} dose(s) expected today.",
+                'expected_total'    => $stats['expected_total'],
+                'taken_total'       => $stats['taken_total'],
+                'missing_total'     => $stats['missing_total'],
+                'items'             => $stats['items'],
+            ],
+        ]);
 
         $counts[$type]++;
+    }
+
+    // Build stats for a single medicine using pre-loaded checks
+    private function buildStats(array $medicine, $checks): array
+    {
+        $medicineId   = (string) ($medicine['id'] ?? '');
+        $medicineName = (string) ($medicine['name'] ?? 'Treatment');
+        $expected     = max(1, (int) ($medicine['doses_per_day'] ?? 1));
+
+        $taken = min($expected, $checks->filter(
+            fn (TreatmentCheck $c) => str_starts_with((string) $c->medication_key, $medicineId . '__dose_') && (bool) $c->taken
+        )->count());
+
+        $missing = max(0, $expected - $taken);
+
+        return [
+            'items'          => [[
+                'medication_id'   => $medicineId,
+                'medication_name' => $medicineName,
+                'expected'        => $expected,
+                'taken'           => $taken,
+                'missing'         => $missing,
+            ]],
+            'expected_total' => $expected,
+            'taken_total'    => $taken,
+            'missing_total'  => $missing,
+        ];
     }
 
     private function resolveDate(): Carbon
@@ -78,43 +132,10 @@ class NotifyDailyTreatments extends Command
         return is_string($raw) && trim($raw) !== '' ? Carbon::parse($raw)->startOfDay() : Carbon::today();
     }
 
-    private function buildStats(int $userId, Carbon $date, Collection $medicines): array
+    private function alreadyNotified(int $traitementId, string $type, Carbon $date): bool
     {
-        $checks = TreatmentCheck::query()
-            ->where('user_id', $userId)
-            ->whereDate('check_date', $date->toDateString())
-            ->get();
-
-        $items = $medicines->map(function (array $med) use ($checks) {
-            $id       = (string) ($med['id'] ?? '');
-            $expected = max(1, (int) ($med['doses_per_day'] ?? 1));
-            $taken    = min($expected, $checks->filter(
-                fn (TreatmentCheck $c) => str_starts_with((string) $c->medication_key, $id.'__dose_') && (bool) $c->taken
-            )->count());
-
-            return [
-                'medication_id'   => $id,
-                'medication_name' => (string) ($med['name'] ?? 'Treatment'),
-                'expected'        => $expected,
-                'taken'           => $taken,
-                'missing'         => $expected - $taken,
-            ];
-        })->values()->all();
-
-        $expectedTotal = array_sum(array_column($items, 'expected'));
-        $takenTotal    = array_sum(array_column($items, 'taken'));
-
-        return [
-            'items'          => $items,
-            'expected_total' => $expectedTotal,
-            'taken_total'    => $takenTotal,
-            'missing_total'  => $expectedTotal - $takenTotal,
-        ];
-    }
-
-    private function alreadyNotified(User $user, string $type, Carbon $date): bool
-    {
-        return $user->notifications()
+        return Notification::query()
+            ->where('treatment_id', $traitementId)
             ->where('type', DailyTreatmentNotification::class)
             ->where('data->notification_kind', $type)
             ->where('data->target_date', $date->toDateString())

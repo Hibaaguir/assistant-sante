@@ -19,6 +19,7 @@ class TreatmentCheck extends Model
         'taken',
         'checked_at',
         'notes',
+        'doctor_report',
     ];
 
     protected $casts = [

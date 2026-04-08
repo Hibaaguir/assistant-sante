@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DoctorInvitation;
 use App\Models\AnalysisResult;
-use App\Models\HealthObservation;
 use App\Models\TreatmentCheck;
 use App\Models\VitalSigns;
 use App\Models\User;
@@ -80,7 +79,7 @@ class DoctorInvitationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         $invitations = DoctorInvitation::with($this->withPatient())
             ->where('doctor_user_id', $user->id)
             ->orderByRaw("case when status = 'pending' then 0 else 1 end")
@@ -133,7 +132,7 @@ class DoctorInvitationController extends Controller
     public function indexPatients(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         $patients = DoctorInvitation::with($this->withPatient())
             ->where('doctor_user_id', $user->id)
             ->where('status', 'accepted')
@@ -174,17 +173,6 @@ class DoctorInvitationController extends Controller
         $vitalsDays  = max(1, min((int) $request->query('vitals_days', 30), 90));
         $vitalsStart = Carbon::today()->subDays($vitalsDays - 1)->startOfDay();
 
-        $doctor = $request->user();
-        $observations = HealthObservation::where('doctor_user_id', $doctor->id)
-            ->where('patient_user_id', $patient->id)
-            ->orderByDesc('observation_date')
-            ->get()
-            ->map(fn ($o) => [
-                'observation_date' => $o->observation_date->toDateString(),
-                'note'             => $o->note,
-                'updated_at'       => $o->updated_at?->toISOString(),
-            ]);
-
         return response()->json([
             'message' => 'Patient details retrieved successfully.',
             'data'    => [
@@ -197,56 +185,81 @@ class DoctorInvitationController extends Controller
                 'lab_results'         => AnalysisResult::where('user_id', $patient->id)->orderByDesc('analysis_date')->orderByDesc('id')->get(),
                 'treatment_medicines' => $this->healthDataService->resolveTreatmentMedicines($patient->id),
                 'treatment_checks'    => TreatmentCheck::where('user_id', $patient->id)->where('check_date', '>=', Carbon::today()->subDays(29)->toDateString())->orderBy('check_date')->get(),
-                'observations'        => $observations,
             ],
         ]);
     }
 
-    // Create or update an observation for a specific date
-    public function upsertObservation(Request $request, User $patient): JsonResponse
+    // Save doctor observation on a specific vital signs record
+    public function updateVitalObservation(Request $request, User $patient, VitalSigns $vitalSign): JsonResponse
+    {
+        if (! $this->findAuthorizedInvitation($request, $patient)) {
+            return response()->json(['message' => 'Unauthorized access to this patient.'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Make sure the vital sign belongs to the patient
+        if ($vitalSign->user_id !== $patient->id) {
+            return response()->json(['message' => 'Vital sign does not belong to this patient.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $validated = $request->validate([
+            'observation' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $vitalSign->update(['doctor_observation' => $validated['observation'] ? trim($validated['observation']) : null]);
+
+        return response()->json([
+            'message' => 'Vital sign observation saved.',
+            'data'    => ['id' => $vitalSign->id, 'doctor_observation' => $vitalSign->doctor_observation],
+        ]);
+    }
+
+    // Save doctor note on a specific analysis result
+    public function updateLabNote(Request $request, User $patient, AnalysisResult $analysisResult): JsonResponse
+    {
+        if (! $this->findAuthorizedInvitation($request, $patient)) {
+            return response()->json(['message' => 'Unauthorized access to this patient.'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Make sure the analysis result belongs to the patient
+        if ($analysisResult->user_id !== $patient->id) {
+            return response()->json(['message' => 'Analysis result does not belong to this patient.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $validated = $request->validate([
+            'note' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $analysisResult->update(['doctor_note' => $validated['note'] ? trim($validated['note']) : null]);
+
+        return response()->json([
+            'message' => 'Lab result note saved.',
+            'data'    => ['id' => $analysisResult->id, 'doctor_note' => $analysisResult->doctor_note],
+        ]);
+    }
+
+    // Save doctor report on all treatment checks for a specific date
+    public function updateTreatmentReport(Request $request, User $patient): JsonResponse
     {
         if (! $this->findAuthorizedInvitation($request, $patient)) {
             return response()->json(['message' => 'Unauthorized access to this patient.'], Response::HTTP_FORBIDDEN);
         }
 
         $validated = $request->validate([
-            'observation_date' => ['required', 'date_format:Y-m-d'],
-            'note'             => ['required', 'string', 'max:3000'],
+            'check_date' => ['required', 'date_format:Y-m-d'],
+            'report'     => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $obs = HealthObservation::updateOrCreate(
-            [
-                'doctor_user_id'   => $request->user()->id,
-                'patient_user_id'  => $patient->id,
-                'observation_date' => $validated['observation_date'],
-            ],
-            ['note' => trim($validated['note'])],
-        );
+        $report = $validated['report'] ? trim($validated['report']) : null;
+
+        // Update all treatment checks for this patient on this date
+        TreatmentCheck::where('user_id', $patient->id)
+            ->where('check_date', $validated['check_date'])
+            ->update(['doctor_report' => $report]);
 
         return response()->json([
-            'message' => 'Observation saved.',
-            'data'    => [
-                'observation_date' => $obs->observation_date->toDateString(),
-                'note'             => $obs->note,
-                'updated_at'       => $obs->updated_at?->toISOString(),
-            ],
+            'message' => 'Treatment report saved.',
+            'data'    => ['check_date' => $validated['check_date'], 'doctor_report' => $report],
         ]);
-    }
-
-    // Delete an observation for a specific date
-    public function destroyObservation(Request $request, User $patient, string $date): JsonResponse
-    {
-        if (! $this->findAuthorizedInvitation($request, $patient)) {
-            return response()->json(['message' => 'Unauthorized access to this patient.'], Response::HTTP_FORBIDDEN);
-        }
-
-        HealthObservation::where([
-            'doctor_user_id'   => $request->user()->id,
-            'patient_user_id'  => $patient->id,
-            'observation_date' => $date,
-        ])->delete();
-
-        return response()->json(['message' => 'Observation deleted.']);
     }
 
     // ─── Private Helpers ───────────────────────────────────────────────────────

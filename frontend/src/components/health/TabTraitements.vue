@@ -214,6 +214,16 @@
                         </div>
                     </article>
                 </div>
+                <!-- Rapport médical du médecin pour ce jour -->
+                <div
+                    v-if="day.doctorReport"
+                    class="mt-4 rounded-xl border border-purple-100 bg-purple-50 px-4 py-3"
+                >
+                    <p class="text-[10px] font-semibold uppercase tracking-wide text-purple-500">
+                        Rapport de votre médecin
+                    </p>
+                    <p class="mt-1 text-[13px] leading-5 text-slate-700">{{ day.doctorReport }}</p>
+                </div>
             </article>
 
             <div
@@ -529,6 +539,7 @@ const props = defineProps({
     treatmentMedicines: { type: Array, default: () => [] },
     treatmentChecks: { type: Object, default: () => ({}) },
     treatmentDays: { type: Array, default: () => [] },
+    treatmentDoctorReports: { type: Object, default: () => ({}) },
 });
 
 defineEmits(["refresh"]);
@@ -606,6 +617,7 @@ const treatmentHistoryRows = computed(() => {
                 taken,
                 hasTracked,
                 isComplete: hasTracked && taken >= total,
+                doctorReport: props.treatmentDoctorReports[dateKey] || "",
             };
         })
         .filter((day) => day.hasTracked)

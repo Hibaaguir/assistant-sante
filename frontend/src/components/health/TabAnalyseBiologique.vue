@@ -77,6 +77,16 @@
                     </button>
                 </div>
             </div>
+            <!-- Note du médecin -->
+            <div
+                v-if="item.doctorNote"
+                class="mt-3 rounded-xl border border-purple-100 bg-purple-50 px-4 py-3"
+            >
+                <p class="text-[10px] font-semibold uppercase tracking-wide text-purple-500">
+                    Note de votre médecin
+                </p>
+                <p class="mt-1 text-[13px] leading-5 text-slate-700">{{ item.doctorNote }}</p>
+            </div>
         </article>
 
         <div

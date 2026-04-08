@@ -16,6 +16,7 @@ class AnalysisResult extends Model
         'value',
         'unit',
         'analysis_date',
+        'doctor_note',
     ];
 
     protected $casts = [

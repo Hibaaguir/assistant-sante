@@ -7,9 +7,7 @@ use App\Http\Requests\Api\StoreAnalysisResultRequest;
 use App\Http\Requests\Api\StoreVitalSignsRequest;
 use App\Http\Requests\Api\SyncTreatmentCheckRequest;
 use App\Http\Requests\Api\UpdateAnalysisResultRequest;
-use App\Models\DoctorInvitation;
 use App\Models\AnalysisResult;
-use App\Models\HealthObservation;
 use App\Models\TreatmentCheck;
 use App\Models\VitalSigns;
 use App\Services\HealthDataService;
@@ -63,30 +61,6 @@ class HealthDataController extends Controller
             ->orderBy('check_date')
             ->get();
 
-        // Load doctor observations for this patient (from accepted doctors only)
-        $acceptedDoctorIds = DoctorInvitation::query()
-            ->where('patient_user_id', $userId)
-            ->where('status', 'accepted')
-            ->pluck('doctor_user_id')
-            ->filter()
-            ->unique()
-            ->values();
-
-        $doctorObservations = \App\Models\HealthObservation::query()
-            ->with('doctor:id,name')
-            ->whereIn('doctor_user_id', $acceptedDoctorIds)
-            ->where('patient_user_id', $userId)
-            ->orderByDesc('observation_date')
-            ->orderByDesc('updated_at')
-            ->limit(10)
-            ->get()
-            ->map(fn ($o) => [
-                'observation_date' => $o->observation_date->toDateString(),
-                'note'             => $o->note,
-                'doctor_name'      => $o->doctor?->name,
-                'updated_at'       => $o->updated_at?->toISOString(),
-            ]);
-
         $treatmentMedicines = $this->healthDataService->resolveTreatmentMedicines($userId);
 
         return response()->json([
@@ -98,7 +72,6 @@ class HealthDataController extends Controller
                 'lab_results'         => $labResults,
                 'treatment_medicines' => $treatmentMedicines,
                 'treatment_checks'    => $treatmentChecks,
-                'doctor_observations' => $doctorObservations,
             ],
         ]);
     }

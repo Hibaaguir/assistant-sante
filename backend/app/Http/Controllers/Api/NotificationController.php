@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
+use App\Models\Treatment;
 use App\Models\TreatmentCheck;
 use App\Models\User;
 use App\Notifications\DailyTreatmentNotification;
@@ -10,7 +12,8 @@ use App\Services\HealthDataService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class NotificationController extends Controller
 {
@@ -18,169 +21,175 @@ class NotificationController extends Controller
     {
     }
 
-    // List all notifications for a user
+    // List all notifications for the user (fetched via their treatments)
     public function index(Request $request): JsonResponse
     {
-        // Get user and trigger medication notifications
         $user = $request->user();
-        // Check that user is a User instance
+
         if ($user instanceof User) {
             $this->triggerMedicationNotificationsBySchedule($user);
         }
 
-        $notificationsList = $request->user()
-            ->notifications()
+        $treatmentIds = $user->treatments()->pluck('id');
+
+        $notificationsList = Notification::query()
+            ->whereIn('treatment_id', $treatmentIds)
             ->latest()
             ->limit(100)
             ->get()
-            ->map(function ($notificationItem) {
-                return [
-                    'id' => $notificationItem->id,
-                    'type' => $notificationItem->type,
-                    'data' => $notificationItem->data,
-                    'read_at' => optional($notificationItem->read_at)?->toISOString(),
-                    'created_at' => optional($notificationItem->created_at)?->toISOString(),
-                ];
-            })
+            ->map(fn ($n) => [
+                'id'         => $n->id,
+                'type'       => $n->type,
+                'data'       => $n->data,
+                'read_at'    => optional($n->read_at)?->toISOString(),
+                'created_at' => optional($n->created_at)?->toISOString(),
+            ])
             ->values();
 
         return response()->json([
             'message' => 'Notifications retrieved successfully.',
-            'data' => $notificationsList,
+            'data'    => $notificationsList,
         ]);
     }
 
-    // Mark a notification as read
+    // Mark a single notification as read
     public function markAsRead(Request $request, string $notificationId): JsonResponse
     {
-        $foundNotification = $request->user()->notifications()->whereKey($notificationId)->first();
-        // Check that notification exists
-        if (! $foundNotification) {
+        $treatmentIds = $request->user()->treatments()->pluck('id');
+
+        $notification = Notification::query()
+            ->where('id', $notificationId)
+            ->whereIn('treatment_id', $treatmentIds)
+            ->first();
+
+        if (! $notification) {
             return response()->json(['message' => 'Notification not found.'], 404);
         }
 
-        // Mark as read only if not already read
-        if ($foundNotification->read_at === null) {
-            $foundNotification->markAsRead();
+        if ($notification->read_at === null) {
+            $notification->update(['read_at' => now()]);
         }
 
-        return response()->json([
-            'message' => 'Notification marked as read.',
-        ]);
+        return response()->json(['message' => 'Notification marked as read.']);
     }
 
     // Mark all notifications as read
     public function markAllAsRead(Request $request): JsonResponse
     {
-        $request->user()->unreadNotifications->markAsRead();
+        $treatmentIds = $request->user()->treatments()->pluck('id');
 
-        return response()->json([
-            'message' => 'All notifications have been marked as read.',
-        ]);
+        Notification::query()
+            ->whereIn('treatment_id', $treatmentIds)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+
+        return response()->json(['message' => 'All notifications have been marked as read.']);
     }
 
     // ─── Private Helpers ───────────────────────────────────────────────────────
 
-    // Trigger medication notifications according to schedule
+    // Trigger medication notifications per treatment according to schedule
     private function triggerMedicationNotificationsBySchedule(User $user): void
     {
-        // Get current date and time
-        $now = Carbon::now(config('app.timezone'));
-        $targetDate = $now->copy()->startOfDay();
+        $now         = Carbon::now(config('app.timezone'));
+        $targetDate  = $now->copy()->startOfDay();
         $currentHour = (int) $now->format('H');
+        $dateKey     = $targetDate->toDateString();
 
-        $medications = collect($this->healthDataService->resolveTreatmentMedicines($user->id));
-        // Return if user has no medications to process
-        if ($medications->isEmpty()) {
+        $medicines = collect($this->healthDataService->resolveTreatmentMedicines($user->id));
+        if ($medicines->isEmpty()) {
             return;
         }
 
-        $statistics = $this->buildStatisticsForDate($user->id, $targetDate, $medications->all());
-
-        // Send reminder any time before evening if not yet sent today
         $isMorningReminderWindow = $currentHour >= 5 && $currentHour < 20;
-        if ($isMorningReminderWindow
-            && $statistics['expected_total'] > 0
-            && ! $this->hasNotificationBeenSent($user, 'reminder', $targetDate)) {
-            $user->notify(new DailyTreatmentNotification(
-                notificationType: 'reminder',
-                targetDate: $targetDate,
-                items: $statistics['items'],
-                expectedTotal: $statistics['expected_total'],
-                takenTotal: $statistics['taken_total'],
-                missingTotal: $statistics['missing_total'],
-            ));
-        }
+        $isNightMissedWindow     = $currentHour >= 20;
 
-        $isNightMissedWindow = $currentHour >= 20;
-        if ($isNightMissedWindow
-            && $statistics['missing_total'] > 0
-            && ! $this->hasNotificationBeenSent($user, 'missed', $targetDate)) {
-            $user->notify(new DailyTreatmentNotification(
-                notificationType: 'missed',
-                targetDate: $targetDate,
-                items: $statistics['items'],
-                expectedTotal: $statistics['expected_total'],
-                takenTotal: $statistics['taken_total'],
-                missingTotal: $statistics['missing_total'],
-            ));
-        }
-    }
-
-    // Build treatment statistics for a date
-    private function buildStatisticsForDate(int $userId, Carbon $targetDate, array $medications): array
-    {
-        $dateKey = $targetDate->toDateString();
-        $checks = TreatmentCheck::query()
-            ->where('user_id', $userId)
+        // Load all today's checks once
+        $todayChecks = TreatmentCheck::where('user_id', $user->id)
             ->whereDate('check_date', $dateKey)
             ->get();
 
-        $items = [];
-        $expectedTotal = 0;
-        $takenTotal = 0;
+        foreach ($medicines as $medicine) {
+            $treatment = Treatment::find($medicine['id'] ?? null);
+            if (! $treatment) {
+                continue;
+            }
 
-        foreach ($medications as $medication) {
-            $medicationId = (string) ($medication['id'] ?? '');
-            $medicationName = (string) ($medication['name'] ?? 'Treatment');
-            $expectedDoses = max(1, (int) ($medication['doses_per_day'] ?? 1));
+            $stats = $this->buildStatisticsForMedicine($medicine, $todayChecks);
 
-            $takenDosesForMedication = $checks
-                ->filter(function (TreatmentCheck $check) use ($medicationId) {
-                    return str_starts_with((string) $check->medication_key, $medicationId.'__dose_') && (bool) $check->taken;
-                })
-                ->count();
+            if ($isMorningReminderWindow
+                && $stats['expected_total'] > 0
+                && ! $this->hasNotificationBeenSent($treatment->id, 'reminder', $targetDate)) {
+                $this->createNotification($treatment->id, 'reminder', $targetDate, $stats);
+            }
 
-            $takenDosesForMedication = min($takenDosesForMedication, $expectedDoses);
-            $missingDosesForMedication = max(0, $expectedDoses - $takenDosesForMedication);
-
-            $items[] = [
-                'medication_id' => $medicationId,
-                'medication_name' => $medicationName,
-                'expected' => $expectedDoses,
-                'taken' => $takenDosesForMedication,
-                'missing' => $missingDosesForMedication,
-            ];
-
-            $expectedTotal += $expectedDoses;
-            $takenTotal += $takenDosesForMedication;
+            if ($isNightMissedWindow
+                && $stats['missing_total'] > 0
+                && ! $this->hasNotificationBeenSent($treatment->id, 'missed', $targetDate)) {
+                $this->createNotification($treatment->id, 'missed', $targetDate, $stats);
+            }
         }
+    }
+
+    // Create a notification directly in the database
+    private function createNotification(int $traitementId, string $type, Carbon $targetDate, array $stats): void
+    {
+        $isMissed = $type === 'missed';
+
+        Notification::create([
+            'id'            => Str::uuid()->toString(),
+            'type'          => DailyTreatmentNotification::class,
+            'treatment_id' => $traitementId,
+            'data'          => [
+                'notification_kind' => $type,
+                'target_date'       => $targetDate->toDateString(),
+                'title'             => $isMissed ? 'Forgotten treatments today' : 'Treatment reminders for today',
+                'message'           => $isMissed
+                    ? "You missed {$stats['missing_total']} dose(s) out of {$stats['expected_total']} expected."
+                    : "You have {$stats['expected_total']} dose(s) expected today.",
+                'expected_total'    => $stats['expected_total'],
+                'taken_total'       => $stats['taken_total'],
+                'missing_total'     => $stats['missing_total'],
+                'items'             => $stats['items'],
+            ],
+        ]);
+    }
+
+    // Build statistics for a single medicine
+    private function buildStatisticsForMedicine(array $medicine, Collection $checks): array
+    {
+        $medicineId   = (string) ($medicine['id'] ?? '');
+        $medicineName = (string) ($medicine['name'] ?? 'Treatment');
+        $expected     = max(1, (int) ($medicine['doses_per_day'] ?? 1));
+
+        $taken = min($expected, $checks->filter(
+            fn (TreatmentCheck $c) => str_starts_with((string) $c->medication_key, $medicineId . '__dose_') && (bool) $c->taken
+        )->count());
+
+        $missing = max(0, $expected - $taken);
 
         return [
-            'items' => $items,
-            'expected_total' => $expectedTotal,
-            'taken_total' => $takenTotal,
-            'missing_total' => max(0, $expectedTotal - $takenTotal),
+            'items'          => [[
+                'medication_id'   => $medicineId,
+                'medication_name' => $medicineName,
+                'expected'        => $expected,
+                'taken'           => $taken,
+                'missing'         => $missing,
+            ]],
+            'expected_total' => $expected,
+            'taken_total'    => $taken,
+            'missing_total'  => $missing,
         ];
     }
 
-    // Check if notification has already been sent
-    private function hasNotificationBeenSent(User $user, string $notificationType, Carbon $targetDate): bool
+    // Check if a notification was already sent for this treatment/type/date
+    private function hasNotificationBeenSent(int $traitementId, string $type, Carbon $date): bool
     {
-        return $user->notifications()
+        return Notification::query()
+            ->where('treatment_id', $traitementId)
             ->where('type', DailyTreatmentNotification::class)
-            ->where('data->notification_kind', $notificationType)
-            ->where('data->target_date', $targetDate->toDateString())
+            ->where('data->notification_kind', $type)
+            ->where('data->target_date', $date->toDateString())
             ->exists();
     }
 }

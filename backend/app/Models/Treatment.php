@@ -22,7 +22,7 @@ class Treatment extends Model
 
     protected $casts = [
         'start_date' => 'date:Y-m-d',
-        'end_date' => 'date:Y-m-d',
+        'end_date'   => 'date:Y-m-d',
         'daily_doses' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -44,5 +44,11 @@ class Treatment extends Model
     public function checks(): HasMany
     {
         return $this->hasMany(TreatmentCheck::class);
+    }
+
+    // Relation: a treatment can have multiple notifications
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class, 'treatment_id');
     }
 }

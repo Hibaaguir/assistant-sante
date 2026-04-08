@@ -19,6 +19,7 @@ class VitalSigns extends Model
         'temperature',
         'weight',
         'height',
+        'doctor_observation',
     ];
 
     protected $casts = [
