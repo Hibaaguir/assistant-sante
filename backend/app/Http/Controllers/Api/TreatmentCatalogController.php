@@ -57,12 +57,9 @@ class TreatmentCatalogController extends Controller
             'name' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $userId = $request->user()?->id;
-
         $this->treatmentCatalogService->saveEntry(
             $validated['type'],
             $validated['name'] ?? null,
-            $userId,
         );
 
         return response()->json([

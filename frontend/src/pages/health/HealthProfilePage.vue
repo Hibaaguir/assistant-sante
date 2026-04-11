@@ -1,6 +1,7 @@
 <template>
+    
     <div
-        class="mx-auto max-w-[1460px] rounded-3xl border border-slate-200 bg-gradient-to-br from-[#f8f9fa] via-[#fafbfc] to-[#f5f7f9] px-4 py-4 sm:px-6 lg:px-8"
+        class="w-full px-4 py-4 sm:px-6 lg:px-8"
     >
         <header class="mb-4 flex items-start gap-3 sm:gap-4">
             <div
@@ -970,7 +971,7 @@
                 <div v-if="!editing.doctor" class="space-y-2">
                     <HealthFieldRow
                         label="Partage du profil avec mon médecin"
-                        :value="yesNo(profile.doctor_can_consult)"
+                        :value="yesNo(profile.doctor_invited)"
                         icon="shield"
                     />
                     <HealthFieldRow
@@ -1584,7 +1585,7 @@ function syncDraftFromProfile() {
 
     draft.smoker = Boolean(profile.smoker);
     draft.alcoholic = Boolean(profile.alcoholic);
-    draft.doctorCanConsult = Boolean(profile.doctor_can_consult);
+    draft.doctorCanConsult = Boolean(profile.doctor_invited);
     draft.doctorEmail = profile.doctor_email || "";
 
     doctorEmailError.value = "";
@@ -1704,8 +1705,7 @@ function buildPayload() {
             .filter((t) => t.type),
         smoker: Boolean(draft.smoker),
         alcoholic: Boolean(draft.alcoholic),
-        consults_doctor: doctorCanConsult,
-        doctor_can_consult: doctorCanConsult,
+        doctor_invited: doctorCanConsult,
         doctor_email: doctorCanConsult ? draft.doctorEmail || null : null,
     };
 }
@@ -1827,6 +1827,7 @@ onMounted(async () => {
 
         // Backend returns response.data.user with English fields: name, date_of_birth
         const apiUser = response?.data?.user || {};
+
         user.name = apiUser.name || "";
         user.dateOfBirth = apiUser.date_of_birth || "";
 

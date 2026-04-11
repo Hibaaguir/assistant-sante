@@ -1,0 +1,73 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        // Central parent table: one record per user per day.
+        // Holds the doctor's single general observation for all health data of that day.
+        Schema::create('health_data', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->date('date');
+            $table->text('doctor_observation')->nullable();
+            $table->timestamps();
+
+            $table->unique(['user_id', 'date']);
+            $table->index('user_id');
+        }); 
+
+        Schema::create('vital_signs', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('health_data_id')->nullable()->constrained('health_data')->nullOnDelete();
+            $table->dateTime('measured_at');
+            $table->unsignedSmallInteger('heart_rate')->nullable();
+            $table->unsignedSmallInteger('systolic_pressure')->nullable();
+            $table->unsignedSmallInteger('diastolic_pressure')->nullable();
+            $table->unsignedSmallInteger('oxygen_saturation')->nullable();
+            $table->timestamps();
+
+            $table->index(['health_data_id', 'measured_at']);
+        });
+
+        Schema::create('analysis_results', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('health_data_id')->nullable()->constrained('health_data')->nullOnDelete();
+            $table->string('analysis_type', 120);
+            $table->string('result_name', 120)->nullable();
+            $table->decimal('value', 10, 2);
+            $table->string('unit', 30)->nullable();
+            $table->date('analysis_date');
+            $table->timestamps();
+
+            $table->index(['health_data_id', 'analysis_date']);
+        });
+
+        Schema::create('treatment_checks', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('treatment_id')->constrained('treatments')->cascadeOnDelete();
+            $table->foreignId('health_data_id')->nullable()->constrained('health_data')->nullOnDelete();
+            $table->date('check_date');
+            $table->string('medication_key', 120)->nullable();
+            $table->timestamps();
+            $table->boolean('taken')->default(false);
+            $table->dateTime('checked_at')->nullable();
+
+            $table->unique(['treatment_id', 'check_date', 'medication_key'], 'treatment_checks_unique');
+            $table->index(['treatment_id', 'check_date']);
+            $table->index(['health_data_id', 'check_date']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('treatment_checks');
+        Schema::dropIfExists('analysis_results');
+        Schema::dropIfExists('vital_signs');
+        Schema::dropIfExists('health_data');
+    }
+};

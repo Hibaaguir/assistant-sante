@@ -17,7 +17,7 @@
             <!-- Barre d'actions globale -->
             <div
                 v-if="route.name"
-                class="mx-auto flex w-full max-w-[1320px] items-center justify-end gap-3 px-4 pb-2 pt-4 sm:px-6 lg:px-8"
+                class="flex w-full items-center justify-end gap-3 px-4 pb-2 pt-4 sm:px-6 lg:px-8"
             >
                 <button
                     type="button"
@@ -50,13 +50,12 @@
 
 <script setup>
 import { computed, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import BarreLateraleApp from "@/components/navigation/AppSidebar.vue";
 import MenuUtilisateur from "@/components/navigation/UserMenu.vue";
 
 const route = useRoute();
-const router = useRouter();
 const authStore = useAuthStore();
 
 // ─── Computed ─────────────────────────────────────────────────

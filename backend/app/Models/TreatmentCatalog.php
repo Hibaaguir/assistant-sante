@@ -12,18 +12,12 @@ class TreatmentCatalog extends Model
     protected $fillable = [
         'medication_type',
         'medication_name',
-        'created_by_user_id',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-
-    public function createdByUser(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(\App\Models\User::class, 'created_by_user_id');
-    }
 
     // Relation: a catalog entry can have multiple treatments
     public function treatments(): HasMany

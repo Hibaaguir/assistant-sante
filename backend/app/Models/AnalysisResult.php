@@ -10,13 +10,12 @@ class AnalysisResult extends Model
     protected $table = 'analysis_results';
 
     protected $fillable = [
-        'user_id',
+        'health_data_id',
         'analysis_type',
         'result_name',
         'value',
         'unit',
         'analysis_date',
-        'doctor_note',
     ];
 
     protected $casts = [
@@ -25,9 +24,9 @@ class AnalysisResult extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Relation: analysis results belong to a user
-    public function user(): BelongsTo
+    // Relation: analysis result belongs to a health_data entry (owner is health_data.user_id)
+    public function healthData(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(HealthData::class, 'health_data_id');
     }
 }

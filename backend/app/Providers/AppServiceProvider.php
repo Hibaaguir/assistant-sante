@@ -19,16 +19,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Load migrations organized by priority (001-008).
+        // Load migrations organized by domain and dependency order.
         $this->loadMigrationsFrom([
-            database_path('migrations/001_authentication'),
-            database_path('migrations/002_users'),
-            database_path('migrations/003_health_profile'),
-            database_path('migrations/004_health_data'),
-            database_path('migrations/005_doctor_invitations'),
-            database_path('migrations/006_journal_entries'),
-            database_path('migrations/007_notifications'),
-            database_path('migrations/008_utilities'),
+            database_path('migrations/001_core_access'),
+            database_path('migrations/010_users_accounts'),
+            database_path('migrations/020_health_profile'),
+            database_path('migrations/030_treatments_catalog'),
+            database_path('migrations/040_health_tracking'),
+            database_path('migrations/050_doctor_collaboration'),
+            database_path('migrations/060_journal_lifestyle'),
+            database_path('migrations/070_notifications'),
+            database_path('migrations/080_infrastructure_queue'),
         ]);
     }
 }

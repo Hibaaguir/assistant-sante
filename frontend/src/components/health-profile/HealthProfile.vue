@@ -440,13 +440,8 @@ function buildPayload() {
 
         smoker: form.fumeur,
         alcoholic: form.alcool,
-        consults_doctor: form.consulte_medecin,
-        doctor_can_consult:
-            form.consulte_medecin && form.medecin_peut_consulter,
-        doctor_email:
-            form.consulte_medecin && form.medecin_peut_consulter
-                ? form.medecin_email
-                : null,
+        doctor_invited: form.medecin_peut_consulter,
+        doctor_email: form.medecin_peut_consulter ? form.medecin_email : null,
     };
 }
 
@@ -541,8 +536,8 @@ onMounted(async () => {
         form.traitements = profil.treatments || [];
         form.fumeur = profil.smoker || false;
         form.alcool = profil.alcoholic || false;
-        form.consulte_medecin = profil.consults_doctor || false;
-        form.medecin_peut_consulter = profil.doctor_can_consult || false;
+        form.consulte_medecin = profil.doctor_invited || false;
+        form.medecin_peut_consulter = profil.doctor_invited || false;
         form.medecin_email = profil.doctor_email || "";
     } catch (err) {
         console.error("ProfilSante - Erreur lors du chargement:", err);

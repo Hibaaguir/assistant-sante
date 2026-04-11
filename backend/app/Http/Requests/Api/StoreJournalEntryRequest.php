@@ -2,47 +2,36 @@
 
 namespace App\Http\Requests\Api;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-
-class StoreJournalEntryRequest extends FormRequest
+class StoreJournalEntryRequest extends ApiFormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
         return [
-            // General
-            'entry_date'  => ['required', 'date'],
-            'sleep'       => ['nullable', 'integer', 'min:0', 'max:24'],
-            'stress'      => ['nullable', 'integer', 'min:0', 'max:10'],
-            'energy'      => ['nullable', 'integer', 'min:0', 'max:10'],
-            'caffeine'    => ['nullable', 'integer', 'min:0', 'max:20'],
-            'hydration'   => ['nullable', 'numeric', 'min:0', 'max:20'],
+            'entry_date' => ['required', 'date'],
+            'sleep' => ['nullable', 'integer', 'min:0', 'max:24'],
+            'stress' => ['nullable', 'integer', 'min:0', 'max:10'],
+            'energy' => ['nullable', 'integer', 'min:0', 'max:10'],
+            'caffeine' => ['nullable', 'integer', 'min:0', 'max:20'],
+            'hydration' => ['nullable', 'numeric', 'min:0', 'max:20'],
+            'sugar_intake' => ['nullable', 'string', 'max:255'],
 
-            // Meals
-            'meals'              => ['nullable', 'array'],
-            'meals.*.meal_type'       => ['nullable', Rule::in(['breakfast', 'lunch', 'dinner', 'snack'])],
-            'meals.*.description'      => ['required_with:meals', 'string', 'max:255'],
-            'meals.*.calories'           => ['nullable', 'integer', 'min:0', 'max:65535'],
+            'meals' => ['nullable', 'array'],
+            'meals.*.meal_type' => ['nullable', 'in:breakfast,lunch,dinner,snack'],
+            'meals.*.description' => ['required_with:meals', 'string', 'max:255'],
+            'meals.*.calories' => ['nullable', 'integer', 'min:0', 'max:65535'],
 
-            // Physical activity (flat fields from frontend)
-            'activity_type'      => ['nullable', 'string', 'max:120'],
-            'activity_duration'  => ['nullable', 'integer', 'min:0', 'max:1440'],
-            'intensity'          => ['nullable', Rule::in(['low', 'medium', 'high'])],
+            'activity_type' => ['nullable', 'string', 'max:120'],
+            'activity_duration' => ['nullable', 'integer', 'min:0', 'max:1440'],
+            'intensity' => ['nullable', 'in:low,medium,high'],
 
-            // Tobacco & Alcohol
-            'tobacco'                    => ['required', 'boolean'],
-            'alcohol'                    => ['required', 'boolean'],
-            'tobacco_types'              => ['nullable', 'array'],
-            'tobacco_types.cigarette'    => ['nullable', 'boolean'],
-            'tobacco_types.vape'         => ['nullable', 'boolean'],
-            'cigarettes_per_day'         => ['nullable', 'integer', 'min:0', 'max:200'],
-            'vape_liquid_ml'             => ['nullable', 'integer', 'min:0'],
-            'alcohol_glasses'            => ['nullable', 'integer', 'min:0', 'max:100'],
+            'tobacco' => ['required', 'boolean'],
+            'alcohol' => ['required', 'boolean'],
+            'tobacco_types' => ['nullable', 'array'],
+            'tobacco_types.cigarette' => ['nullable', 'boolean'],
+            'tobacco_types.vape' => ['nullable', 'boolean'],
+            'cigarettes_per_day' => ['nullable', 'integer', 'min:0', 'max:200'],
+            'vape_liquid_ml' => ['nullable', 'integer', 'min:0'],
+            'alcohol_glasses' => ['nullable', 'integer', 'min:0', 'max:100'],
         ];
     }
 
@@ -61,6 +50,8 @@ class StoreJournalEntryRequest extends FormRequest
             'caffeine.min' => 'Caffeine intake must be at least 0.',
             'hydration.max' => 'Hydration must not exceed 20 liters.',
             'hydration.min' => 'Hydration must be at least 0 liters.',
+            'sugar_intake.string' => 'Sugar intake must be a text value.',
+            'sugar_intake.max' => 'Sugar intake must not exceed 255 characters.',
             'tobacco.required' => 'Tobacco status is required.',
             'tobacco.boolean' => 'Tobacco status must be true or false.',
             'alcohol.required' => 'Alcohol status is required.',

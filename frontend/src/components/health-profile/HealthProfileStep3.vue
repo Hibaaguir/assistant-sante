@@ -199,6 +199,5 @@ function setDoctor(value) {
     form.consulte_medecin = yes;
     form.medecin_peut_consulter = yes;
     if (!yes) form.medecin_email = "";
-    form.medecin_email = "";
 }
 </script>

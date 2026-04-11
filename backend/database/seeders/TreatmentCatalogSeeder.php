@@ -39,8 +39,6 @@ class TreatmentCatalogSeeder extends Seeder
                 TreatmentCatalog::query()->firstOrCreate([
                     'medication_type' => $normalizedType,
                     'medication_name' => $normalizedName,
-                ], [
-                    'created_by_user_id' => null,
                 ]);
             }
         }

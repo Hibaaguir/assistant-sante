@@ -45,7 +45,7 @@ class NotifyDailyTreatments extends Command
             }
 
             // Load all checks for this user and date at once
-            $checks = TreatmentCheck::where('user_id', $user->id)
+            $checks = TreatmentCheck::whereHas('healthData', fn ($q) => $q->where('user_id', $user->id))
                 ->whereDate('check_date', $dateKey)
                 ->get();
 

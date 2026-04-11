@@ -20,6 +20,7 @@ class JournalEntry extends Model
         'energy',
         'caffeine',
         'hydration',
+        'sugar_intake',
         'alcohol',
         'alcohol_glasses',
     ];
@@ -29,6 +30,7 @@ class JournalEntry extends Model
         'entry_date' => 'date:Y-m-d',
         'caffeine' => 'integer',
         'hydration' => 'decimal:1',
+        'sugar_intake' => 'string',
         'alcohol' => 'boolean',
         'alcohol_glasses' => 'integer',
     ];

@@ -236,6 +236,13 @@ export function mapPatientDetail(data = {}, fallbackPatient = {}) {
             toArray(data.treatment_medicines),
             toArray(data.treatment_checks),
         ),
+        healthDataObservations: toArray(data.health_data)
+            .filter((hd) => hd.doctor_observation)
+            .map((hd) => ({
+                isoDate: String(hd.date || "").slice(0, 10),
+                date: formatLongDate(hd.date),
+                observation: hd.doctor_observation,
+            })),
     };
 }
 
@@ -255,7 +262,6 @@ export function groupVitalsHistory(rows) {
             heartRate: formatHeartRate(row),
             bloodPressure: formatBloodPressure(row),
             saturation: formatSaturation(row),
-            doctorObservation: row.doctor_observation || "",
         }));
 }
 
@@ -283,11 +289,11 @@ export function mapAnalysis(item = {}) {
     return {
         id: item.id,
         type: item.analysis_type || "Other",
-        result: item.analysis_result || "",
+        result: item.result_name || "",
         unit,
         numericValue: Number.isFinite(num) ? num : null,
         name:
-            [item.analysis_type, item.analysis_result]
+            [item.analysis_type, item.result_name]
                 .filter(Boolean)
                 .join(" - ") || "Analysis",
         value,
@@ -296,7 +302,6 @@ export function mapAnalysis(item = {}) {
         badgeClass,
         isoDate: String(item.analysis_date || "").slice(0, 10),
         date: formatNumericDate(item.analysis_date),
-        doctorNote: item.doctor_note || "",
     };
 }
 
@@ -340,9 +345,6 @@ export function buildTreatmentHistoryRows(medicines, checks) {
             let dayTotal = 0,
                 dayTaken = 0;
 
-            // Take the first doctor_report found for this date
-            const doctorReport = dayChecks.find((c) => c?.doctor_report)?.doctor_report || "";
-
             const dayMeds = meds
                 .map((medicine) => {
                     const medRows = resolveTreatmentChecksForMedicine(
@@ -374,7 +376,6 @@ export function buildTreatmentHistoryRows(medicines, checks) {
                 taken: dayTaken,
                 isComplete: dayTotal > 0 && dayTaken >= dayTotal,
                 hasTracked: dayTotal > 0,
-                doctorReport,
             };
         })
         .filter((day) => day.hasTracked);

@@ -77,19 +77,6 @@
         </VitalCard>
     </section>
 
-    <!-- Observation du médecin (signes vitaux) -->
-    <div
-        v-if="latestVital?.doctor_observation"
-        class="mt-5 rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-50 to-white px-5 py-4"
-    >
-        <p class="text-[11px] font-semibold uppercase tracking-wide text-purple-500">
-            Observation de votre médecin
-        </p>
-        <p class="mt-2 text-[14px] leading-6 text-slate-700">
-            {{ latestVital.doctor_observation }}
-        </p>
-    </div>
-
     <!-- Actions d'édition rapide -->
     <div
         v-if="peutModifierDerniereMesure"

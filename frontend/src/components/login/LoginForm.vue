@@ -174,20 +174,8 @@
                                 </div>
                             </FormField>
 
-                            <!-- Remember / Forgot password -->
-                            <div class="flex items-center justify-between pt-2">
-                                <label
-                                    class="flex items-center gap-2 cursor-pointer"
-                                >
-                                    <input
-                                        v-model="form.rememberMe"
-                                        type="checkbox"
-                                        class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                                    />
-                                    <span class="text-sm text-gray-700"
-                                        >Se souvenir de moi</span
-                                    >
-                                </label>
+                            <!-- Forgot password -->
+                            <div class="flex items-center justify-end pt-2">
                                 <button
                                     type="button"
                                     class="text-sm text-purple-600 hover:text-purple-700 font-semibold transition cursor-pointer"
@@ -269,7 +257,6 @@ const authStore = useAuthStore();
 const form = reactive({
     email: String(route.query.email || "").trim(),
     password: "",
-    rememberMe: false,
 });
 
 const errors = reactive({ email: "", password: "" });

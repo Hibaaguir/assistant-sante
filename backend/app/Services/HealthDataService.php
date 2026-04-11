@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\AnalysisResult;
 use App\Models\Treatment;
+use App\Models\TreatmentCheck;
 use App\Models\VitalSigns;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -54,6 +56,74 @@ class HealthDataService
             ->values()
             ->all();
     }
+
+    // Get the latest meaningful vital signs record for a user
+    public function latestVitals(int $userId): ?VitalSigns
+    {
+        return VitalSigns::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
+            ->where(fn ($q) => $q
+                ->whereNotNull('heart_rate')
+                ->orWhereNotNull('systolic_pressure')
+                ->orWhereNotNull('diastolic_pressure')
+                ->orWhereNotNull('oxygen_saturation')
+            )
+            ->orderByDesc('measured_at')
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    // Serialize a collection of treatment checks into a standard array
+    public function serializeTreatmentChecks(Collection $rows): array
+    {
+        return $rows->map(function (TreatmentCheck $check) {
+            $treatment = $check->treatment;
+            return [
+                'id'             => $check->id,
+                'treatment_id'   => $check->treatment_id,
+                'health_data_id' => $check->health_data_id,
+                'check_date'     => $check->check_date?->toDateString(),
+                'medication_key' => $check->medication_key,
+                'medication_name'=> $treatment?->treatmentCatalog?->medication_name,
+                'dose'           => $treatment?->dose,
+                'taken'          => (bool) $check->taken,
+                'checked_at'     => $check->checked_at?->toDateTimeString(),
+                'created_at'     => $check->created_at?->toISOString(),
+                'updated_at'     => $check->updated_at?->toISOString(),
+            ];
+        })->values()->all();
+    }
+
+    // Build clinical alerts from a patient's latest vitals and lab results
+    public function buildPatientAlerts(?VitalSigns $latestVitals, Collection $labResults): array
+    {
+        $alerts = [];
+
+        if ($latestVitals?->systolic_pressure >= 140) {
+            $alerts[] = [
+                'severity'       => 'warning',
+                'title'          => 'Alert',
+                'message'        => 'Elevated blood pressure: ' . (int) $latestVitals->systolic_pressure . '/' . (int) ($latestVitals->diastolic_pressure ?? 0) . ' mmHg',
+                'recommendation' => 'Monitor blood pressure and contact patient if elevation persists.',
+                'measured_at'    => $latestVitals->measured_at?->toISOString(),
+            ];
+        }
+
+        $glucose = $labResults->first(fn (AnalysisResult $r) => str_contains(strtolower((string) $r->analysis_type), 'glucose'));
+
+        if ($glucose && is_numeric($glucose->analysis_result) && $glucose->analysis_result < 3.9) {
+            $alerts[] = [
+                'severity'       => 'critical',
+                'title'          => 'Critical Alert',
+                'message'        => 'Very low blood glucose detected: ' . rtrim(rtrim((string) $glucose->analysis_result, '0'), '.') . ' ' . ($glucose->normal_range ?: 'mmol/L'),
+                'recommendation' => 'Contact patient immediately. Emergency sugar intake recommended.',
+                'measured_at'    => $glucose->analysis_date?->toISOString(),
+            ];
+        }
+
+        return $alerts;
+    }
+
+    // ─── Private Helpers ──────────────────────────────────────────────────────
 
     private function extractVitalSignsByDate(Collection $items): array
     {

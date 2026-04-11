@@ -23,7 +23,7 @@ Artisan::command('mail:test-doctor-invitation {email : Recipient email address}'
     $account = new Account([
         'email' => 'patient-test@example.com',
         'password' => 'test',
-        'admin_status' => 'Active',
+        'account_status' => 'active',
     ]);
 
     $patient = new User([

@@ -4,7 +4,7 @@
   gestion des invitations (accepter / refuser).
 -->
 <template>
-    <div class="mx-auto max-w-[1260px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+    <div class="w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         <p
             v-if="errorMessage"
             class="mb-4 rounded-[16px] border border-[#f3b8bb] bg-[#fff5f5] px-4 py-3 text-[14px] font-medium text-[#c63a3f]"

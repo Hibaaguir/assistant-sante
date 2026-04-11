@@ -8,273 +8,243 @@ use App\Http\Requests\Api\StoreVitalSignsRequest;
 use App\Http\Requests\Api\SyncTreatmentCheckRequest;
 use App\Http\Requests\Api\UpdateAnalysisResultRequest;
 use App\Models\AnalysisResult;
+use App\Models\HealthData;
 use App\Models\TreatmentCheck;
 use App\Models\VitalSigns;
 use App\Services\HealthDataService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 class HealthDataController extends Controller
 {
     public function __construct(private readonly HealthDataService $healthDataService) {}
 
-    // Display health data overview
+    // Return a summary of all health data for the current user (dashboard)
     public function overview(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $userId = $user->id;
-        
-        $days = max(1, min((int) $request->query('days', 7), 30));
+        $userId    = $request->user()->id;
+        $days      = max(1, min((int) $request->query('days', 7), 30));
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
 
-        $vitals = VitalSigns::query()
-            ->where('user_id', $userId)
+        $vitals = VitalSigns::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
             ->whereDate('measured_at', '>=', $startDate)
             ->orderBy('measured_at')
             ->get();
 
-        $latestVitals = VitalSigns::query()
-            ->where('user_id', $userId)
-            ->where(function ($query) {
-                $query
-                    ->whereNotNull('heart_rate')
-                    ->orWhereNotNull('systolic_pressure')
-                    ->orWhereNotNull('diastolic_pressure')
-                    ->orWhereNotNull('oxygen_saturation');
-            })
-            ->orderByDesc('measured_at')
-            ->orderByDesc('id')
-            ->first();
-
-        $labResults = AnalysisResult::query()
-            ->where('user_id', $userId)
+        $labResults = AnalysisResult::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
             ->orderByDesc('analysis_date')
             ->orderByDesc('id')
             ->limit(20)
             ->get();
 
-        $treatmentChecks = TreatmentCheck::query()
-            ->where('user_id', $userId)
+        $treatmentChecks = TreatmentCheck::with('treatment.treatmentCatalog')
+            ->whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
             ->where('check_date', '>=', $startDate)
             ->orderBy('check_date')
             ->get();
 
-        $treatmentMedicines = $this->healthDataService->resolveTreatmentMedicines($userId);
+        $doctorObservations = HealthData::where('user_id', $userId)
+            ->where('date', '>=', $startDate)
+            ->whereNotNull('doctor_observation')
+            ->orderByDesc('date')
+            ->get(['id', 'date', 'doctor_observation', 'updated_at']);
 
         return response()->json([
             'message' => 'Health data retrieved successfully.',
             'data' => [
-                'latest_vitals'       => $latestVitals,
+                'latest_vitals'       => $this->healthDataService->latestVitals($userId),
                 'vitals'              => $vitals,
                 'vitals_chart'        => $this->healthDataService->buildVitalSignsChartSeries($vitals, $days),
                 'lab_results'         => $labResults,
-                'treatment_medicines' => $treatmentMedicines,
-                'treatment_checks'    => $treatmentChecks,
+                'treatment_medicines' => $this->healthDataService->resolveTreatmentMedicines($userId),
+                'treatment_checks'    => $this->healthDataService->serializeTreatmentChecks($treatmentChecks),
+                'doctor_observations' => $doctorObservations,
             ],
         ]);
     }
 
-    // List all vital signs
+    // Return a list of vital signs for the current user
     public function indexVitals(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $userId = $user->id;
-        $days = max(1, min((int) $request->query('days', 30), 90));
+        $userId    = $request->user()->id;
+        $days      = max(1, min((int) $request->query('days', 30), 90));
         $startDate = Carbon::today()->subDays($days - 1);
 
-        $rows = VitalSigns::query()
-            ->where('user_id', $userId)
+        $vitals = VitalSigns::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
             ->where('measured_at', '>=', $startDate)
             ->orderByDesc('measured_at')
             ->get();
 
         return response()->json([
             'message' => 'Vital signs retrieved successfully.',
-            'data' => $rows,
+            'data'    => $vitals,
         ]);
     }
 
-    // Record a new vital sign
+    // Save a new vital signs entry for the current user.
+    // One record per user per day — if one already exists, merge the new values into it.
     public function storeVital(StoreVitalSignsRequest $request): JsonResponse
     {
-        $user = $request->user();
-        $userId = $user->id;
-        $payload = $request->validated();
-        $measuredAt = isset($payload['measured_at']) ? Carbon::parse($payload['measured_at']) : now();
-        $measuredDate = $measuredAt->toDateString();
+        $userId     = $request->user()->id;
+        $data       = $request->validated();
+        $measuredAt = Carbon::parse($data['measured_at']);
 
-        $existing = VitalSigns::query()
-            ->where('user_id', $userId)
-            ->whereDate('measured_at', $measuredDate)
-            ->orderByDesc('measured_at')
-            ->orderByDesc('id')
-            ->first();
+        $healthData = HealthData::firstOrCreate([
+            'user_id' => $userId,
+            'date'    => $measuredAt->toDateString(),
+        ]);
 
-        // Check if vital signs already exist for this date
+        $existing = VitalSigns::where('health_data_id', $healthData->id)->first();
+
         if ($existing) {
-            // Merge by date: keep existing measurements if new entry is null
             $existing->update([
-                'heart_rate' => $payload['heart_rate'] ?? $existing->heart_rate,
-                'systolic_pressure' => $payload['systolic_pressure'] ?? $existing->systolic_pressure,
-                'diastolic_pressure' => $payload['diastolic_pressure'] ?? $existing->diastolic_pressure,
-                'oxygen_saturation' => $payload['oxygen_saturation'] ?? $existing->oxygen_saturation,
-                'measured_at' => $measuredAt,
+                'heart_rate'         => $data['heart_rate']         ?? $existing->heart_rate,
+                'systolic_pressure'  => $data['systolic_pressure']  ?? $existing->systolic_pressure,
+                'diastolic_pressure' => $data['diastolic_pressure'] ?? $existing->diastolic_pressure,
+                'oxygen_saturation'  => $data['oxygen_saturation']  ?? $existing->oxygen_saturation,
+                'measured_at'        => $measuredAt,
             ]);
 
             return response()->json([
                 'message' => 'Vital sign updated successfully.',
-                'data' => $existing->fresh(),
+                'data'    => $existing->fresh(),
             ]);
         }
 
         $vital = VitalSigns::create([
-            'user_id' => $userId,
-            'heart_rate' => $payload['heart_rate'] ?? null,
-            'systolic_pressure' => $payload['systolic_pressure'] ?? null,
-            'diastolic_pressure' => $payload['diastolic_pressure'] ?? null,
-            'oxygen_saturation' => $payload['oxygen_saturation'] ?? null,
-            'measured_at' => $measuredAt,
+            'health_data_id'     => $healthData->id,
+            'heart_rate'         => $data['heart_rate']         ?? null,
+            'systolic_pressure'  => $data['systolic_pressure']  ?? null,
+            'diastolic_pressure' => $data['diastolic_pressure'] ?? null,
+            'oxygen_saturation'  => $data['oxygen_saturation']  ?? null,
+            'measured_at'        => $measuredAt,
         ]);
 
         return response()->json([
             'message' => 'Vital sign recorded successfully.',
-            'data' => $vital,
+            'data'    => $vital,
         ], 201);
     }
 
-    // List all lab results
+    // Return all lab results for the current user
     public function indexLabResults(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $userId = $user->id;
-        $rows = AnalysisResult::query()
-            ->where('user_id', $userId)
+        $userId = $request->user()->id;
+
+        $labResults = AnalysisResult::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
             ->orderByDesc('analysis_date')
             ->orderByDesc('id')
             ->get();
 
         return response()->json([
             'message' => 'Lab results retrieved successfully.',
-            'data' => $rows,
+            'data'    => $labResults,
         ]);
     }
 
-    // Record a new lab result
+    // Save a new lab result for the current user
     public function storeLabResult(StoreAnalysisResultRequest $request): JsonResponse
     {
-        $user = $request->user();
-        $userId = $user->id;
-        $payload = $request->validated();
-        $payload['user_id'] = $userId;
+        $userId     = $request->user()->id;
+        $data       = $request->validated();
+        $healthData = HealthData::firstOrCreate([
+            'user_id' => $userId,
+            'date'    => $data['analysis_date'],
+        ]);
 
-        $row = AnalysisResult::create($payload);
+        $labResult = AnalysisResult::create([
+            ...$data,
+            'health_data_id' => $healthData->id,
+        ]);
 
         return response()->json([
             'message' => 'Lab result recorded successfully.',
-            'data' => $row,
+            'data'    => $labResult,
         ], 201);
     }
 
-    // Update a lab result
+    // Update an existing lab result
     public function updateLabResult(UpdateAnalysisResultRequest $request, AnalysisResult $analysisResult): JsonResponse
     {
-        // Check that user owns the result
-        if ($error = $this->authorizeLabResult($analysisResult, $request)) return $error;
+        if ($analysisResult->healthData?->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized access to this lab result.'], 403);
+        }
 
         $analysisResult->update($request->validated());
 
         return response()->json([
             'message' => 'Lab result updated successfully.',
-            'data' => $analysisResult->fresh(),
+            'data'    => $analysisResult->fresh(),
         ]);
     }
 
     // Delete a lab result
     public function destroyLabResult(Request $request, AnalysisResult $analysisResult): JsonResponse
     {
-        // Check that user owns the result
-        if ($error = $this->authorizeLabResult($analysisResult, $request)) return $error;
+        if ($analysisResult->healthData?->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized access to this lab result.'], 403);
+        }
 
         $analysisResult->delete();
 
-        return response()->json([
-            'message' => 'Lab result deleted successfully.',
-        ]);
+        return response()->json(['message' => 'Lab result deleted successfully.']);
     }
 
-    // List all treatment checks
+    // Return treatment checks for the current user
     public function indexTreatmentChecks(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $userId = $user->id;
-        $days = max(1, min((int) $request->query('days', 14), 90));
+        $userId    = $request->user()->id;
+        $days      = max(1, min((int) $request->query('days', 14), 90));
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
 
-        $rows = TreatmentCheck::query()
-            ->where('user_id', $userId)
+        $checks = TreatmentCheck::with('treatment.treatmentCatalog')
+            ->whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
             ->where('check_date', '>=', $startDate)
             ->orderBy('check_date')
             ->get();
 
         return response()->json([
             'message' => 'Treatment checks retrieved successfully.',
-            'data' => $rows,
+            'data'    => $this->healthDataService->serializeTreatmentChecks($checks),
         ]);
     }
 
-    // Synchronize treatment checks
+    // Save or update a batch of treatment checks sent from the frontend.
+    // Each check has a medication_key like "12__dose_1" — we extract the treatment ID from it.
     public function syncTreatmentChecks(SyncTreatmentCheckRequest $request): JsonResponse
     {
         $user   = $request->user();
         $userId = $user->id;
 
         foreach ($request->validated('checks') as $check) {
-            // medication_key format: "{treatmentId}__dose_{n}"
-            // Parse the treatment ID directly from the key
-            if (!preg_match('/^(\d+)__dose_\d+$/', $check['medication_key'], $matches)) {
-                continue; // skip invalid keys (old format)
-            }
+            // medication_key format is already validated by SyncTreatmentCheckRequest
+            $parts = explode('__dose_', $check['medication_key'], 2);
+            $treatmentId = (int) $parts[0];
 
-            $treatmentId = (int) $matches[1];
-
-            // Security: verify the treatment belongs to this user
-            $treatmentExists = $user->treatments()->where('id', $treatmentId)->exists();
-            if (!$treatmentExists) {
+            if (!$user->treatments()->where('id', $treatmentId)->exists()) {
                 continue;
             }
+
+            $healthData = HealthData::firstOrCreate([
+                'user_id' => $userId,
+                'date'    => $check['check_date'],
+            ]);
 
             TreatmentCheck::updateOrCreate(
                 [
                     'treatment_id'   => $treatmentId,
-                    'user_id'        => $userId,
                     'check_date'     => $check['check_date'],
                     'medication_key' => $check['medication_key'],
                 ],
                 [
-                    'medication_name' => $check['medication_name'],
-                    'dose'            => $check['dose'] ?? null,
-                    'taken'           => $check['taken'],
-                    'checked_at'      => $check['taken'] ? ($check['checked_at'] ?? now()) : null,
+                    'health_data_id' => $healthData->id,
+                    'taken'          => $check['taken'],
+                    'checked_at'     => $check['taken'] ? ($check['checked_at'] ?? now()) : null,
                 ]
             );
         }
 
-        return response()->json([
-            'message' => 'Treatment checks synchronized successfully.',
-        ]);
-    }
-
-    // Check access to a lab result
-    private function authorizeLabResult(AnalysisResult $labResult, Request $request): ?JsonResponse
-    {
-        // Check that the result belongs to the user
-        $user = $request->user();
-        $userId = $user->id;
-        if ($labResult->user_id !== $userId) {
-            return response()->json(['message' => 'Unauthorized access to this lab result.'], Response::HTTP_FORBIDDEN);
-        }
-        return null;
+        return response()->json(['message' => 'Treatment checks synchronized successfully.']);
     }
 }

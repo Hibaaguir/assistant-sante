@@ -17,8 +17,6 @@ use Illuminate\Support\Facades\Route;
 | Public Routes (without Sanctum)
 |--------------------------------------------------------------------------
 */
-Route::post('/doctor-invitations/create', [DoctorInvitationController::class, 'createInvitation']);
-
 /*
 |--------------------------------------------------------------------------
 | Authentication (public)
@@ -72,9 +70,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- Notifications ---
     Route::prefix('notifications')->group(function () {
-        Route::get('/',                          [NotificationController::class, 'index']);
-        Route::post('/{idNotification}/read',    [NotificationController::class, 'markAsRead']);
-        Route::post('/read-all',                 [NotificationController::class, 'markAllAsRead']);
+        Route::get('/',          [NotificationController::class, 'index']);
+        Route::post('/read-all', [NotificationController::class, 'markAllAsRead']);
     });
 
     // --- Administration ---
@@ -113,9 +110,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{invitation}/reject',   [DoctorInvitationController::class, 'reject']);
         Route::get('/patients',                [DoctorInvitationController::class, 'indexPatients']);
         Route::get('/patients/{patient}',      [DoctorInvitationController::class, 'showPatient']);
-        // Per-section doctor observations
-        Route::put('/patients/{patient}/vitals/{vitalSign}/observation', [DoctorInvitationController::class, 'updateVitalObservation']);
-        Route::put('/patients/{patient}/labs/{analysisResult}/note',     [DoctorInvitationController::class, 'updateLabNote']);
-        Route::put('/patients/{patient}/treatment-report',               [DoctorInvitationController::class, 'updateTreatmentReport']);
+        Route::post('/patients/{patient}/observations', [DoctorInvitationController::class, 'storeObservation']);
     });
 });

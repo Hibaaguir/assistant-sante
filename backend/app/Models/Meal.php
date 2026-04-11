@@ -14,7 +14,6 @@ class Meal extends Model
         'meal_type',
         'description',
         'calories',
-        'sugar_intake',
     ];
 
     protected $casts = [

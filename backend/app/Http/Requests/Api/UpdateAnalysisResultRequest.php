@@ -6,11 +6,12 @@ class UpdateAnalysisResultRequest extends StoreAnalysisResultRequest
 {
     public function rules(): array
     {
-        return array_merge(parent::rules(), [
-            'analysis_type'   => ['sometimes', 'string', 'max:120'],
-            'result_name' => ['sometimes', 'string', 'max:120'],
-            'value'           => ['sometimes', 'numeric', 'min:0'],
-            'analysis_date'   => ['sometimes', 'date'],
-        ]);
+        return [
+            'analysis_type' => ['sometimes', 'string', 'max:120'],
+            'result_name' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'value' => ['sometimes', 'numeric', 'min:0'],
+            'unit' => ['sometimes', 'nullable', 'string', 'max:30'],
+            'analysis_date' => ['sometimes', 'date'],
+        ];
     }
 }

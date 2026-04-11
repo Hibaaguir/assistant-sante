@@ -1,5 +1,5 @@
 <template>
-    <div class="mx-auto max-w-[1320px] p-4 sm:p-6 lg:p-8">
+    <div class="w-full p-4 sm:p-6 lg:p-8">
         <div
             class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
         >

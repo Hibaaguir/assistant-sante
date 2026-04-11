@@ -2,15 +2,8 @@
 
 namespace App\Http\Requests\Api;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class StoreVitalSignsRequest extends FormRequest
+class StoreVitalSignsRequest extends ApiFormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
         return [
@@ -18,7 +11,7 @@ class StoreVitalSignsRequest extends FormRequest
             'heart_rate' => ['nullable', 'integer', 'min:20', 'max:260'],
             'systolic_pressure' => ['nullable', 'integer', 'min:50', 'max:300'],
             'diastolic_pressure' => ['nullable', 'integer', 'min:30', 'max:220'],
-            'oxygen_saturation' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'oxygen_saturation' => ['nullable', 'integer', 'min:0', 'max:100'],
         ];
     }
 
@@ -26,7 +19,7 @@ class StoreVitalSignsRequest extends FormRequest
     {
         return [
             'measured_at.required' => 'The measurement date is required.',
-            'measured_at.date_format' => 'The measurement date must be in format YYYY-MM-DD HH:MM:SS.',
+            'measured_at.date' => 'The measurement date must be a valid date.',
             'heart_rate.max' => 'The heart rate must not exceed 260 bpm.',
             'heart_rate.min' => 'The heart rate must be at least 20 bpm.',
             'systolic_pressure.max' => 'The systolic pressure must not exceed 300 mmHg.',

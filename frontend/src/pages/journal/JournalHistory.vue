@@ -1,5 +1,5 @@
 <template>
-    <div class="mx-auto max-w-[1320px] p-4 sm:p-6 lg:p-8">
+    <div class="w-full p-4 sm:p-6 lg:p-8">
         <div
             class="relative mb-4 overflow-hidden rounded-3xl border border-[#d6e2ff] bg-gradient-to-br from-[#edf4ff] via-[#f8f4ff] to-[#eefaf4] p-5 shadow-sm sm:p-6"
         >

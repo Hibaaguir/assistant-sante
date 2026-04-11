@@ -1,6 +1,6 @@
 <template>
     <div
-        class="mx-auto max-w-[1180px] rounded-3xl border border-slate-200 bg-gradient-to-br from-[#f8f9fa] via-[#fafbfc] to-[#f5f7f9] px-5 py-4 sm:px-7"
+        class="w-full px-5 py-4 sm:px-7"
     >
         <header>
             <h1
@@ -13,6 +13,28 @@
             </p>
         </header>
         <NotificationsOnline />
+
+        <!-- Observations du médecin -->
+        <section
+            v-if="doctorObservations.length"
+            class="mt-4 space-y-3"
+        >
+            <h2 class="text-[16px] font-semibold text-purple-900">
+                Observations de votre médecin
+            </h2>
+            <article
+                v-for="obs in doctorObservations"
+                :key="obs.id"
+                class="rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-50 to-white px-5 py-4"
+            >
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-purple-500">
+                    {{ formatObsDate(obs.date) }}
+                </p>
+                <p class="mt-2 text-[14px] leading-6 text-slate-700">
+                    {{ obs.observation }}
+                </p>
+            </article>
+        </section>
 
         <section
             class="mt-4 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm"
@@ -125,7 +147,6 @@
             :treatment-medicines="treatmentMedicines"
             :treatment-checks="treatmentChecks"
             :treatment-days="treatmentDays"
-            :treatment-doctor-reports="treatmentDoctorReports"
             @refresh="loadHealthData"
         />
     </div>
@@ -166,7 +187,7 @@ const historySaturationValues = ref([]);
 const treatmentMedicines = ref([]);
 const treatmentChecks = reactive({});
 const treatmentDays = ref(buildLast7Days());
-const treatmentDoctorReports = ref({});  // { dateKey: string }
+const doctorObservations = ref([]);  // [{ id, date, observation }]
 
 function openAddModal() {
     if (activeTab.value === "labs") labsTab.value?.ouvrirModalAjout();
@@ -184,6 +205,13 @@ const formatShortLabel = (iso) =>
     }) ?? "";
 
 const formatDate = (iso) => toDate(iso)?.toLocaleDateString("fr-FR") ?? "";
+
+const formatObsDate = (val) => {
+    const iso = val ? String(val).slice(0, 10) : null;
+    if (!iso) return "";
+    const d = new Date(`${iso}T00:00:00`);
+    return isNaN(d) ? iso : d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+};
 
 
 function normalizeSeries(values, fallback = 0) {
@@ -272,7 +300,6 @@ async function loadHealthData() {
                   unit: item.unit ?? "",
                   date: formatDate(item.analysis_date),
                   analysisDate: item.analysis_date,
-                  doctorNote: item.doctor_note ?? "",
               }))
             : [];
 
@@ -320,7 +347,6 @@ async function loadHealthData() {
             ...historyData,
         ];
 
-        const reportsMap = {};
         if (allChecks.length) {
             for (const item of allChecks) {
                 ensureDayTracking(item.check_date);
@@ -335,13 +361,18 @@ async function loadHealthData() {
                         buildDoseKey(item.medication_key, 1)
                     ] = Boolean(item.taken);
                 }
-                // Keep the first doctor_report found for each date
-                if (item.doctor_report && !reportsMap[item.check_date]) {
-                    reportsMap[item.check_date] = item.doctor_report;
-                }
             }
         }
-        treatmentDoctorReports.value = reportsMap;
+
+        doctorObservations.value = Array.isArray(data.doctor_observations)
+            ? data.doctor_observations
+                .filter((o) => o.doctor_observation)
+                .map((o) => ({
+                    id: o.id,
+                    date: o.date,
+                    observation: o.doctor_observation,
+                }))
+            : [];
     } catch (error) {
         const message =
             error?.response?.data?.message ||

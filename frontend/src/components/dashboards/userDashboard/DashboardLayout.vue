@@ -3,9 +3,7 @@
   Patient main layout: notifications and health chart.
 -->
 <template>
-    <div
-        class="mx-auto max-w-[1320px] rounded-3xl border border-slate-200 bg-gradient-to-br from-[#f8f9fa] via-[#fafbfc] to-[#f5f7f9] p-4 sm:p-6 lg:p-8"
-    >
+    <div class="w-full px-4 py-4 sm:px-6 lg:px-8">
         <header class="mb-8">
             <h1 class="text-[42px] font-bold leading-tight text-purple-900">
                 Dashboard
@@ -20,12 +18,37 @@
         <NotificationsOnline />
         <NotificationsWidget />
 
-        <HealthChart />
+        <!-- Row 1 (3 cols): treatment pie · activity distribution · top 5 activities -->
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <TreatmentPieChart />
+            <ActivityDistributionChart />
+            <Top3ActivitiesChart />
+        </div>
+
+        <!-- Row 2 (2 cols): vital signs evolution · vital signs comparison -->
+        <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <HealthChart />
+            <VitalSignsComparisonChart />
+        </div>
+
+        <!-- Row 3 (3 cols): hydration · treatment distribution · sleep trends -->
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <HydrationChart />
+            <TreatmentMonthlyChart />
+            <SleepTrendsChart />
+        </div>
     </div>
 </template>
 
 <script setup>
 import HealthChart from "./HealthChart.vue";
+import TreatmentPieChart from "./TreatmentPieChart.vue";
+import ActivityDistributionChart from "./ActivityDistributionChart.vue";
+import Top3ActivitiesChart from "./Top3ActivitiesChart.vue";
+import HydrationChart from "./HydrationChart.vue";
+import TreatmentMonthlyChart from "./TreatmentMonthlyChart.vue";
+import VitalSignsComparisonChart from "./VitalSignsComparisonChart.vue";
+import SleepTrendsChart from "./SleepTrendsChart.vue";
 import NotificationsWidget from "./NotificationsWidget.vue";
 import NotificationsOnline from "@/components/ui/NotificationsOnline.vue";
 import WelcomeCard from "./WelcomeCard.vue";

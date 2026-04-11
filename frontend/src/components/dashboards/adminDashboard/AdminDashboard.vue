@@ -1,5 +1,5 @@
 <template>
-    <div class="mx-auto max-w-[1320px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+    <div class="w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         <!-- Header -->
         <header
             class="rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-sm"

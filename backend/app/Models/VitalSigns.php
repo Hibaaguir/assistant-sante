@@ -10,7 +10,7 @@ class VitalSigns extends Model
     protected $table = 'vital_signs';
 
     protected $fillable = [
-        'user_id',
+        'health_data_id',
         'measured_at',
         'heart_rate',
         'systolic_pressure',
@@ -19,7 +19,6 @@ class VitalSigns extends Model
         'temperature',
         'weight',
         'height',
-        'doctor_observation',
     ];
 
     protected $casts = [
@@ -35,9 +34,9 @@ class VitalSigns extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Relation: vital signs belong to a user
-    public function user(): BelongsTo
+    // Relation: vital signs belong to a health_data entry (owner is health_data.user_id)
+    public function healthData(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(HealthData::class, 'health_data_id');
     }
 }

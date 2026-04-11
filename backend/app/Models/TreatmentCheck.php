@@ -11,15 +11,11 @@ class TreatmentCheck extends Model
 
     protected $fillable = [
         'treatment_id',
-        'user_id',
+        'health_data_id',
         'check_date',
         'medication_key',
-        'medication_name',
-        'dose',
         'taken',
         'checked_at',
-        'notes',
-        'doctor_report',
     ];
 
     protected $casts = [
@@ -36,9 +32,9 @@ class TreatmentCheck extends Model
         return $this->belongsTo(Treatment::class, 'treatment_id');
     }
 
-    // Relation: check belongs to a user
-    public function user(): BelongsTo
+    // Relation: check belongs to a health_data entry (owner is health_data.user_id)
+    public function healthData(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(HealthData::class, 'health_data_id');
     }
 }

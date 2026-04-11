@@ -5,27 +5,25 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class UserProfileController extends Controller
 {
     // Get user profile
-    public function getProfile(Request $request): JsonResponse
+    public function show(Request $request): JsonResponse
     {
-        $account = $request->user();
-        $user = $account->user;
+        $user = $request->user();
 
         return response()->json([
             'data' => [
-                'id'             => $user->id,
-                'name'            => $user->name,
-                'email'          => $account->email,
-                'role'           => $user->role,
-                'profile_photo'   => $user->profile_photo,
+                'id'            => $user->id,
+                'name'          => $user->name,
+                'email'         => $user->account?->email,
+                'role'          => $user->role,
+                'profile_photo' => $user->profile_photo,
                 'date_of_birth' => $user->date_of_birth,
-                'age'            => $user->age,
+                'age'           => $user->age,
                 'specialty'     => $user->specialty,
             ],
         ]);
@@ -36,20 +34,14 @@ class UserProfileController extends Controller
     {
         $request->validate([
             'name' => 'required|string|min:2|max:120|not_regex:/^\s+$/',
-        ], [
-            'name.required' => 'The name is required.',
-            'name.min' => 'The name must contain at least 2 characters.',
-            'name.max' => 'The name cannot exceed 120 characters.',
-            'name.not_regex' => 'The name cannot contain only spaces.',
         ]);
 
-        $account = $request->user();
-        $user = $account->user;
+        $user = $request->user();
         $user->update(['name' => trim($request->input('name'))]);
 
         return response()->json([
-            'message' => 'Name updated successfully.',
-            'data' => ['name' => $user->name],
+            'message' => 'Nom mis a jour avec succes.',
+            'data'    => ['name' => $user->name],
         ]);
     }
 
@@ -58,23 +50,19 @@ class UserProfileController extends Controller
     {
         $request->validate([
             'current_password' => 'required|string',
-            'new_password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
-        ], [
-            'current_password.required' => 'The current password is required.',
-            'new_password.required' => 'The new password is required.',
-            'new_password.confirmed' => 'The password confirmation does not match.',
+            'new_password'     => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
         ]);
 
         $account = $request->user()->account;
 
         // Check that current password is correct
         if (!Hash::check($request->input('current_password'), $account->password)) {
-            return response()->json(['message' => 'The current password is incorrect.'], 422);
+            return response()->json(['message' => 'Le mot de passe actuel est incorrect.'], 422);
         }
 
         $account->update(['password' => Hash::make($request->input('new_password'))]);
 
-        return response()->json(['message' => 'Password changed successfully.']);
+        return response()->json(['message' => 'Mot de passe modifie avec succes.']);
     }
 
     // Update profile photo
@@ -87,31 +75,25 @@ class UserProfileController extends Controller
                 'max:5000000',
                 'regex:/^data:image\/(png|jpe?g|webp);base64,/i',
             ],
-        ], [
-            'photo.required' => 'The photo is required.',
-            'photo.max' => 'The photo is too large (max 5MB).',
-            'photo.regex' => 'Unsupported photo format.',
         ]);
 
-        $account = $request->user();
-        $user = $account->user;
+        $user = $request->user();
         $user->update(['profile_photo' => $request->input('photo')]);
 
         return response()->json([
-            'message' => 'Profile photo updated successfully.',
-            'data' => ['profile_photo' => $user->profile_photo],
+            'message' => 'Photo de profil mise a jour avec succes.',
+            'data'    => ['profile_photo' => $user->profile_photo],
         ]);
     }
 
     // Delete profile photo
     public function deletePhoto(Request $request): JsonResponse
     {
-        $account = $request->user();
-        $user = $account->user;
+        $user = $request->user();
         $user->update(['profile_photo' => null]);
 
         return response()->json([
-            'message' => 'Profile photo deleted successfully.',
+            'message' => 'Photo de profil supprimee avec succes.',
             'data' => ['profile_photo' => null],
         ]);
     }

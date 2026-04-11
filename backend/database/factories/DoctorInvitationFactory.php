@@ -22,8 +22,6 @@ class DoctorInvitationFactory extends Factory
             'accepted_at' => null,
             'rejected_at' => null,
             'revoked_at' => null,
-            'doctor_observation' => null,
-            'doctor_observation_updated_at' => null,
         ];
     }
 }

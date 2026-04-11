@@ -1,7 +1,7 @@
 <!--
   DoctorPatientDetail.vue
-  Patient details: vital signs (+ doctor observation per entry), analyses (+ doctor note per result),
-  treatment history (+ doctor report per day).
+  Patient details: vital signs, analyses, treatment history, and a unified
+  "Observations" tab where the doctor writes one note per health-data day.
 -->
 <template>
     <section class="mt-8">
@@ -59,8 +59,40 @@
             </div>
         </div>
 
+        <!-- Ajouter une observation -->
+        <div class="mt-8 rounded-[20px] border border-[#d4d9e1] bg-white p-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
+            <h3 class="text-[17px] font-bold text-[#041c49]">Ajouter une observation</h3>
+            <textarea
+                v-model="obsText"
+                rows="2"
+                class="mt-4 input-field-textarea"
+                placeholder="Rédigez votre observation médicale…"
+            />
+            <div class="mt-3 flex items-center gap-3">
+                <button type="button" class="btn-primary" :disabled="obsSaving" @click="saveObservation">
+                    {{ obsSaving ? "Enregistrement…" : "Enregistrer" }}
+                </button>
+                <span v-if="obsMsg" class="text-[13px]" :class="obsMsg.ok ? 'text-[#118445]' : 'text-[#b46910]'">
+                    {{ obsMsg.text }}
+                </span>
+            </div>
+
+            <!-- Observations déjà enregistrées -->
+            <div v-if="patient.healthDataObservations?.length" class="mt-5 space-y-2 border-t border-[#edf0f5] pt-4">
+                <p class="text-[12px] font-semibold uppercase tracking-wide text-[#7b8eab]">Observations précédentes</p>
+                <div
+                    v-for="obs in patient.healthDataObservations"
+                    :key="obs.isoDate"
+                    class="rounded-[14px] border border-[#e4ebf8] bg-[#f5f8ff] px-4 py-3"
+                >
+                    <p class="text-[12px] font-semibold text-[#3f57c4]">{{ obs.date }}</p>
+                    <p class="mt-1 text-[14px] leading-5 text-[#2d3f5e]">{{ obs.observation }}</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Onglets -->
-        <nav class="mt-8 rounded-[18px] border border-[#d4d9e1] bg-white p-[10px] shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
+        <nav class="mt-6 rounded-[18px] border border-[#d4d9e1] bg-white p-[10px] shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
             <div class="flex flex-wrap gap-2">
                 <button
                     v-for="tab in TABS"
@@ -116,32 +148,6 @@
                         <p class="mt-2 text-[18px] font-bold text-[#061a45]">{{ card.value }}</p>
                     </div>
                 </div>
-
-                <!-- Doctor observation for this vital entry -->
-                <div class="mt-4 border-t border-[#e8edf5] pt-4">
-                    <p class="mb-2 text-[12px] font-semibold uppercase tracking-wide text-[#5c6d89]">
-                        Observation médicale
-                    </p>
-                    <textarea
-                        :value="vitalObservations[entry.id] ?? entry.doctorObservation"
-                        rows="2"
-                        placeholder="Ajouter une observation sur ces signes vitaux…"
-                        class="input-field-textarea"
-                        @input="vitalObservations[entry.id] = $event.target.value"
-                    />
-                    <div class="mt-2 flex items-center justify-between gap-2">
-                        <span v-if="vitalSaveMsg[entry.id]" class="text-[12px]" :class="vitalSaveMsg[entry.id].ok ? 'text-[#118445]' : 'text-[#b46910]'">
-                            {{ vitalSaveMsg[entry.id].text }}
-                        </span>
-                        <button
-                            type="button"
-                            class="btn-primary ml-auto"
-                            @click="saveVitalObservation(entry)"
-                        >
-                            Enregistrer
-                        </button>
-                    </div>
-                </div>
             </article>
 
             <EmptyState
@@ -181,32 +187,6 @@
                     <span class="inline-flex items-center gap-2">
                         <IconeCalendrier class="h-[16px] w-[16px]" />{{ a.date }}
                     </span>
-                </div>
-
-                <!-- Doctor note for this analysis result -->
-                <div class="mt-4 border-t border-[#e8edf5] pt-4">
-                    <p class="mb-2 text-[12px] font-semibold uppercase tracking-wide text-[#5c6d89]">
-                        Note médicale
-                    </p>
-                    <textarea
-                        :value="labNotes[a.id] ?? a.doctorNote"
-                        rows="2"
-                        placeholder="Ajouter une note sur ce résultat d'analyse…"
-                        class="input-field-textarea"
-                        @input="labNotes[a.id] = $event.target.value"
-                    />
-                    <div class="mt-2 flex items-center justify-between gap-2">
-                        <span v-if="labSaveMsg[a.id]" class="text-[12px]" :class="labSaveMsg[a.id].ok ? 'text-[#118445]' : 'text-[#b46910]'">
-                            {{ labSaveMsg[a.id].text }}
-                        </span>
-                        <button
-                            type="button"
-                            class="btn-primary ml-auto"
-                            @click="saveLabNote(a)"
-                        >
-                            Enregistrer
-                        </button>
-                    </div>
                 </div>
             </article>
 
@@ -319,32 +299,6 @@
                                 </div>
                             </article>
                         </div>
-
-                        <!-- Doctor report for this treatment day -->
-                        <div class="mt-4 border-t border-[#e8edf5] pt-4">
-                            <p class="mb-2 text-[12px] font-semibold uppercase tracking-wide text-[#5c6d89]">
-                                Rapport médical (traitements)
-                            </p>
-                            <textarea
-                                :value="treatmentReports[day.dateKey] ?? day.doctorReport"
-                                rows="2"
-                                placeholder="Ajouter un rapport sur l'observance du traitement ce jour…"
-                                class="input-field-textarea"
-                                @input="treatmentReports[day.dateKey] = $event.target.value"
-                            />
-                            <div class="mt-2 flex items-center justify-between gap-2">
-                                <span v-if="treatSaveMsg[day.dateKey]" class="text-[12px]" :class="treatSaveMsg[day.dateKey].ok ? 'text-[#118445]' : 'text-[#b46910]'">
-                                    {{ treatSaveMsg[day.dateKey].text }}
-                                </span>
-                                <button
-                                    type="button"
-                                    class="btn-primary ml-auto"
-                                    @click="saveTreatmentReport(day.dateKey)"
-                                >
-                                    Enregistrer
-                                </button>
-                            </div>
-                        </div>
                     </article>
                 </div>
 
@@ -406,31 +360,25 @@ const EmptyState = {
 
 // ─── Onglets ──────────────────────────────────────────────────────────────────
 const TABS = [
-    { key: "vitals", label: "Signes vitaux", icon: IconeCoeur },
-    { key: "analyses", label: "Analyses", icon: IconeOnde },
-    { key: "treatments", label: "Traitements", icon: IconeLien },
+    { key: "vitals",     label: "Signes vitaux", icon: IconeCoeur },
+    { key: "analyses",   label: "Analyses",       icon: IconeOnde },
+    { key: "treatments", label: "Traitements",    icon: IconeLien },
 ];
 const activeTab = ref("vitals");
 
 // ─── Filtres ──────────────────────────────────────────────────────────────────
-const vitalDate = ref("");
-const vitalSign = ref("all");
+const vitalDate    = ref("");
+const vitalSign    = ref("all");
 const analysisDate = ref("");
 const analysisType = ref("all");
-const treatDate = ref("");
-const treatMed = ref("all");
-const treatStatus = ref("all");
+const treatDate    = ref("");
+const treatMed     = ref("all");
+const treatStatus  = ref("all");
 
-// ─── Local doctor note state (keyed by record id / date) ─────────────────────
-// We use plain reactive objects so $event.target.value works with :value binding
-const vitalObservations = ref({});   // { [vitalId]: string }
-const labNotes = ref({});            // { [analysisId]: string }
-const treatmentReports = ref({});    // { [dateKey]: string }
-
-// Feedback messages per record
-const vitalSaveMsg = ref({});   // { [vitalId]: { ok, text } }
-const labSaveMsg = ref({});     // { [analysisId]: { ok, text } }
-const treatSaveMsg = ref({});   // { [dateKey]: { ok, text } }
+// ─── Observation form ─────────────────────────────────────────────────────────
+const obsText   = ref("");
+const obsSaving = ref(false);
+const obsMsg    = ref(null);
 
 // ─── Vitals filtrés ───────────────────────────────────────────────────────────
 const VITAL_CARDS = [
@@ -498,65 +446,31 @@ function longDate(iso) {
     return isNaN(d) ? iso : d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 }
 
-// ─── API — save vital observation ────────────────────────────────────────────
-async function saveVitalObservation(entry) {
-    const observation = (vitalObservations.value[entry.id] ?? entry.doctorObservation ?? "").trim() || null;
+// ─── API — save observation ───────────────────────────────────────────────────
+async function saveObservation() {
+    if (!obsText.value.trim()) return;
+    obsSaving.value = true;
+    obsMsg.value = null;
     try {
-        await api.put(
-            `/doctor-invitations/patients/${props.patient.id}/vitals/${entry.id}/observation`,
-            { observation },
-        );
-        vitalSaveMsg.value[entry.id] = { ok: true, text: "Observation enregistrée." };
+        await api.post(`/doctor-invitations/patients/${props.patient.id}/observations`, {
+            date: new Date().toISOString().slice(0, 10),
+            observation: obsText.value.trim(),
+        });
+        obsText.value = "";
+        obsMsg.value = { ok: true, text: "Observation enregistrée." };
     } catch {
-        vitalSaveMsg.value[entry.id] = { ok: false, text: "Erreur lors de l'enregistrement." };
+        obsMsg.value = { ok: false, text: "Erreur lors de l'enregistrement." };
+    } finally {
+        obsSaving.value = false;
+        setTimeout(() => { obsMsg.value = null; }, 3000);
     }
-    setTimeout(() => { delete vitalSaveMsg.value[entry.id]; }, 3000);
 }
 
-// ─── API — save lab note ──────────────────────────────────────────────────────
-async function saveLabNote(analysis) {
-    const note = (labNotes.value[analysis.id] ?? analysis.doctorNote ?? "").trim() || null;
-    try {
-        await api.put(
-            `/doctor-invitations/patients/${props.patient.id}/labs/${analysis.id}/note`,
-            { note },
-        );
-        labSaveMsg.value[analysis.id] = { ok: true, text: "Note enregistrée." };
-    } catch {
-        labSaveMsg.value[analysis.id] = { ok: false, text: "Erreur lors de l'enregistrement." };
-    }
-    setTimeout(() => { delete labSaveMsg.value[analysis.id]; }, 3000);
-}
-
-// ─── API — save treatment report ─────────────────────────────────────────────
-async function saveTreatmentReport(dateKey) {
-    const dayRow = (props.patient?.treatmentHistoryRows ?? []).find((d) => d.dateKey === dateKey);
-    const report = (treatmentReports.value[dateKey] ?? dayRow?.doctorReport ?? "").trim() || null;
-    try {
-        await api.put(
-            `/doctor-invitations/patients/${props.patient.id}/treatment-report`,
-            { check_date: dateKey, report },
-        );
-        treatSaveMsg.value[dateKey] = { ok: true, text: "Rapport enregistré." };
-    } catch {
-        treatSaveMsg.value[dateKey] = { ok: false, text: "Erreur lors de l'enregistrement." };
-    }
-    setTimeout(() => { delete treatSaveMsg.value[dateKey]; }, 3000);
-}
-
-// ─── Reset local state when patient changes ───────────────────────────────────
-watch(
-    () => props.patient?.id,
-    () => {
-        vitalObservations.value = {};
-        labNotes.value = {};
-        treatmentReports.value = {};
-        vitalSaveMsg.value = {};
-        labSaveMsg.value = {};
-        treatSaveMsg.value = {};
-    },
-    { immediate: true },
-);
+// ─── Reset form when patient changes ─────────────────────────────────────────
+watch(() => props.patient?.id, () => {
+    obsText.value = "";
+    obsMsg.value = null;
+});
 </script>
 
 <style scoped>

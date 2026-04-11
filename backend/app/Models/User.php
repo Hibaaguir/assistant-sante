@@ -22,7 +22,6 @@ class User extends Model
         'age',
         'role',
         'specialty',
-        'admin_status',
     ];
 
     protected $casts = [
@@ -45,15 +44,10 @@ class User extends Model
         return $this->hasMany(JournalEntry::class, 'user_id', 'id');
     }
 
-    // Relations with health tables
-    public function vitalSigns()
+    // Health data records (one per day) — vitals/labs/checks are children of health_data
+    public function healthDataEntries()
     {
-        return $this->hasMany(VitalSigns::class, 'user_id', 'id');
-    }
-
-    public function analysisResults()
-    {
-        return $this->hasMany(AnalysisResult::class, 'user_id', 'id');
+        return $this->hasMany(HealthData::class, 'user_id', 'id');
     }
 
     public function invitationsAsPatient()

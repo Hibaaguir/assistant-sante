@@ -50,7 +50,7 @@ class TreatmentCatalogService
         ];
     }
 
-    public function saveEntry(?string $type, ?string $name = null, ?int $createdByUserId = null): void
+    public function saveEntry(?string $type, ?string $name = null): void
     {
         $normalizedType = $this->normalizeText($type);
         if ($normalizedType === null) {
@@ -67,20 +67,16 @@ class TreatmentCatalogService
             ->first();
 
         if ($existing) {
-            if ($existing->created_by_user_id === null && $createdByUserId !== null) {
-                $existing->update(['created_by_user_id' => $createdByUserId]);
-            }
             return;
         }
 
         TreatmentCatalog::query()->create([
             'medication_type' => $normalizedType,
             'medication_name' => $normalizedName,
-            'created_by_user_id' => $createdByUserId,
         ]);
     }
 
-    public function saveFromTreatments(array $treatments, ?int $createdByUserId = null): void
+    public function saveFromTreatments(array $treatments): void
     {
         foreach ($treatments as $item) {
             if (! is_array($item)) {
@@ -90,8 +86,8 @@ class TreatmentCatalogService
             $type = $item['type'] ?? null;
             $name = $item['name'] ?? null;
 
-            $this->saveEntry($type, null, $createdByUserId);
-            $this->saveEntry($type, $name, $createdByUserId);
+            $this->saveEntry($type, null);
+            $this->saveEntry($type, $name);
         }
     }
 

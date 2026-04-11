@@ -21,8 +21,7 @@ class HealthProfile extends Model
         'chronic_diseases',
         'smoker',
         'alcoholic',
-        'consults_doctor',
-        'doctor_can_consult',
+        'doctor_invited',
         'doctor_email',
     ];
 
@@ -32,8 +31,7 @@ class HealthProfile extends Model
         'goals' => 'array',
         'smoker' => 'boolean',
         'alcoholic' => 'boolean',
-        'consults_doctor' => 'boolean',
-        'doctor_can_consult' => 'boolean',
+        'doctor_invited' => 'boolean',
     ];
 
     // Relation indicating that each health profile belongs to a user
