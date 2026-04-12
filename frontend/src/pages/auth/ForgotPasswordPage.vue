@@ -142,7 +142,7 @@ async function requestPasswordReset() {
     errorMessage.value = "";
 
     if (!form.email) {
-        errors.email = "Email is required.";
+        errors.email = "L'adresse e-mail est obligatoire.";
         return;
     }
 
@@ -154,8 +154,10 @@ async function requestPasswordReset() {
 
         if (response?.data) {
             successMessage.value =
-                "A password reset link has been sent to your email.";
-            notifications.success("Check your mailbox for the reset link.");
+                "Un lien de réinitialisation a été envoyé à votre e-mail.";
+            notifications.success(
+                "Vérifiez votre boîte de messagerie pour le lien de réinitialisation.",
+            );
             form.email = "";
 
             // Redirect after 3 seconds
@@ -169,7 +171,8 @@ async function requestPasswordReset() {
         } else if (error?.response?.data?.message) {
             errorMessage.value = error.response.data.message;
         } else {
-            errorMessage.value = "An error occurred. Please try again.";
+            errorMessage.value =
+                "Une erreur s'est produite. Veuillez réessayer.";
         }
         notifications.error(errorMessage.value || errors.email);
     } finally {

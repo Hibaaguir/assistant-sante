@@ -22,7 +22,7 @@ class PhysicalActivity extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Relation: each physical activity belongs to a journal entry
+    // Relation: chaque activite physique appartient a une entree de journal
     public function journalEntry(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class, 'journal_entry_id');

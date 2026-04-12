@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api;
 
 class UpdateAnalysisResultRequest extends StoreAnalysisResultRequest
 {
+    // Personnaliser les regles pour la mise a jour
     public function rules(): array
     {
         return [

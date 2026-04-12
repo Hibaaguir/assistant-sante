@@ -26,7 +26,7 @@ class Notification extends Model
         'read_at' => 'datetime',
     ];
 
-    // Relation: notification belongs to a treatment
+    // Relation: la notification appartient a un traitement
     public function treatment(): BelongsTo
     {
         return $this->belongsTo(Treatment::class, 'treatment_id');

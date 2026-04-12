@@ -18,21 +18,19 @@ class NotificationController extends Controller
 {
     public function __construct(private readonly HealthDataService $healthDataService) {}
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Return the last 100 notifications for the current user
-    // Also triggers new notifications if needed before returning the list
-    // ─────────────────────────────────────────────────────────────────────────
+    // Récupérer les 100 dernières notifications de l'utilisateur
+    // Déclenche également les nouvelles notifications si nécessaire avant de retourner la liste
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
 
-        // Check if any new notifications need to be created before returning
+        // Déclencher les nouvelles notifications
         $this->triggerMedicationNotifications($user);
 
-        // Get all treatment IDs that belong to this user
+        // Récupérer les identifiants de traitement de l'utilisateur
         $treatmentIds = $user->treatments()->pluck('id');
 
-        // Load and format the notifications
+        // Charger et formater les notifications
         $notifications = Notification::whereIn('treatment_id', $treatmentIds)
             ->latest()
             ->limit(100)
@@ -47,12 +45,12 @@ class NotificationController extends Controller
             ->values();
 
         return response()->json([
-            'message' => 'Notifications retrieved successfully.',
+            'message' => 'Notifications récupérées avec succès.',
             'data'    => $notifications,
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // Marquer toutes les notifications comme lues
     public function markAllAsRead(Request $request): JsonResponse
     {
         $treatmentIds = $request->user()->treatments()->pluck('id');
@@ -61,15 +59,12 @@ class NotificationController extends Controller
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
-        return response()->json(['message' => 'All notifications have been marked as read.']);
+        return response()->json(['message' => 'Toutes les notifications ont été marquées comme lues.']);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Check if any medication notifications need to be created for today
-    //
-    // - Morning (5h–20h): send a reminder for each medicine
-    // - Night (20h+):     send a missed alert if any dose was not taken
-    // ─────────────────────────────────────────────────────────────────────────
+    // Vérifier si des notifications de médicaments doivent être créées pour aujourd'hui
+    // - Matin (5h–20h): envoyer un rappel pour chaque médicament
+    // - Nuit (20h+): envoyer une alerte pour dose non prise
     private function triggerMedicationNotifications(User $user): void
     {
         $now         = Carbon::now(config('app.timezone'));
@@ -93,12 +88,12 @@ class NotificationController extends Controller
 
             $medicineName = $medicine['name'] ?? 'Treatment';
 
-            // Morning: send a simple reminder if not already sent today
+            // Envoyer un rappel le matin
             if ($isMorningWindow && !$this->notificationAlreadySent($treatment->id, 'reminder', $today)) {
                 $this->createNotification($treatment->id, 'reminder', $today, $medicineName);
             }
 
-            // Night: check if the user missed any dose for this medicine today
+            // Vérifier les doses manquées la nuit
             if ($isNightWindow) {
                 $missedAny = TreatmentCheck::whereHas('healthData', fn ($q) => $q->where('user_id', $user->id))
                     ->where('treatment_id', $treatment->id)
@@ -113,9 +108,7 @@ class NotificationController extends Controller
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Save a notification in the database
-    // ─────────────────────────────────────────────────────────────────────────
+    // Créer une notification pour le traitement du jour
     private function createNotification(int $treatmentId, string $type, Carbon $date, string $medicineName): void
     {
         $isMissed = $type === 'missed';
@@ -127,17 +120,15 @@ class NotificationController extends Controller
             'data'         => [
                 'notification_kind' => $type,
                 'target_date'       => $date->toDateString(),
-                'title'             => $isMissed ? 'Forgotten treatment today' : 'Treatment reminder for today',
+                'title'             => $isMissed ? 'Traitement oublié aujourd\'hui' : 'Rappel de traitement',
                 'message'           => $isMissed
-                    ? "You forgot to take {$medicineName} today."
-                    : "Don't forget to take {$medicineName} today.",
+                    ? "Vous avez oublié de prendre {$medicineName} aujourd'hui."
+                    : "N'oubliez pas de prendre {$medicineName} aujourd'hui.",
             ],
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Check if a notification of this type was already sent today for a treatment
-    // ─────────────────────────────────────────────────────────────────────────
+    // Vérifier si la notification a déjà été envoyeé aujourd'hui
     private function notificationAlreadySent(int $treatmentId, string $type, Carbon $date): bool
     {
         return Notification::where('treatment_id', $treatmentId)

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api;
 
 class SyncTreatmentCheckRequest extends ApiFormRequest
 {
+    // Definir les regles de validation pour la synchronisation
     public function rules(): array
     {
         return [
@@ -15,21 +16,22 @@ class SyncTreatmentCheckRequest extends ApiFormRequest
         ];
     }
 
+    // Messages d'erreur en francais
     public function messages(): array
     {
         return [
-            'checks.required' => 'Treatment checks list is required.',
-            'checks.array' => 'Treatment checks must be an array.',
-            'checks.min' => 'At least one treatment check is required.',
-            'checks.*.check_date.required' => 'Check date is required.',
-            'checks.*.check_date.date_format' => 'Check date must be in YYYY-MM-DD format.',
-            'checks.*.medication_key.required' => 'Medication key is required.',
-            'checks.*.medication_key.string' => 'Medication key must be a string.',
-            'checks.*.medication_key.max' => 'Medication key must not exceed 120 characters.',
-            'checks.*.medication_key.regex' => 'Medication key must match the format "{treatmentId}__dose_{n}".',
-            'checks.*.taken.required' => 'Taken status is required.',
-            'checks.*.taken.boolean' => 'Taken must be a boolean value (true/false).',
-            'checks.*.checked_at.date_format' => 'Checked at must be in YYYY-MM-DD HH:MM:SS format.',
+            'checks.required' => 'La liste de vérification des traitements est obligatoire.',
+            'checks.array' => 'Les vérifications de traitement doivent être un tableau.',
+            'checks.min' => 'Au moins une vérification de traitement est obligatoire.',
+            'checks.*.check_date.required' => 'La date de vérification est obligatoire.',
+            'checks.*.check_date.date_format' => 'La date de vérification doit être au format AAAA-MM-JJ.',
+            'checks.*.medication_key.required' => 'La clé du médicament est obligatoire.',
+            'checks.*.medication_key.string' => 'La clé du médicament doit être une chaîne de caractères.',
+            'checks.*.medication_key.max' => 'La clé du médicament ne doit pas dépasser 120 caractères.',
+            'checks.*.medication_key.regex' => 'La clé du médicament doit correspondre au format "{idTraitement}__dose_{n}".',
+            'checks.*.taken.required' => 'Le statut pris est obligatoire.',
+            'checks.*.taken.boolean' => 'Le statut pris doit être une valeur booléenne (vrai/faux).',
+            'checks.*.checked_at.date_format' => 'La date vérifiée doit être au format AAAA-MM-JJ HH:MM:SS.',
         ];
     }
 }

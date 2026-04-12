@@ -34,7 +34,7 @@ class HealthProfile extends Model
         'doctor_invited' => 'boolean',
     ];
 
-    // Relation indicating that each health profile belongs to a user
+    // Relation indiquant que chaque profil de sante appartient a un utilisateur
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
@@ -42,7 +42,7 @@ class HealthProfile extends Model
 
 
 
-    // Check if health profile is complete (all required fields are filled)
+    // Verifier si le profil de sante est complet (tous les champs requis sont remplis)
     public function isComplete(): bool
     {
         return $this->gender !== null 

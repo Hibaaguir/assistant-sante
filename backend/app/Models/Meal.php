@@ -22,7 +22,7 @@ class Meal extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Relation: each meal belongs to a journal entry
+    // Relation: chaque repas appartient a une entree de journal
     public function journalEntry(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class, 'journal_entry_id');

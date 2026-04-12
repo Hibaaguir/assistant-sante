@@ -28,25 +28,25 @@ class Treatment extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Relation: treatment belongs to a user
+    // Relation: le traitement appartient a un utilisateur
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relation: references a treatment catalog item
+    // Relation: fait reference a un element du catalogue de traitement
     public function treatmentCatalog(): BelongsTo
     {
         return $this->belongsTo(TreatmentCatalog::class, 'treatment_catalog_id');
     }
 
-    // Relation: a treatment can have multiple checks
+    // Relation: un traitement peut avoir plusieurs verifications
     public function checks(): HasMany
     {
         return $this->hasMany(TreatmentCheck::class);
     }
 
-    // Relation: a treatment can have multiple notifications
+    // Relation: un traitement peut avoir plusieurs notifications
     public function notifications(): HasMany
     {
         return $this->hasMany(Notification::class, 'treatment_id');

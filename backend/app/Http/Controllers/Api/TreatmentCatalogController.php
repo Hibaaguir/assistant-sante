@@ -14,7 +14,7 @@ class TreatmentCatalogController extends Controller
         private readonly TreatmentCatalogService $treatmentCatalogService,
     ) {}
 
-    // Returns all distinct medication types as a flat array of strings
+    // Retourner tous les types de médicaments distincts sous forme de tableau plat
     public function medicationTypes(): JsonResponse
     {
         $types = TreatmentCatalog::query()
@@ -27,7 +27,7 @@ class TreatmentCatalogController extends Controller
         return response()->json($types);
     }
 
-    // Returns all medication names for a given type as a flat array of strings
+    // Retourner tous les noms de médicaments pour un type donné
     public function medicationNames(Request $request): JsonResponse
     {
         $type = $request->query('type', '');
@@ -43,6 +43,7 @@ class TreatmentCatalogController extends Controller
         return response()->json($names);
     }
 
+    // Récupérer le catalogue complet
     public function index(): JsonResponse
     {
         return response()->json([
@@ -50,6 +51,7 @@ class TreatmentCatalogController extends Controller
         ]);
     }
 
+    // Ajouter une entrée au catalogue de traitement
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -63,7 +65,7 @@ class TreatmentCatalogController extends Controller
         );
 
         return response()->json([
-            'message' => 'Treatment catalog updated.',
+            'message' => 'Catalogue de traitement mis à jour.',
             'data' => $this->treatmentCatalogService->buildCatalog(),
         ]);
     }

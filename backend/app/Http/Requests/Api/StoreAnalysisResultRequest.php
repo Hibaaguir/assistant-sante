@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api;
 
 class StoreAnalysisResultRequest extends ApiFormRequest
 {
+    // Definir les regles de validation
     public function rules(): array
     {
         return [
@@ -15,21 +16,22 @@ class StoreAnalysisResultRequest extends ApiFormRequest
         ];
     }
 
+    // Messages d'erreur en francais
     public function messages(): array
     {
         return [
-            'analysis_type.required' => 'The analysis type is required.',
-            'analysis_type.string' => 'The analysis type must be a string.',
-            'analysis_type.max' => 'The analysis type must not exceed 120 characters.',
-            'result_name.string' => 'The result name must be a string.',
-            'result_name.max' => 'The result name must not exceed 120 characters.',
-            'value.required' => 'The value is required.',
-            'value.numeric' => 'The value must be a number.',
-            'value.min' => 'The value must be at least 0.',
-            'unit.string' => 'The unit must be a string.',
-            'unit.max' => 'The unit must not exceed 30 characters.',
-            'analysis_date.required' => 'The analysis date is required.',
-            'analysis_date.date' => 'The analysis date must be a valid date.',
+            'analysis_type.required' => 'Le type d\'analyse est obligatoire.',
+            'analysis_type.string' => 'Le type d\'analyse doit être une chaîne de caractères.',
+            'analysis_type.max' => 'Le type d\'analyse ne doit pas dépasser 120 caractères.',
+            'result_name.string' => 'Le nom du résultat doit être une chaîne de caractères.',
+            'result_name.max' => 'Le nom du résultat ne doit pas dépasser 120 caractères.',
+            'value.required' => 'La valeur est obligatoire.',
+            'value.numeric' => 'La valeur doit être un nombre.',
+            'value.min' => 'La valeur doit être au moins 0.',
+            'unit.string' => 'L\'unité doit être une chaîne de caractères.',
+            'unit.max' => 'L\'unité ne doit pas dépasser 30 caractères.',
+            'analysis_date.required' => 'La date d\'analyse est obligatoire.',
+            'analysis_date.date' => 'La date d\'analyse doit être une date valide.',
         ];
     }
 }

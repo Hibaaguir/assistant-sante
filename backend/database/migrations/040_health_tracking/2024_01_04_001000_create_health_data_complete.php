@@ -1,5 +1,5 @@
 <?php
-
+// Migration: creer les tables de suivi de sante (signes vitaux, resultats d'analyse, verifications de traitement)
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

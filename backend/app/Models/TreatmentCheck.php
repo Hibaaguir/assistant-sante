@@ -26,13 +26,13 @@ class TreatmentCheck extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Relation: check belongs to a treatment
+    // Relation: la verification appartient a un traitement
     public function treatment(): BelongsTo
     {
         return $this->belongsTo(Treatment::class, 'treatment_id');
     }
 
-    // Relation: check belongs to a health_data entry (owner is health_data.user_id)
+    // Relation: la verification appartient a une entree health_data (le proprietaire est health_data.user_id)
     public function healthData(): BelongsTo
     {
         return $this->belongsTo(HealthData::class, 'health_data_id');

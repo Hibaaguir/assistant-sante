@@ -9,12 +9,12 @@ use Illuminate\Http\Request;
 
 class UserAdminController extends Controller
 {
-    // List all users (admin only)
+    // Récupérer tous les utilisateurs (admin uniquement)
     public function index(Request $request): JsonResponse
     {
         $this->verifyAdminAccess($request);
 
-        // Exclude admins from the list
+        // Exclure les administrateurs de la liste
         $users = User::whereNotIn('role', ['admin', 'administrator'])
             ->latest('id')
             ->get()
@@ -22,57 +22,57 @@ class UserAdminController extends Controller
                 'id'            => $user->id,
                 'name'          => (string) $user->name,
                 'email'         => (string) ($user->account?->email ?? ''),
-                'type'          => strtolower((string) $user->role) === 'doctor' ? 'Doctor' : 'Patient',
+                'type'          => strtolower((string) $user->role) === 'doctor' ? 'Médecin' : 'Patient',
                 'specialty'     => (string) ($user->specialty ?? ''),
-                'status'        => strtolower((string) ($user->account?->account_status ?? '')) === 'inactive' ? 'Inactive' : 'Active',
+                'status'        => strtolower((string) ($user->account?->account_status ?? '')) === 'inactive' ? 'Inactif' : 'Actif',
                 'created_at'    => $user->created_at?->format('d/m/Y'),
                 'last_activity' => $user->updated_at?->format('d/m/Y'),
             ])
             ->values();
 
         return response()->json([
-            'message' => 'Users retrieved successfully.',
+            'message' => 'Utilisateurs récupérés avec succès.',
             'data'    => $users,
         ]);
     }
 
-    // Update user status (Active or Inactive)
+    // Mettre à jour le statut de l'utilisateur (Actif ou Inactif)
     public function updateStatus(Request $request, User $user): JsonResponse
     {
         $this->verifyAdminAccess($request);
 
         $data = $request->validate([
-            'status' => 'required|in:Active,Inactive',
+            'status' => 'required|in:Actif,Inactif',
         ]);
 
         $account = $user->account;
 
         if (!$account) {
-            return response()->json(['message' => 'No account is linked to this user.'], 422);
+            return response()->json(['message' => 'Aucun compte lié à cet utilisateur.'], 422);
         }
 
         $account->update(['account_status' => strtolower($data['status'])]);
 
-        return response()->json(['message' => 'User status updated successfully.']);
+        return response()->json(['message' => 'Statut de l\'utilisateur mis à jour avec succès.']);
     }
 
-    // Delete a user
+    // Supprimer un utilisateur
     public function destroy(Request $request, User $user): JsonResponse
     {
         $this->verifyAdminAccess($request);
 
-        abort_if($request->user()?->id === $user->id, 422, 'You cannot delete your own account.');
+        abort_if($request->user()?->id === $user->id, 422, 'Vous ne pouvez pas supprimer votre propre compte.');
 
         $user->tokens()->delete();
         $user->delete();
 
-        return response()->json(['message' => 'User deleted successfully.']);
+        return response()->json(['message' => 'Utilisateur supprimé avec succès.']);
     }
 
-    // Check that the current user is an admin
+    // Vérifier que l'utilisateur courant est un administrateur
     private function verifyAdminAccess(Request $request): void
     {
         $role = strtolower((string) ($request->user()->role ?? ''));
-        abort_unless(in_array($role, ['admin', 'administrator'], true), 403, 'Access denied.');
+        abort_unless(in_array($role, ['admin', 'administrator'], true), 403, 'Accès refusé.');
     }
 }

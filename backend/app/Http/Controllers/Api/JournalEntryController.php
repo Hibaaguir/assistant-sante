@@ -11,9 +11,7 @@ use Illuminate\Http\Request;
 
 class JournalEntryController extends Controller
 {
-    // ─────────────────────────────────────────────────────────────────────────
-    // Return all journal entries for the current user, newest first
-    // ─────────────────────────────────────────────────────────────────────────
+    // Récupérer toutes les entrées du journal de l'utilisateur (plus récentes en premier)
     public function index(Request $request): JsonResponse
     {
         $entries = JournalEntry::where('user_id', $request->user()->id)
@@ -22,23 +20,19 @@ class JournalEntryController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Journal entries retrieved successfully.',
+            'message' => 'Entrées du journal récupérées avec succès.',
             'data'    => $entries,
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create or update a journal entry for a given date
-    //
-    // If an entry already exists for that date, it gets updated.
-    // If not, a new one is created.
-    // ─────────────────────────────────────────────────────────────────────────
+    // Enregistrer l'entrée du journal
+    // Vérifier l'entrée existante si elle doit être mise à jour
     public function store(StoreJournalEntryRequest $request): JsonResponse
     {
         $data = $request->validated();
         $user = $request->user();
 
-        // Check if an entry already exists for this date (needed to preserve sugar_intake)
+        // Vérifier si une entrée existe déjà pour cette date
         $existingEntry = JournalEntry::where('user_id', $user->id)
             ->where('entry_date', $data['entry_date'])
             ->first();
@@ -63,33 +57,29 @@ class JournalEntryController extends Controller
         $this->syncEntryData($entry, $data);
 
         return response()->json([
-            'message' => 'Journal entry saved successfully.',
+            'message' => 'Entrée du journal enregistrée avec succès.',
             'data'    => $entry->load(['meals', 'physicalActivities', 'tobacco']),
         ], $entry->wasRecentlyCreated ? 201 : 200);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Return a single journal entry
-    // ─────────────────────────────────────────────────────────────────────────
+    // Récupérer une seule entrée du journal
     public function show(Request $request, JournalEntry $journalEntry): JsonResponse
     {
         if ($journalEntry->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json(['message' => 'Accès non autorisé'], 403);
         }
 
         return response()->json([
-            'message' => 'Journal entry retrieved successfully.',
+            'message' => 'Entrée du journal récupérée avec succès.',
             'data'    => $journalEntry->load(['meals', 'physicalActivities', 'tobacco']),
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Update an existing journal entry
-    // ─────────────────────────────────────────────────────────────────────────
+    // Mettre à jour une entrée du journal existante
     public function update(UpdateJournalEntryRequest $request, JournalEntry $journalEntry): JsonResponse
     {
         if ($journalEntry->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json(['message' => 'Accès non autorisé'], 403);
         }
 
         $data = $request->validated();
@@ -123,53 +113,41 @@ class JournalEntryController extends Controller
         $this->syncEntryData($journalEntry, $data);
 
         return response()->json([
-            'message' => 'Journal entry updated successfully.',
+            'message' => 'Entrée du journal mise à jour avec succès.',
             'data'    => $journalEntry->fresh()->load(['meals', 'physicalActivities', 'tobacco']),
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delete a journal entry
-    // ─────────────────────────────────────────────────────────────────────────
+    // Supprimer une entrée du journal
     public function destroy(Request $request, JournalEntry $journalEntry): JsonResponse
     {
         if ($journalEntry->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json(['message' => 'Accès non autorisé'], 403);
         }
 
         $journalEntry->delete();
 
-        return response()->json(['message' => 'Journal entry deleted successfully.']);
+        return response()->json(['message' => 'Entrée du journal supprimée avec succès.']);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Determine the final sugar_intake value to save
-    //
-    // We use array_key_exists (not isset) because the user may intentionally
-    // send null to clear the value. If the field was not sent at all, we keep
-    // the old value.
-    // ─────────────────────────────────────────────────────────────────────────
+    // Déterminer la valeur de sugar_intake à enregistrer
+    // Utiliser array_key_exists pour permettre l'envoi de null
     private function getSugarIntake(array $data, ?string $oldValue): ?string
     {
-        // Field was not sent → keep the existing value
+        // Le champ n'a pas été envoyé, garder l'ancienne valeur
         if (!array_key_exists('sugar_intake', $data)) {
             return $oldValue;
         }
 
-        // Field was sent → use the new value (trim it, return null if empty)
+        // Le champ a été envoyé, utiliser la nouvelle valeur
         $value = trim((string) $data['sugar_intake']);
         return $value !== '' ? $value : null;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Save meals, physical activity, and tobacco linked to a journal entry
-    //
-    // Each time this runs, the old records are deleted and replaced with
-    // the new ones sent from the frontend.
-    // ─────────────────────────────────────────────────────────────────────────
+    // Synchroniser les données d'entrée (repas, activité, tabac)
     private function syncEntryData(JournalEntry $entry, array $data): void
     {
-        // Save meals
+        // Enregistrer les repas
         if (isset($data['meals']) && is_array($data['meals'])) {
             $entry->meals()->delete();
             foreach ($data['meals'] as $meal) {
@@ -181,7 +159,7 @@ class JournalEntryController extends Controller
             }
         }
 
-        // Save physical activity (only one per entry)
+        // Enregistrer l'activité physique (une seule par entrée)
         $entry->physicalActivities()->delete();
         if (!empty($data['activity_type'])) {
             $entry->physicalActivities()->create([
@@ -191,7 +169,7 @@ class JournalEntryController extends Controller
             ]);
         }
 
-        // Save tobacco records (one per type: cigarette, vape)
+        // Enregistrer le tabac
         $entry->tobacco()->delete();
         if ($data['tobacco'] ?? false) {
             $types = $data['tobacco_types'] ?? [];

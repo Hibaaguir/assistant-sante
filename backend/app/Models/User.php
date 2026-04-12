@@ -44,7 +44,7 @@ class User extends Model
         return $this->hasMany(JournalEntry::class, 'user_id', 'id');
     }
 
-    // Health data records (one per day) — vitals/labs/checks are children of health_data
+    // Enregistrements de donnees de sante (un par jour) — les signes vitaux/analyses/verifications sont des enfants de health_data
     public function healthDataEntries()
     {
         return $this->hasMany(HealthData::class, 'user_id', 'id');
@@ -60,7 +60,7 @@ class User extends Model
         return $this->hasMany(DoctorInvitation::class, 'doctor_user_id', 'id');
     }
 
-    // Relations with treatments
+    // Relations avec les traitements
     public function treatments()
     {
         return $this->hasMany(Treatment::class, 'user_id', 'id');

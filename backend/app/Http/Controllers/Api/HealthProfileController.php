@@ -17,19 +17,10 @@ class HealthProfileController extends Controller
         private readonly DoctorInvitationService $invitationService,
     ) {}
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Save or update the health profile of the current user
-    //
-    // 1. Normalize and validate the form data
-    // 2. Save the previous doctor email (needed for invitation sync)
-    // 3. Save the health profile
-    // 4. Replace all treatments with the new list
-    // 5. Sync doctor invitations
-    // 6. Return the saved profile with treatments
-    // ─────────────────────────────────────────────────────────────────────────
+    // Enregistrer ou mettre à jour le profil de santé
     public function store(Request $request): JsonResponse
     {
-        // Normalize gender to lowercase before validation
+        // Normaliser le genre en minuscules
         if ($request->has('gender')) {
             $request->merge(['gender' => strtolower(trim($request->gender))]);
         }
@@ -62,7 +53,7 @@ class HealthProfileController extends Controller
                 function ($_attribute, $value, $fail) use ($request) {
                     $myEmail = strtolower($request->user()->account?->email ?? '');
                     if (strtolower($value) === $myEmail) {
-                        $fail("The doctor's email must be different from your email.");
+                        $fail("L'email du médecin doit être différent de votre email.");
                     }
                 },
             ],
@@ -72,25 +63,25 @@ class HealthProfileController extends Controller
 
         $user = $request->user();
 
-        // Normalize doctor email to lowercase
+        // Normaliser l'email du médecin en minuscules
         if (!empty($data['doctor_email'])) {
             $data['doctor_email'] = strtolower(trim($data['doctor_email']));
         }
 
-        // Save the old doctor email before updating (used for invitation sync below)
+        // Enregistrer l'ancien email du médecin pour la synchronisation
         $existingProfile     = HealthProfile::where('user_id', $user->id)->first();
         $previousDoctorEmail = $existingProfile ? strtolower(trim((string) $existingProfile->doctor_email)) : null;
 
-        // Separate treatments from the rest of the profile data
+        // Séparer les traitements des autres données de profil
         $treatments = $data['treatments'] ?? [];
         unset($data['treatments']);
 
         $data['user_id'] = $user->id;
 
-        // Save the health profile (create if new, update if exists)
+        // Enregistrer ou mettre à jour le profil de santé
         $profile = HealthProfile::updateOrCreate(['user_id' => $user->id], $data);
 
-        // Replace all existing treatments with the new list
+        // Remplacer tous les traitements existants
         if (!empty($treatments)) {
             Treatment::where('user_id', $user->id)->delete();
 
@@ -98,7 +89,7 @@ class HealthProfileController extends Controller
                 $startDate = $treatment['start_date'] ?? null;
                 $endDate   = $treatment['end_date']   ?? null;
 
-                // If start date is after end date, swap them automatically
+                // Inverser les dates si nécessaire
                 if ($startDate && $endDate && strtotime($startDate) > strtotime($endDate)) {
                     [$startDate, $endDate] = [$endDate, $startDate];
                 }
@@ -106,7 +97,7 @@ class HealthProfileController extends Controller
                 $type = trim($treatment['type'] ?? '');
                 $name = trim($treatment['name'] ?? '');
 
-                // Find or create the medication in the catalog
+                // Chercher ou créer le médicament
                 $catalog = $type !== '' ? TreatmentCatalog::firstOrCreate([
                     'medication_type' => $type,
                     'medication_name' => $name,
@@ -124,10 +115,10 @@ class HealthProfileController extends Controller
             }
         }
 
-        // Sync doctor invitations if the doctor email changed
+        // Synchroniser les invitations du médecin
         $this->invitationService->sync($profile, $previousDoctorEmail, $user);
 
-        // Load and return the saved treatments
+        // Charger et retourner les données du profil
         $profileData               = $profile->toArray();
         $profileData['treatments'] = $user->treatments()->with('treatmentCatalog')->get()
             ->map(fn($t) => $this->formatTreatment($t))
@@ -135,14 +126,12 @@ class HealthProfileController extends Controller
             ->toArray();
 
         return response()->json([
-            'message' => 'Health profile saved successfully.',
+            'message' => 'Profil de santé enregistré avec succès.',
             'data'    => $profileData,
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Return the health profile of the current user
-    // ─────────────────────────────────────────────────────────────────────────
+    // Récupérer le profil de santé de l'utilisateur
     public function show(Request $request): JsonResponse
     {
         $user    = $request->user();
@@ -164,10 +153,7 @@ class HealthProfileController extends Controller
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Format a treatment record for the API response
-    // Pass withFormattedDates: true to also include human-readable date strings
-    // ─────────────────────────────────────────────────────────────────────────
+    // Formater un traitement pour l'API
     private function formatTreatment($treatment, bool $withFormattedDates = false): array
     {
         $startDate = $treatment->start_date?->toDateString();
@@ -184,7 +170,7 @@ class HealthProfileController extends Controller
             'end_date'        => $endDate,
         ];
 
-        // Only show formatted dates when requested (used in show(), not store())
+        // Ajouter les dates formatées uniquement si demandé
         if ($withFormattedDates) {
             $result['formatted_start_date'] = $startDate ? Carbon::parse($startDate)->format('d/m/Y') : '';
             $result['formatted_end_date']   = $endDate   ? Carbon::parse($endDate)->format('d/m/Y')   : '';

@@ -15,10 +15,10 @@
                 <h2
                     class="mt-3 text-3xl font-bold text-purple-900 md:text-4xl leading-tight"
                 >
-                    Welcome, {{ userName }}!
+                    Bienvenue, {{ userName }} !
                 </h2>
                 <p class="mt-2 text-base font-medium text-purple-800">
-                    Continue monitoring your health daily
+                    Continuez à surveiller votre santé au quotidien
                 </p>
             </div>
 
@@ -29,7 +29,7 @@
                 ></div>
                 <img
                     src="https://img.freepik.com/vecteurs-libre/illustration-concept-abstrait-carte-puce-soins-sante-gerer-identite-patients-securiser-praticiens-pharmaciens-acceder-aux-dossiers-medicaux-ameliorer-communication_335657-884.jpg?semt=ais_hybrid&w=740&q=80"
-                    alt="Healthcare illustration"
+                    alt="Illustration de santé"
                     class="relative h-48 w-48 object-cover rounded-2xl shadow-lg border border-purple-200"
                     loading="lazy"
                 />
@@ -53,6 +53,6 @@ const currentDate = computed(() => {
         month: "long",
         day: "numeric",
     };
-    return new Date().toLocaleDateString("en-US", options);
+    return new Date().toLocaleDateString("fr-FR", options);
 });
 </script>

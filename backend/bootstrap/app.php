@@ -1,5 +1,5 @@
 <?php
-
+// Configuration de l'application Laravel
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Rediriger les utilisateurs non authentifies vers la page de connexion
         $middleware->redirectGuestsTo(function ($request) {
             if ($request->is('api/*')) {
                 return null;
@@ -20,7 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             return '/login';
         });
         
-        // Add CORS middleware for API
+        // Ajouter le middleware CORS pour l'API
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
         ]);

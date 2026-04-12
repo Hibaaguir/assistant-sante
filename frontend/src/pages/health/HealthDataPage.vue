@@ -1,24 +1,19 @@
 <template>
-    <div
-        class="w-full px-5 py-4 sm:px-7"
-    >
+    <div class="w-full px-5 py-4 sm:px-7">
         <header>
             <h1
                 class="text-[38px] font-bold leading-tight tracking-[-0.01em] text-purple-900"
             >
-                Health Data
+                Données de santé
             </h1>
             <p class="mt-1 text-[13px] text-slate-500">
-                Track your health indicators over time
+                Suivez vos indicateurs de santé au fil du temps
             </p>
         </header>
         <NotificationsOnline />
 
         <!-- Observations du médecin -->
-        <section
-            v-if="doctorObservations.length"
-            class="mt-4 space-y-3"
-        >
+        <section v-if="doctorObservations.length" class="mt-4 space-y-3">
             <h2 class="text-[16px] font-semibold text-purple-900">
                 Observations de votre médecin
             </h2>
@@ -27,7 +22,9 @@
                 :key="obs.id"
                 class="rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-50 to-white px-5 py-4"
             >
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-purple-500">
+                <p
+                    class="text-[11px] font-semibold uppercase tracking-wide text-purple-500"
+                >
                     {{ formatObsDate(obs.date) }}
                 </p>
                 <p class="mt-2 text-[14px] leading-6 text-slate-700">
@@ -187,7 +184,7 @@ const historySaturationValues = ref([]);
 const treatmentMedicines = ref([]);
 const treatmentChecks = reactive({});
 const treatmentDays = ref(buildLast7Days());
-const doctorObservations = ref([]);  // [{ id, date, observation }]
+const doctorObservations = ref([]); // [{ id, date, observation }]
 
 function openAddModal() {
     if (activeTab.value === "labs") labsTab.value?.ouvrirModalAjout();
@@ -210,9 +207,15 @@ const formatObsDate = (val) => {
     const iso = val ? String(val).slice(0, 10) : null;
     if (!iso) return "";
     const d = new Date(`${iso}T00:00:00`);
-    return isNaN(d) ? iso : d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    return isNaN(d)
+        ? iso
+        : d.toLocaleDateString("fr-FR", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+          });
 };
-
 
 function normalizeSeries(values, fallback = 0) {
     let last = fallback;
@@ -366,12 +369,12 @@ async function loadHealthData() {
 
         doctorObservations.value = Array.isArray(data.doctor_observations)
             ? data.doctor_observations
-                .filter((o) => o.doctor_observation)
-                .map((o) => ({
-                    id: o.id,
-                    date: o.date,
-                    observation: o.doctor_observation,
-                }))
+                  .filter((o) => o.doctor_observation)
+                  .map((o) => ({
+                      id: o.id,
+                      date: o.date,
+                      observation: o.doctor_observation,
+                  }))
             : [];
     } catch (error) {
         const message =

@@ -14,31 +14,24 @@ use Illuminate\Support\Str;
 
 class ForgotPasswordController extends Controller
 {
-    // ─────────────────────────────────────────────────────────────────────────
-    // The user forgot their password and asks for a reset link
-    //
-    // 1. Validate the email
-    // 2. Check that the email exists in the database
-    // 3. Create a reset token and save it
-    // 4. Send the reset link by email
-    // ─────────────────────────────────────────────────────────────────────────
+    // Demander un lien de réinitialisation de mot de passe
     public function requestReset(Request $request): JsonResponse
     {
         $request->validate([
             'email' => 'required|email',
         ]);
 
-        // Find the account with this email
+        // Chercher le compte avec cet email
         $account = Account::where('email', $request->email)->first();
 
         if (!$account) {
             return response()->json(['message' => 'Aucun compte trouvé avec cet email.'], 404);
         }
 
-        // Create a simple random token
+        // Créer un token de réinitialisation aléatoire
         $token = Str::random(64);
 
-        // Delete any old token for this email, then save the new one
+        // Supprimer les anciens tokens et enregistrer le nouveau
         DB::table('password_reset_tokens')->where('email', $account->email)->delete();
         DB::table('password_reset_tokens')->insert([
             'email'      => $account->email,
@@ -46,7 +39,7 @@ class ForgotPasswordController extends Controller
             'created_at' => now(),
         ]);
 
-        // Build the reset link and send it by email
+        // Construire le lien de réinitialisation et l'envoyer par email
         $frontendUrl = config('app.frontend_url', config('app.url')) . '/reinitialiser-mot-de-passe';
         $resetUrl    = $frontendUrl . '?email=' . urlencode($account->email) . '&token=' . $token;
 
@@ -55,14 +48,7 @@ class ForgotPasswordController extends Controller
         return response()->json(['message' => 'Un lien de réinitialisation a été envoyé à votre email.']);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // The user clicked the link and wants to set a new password
-    //
-    // 1. Validate email, token, and new password
-    // 2. Find the account
-    // 3. Check that the token is correct
-    // 4. Save the new password and delete the used token
-    // ─────────────────────────────────────────────────────────────────────────
+    // Réinitialiser le mot de passe avec le token
     public function resetPassword(Request $request): JsonResponse
     {
         $request->validate([
@@ -71,14 +57,14 @@ class ForgotPasswordController extends Controller
             'password' => 'required|min:8|confirmed',
         ]);
 
-        // Find the account
+        // Chercher le compte par email
         $account = Account::where('email', $request->email)->first();
 
         if (!$account) {
             return response()->json(['message' => 'Email invalide.'], 422);
         }
 
-        // Find the reset token saved in the database
+        // Récupérer le token de réinitialisation depuis la base de données
         $resetToken = DB::table('password_reset_tokens')
             ->where('email', $account->email)
             ->first();
@@ -87,17 +73,17 @@ class ForgotPasswordController extends Controller
             return response()->json(['message' => 'Token invalide ou déjà utilisé.'], 422);
         }
 
-        // Check that the token from the URL matches the one in the database
+        // Vérifier que le token correspond à celui de la base de données
         if ($request->token !== $resetToken->token) {
             return response()->json(['message' => 'Token invalide.'], 422);
         }
 
-        // Save the new password
+        // Enregistrer le nouveau mot de passe
         $account->update([
             'password' => Hash::make($request->password),
         ]);
 
-        // Delete the token so it cannot be used again
+        // Supprimer le token pour qu'il ne soit pas réutilisé
         DB::table('password_reset_tokens')->where('email', $account->email)->delete();
 
         return response()->json([

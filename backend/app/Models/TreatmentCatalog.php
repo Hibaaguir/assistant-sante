@@ -19,7 +19,7 @@ class TreatmentCatalog extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Relation: a catalog entry can have multiple treatments
+    // Relation: une entree du catalogue peut avoir plusieurs traitements
     public function treatments(): HasMany
     {
         return $this->hasMany(Treatment::class, 'treatment_catalog_id');

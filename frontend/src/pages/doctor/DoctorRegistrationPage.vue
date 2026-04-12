@@ -27,10 +27,10 @@
                 <h1
                     class="text-5xl font-extrabold tracking-[-0.03em] bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent sm:text-6xl"
                 >
-                    Doctor Space
+                    Espace Médecin
                 </h1>
                 <p class="mt-3 text-lg text-[#50607d]">
-                    Create your professional account
+                    Créez votre compte professionnel
                 </p>
             </div>
 
@@ -60,7 +60,7 @@
                                 <path d="m9.5 11.8 1.7 1.7 3.4-3.8" />
                             </svg>
                         </span>
-                        <span>Secure</span>
+                        <span>Sécurisé</span>
                     </div>
 
                     <div class="flex items-center gap-2">
@@ -81,7 +81,7 @@
                                 <path d="m8.8 12.1 2.2 2.2 4.4-4.8" />
                             </svg>
                         </span>
-                        <span>Certified</span>
+                        <span>Certifié</span>
                     </div>
                 </div>
 
@@ -91,12 +91,12 @@
                     <div>
                         <label
                             class="mb-2 block text-base font-semibold text-[#162a55]"
-                            >Full Name</label
+                            >Nom complet</label
                         >
                         <input
                             v-model.trim="form.name"
                             type="text"
-                            placeholder="Dr. John Smith"
+                            placeholder="Dr. Jean Dupont"
                             autocomplete="name"
                             :class="fieldClass(errors.name)"
                         />
@@ -108,12 +108,12 @@
                     <div>
                         <label
                             class="mb-2 block text-base font-semibold text-[#162a55]"
-                            >Specialty</label
+                            >Spécialité</label
                         >
                         <input
                             v-model.trim="form.specialite"
                             type="text"
-                            placeholder="Enter your specialty"
+                            placeholder="Votre spécialité (ex : Cardiologie)"
                             autocomplete="organization-title"
                             :class="fieldClass(errors.specialite)"
                         />
@@ -128,7 +128,7 @@
                     <div>
                         <label
                             class="mb-2 block text-base font-semibold text-[#162a55]"
-                            >Date of Birth</label
+                            >Date de naissance</label
                         >
                         <div class="relative">
                             <span
@@ -175,7 +175,7 @@
                     <div>
                         <label
                             class="mb-2 block text-base font-semibold text-[#162a55]"
-                            >Professional Email</label
+                            >Adresse email professionnelle</label
                         >
                         <div class="relative">
                             <span
@@ -204,7 +204,7 @@
                             <input
                                 v-model.trim="form.email"
                                 type="email"
-                                placeholder="doctor@example.com"
+                                placeholder="medecin@exemple.com"
                                 autocomplete="email"
                                 :class="[fieldClass(errors.email), 'pl-12']"
                             />
@@ -220,7 +220,7 @@
                     <div>
                         <label
                             class="mb-2 block text-base font-semibold text-[#162a55]"
-                            >Password</label
+                            >Mot de passe</label
                         >
                         <div class="relative">
                             <span
@@ -249,7 +249,7 @@
                             <input
                                 v-model="form.password"
                                 :type="showPassword ? 'text' : 'password'"
-                                placeholder="Minimum 8 characters with letters and numbers"
+                                placeholder="Au moins 8 caractères avec lettres et chiffres"
                                 autocomplete="new-password"
                                 :class="[
                                     fieldClass(errors.password),
@@ -304,7 +304,7 @@
                             class="mt-3 rounded-[12px] bg-purple-50 p-3 text-[13px]"
                         >
                             <p class="mb-2 font-medium text-purple-900">
-                                Password Criteria:
+                                Critères du mot de passe :
                             </p>
                             <div class="space-y-1">
                                 <div
@@ -321,7 +321,7 @@
                                                 : '○'
                                         "
                                     ></span>
-                                    Minimum 8 characters
+                                    Au moins 8 caractères
                                 </div>
                                 <div
                                     :class="
@@ -337,7 +337,7 @@
                                                 : '○'
                                         "
                                     ></span>
-                                    Contains letters (a-z, A-Z)
+                                    Contient des lettres
                                 </div>
                                 <div
                                     :class="
@@ -353,7 +353,7 @@
                                                 : '○'
                                         "
                                     ></span>
-                                    Contains numbers (0-9)
+                                    Contient des chiffres
                                 </div>
                             </div>
                         </div>
@@ -382,17 +382,17 @@
                         :disabled="loading"
                         class="mt-2 flex h-14 w-full items-center justify-center rounded-[18px] bg-gradient-to-r from-[#574bff] to-[#2563ff] text-lg font-bold text-white shadow-[0_18px_28px_rgba(53,77,255,0.28)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                        <span v-if="!loading">Create my account</span>
-                        <span v-else>Creating...</span>
+                        <span v-if="!loading">Créer mon compte</span>
+                        <span v-else>Création en cours...</span>
                     </button>
                 </form>
 
                 <p class="mt-8 text-center text-base text-[#50607d]">
-                    Already have an account?
+                    Déjà un compte ?
                     <RouterLink
                         :to="loginLink"
                         class="font-semibold text-[#4f46ff] transition hover:text-[#2f55ff] hover:underline"
-                        >Login</RouterLink
+                        >Connexion</RouterLink
                     >
                 </p>
             </div>
@@ -453,6 +453,7 @@ function fieldClass(hasError) {
     ];
 }
 
+// Vérifie que le mot de passe respecte les critères (longueur, lettres, chiffres)
 function validatePassword() {
     if (!form.password) return null;
 
@@ -462,10 +463,10 @@ function validatePassword() {
 
     if (!hasMinLength || !hasLetters || !hasNumbers) {
         const missing = [];
-        if (!hasMinLength) missing.push("minimum 8 characters");
-        if (!hasLetters) missing.push("letters");
-        if (!hasNumbers) missing.push("numbers");
-        return `Password must contain: ${missing.join(", ")}`;
+        if (!hasMinLength) missing.push("au moins 8 caractères");
+        if (!hasLetters) missing.push("des lettres");
+        if (!hasNumbers) missing.push("des chiffres");
+        return `Le mot de passe doit contenir : ${missing.join(", ")}.`;
     }
     return null;
 }
@@ -497,12 +498,13 @@ function validateDateFormat() {
 
     const parts = form.date_naissance.split("/");
     if (parts.length !== 3) {
-        errors.date_naissance = "Invalid format. Use DD/MM/YYYY";
+        errors.date_naissance = "Format invalide. Utilisez JJ/MM/AAAA.";
         return;
     }
 
     const [day, month, year] = parts.map(Number);
 
+    // Vérification des valeurs numériques et des plages valides
     if (
         isNaN(day) ||
         isNaN(month) ||
@@ -514,21 +516,24 @@ function validateDateFormat() {
         year < 1900 ||
         year > new Date().getFullYear()
     ) {
-        errors.date_naissance = "Invalid date. Check the day, month or year.";
+        errors.date_naissance =
+            "Date invalide. Vérifiez le jour, le mois ou l'année.";
         return;
     }
 
+    // Vérification que la date existe réellement (ex : 31 février)
     const dateObj = new Date(year, month - 1, day);
     if (dateObj.getDate() !== day || dateObj.getMonth() !== month - 1) {
         errors.date_naissance =
-            "Invalid date (e.g., February 31st doesn't exist).";
+            "Date invalide (par exemple, le 31 février n'existe pas).";
         return;
     }
 
+    // Le médecin doit avoir au moins 25 ans
     const age = new Date().getFullYear() - year;
     if (age < 25) {
         errors.date_naissance =
-            "You must be at least 25 years old to practice.";
+            "Vous devez avoir au moins 25 ans pour exercer.";
         return;
     }
 
@@ -546,6 +551,14 @@ async function submit() {
     messageType.value = "success";
     clearErrors();
 
+    // Vérification que tous les champs sont remplis
+    if (!form.name) errors.name = "Le nom complet est obligatoire.";
+    if (!form.email) errors.email = "L'adresse email est obligatoire.";
+    if (!form.password) errors.password = "Le mot de passe est obligatoire.";
+    if (!form.specialite) errors.specialite = "La spécialité est obligatoire.";
+    if (!form.date_naissance)
+        errors.date_naissance = "La date de naissance est obligatoire.";
+
     if (
         !form.name ||
         !form.email ||
@@ -553,13 +566,7 @@ async function submit() {
         !form.specialite ||
         !form.date_naissance
     ) {
-        if (!form.name) errors.name = "Full name is required.";
-        if (!form.email) errors.email = "Email address is required.";
-        if (!form.password) errors.password = "Password is required.";
-        if (!form.specialite) errors.specialite = "Specialty is required.";
-        if (!form.date_naissance)
-            errors.date_naissance = "Date of birth is required.";
-        serverMessage.value = "Please fill in all required fields.";
+        serverMessage.value = "Veuillez remplir tous les champs obligatoires.";
         return;
     }
 
@@ -595,7 +602,7 @@ async function submit() {
         authStore.applyAuth(res?.data, "medecin");
 
         serverMessage.value =
-            res?.data?.message || "Doctor account created successfully.";
+            res?.data?.message || "Compte médecin créé avec succès.";
         messageType.value = "success";
         setTimeout(() => router.push("/main/dashboard"), 300);
     } catch (err) {
@@ -618,10 +625,12 @@ async function submit() {
             errors.date_naissance = Array.isArray(data.errors.date_of_birth)
                 ? data.errors.date_of_birth[0]
                 : "";
-            serverMessage.value = "Please correct the form errors.";
+            serverMessage.value =
+                "Veuillez corriger les erreurs du formulaire.";
         } else {
             serverMessage.value =
-                data?.message || "Error creating doctor account.";
+                data?.message ||
+                "Erreur lors de la création du compte médecin.";
         }
     } finally {
         loading.value = false;

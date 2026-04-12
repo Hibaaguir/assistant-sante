@@ -21,13 +21,15 @@ class DoctorInvitationMail extends Mailable
     ) {
     }
 
+    // Créer l'enveloppe de l'email
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Doctor invitation - {$this->patient->name}",
+            subject: "Invitation médecin - {$this->patient->name}",
         );
     }
 
+    // Contenu de l'email
     public function content(): Content
     {
         $url = rtrim((string) config('app.frontend_url', 'http://localhost:5173'), '/') . $this->applicationPath;
@@ -43,6 +45,7 @@ class DoctorInvitationMail extends Mailable
         );
     }
 
+    // Pièces jointes
     public function attachments(): array
     {
         return [];

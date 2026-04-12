@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 
 class HealthDataService
 {
+    // Construire la serie de graphique des signes vitaux
     public function buildVitalSignsChartSeries(Collection $vitals, int $days): array
     {
         $dates = collect(range(0, $days - 1))
@@ -30,11 +31,7 @@ class HealthDataService
         ];
     }
 
-    /**
-     * Returns the list of active treatments for a user today.
-     * Uses the treatment's real database ID so the frontend can generate
-     * medication_key as "{treatmentId}__dose_{n}" for sync.
-     */
+    // Resoudre la liste des traitements actifs pour aujourd'hui
     public function resolveTreatmentMedicines(int $userId): array
     {
         $today = Carbon::today()->toDateString();
@@ -57,7 +54,7 @@ class HealthDataService
             ->all();
     }
 
-    // Get the latest meaningful vital signs record for a user
+    // Recuperer le dernier enregistrement de signes vitaux pour l'utilisateur
     public function latestVitals(int $userId): ?VitalSigns
     {
         return VitalSigns::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
@@ -72,7 +69,7 @@ class HealthDataService
             ->first();
     }
 
-    // Serialize a collection of treatment checks into a standard array
+    // Serialiser les verifications de traitement en tableau standard
     public function serializeTreatmentChecks(Collection $rows): array
     {
         return $rows->map(function (TreatmentCheck $check) {
@@ -93,7 +90,7 @@ class HealthDataService
         })->values()->all();
     }
 
-    // Build clinical alerts from a patient's latest vitals and lab results
+    // Construire des alertes cliniques a partir des donnees du patient
     public function buildPatientAlerts(?VitalSigns $latestVitals, Collection $labResults): array
     {
         $alerts = [];
@@ -123,8 +120,7 @@ class HealthDataService
         return $alerts;
     }
 
-    // ─── Private Helpers ──────────────────────────────────────────────────────
-
+    // Extraire les signes vitaux par date
     private function extractVitalSignsByDate(Collection $items): array
     {
         $sorted = $items->sortByDesc(fn (VitalSigns $v) =>
@@ -140,12 +136,14 @@ class HealthDataService
         ];
     }
 
+    // Obtenir la derniere valeur pour un champ donne
     private function getLatestValue(Collection $items, string $field): ?float
     {
         $row = $items->first(fn (VitalSigns $v) => $v->{$field} !== null);
         return $row ? round((float) $row->{$field}, 1) : null;
     }
 
+    // Normaliser un medicament pour l'affichage
     private function normalizeMedicine(Treatment $treatment): ?array
     {
         $name = trim((string) ($treatment->treatmentCatalog?->medication_name ?? ''));

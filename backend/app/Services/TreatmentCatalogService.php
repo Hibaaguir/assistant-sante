@@ -6,6 +6,7 @@ use App\Models\TreatmentCatalog;
 
 class TreatmentCatalogService
 {
+    // Construire le catalogue complet des medicaments
     public function buildCatalog(): array
     {
         $items = TreatmentCatalog::query()
@@ -50,6 +51,7 @@ class TreatmentCatalogService
         ];
     }
 
+    // Enregistrer une entree dans le catalogue
     public function saveEntry(?string $type, ?string $name = null): void
     {
         $normalizedType = $this->normalizeText($type);
@@ -76,6 +78,7 @@ class TreatmentCatalogService
         ]);
     }
 
+    // Enregistrer les entrees depuis un tableau de traitements
     public function saveFromTreatments(array $treatments): void
     {
         foreach ($treatments as $item) {

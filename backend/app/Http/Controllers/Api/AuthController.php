@@ -18,15 +18,7 @@ class AuthController extends Controller
         private readonly DoctorInvitationService $invitationService,
     ) {}
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Register a new patient account
-    //
-    // 1. Validate the form fields
-    // 2. Create an Account (email + password)
-    // 3. Create a User linked to that account
-    // 4. Create an empty HealthProfile for the user
-    // 5. Return a token so the user is logged in right away
-    // ─────────────────────────────────────────────────────────────────────────
+    // Enregistrer un nouveau compte patient
     public function register(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -37,7 +29,7 @@ class AuthController extends Controller
             'profile_photo' => 'nullable|string',
         ]);
 
-        // Save the email in lowercase so login always works
+        // Normaliser l'email en minuscules
         $data['email'] = strtolower(trim($data['email']));
 
         $account = Account::create([
@@ -55,7 +47,7 @@ class AuthController extends Controller
             'role'          => 'user',
         ]);
 
-        // Every new patient starts with an empty health profile
+        // Créer un profil de santé vide
         HealthProfile::create(['user_id' => $user->id]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -78,16 +70,7 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Register a new doctor account
-    //
-    // Doctors can only register if they already have a pending invitation.
-    // 1. Validate the form
-    // 2. Check that a pending invitation exists for this email
-    // 3. Create Account + User (role = doctor)
-    // 4. Link any pending invitations to this doctor
-    // 5. Return a token
-    // ─────────────────────────────────────────────────────────────────────────
+    // Enregistrer un nouveau compte médecin
     public function registerDoctor(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -100,7 +83,7 @@ class AuthController extends Controller
 
         $email = strtolower(trim($data['email']));
 
-        // Block registration if no invitation was sent to this email
+        // Vérifier l'invitation en attente
         if (!$this->invitationService->existsForEmail($email)) {
             return response()->json([
                 'message' => "L'inscription du médecin n'est pas autorisée sans une invitation en attente.",
@@ -123,7 +106,7 @@ class AuthController extends Controller
             'specialty'     => trim($data['specialty']),
         ]);
 
-        // Attach any invitations that were sent to this email before the doctor signed up
+        // Lier les invitations en attente
         $hasPendingInvitations = $this->invitationService->linkToDoctor($user);
 
         $token = $user->createToken('doctor_auth_token')->plainTextToken;
@@ -146,13 +129,7 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Log in any user (patient, doctor, or admin)
-    //
-    // 1. Check email and password
-    // 2. Decide where to redirect based on role and profile status
-    // 3. Return a token
-    // ─────────────────────────────────────────────────────────────────────────
+    // Authentifier l'utilisateur
     public function login(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -163,7 +140,7 @@ class AuthController extends Controller
         $email   = strtolower(trim($data['email']));
         $account = Account::where('email', $email)->first();
 
-        // Wrong email or wrong password → same generic message (security best practice)
+        // Messages d'erreur génériques pour la sécurité
         if (!$account || !Hash::check($data['password'], $account->password)) {
             return response()->json(['message' => 'E-mail ou mot de passe invalide.'], 401);
         }
@@ -174,12 +151,12 @@ class AuthController extends Controller
             return response()->json(['message' => 'Aucun utilisateur lié à ce compte.'], 404);
         }
 
-        // When a doctor logs in, link any new invitations that arrived since last login
+        // Lier les nouvelles invitations du médecin
         if ($user->role === 'doctor') {
             $this->invitationService->linkToDoctor($user);
         }
 
-        // Decide where to send the user after login
+        // D\u00e9terminer la redirection
         $hasProfile = $user->healthProfile?->isComplete() ?? false;
 
         if ($user->role === 'admin') {
@@ -210,10 +187,7 @@ class AuthController extends Controller
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Return the currently logged-in user
-    // Used by the frontend on page load to check who is connected
-    // ─────────────────────────────────────────────────────────────────────────
+    // Récupérer l'utilisateur courant
     public function getCurrentUser(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -240,12 +214,14 @@ class AuthController extends Controller
             'has_health_profile' => $hasProfile,
             'redirect_to'        => $hasProfile ? '/main' : '/health-profile',
         ]);
-    }    
-    // Log out — delete the current token so it can no longer be used
+    }
+
+    // Déconnecter l'utilisateur en supprimant son token
     public function logout(Request $request): JsonResponse
     {
+        // Supprimer le token actuel
         $request->user()?->currentAccessToken()?->delete();
 
-        return response()->json(['message' => 'Logout successful.']);
+        return response()->json(['message' => 'Déconnexion réussie.']);
     }
 }

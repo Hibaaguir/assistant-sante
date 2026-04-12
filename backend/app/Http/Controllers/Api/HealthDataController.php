@@ -20,7 +20,7 @@ class HealthDataController extends Controller
 {
     public function __construct(private readonly HealthDataService $healthDataService) {}
 
-    // Return a summary of all health data for the current user (dashboard)
+    // Récupérer un résumé de toutes les données de santé (tableau de bord)
     public function overview(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
@@ -51,7 +51,7 @@ class HealthDataController extends Controller
             ->get(['id', 'date', 'doctor_observation', 'updated_at']);
 
         return response()->json([
-            'message' => 'Health data retrieved successfully.',
+            'message' => 'Données de santé récupérées avec succès.',
             'data' => [
                 'latest_vitals'       => $this->healthDataService->latestVitals($userId),
                 'vitals'              => $vitals,
@@ -64,7 +64,7 @@ class HealthDataController extends Controller
         ]);
     }
 
-    // Return a list of vital signs for the current user
+    // Récupérer la liste des signes vitaux de l'utilisateur
     public function indexVitals(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
@@ -77,13 +77,13 @@ class HealthDataController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Vital signs retrieved successfully.',
+            'message' => 'Signes vitaux récupérés avec succès.',
             'data'    => $vitals,
         ]);
     }
 
-    // Save a new vital signs entry for the current user.
-    // One record per user per day — if one already exists, merge the new values into it.
+    // Enregistrer une nouvelle mesure de signes vitaux
+    // Un enregistrement par utilisateur par jour — si un existe déjà, fusionner les nouvelles valeurs
     public function storeVital(StoreVitalSignsRequest $request): JsonResponse
     {
         $userId     = $request->user()->id;
@@ -107,7 +107,7 @@ class HealthDataController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Vital sign updated successfully.',
+                'message' => 'Signe vital mis à jour avec succès.',
                 'data'    => $existing->fresh(),
             ]);
         }
@@ -122,12 +122,12 @@ class HealthDataController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Vital sign recorded successfully.',
+            'message' => 'Signe vital enregistré avec succès.',
             'data'    => $vital,
         ], 201);
     }
 
-    // Return all lab results for the current user
+    // Récupérer tous les résultats d'analyses pour l'utilisateur
     public function indexLabResults(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
@@ -138,12 +138,12 @@ class HealthDataController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Lab results retrieved successfully.',
+            'message' => 'Résultats des analyses récupérés avec succès.',
             'data'    => $labResults,
         ]);
     }
 
-    // Save a new lab result for the current user
+    // Enregistrer un nouveau résultat d'analyse
     public function storeLabResult(StoreAnalysisResultRequest $request): JsonResponse
     {
         $userId     = $request->user()->id;
@@ -159,39 +159,39 @@ class HealthDataController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Lab result recorded successfully.',
+            'message' => 'Résultat d\'analyse enregistré avec succès.',
             'data'    => $labResult,
         ], 201);
     }
 
-    // Update an existing lab result
+    // Mettre à jour un résultat d'analyse existant
     public function updateLabResult(UpdateAnalysisResultRequest $request, AnalysisResult $analysisResult): JsonResponse
     {
         if ($analysisResult->healthData?->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized access to this lab result.'], 403);
+            return response()->json(['message' => 'Accès non autorisé à ce résultat d\'analyse.'], 403);
         }
 
         $analysisResult->update($request->validated());
 
         return response()->json([
-            'message' => 'Lab result updated successfully.',
+            'message' => 'Résultat d\'analyse mis à jour avec succès.',
             'data'    => $analysisResult->fresh(),
         ]);
     }
 
-    // Delete a lab result
+    // Supprimer un résultat d'analyse
     public function destroyLabResult(Request $request, AnalysisResult $analysisResult): JsonResponse
     {
         if ($analysisResult->healthData?->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized access to this lab result.'], 403);
+            return response()->json(['message' => 'Accès non autorisé à ce résultat d\'analyse.'], 403);
         }
 
         $analysisResult->delete();
 
-        return response()->json(['message' => 'Lab result deleted successfully.']);
+        return response()->json(['message' => 'Résultat d\'analyse supprimé avec succès.']);
     }
 
-    // Return treatment checks for the current user
+    // Récupérer les vérifications de traitement pour l'utilisateur
     public function indexTreatmentChecks(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
@@ -205,20 +205,20 @@ class HealthDataController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Treatment checks retrieved successfully.',
+            'message' => 'Vérifications de traitement récupérées avec succès.',
             'data'    => $this->healthDataService->serializeTreatmentChecks($checks),
         ]);
     }
 
-    // Save or update a batch of treatment checks sent from the frontend.
-    // Each check has a medication_key like "12__dose_1" — we extract the treatment ID from it.
+    // Enregistrer ou mettre à jour un lot de vérifications de traitement
+    // Chaque vérification a une clé comme "12__dose_1" — extraire l'ID du traitement
     public function syncTreatmentChecks(SyncTreatmentCheckRequest $request): JsonResponse
     {
         $user   = $request->user();
         $userId = $user->id;
 
         foreach ($request->validated('checks') as $check) {
-            // medication_key format is already validated by SyncTreatmentCheckRequest
+            // Format du medication_key validé par la requête
             $parts = explode('__dose_', $check['medication_key'], 2);
             $treatmentId = (int) $parts[0];
 
@@ -245,6 +245,6 @@ class HealthDataController extends Controller
             );
         }
 
-        return response()->json(['message' => 'Treatment checks synchronized successfully.']);
+        return response()->json(['message' => 'Vérifications de traitement synchronisées avec succès.']);
     }
 }

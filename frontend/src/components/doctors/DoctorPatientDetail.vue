@@ -12,7 +12,7 @@
             @click="$emit('back')"
         >
             <IconArrowLeft class="h-[16px] w-[16px]" />
-            Back to patient list
+            Retour à la liste des patients
         </button>
 
         <!-- Profil -->
@@ -26,7 +26,9 @@
 
             <div>
                 <div class="flex items-center gap-3">
-                    <h2 class="text-[28px] font-bold leading-none text-[#031a46]">
+                    <h2
+                        class="text-[28px] font-bold leading-none text-[#031a46]"
+                    >
                         {{ patient.name }}
                     </h2>
                     <span
@@ -35,14 +37,16 @@
                     />
                 </div>
 
-                <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[15px] text-[#41506b]">
-                    <span>{{ patient.age }} years</span>
+                <div
+                    class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[15px] text-[#41506b]"
+                >
+                    <span>{{ patient.age }} ans</span>
                     <span>•</span>
                     <span>{{ patient.gender }}</span>
                     <span>•</span>
                     <span class="inline-flex items-center gap-1.5">
                         <IconClock class="h-[16px] w-[16px]" />
-                        Last updated: {{ patient.lastSeen }}
+                        Dernière mise à jour : {{ patient.lastSeen }}
                     </span>
                 </div>
 
@@ -60,8 +64,12 @@
         </div>
 
         <!-- Ajouter une observation -->
-        <div class="mt-8 rounded-[20px] border border-[#d4d9e1] bg-white p-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
-            <h3 class="text-[17px] font-bold text-[#041c49]">Ajouter une observation</h3>
+        <div
+            class="mt-8 rounded-[20px] border border-[#d4d9e1] bg-white p-6 shadow-[0_1px_4px_rgba(15,23,42,0.05)]"
+        >
+            <h3 class="text-[17px] font-bold text-[#041c49]">
+                Ajouter une observation
+            </h3>
             <textarea
                 v-model="obsText"
                 rows="2"
@@ -69,30 +77,52 @@
                 placeholder="Rédigez votre observation médicale…"
             />
             <div class="mt-3 flex items-center gap-3">
-                <button type="button" class="btn-primary" :disabled="obsSaving" @click="saveObservation">
+                <button
+                    type="button"
+                    class="btn-primary"
+                    :disabled="obsSaving"
+                    @click="saveObservation"
+                >
                     {{ obsSaving ? "Enregistrement…" : "Enregistrer" }}
                 </button>
-                <span v-if="obsMsg" class="text-[13px]" :class="obsMsg.ok ? 'text-[#118445]' : 'text-[#b46910]'">
+                <span
+                    v-if="obsMsg"
+                    class="text-[13px]"
+                    :class="obsMsg.ok ? 'text-[#118445]' : 'text-[#b46910]'"
+                >
                     {{ obsMsg.text }}
                 </span>
             </div>
 
             <!-- Observations déjà enregistrées -->
-            <div v-if="patient.healthDataObservations?.length" class="mt-5 space-y-2 border-t border-[#edf0f5] pt-4">
-                <p class="text-[12px] font-semibold uppercase tracking-wide text-[#7b8eab]">Observations précédentes</p>
+            <div
+                v-if="patient.healthDataObservations?.length"
+                class="mt-5 space-y-2 border-t border-[#edf0f5] pt-4"
+            >
+                <p
+                    class="text-[12px] font-semibold uppercase tracking-wide text-[#7b8eab]"
+                >
+                    Observations précédentes
+                </p>
                 <div
                     v-for="obs in patient.healthDataObservations"
                     :key="obs.isoDate"
                     class="rounded-[14px] border border-[#e4ebf8] bg-[#f5f8ff] px-4 py-3"
                 >
-                    <p class="text-[12px] font-semibold text-[#3f57c4]">{{ obs.date }}</p>
-                    <p class="mt-1 text-[14px] leading-5 text-[#2d3f5e]">{{ obs.observation }}</p>
+                    <p class="text-[12px] font-semibold text-[#3f57c4]">
+                        {{ obs.date }}
+                    </p>
+                    <p class="mt-1 text-[14px] leading-5 text-[#2d3f5e]">
+                        {{ obs.observation }}
+                    </p>
                 </div>
             </div>
         </div>
 
         <!-- Onglets -->
-        <nav class="mt-6 rounded-[18px] border border-[#d4d9e1] bg-white p-[10px] shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
+        <nav
+            class="mt-6 rounded-[18px] border border-[#d4d9e1] bg-white p-[10px] shadow-[0_1px_4px_rgba(15,23,42,0.05)]"
+        >
             <div class="flex flex-wrap gap-2">
                 <button
                     v-for="tab in TABS"
@@ -118,7 +148,10 @@
                 title="Filtrer les signes vitaux"
                 subtitle="Affinez l'historique par date et par type de mesure."
                 :show-reset="!!(vitalDate || vitalSign !== 'all')"
-                @reset="vitalDate = ''; vitalSign = 'all';"
+                @reset="
+                    vitalDate = '';
+                    vitalSign = 'all';
+                "
             >
                 <input v-model="vitalDate" type="date" class="input-field" />
                 <select v-model="vitalSign" class="input-field">
@@ -134,8 +167,12 @@
                 :key="entry.isoDate || entry.date"
                 class="card"
             >
-                <div class="flex items-center gap-2 text-[16px] font-bold text-[#061a45]">
-                    <IconeCalendrier class="h-[18px] w-[18px]" />{{ entry.date }}
+                <div
+                    class="flex items-center gap-2 text-[16px] font-bold text-[#061a45]"
+                >
+                    <IconeCalendrier class="h-[18px] w-[18px]" />{{
+                        entry.date
+                    }}
                 </div>
                 <div class="mt-4 grid gap-4 lg:grid-cols-3">
                     <div
@@ -144,8 +181,12 @@
                         class="rounded-[16px] border px-5 py-4"
                         :class="card.class"
                     >
-                        <p class="text-[14px] text-[#455572]">{{ card.label }}</p>
-                        <p class="mt-2 text-[18px] font-bold text-[#061a45]">{{ card.value }}</p>
+                        <p class="text-[14px] text-[#455572]">
+                            {{ card.label }}
+                        </p>
+                        <p class="mt-2 text-[18px] font-bold text-[#061a45]">
+                            {{ card.value }}
+                        </p>
                     </div>
                 </div>
             </article>
@@ -163,12 +204,17 @@
                 title="Filtrer les analyses"
                 subtitle="Affinez les résultats par date et par type d'analyse."
                 :show-reset="!!(analysisDate || analysisType !== 'all')"
-                @reset="analysisDate = ''; analysisType = 'all';"
+                @reset="
+                    analysisDate = '';
+                    analysisType = 'all';
+                "
             >
                 <input v-model="analysisDate" type="date" class="input-field" />
                 <select v-model="analysisType" class="input-field">
                     <option value="all">Tous les types</option>
-                    <option v-for="t in analysisTypes" :key="t" :value="t">{{ t }}</option>
+                    <option v-for="t in analysisTypes" :key="t" :value="t">
+                        {{ t }}
+                    </option>
                 </select>
             </FilterCard>
 
@@ -178,14 +224,26 @@
                 class="card px-6 py-5"
             >
                 <div class="flex flex-wrap items-center gap-3">
-                    <h3 class="text-[18px] font-bold text-[#061a45]">{{ a.name }}</h3>
-                    <span class="inline-flex rounded-full px-3 py-1 text-[13px] font-medium" :class="a.badgeClass">{{ a.status }}</span>
+                    <h3 class="text-[18px] font-bold text-[#061a45]">
+                        {{ a.name }}
+                    </h3>
+                    <span
+                        class="inline-flex rounded-full px-3 py-1 text-[13px] font-medium"
+                        :class="a.badgeClass"
+                        >{{ a.status }}</span
+                    >
                 </div>
-                <div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-[15px] text-[#455572]">
-                    <span class="text-[20px] font-bold text-[#061a45]">{{ a.value }}</span>
+                <div
+                    class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-[15px] text-[#455572]"
+                >
+                    <span class="text-[20px] font-bold text-[#061a45]">{{
+                        a.value
+                    }}</span>
                     <span>{{ a.range }}</span>
                     <span class="inline-flex items-center gap-2">
-                        <IconeCalendrier class="h-[16px] w-[16px]" />{{ a.date }}
+                        <IconeCalendrier class="h-[16px] w-[16px]" />{{
+                            a.date
+                        }}
                     </span>
                 </div>
             </article>
@@ -202,28 +260,54 @@
             <article class="card p-6">
                 <div class="flex items-center justify-between gap-3">
                     <div>
-                        <h3 class="text-[22px] font-extrabold text-slate-900">Historique des prises</h3>
+                        <h3 class="text-[22px] font-extrabold text-slate-900">
+                            Historique des prises
+                        </h3>
                         <p class="mt-1 text-[14px] text-[#5b6b84]">
-                            Historique réel des traitements pris par le patient, avec 7 derniers jours affichés par défaut.
+                            Historique réel des traitements pris par le patient,
+                            avec 7 derniers jours affichés par défaut.
                         </p>
                     </div>
-                    <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-[12px] font-semibold text-[#3257d6]">
-                        {{ patient.treatmentHistoryRows?.length || 0 }} jour{{ (patient.treatmentHistoryRows?.length || 0) > 1 ? "s" : "" }}
+                    <span
+                        class="rounded-full bg-[#eef4ff] px-3 py-1 text-[12px] font-semibold text-[#3257d6]"
+                    >
+                        {{ patient.treatmentHistoryRows?.length || 0 }} jour{{
+                            (patient.treatmentHistoryRows?.length || 0) > 1
+                                ? "s"
+                                : ""
+                        }}
                     </span>
                 </div>
 
                 <!-- Filtres traitements -->
-                <article class="mt-6 rounded-[18px] border border-[#dbe2ec] bg-[#fbfcfe] p-5">
-                    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <article
+                    class="mt-6 rounded-[18px] border border-[#dbe2ec] bg-[#fbfcfe] p-5"
+                >
+                    <div
+                        class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"
+                    >
                         <div>
-                            <h4 class="text-[17px] font-bold text-[#10254f]">Filtrer l'historique des traitements</h4>
-                            <p class="mt-1 text-[14px] text-[#60708b]">Affinez l'affichage par date, traitement ou statut d'observance.</p>
+                            <h4 class="text-[17px] font-bold text-[#10254f]">
+                                Filtrer l'historique des traitements
+                            </h4>
+                            <p class="mt-1 text-[14px] text-[#60708b]">
+                                Affinez l'affichage par date, traitement ou
+                                statut d'observance.
+                            </p>
                         </div>
                         <button
-                            v-if="treatDate || treatMed !== 'all' || treatStatus !== 'all'"
+                            v-if="
+                                treatDate ||
+                                treatMed !== 'all' ||
+                                treatStatus !== 'all'
+                            "
                             type="button"
                             class="btn-outline"
-                            @click="treatDate = ''; treatMed = 'all'; treatStatus = 'all';"
+                            @click="
+                                treatDate = '';
+                                treatMed = 'all';
+                                treatStatus = 'all';
+                            "
                         >
                             Réinitialiser
                         </button>
@@ -232,13 +316,25 @@
                     <div class="mt-5 grid gap-4 md:grid-cols-3">
                         <div>
                             <label class="filter-label">Date</label>
-                            <input v-model="treatDate" type="date" class="input-field" />
+                            <input
+                                v-model="treatDate"
+                                type="date"
+                                class="input-field"
+                            />
                         </div>
                         <div>
                             <label class="filter-label">Traitement</label>
                             <select v-model="treatMed" class="input-field">
-                                <option value="all">Tous les traitements</option>
-                                <option v-for="m in treatMedOptions" :key="m" :value="m">{{ m }}</option>
+                                <option value="all">
+                                    Tous les traitements
+                                </option>
+                                <option
+                                    v-for="m in treatMedOptions"
+                                    :key="m"
+                                    :value="m"
+                                >
+                                    {{ m }}
+                                </option>
                             </select>
                         </div>
                         <div>
@@ -259,16 +355,33 @@
                         :key="day.dateKey"
                         class="rounded-[18px] border border-[#dbe2ec] bg-[#fbfcfe] p-5"
                     >
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div
+                            class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
+                        >
                             <div>
-                                <h4 class="text-[16px] font-bold text-[#10254f]">{{ longDate(day.dateKey) }}</h4>
-                                <p class="mt-1 text-[14px] text-[#60708b]">{{ day.taken }}/{{ day.total }} prises effectuées</p>
+                                <h4
+                                    class="text-[16px] font-bold text-[#10254f]"
+                                >
+                                    {{ longDate(day.dateKey) }}
+                                </h4>
+                                <p class="mt-1 text-[14px] text-[#60708b]">
+                                    {{ day.taken }}/{{ day.total }} prises
+                                    effectuées
+                                </p>
                             </div>
                             <span
                                 class="inline-flex h-[34px] items-center rounded-full px-3 text-[12px] font-semibold"
-                                :class="day.isComplete ? 'bg-[#dff6e7] text-[#15803d]' : 'bg-[#e9eef7] text-[#42526b]'"
+                                :class="
+                                    day.isComplete
+                                        ? 'bg-[#dff6e7] text-[#15803d]'
+                                        : 'bg-[#e9eef7] text-[#42526b]'
+                                "
                             >
-                                {{ day.isComplete ? "Jour complet" : "Jour partiel" }}
+                                {{
+                                    day.isComplete
+                                        ? "Jour complet"
+                                        : "Jour partiel"
+                                }}
                             </span>
                         </div>
 
@@ -278,22 +391,42 @@
                                 :key="`${day.dateKey}-${med.id}`"
                                 class="rounded-[16px] border border-[#e2e8f0] bg-white px-4 py-4"
                             >
-                                <div class="flex items-start justify-between gap-3">
+                                <div
+                                    class="flex items-start justify-between gap-3"
+                                >
                                     <div>
-                                        <p class="text-[15px] font-bold text-[#112652]">{{ med.name }}</p>
-                                        <p class="mt-1 text-[13px] text-[#63758d]">{{ med.dose }}</p>
+                                        <p
+                                            class="text-[15px] font-bold text-[#112652]"
+                                        >
+                                            {{ med.name }}
+                                        </p>
+                                        <p
+                                            class="mt-1 text-[13px] text-[#63758d]"
+                                        >
+                                            {{ med.dose }}
+                                        </p>
                                     </div>
                                     <span
                                         class="inline-flex h-[30px] min-w-[52px] items-center justify-center rounded-full px-3 text-[12px] font-semibold"
-                                        :class="med.isComplete ? 'bg-[#dff6e7] text-[#15803d]' : 'bg-[#edf2ff] text-[#3257d6]'"
+                                        :class="
+                                            med.isComplete
+                                                ? 'bg-[#dff6e7] text-[#15803d]'
+                                                : 'bg-[#edf2ff] text-[#3257d6]'
+                                        "
                                     >
                                         {{ med.taken }}/{{ med.total }}
                                     </span>
                                 </div>
-                                <div class="mt-4 h-[8px] rounded-full bg-[#dfe5ee]">
+                                <div
+                                    class="mt-4 h-[8px] rounded-full bg-[#dfe5ee]"
+                                >
                                     <div
                                         class="h-[8px] rounded-full transition-all"
-                                        :class="med.isComplete ? 'bg-[#16a34a]' : 'bg-[#4f46e5]'"
+                                        :class="
+                                            med.isComplete
+                                                ? 'bg-[#16a34a]'
+                                                : 'bg-[#4f46e5]'
+                                        "
                                         :style="{ width: `${med.progress}%` }"
                                     />
                                 </div>
@@ -302,9 +435,17 @@
                     </article>
                 </div>
 
-                <div v-else class="mt-6 rounded-[16px] border border-dashed border-[#d3dbe7] bg-[#fbfcff] px-5 py-8 text-center">
-                    <p class="text-[15px] font-semibold text-[#10254f]">Aucun historique de prise disponible.</p>
-                    <p class="mt-2 text-[13px] text-[#697892]">Essayez une autre date, un autre traitement ou un autre filtre d'observance.</p>
+                <div
+                    v-else
+                    class="mt-6 rounded-[16px] border border-dashed border-[#d3dbe7] bg-[#fbfcff] px-5 py-8 text-center"
+                >
+                    <p class="text-[15px] font-semibold text-[#10254f]">
+                        Aucun historique de prise disponible.
+                    </p>
+                    <p class="mt-2 text-[13px] text-[#697892]">
+                        Essayez une autre date, un autre traitement ou un autre
+                        filtre d'observance.
+                    </p>
                 </div>
             </article>
         </section>
@@ -360,31 +501,43 @@ const EmptyState = {
 
 // ─── Onglets ──────────────────────────────────────────────────────────────────
 const TABS = [
-    { key: "vitals",     label: "Signes vitaux", icon: IconeCoeur },
-    { key: "analyses",   label: "Analyses",       icon: IconeOnde },
-    { key: "treatments", label: "Traitements",    icon: IconeLien },
+    { key: "vitals", label: "Signes vitaux", icon: IconeCoeur },
+    { key: "analyses", label: "Analyses", icon: IconeOnde },
+    { key: "treatments", label: "Traitements", icon: IconeLien },
 ];
 const activeTab = ref("vitals");
 
 // ─── Filtres ──────────────────────────────────────────────────────────────────
-const vitalDate    = ref("");
-const vitalSign    = ref("all");
+const vitalDate = ref("");
+const vitalSign = ref("all");
 const analysisDate = ref("");
 const analysisType = ref("all");
-const treatDate    = ref("");
-const treatMed     = ref("all");
-const treatStatus  = ref("all");
+const treatDate = ref("");
+const treatMed = ref("all");
+const treatStatus = ref("all");
 
 // ─── Observation form ─────────────────────────────────────────────────────────
-const obsText   = ref("");
+const obsText = ref("");
 const obsSaving = ref(false);
-const obsMsg    = ref(null);
+const obsMsg = ref(null);
 
 // ─── Vitals filtrés ───────────────────────────────────────────────────────────
 const VITAL_CARDS = [
-    { key: "heartRate",    label: "Rythme cardiaque", class: "border-[#f4bcc3] bg-[#fff5f6]" },
-    { key: "bloodPressure",label: "Tension",          class: "border-[#aac8ff] bg-[#eff6ff]" },
-    { key: "saturation",   label: "Saturation O2",    class: "border-[#dcc5ff] bg-[#faf4ff]" },
+    {
+        key: "heartRate",
+        label: "Rythme cardiaque",
+        class: "border-[#f4bcc3] bg-[#fff5f6]",
+    },
+    {
+        key: "bloodPressure",
+        label: "Tension",
+        class: "border-[#aac8ff] bg-[#eff6ff]",
+    },
+    {
+        key: "saturation",
+        label: "Saturation O2",
+        class: "border-[#dcc5ff] bg-[#faf4ff]",
+    },
 ];
 
 const filteredVitals = computed(() => {
@@ -404,15 +557,28 @@ const filteredVitals = computed(() => {
 // ─── Analyses filtrées ────────────────────────────────────────────────────────
 const analysisTypes = computed(() => {
     const analyses = props.patient?.analyses ?? [];
-    return [...new Set(analyses.map((a) => String(a.type || "").trim()).filter(Boolean))];
+    return [
+        ...new Set(
+            analyses.map((a) => String(a.type || "").trim()).filter(Boolean),
+        ),
+    ];
 });
 
 const filteredAnalyses = computed(() => {
     const analyses = props.patient?.analyses ?? [];
-    const recentKeys = [...new Set(analyses.map((a) => a.isoDate).filter(Boolean))].slice(0, 7);
+    const recentKeys = [
+        ...new Set(analyses.map((a) => a.isoDate).filter(Boolean)),
+    ].slice(0, 7);
     return analyses
-        .filter((a) => analysisDate.value ? a.isoDate === analysisDate.value : recentKeys.includes(a.isoDate))
-        .filter((a) => analysisType.value === "all" || a.type === analysisType.value);
+        .filter((a) =>
+            analysisDate.value
+                ? a.isoDate === analysisDate.value
+                : recentKeys.includes(a.isoDate),
+        )
+        .filter(
+            (a) =>
+                analysisType.value === "all" || a.type === analysisType.value,
+        );
 });
 
 // ─── Traitements filtrés ──────────────────────────────────────────────────────
@@ -430,20 +596,39 @@ const filteredTreatments = computed(() => {
     return pool
         .filter((d) => !treatDate.value || d.dateKey === treatDate.value)
         .map((d) => {
-            const meds = d.meds.filter((m) => treatMed.value === "all" || m.name === treatMed.value);
+            const meds = d.meds.filter(
+                (m) => treatMed.value === "all" || m.name === treatMed.value,
+            );
             const total = meds.reduce((s, m) => s + +(m.total || 0), 0);
             const taken = meds.reduce((s, m) => s + +(m.taken || 0), 0);
-            return { ...d, meds, total, taken, isComplete: total > 0 && taken >= total };
+            return {
+                ...d,
+                meds,
+                total,
+                taken,
+                isComplete: total > 0 && taken >= total,
+            };
         })
         .filter((d) => d.meds.length)
-        .filter((d) => treatStatus.value === "all" || (treatStatus.value === "complete") === d.isComplete);
+        .filter(
+            (d) =>
+                treatStatus.value === "all" ||
+                (treatStatus.value === "complete") === d.isComplete,
+        );
 });
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 function longDate(iso) {
     if (!iso) return "-";
     const d = new Date(`${iso}T00:00:00`);
-    return isNaN(d) ? iso : d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    return isNaN(d)
+        ? iso
+        : d.toLocaleDateString("fr-FR", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+          });
 }
 
 // ─── API — save observation ───────────────────────────────────────────────────
@@ -452,25 +637,33 @@ async function saveObservation() {
     obsSaving.value = true;
     obsMsg.value = null;
     try {
-        await api.post(`/doctor-invitations/patients/${props.patient.id}/observations`, {
-            date: new Date().toISOString().slice(0, 10),
-            observation: obsText.value.trim(),
-        });
+        await api.post(
+            `/doctor-invitations/patients/${props.patient.id}/observations`,
+            {
+                date: new Date().toISOString().slice(0, 10),
+                observation: obsText.value.trim(),
+            },
+        );
         obsText.value = "";
         obsMsg.value = { ok: true, text: "Observation enregistrée." };
     } catch {
         obsMsg.value = { ok: false, text: "Erreur lors de l'enregistrement." };
     } finally {
         obsSaving.value = false;
-        setTimeout(() => { obsMsg.value = null; }, 3000);
+        setTimeout(() => {
+            obsMsg.value = null;
+        }, 3000);
     }
 }
 
 // ─── Reset form when patient changes ─────────────────────────────────────────
-watch(() => props.patient?.id, () => {
-    obsText.value = "";
-    obsMsg.value = null;
-});
+watch(
+    () => props.patient?.id,
+    () => {
+        obsText.value = "";
+        obsMsg.value = null;
+    },
+);
 </script>
 
 <style scoped>

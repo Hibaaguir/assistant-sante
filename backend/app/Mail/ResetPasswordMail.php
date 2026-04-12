@@ -18,14 +18,16 @@ class ResetPasswordMail extends Mailable
         public string $resetUrl
     ) {}
 
+    // Créer l'enveloppe de l'email
     public function envelope(): Envelope
     {
         return new Envelope(
             to: [$this->email],
-            subject: '[HealthFlow] Password reset',
+            subject: '[HealthFlow] Réinitialisation du mot de passe',
         );
     }
 
+    // Contenu de l'email
     public function content(): Content
     {
         return new Content(
@@ -38,6 +40,7 @@ class ResetPasswordMail extends Mailable
         );
     }
 
+    // Pièces jointes
     public function attachments(): array
     {
         return [];

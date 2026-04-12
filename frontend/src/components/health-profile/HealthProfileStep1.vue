@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-10">
-        <!-- Titre -->
+        <!-- Step title -->
         <div class="mx-auto max-w-2xl text-center">
             <h2 class="mb-4 text-4xl font-extrabold text-slate-900">
                 Informations de base
@@ -12,28 +12,36 @@
         </div>
 
         <div class="space-y-8">
-            <!-- Genre -->
+            <!-- ── Genre ─────────────────────────────────── -->
             <div class="space-y-4">
-                <FieldLabel required>Genre</FieldLabel>
+                <p class="text-base font-medium text-gray-900">
+                    Genre <span class="ml-0.5 text-red-600">*</span>
+                </p>
+
+                <!-- Two gender cards side by side -->
                 <div class="grid max-w-xl grid-cols-2 gap-4">
                     <GenderCard
                         v-for="gender in GENDERS"
                         :key="gender.value"
                         v-bind="gender"
                         :selected="form.sexe === gender.value"
-                        :has-error="showErrors && !!errors.sexe"
+                        :has-error="props.showErrors && !!errors.sexe"
                         @select="form.sexe = gender.value"
                     />
                 </div>
-                <FieldError
-                    v-if="showErrors && errors.sexe"
-                    :message="errors.sexe"
-                />
+
+                <!-- Error message shown after the user tries to advance -->
+                <p
+                    v-if="props.showErrors && errors.sexe"
+                    class="text-sm text-red-600"
+                >
+                    {{ errors.sexe }}
+                </p>
             </div>
 
-            <!-- Âge calculé -->
+            <!-- ── Âge (read-only, calculated from date of birth) ─────── -->
             <div class="max-w-md space-y-2">
-                <FieldLabel>Âge</FieldLabel>
+                <p class="text-base font-medium text-gray-900">Âge</p>
                 <div
                     class="flex h-14 items-center rounded-xl border-2 border-gray-200 bg-gray-50 px-5 text-lg text-gray-900"
                 >
@@ -49,9 +57,12 @@
                 </p>
             </div>
 
-            <!-- Taille / Poids -->
+            <!-- ── Taille / Poids ─────────────────────────────────────── -->
             <div class="space-y-4">
-                <FieldLabel required>Taille et poids</FieldLabel>
+                <p class="text-base font-medium text-gray-900">
+                    Taille et poids <span class="ml-0.5 text-red-600">*</span>
+                </p>
+
                 <div class="grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2">
                     <div
                         v-for="field in MEASURE_FIELDS"
@@ -66,15 +77,20 @@
                             :placeholder="field.placeholder"
                             class="h-14 w-full rounded-xl border-2 px-4 text-lg outline-none focus:border-purple-400"
                             :class="
-                                showErrors && errors[field.key]
+                                props.showErrors && errors[field.key]
                                     ? 'border-red-300'
                                     : 'border-gray-200'
                             "
                         />
-                        <FieldError
-                            v-if="showErrors && errors[field.key]"
-                            :message="errors[field.key]"
-                        />
+
+                        <!-- Inline error for height or weight -->
+                        <p
+                            v-if="props.showErrors && errors[field.key]"
+                            class="text-sm text-red-600"
+                        >
+                            {{ errors[field.key] }}
+                        </p>
+
                         <p class="px-1 text-xs text-gray-500">
                             {{ field.hint }}
                         </p>
@@ -82,10 +98,14 @@
                 </div>
             </div>
 
-            <!-- Habitudes de vie -->
+            <!-- ── Habitudes de vie ───────────────────────────────────── -->
             <div class="space-y-4">
-                <FieldLabel>Habitudes de vie</FieldLabel>
+                <p class="text-base font-medium text-gray-900">
+                    Habitudes de vie
+                </p>
+
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <!-- ToggleCard supports v-model to set true/false -->
                     <ToggleCard
                         v-for="habit in HABITS"
                         :key="habit.key"
@@ -95,15 +115,19 @@
                 </div>
             </div>
 
-            <!-- Objectifs -->
+            <!-- ── Objectifs ──────────────────────────────────────────── -->
             <div class="space-y-4">
-                <FieldLabel required>Objectifs</FieldLabel>
+                <p class="text-base font-medium text-gray-900">
+                    Objectifs <span class="ml-0.5 text-red-600">*</span>
+                </p>
                 <p class="text-xs text-gray-500">
                     Vous pouvez sélectionner plusieurs objectifs.
                 </p>
+
                 <div
                     class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
                 >
+                    <!-- GoalCard emits "click" to toggle the goal in the list -->
                     <GoalCard
                         v-for="goal in GOALS"
                         :key="goal.value"
@@ -112,184 +136,28 @@
                         @click="toggleGoal(goal.value)"
                     />
                 </div>
-                <FieldError
-                    v-if="showErrors && errors.objectifs"
-                    :message="errors.objectifs"
-                />
+
+                <!-- Error shown if no goal was selected -->
+                <p
+                    v-if="props.showErrors && errors.objectifs"
+                    class="text-sm text-red-600"
+                >
+                    {{ errors.objectifs }}
+                </p>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { defineComponent, h, toRef } from "vue";
+// Import the extracted sub-components (no more render functions!)
+import GenderCard from "./GenderCard.vue";
+import ToggleCard from "./ToggleCard.vue";
+import GoalCard from "./GoalCard.vue";
 
-// ─── Mini-composants locaux ───────────────────────────────────────────────────
+// ─── Static data ───────────────────────────────────────────────────────────────
 
-const FieldLabel = defineComponent({
-    props: { required: Boolean },
-    setup:
-        (p, { slots }) =>
-        () =>
-            h("p", { class: "text-base font-medium text-gray-900" }, [
-                slots.default?.(),
-                p.required
-                    ? h("span", { class: "ml-0.5 text-red-600" }, " *")
-                    : null,
-            ]),
-});
-
-const FieldError = defineComponent({
-    props: { message: String },
-    setup: (p) => () => h("p", { class: "text-sm text-red-600" }, p.message),
-});
-
-const GenderCard = defineComponent({
-    props: {
-        value: String,
-        label: String,
-        iconPaths: Array,
-        selected: Boolean,
-        hasError: Boolean,
-    },
-    emits: ["select"],
-    setup:
-        (p, { emit }) =>
-        () => {
-            const borderClass = p.selected
-                ? "border-purple-400 bg-purple-50/50 shadow-sm"
-                : p.hasError
-                  ? "border-red-300 bg-white"
-                  : "border-gray-200 bg-white hover:border-gray-300";
-
-            return h(
-                "label",
-                {
-                    class: `relative cursor-pointer rounded-2xl border-2 p-6 transition-all hover:shadow-md ${borderClass}`,
-                },
-                [
-                    h("input", {
-                        class: "sr-only",
-                        type: "radio",
-                        name: "sex",
-                        checked: p.selected,
-                        onChange: () => emit("select"),
-                    }),
-                    h("div", { class: "flex flex-col items-center gap-3" }, [
-                        h(
-                            "svg",
-                            {
-                                class: `h-8 w-8 ${p.selected ? "text-purple-500" : "text-gray-400"}`,
-                                fill: "none",
-                                viewBox: "0 0 24 24",
-                                stroke: "currentColor",
-                            },
-                            p.iconPaths.map((d) =>
-                                h("path", { d, "stroke-width": "2" }),
-                            ),
-                        ),
-                        h(
-                            "span",
-                            {
-                                class: `font-medium ${p.selected ? "text-purple-700" : "text-gray-700"}`,
-                            },
-                            p.label,
-                        ),
-                    ]),
-                ],
-            );
-        },
-});
-
-const ToggleCard = defineComponent({
-    props: { modelValue: Boolean, label: String },
-    emits: ["update:modelValue"],
-    setup:
-        (p, { emit }) =>
-        () =>
-            h(
-                "div",
-                {
-                    class: "flex items-center justify-between rounded-xl border-2 border-gray-200 bg-white px-4 py-4",
-                },
-                [
-                    h(
-                        "span",
-                        { class: "text-sm font-medium text-gray-800" },
-                        p.label,
-                    ),
-                    h(
-                        "label",
-                        {
-                            class: "relative inline-flex cursor-pointer items-center",
-                        },
-                        [
-                            h("input", {
-                                type: "checkbox",
-                                class: "peer sr-only",
-                                checked: p.modelValue,
-                                onChange: (e) =>
-                                    emit("update:modelValue", e.target.checked),
-                            }),
-                            h("div", {
-                                class: "h-8 w-14 rounded-full bg-gray-300 transition-colors peer-checked:bg-purple-400",
-                            }),
-                            h("div", {
-                                class: "absolute left-1 h-6 w-6 rounded-full bg-white shadow transition-transform peer-checked:translate-x-6",
-                            }),
-                        ],
-                    ),
-                ],
-            ),
-});
-
-const GoalCard = defineComponent({
-    props: {
-        value: String,
-        label: String,
-        color: String,
-        icon: String,
-        selected: Boolean,
-    },
-    emits: ["click"],
-    setup:
-        (p, { emit }) =>
-        () =>
-            h(
-                "div",
-                {
-                    class: `cursor-pointer rounded-xl border-2 p-6 transition-all hover:shadow-md ${p.selected ? "border-purple-400 bg-purple-50/50 shadow-sm" : "border-gray-200 bg-white hover:border-gray-300"}`,
-                    onClick: () => emit("click"),
-                },
-                [
-                    h("div", { class: "flex items-center gap-4" }, [
-                        h(
-                            "div",
-                            {
-                                class: `flex h-12 w-12 items-center justify-center rounded-2xl border ${p.color}`,
-                            },
-                            h(
-                                "svg",
-                                {
-                                    class: "h-6 w-6",
-                                    fill: "none",
-                                    viewBox: "0 0 24 24",
-                                    stroke: "currentColor",
-                                },
-                                h("path", { d: p.icon, "stroke-width": "2" }),
-                            ),
-                        ),
-                        h(
-                            "p",
-                            { class: "flex-1 font-medium text-gray-900" },
-                            p.label,
-                        ),
-                    ]),
-                ],
-            ),
-});
-
-// ─── Données statiques ────────────────────────────────────────────────────────
+// Gender options — each has a value, a label, and SVG icon paths
 const GENDERS = [
     {
         value: "male",
@@ -302,15 +170,20 @@ const GENDERS = [
     {
         value: "female",
         label: "Femme",
-        iconPaths: ["M12 13v7m-3-3h6", "M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"],
+        iconPaths: [
+            "M12 13v7m-3-3h6",
+            "M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z",
+        ],
     },
 ];
 
+// Life habits to show as toggle switches
 const HABITS = [
     { key: "fumeur", label: "Fumeur" },
     { key: "alcool", label: "Consommation d'alcool" },
 ];
 
+// Health goals the user can choose (multiple allowed)
 const GOALS = [
     {
         value: "Maintenir mon poids",
@@ -350,6 +223,7 @@ const GOALS = [
     },
 ];
 
+// Height and weight input configuration (min, max, placeholder, hint)
 const MEASURE_FIELDS = [
     {
         key: "taille",
@@ -367,7 +241,8 @@ const MEASURE_FIELDS = [
     },
 ];
 
-// ─── Props ────────────────────────────────────────────────────────────────────
+// ─── Props ─────────────────────────────────────────────────────────────────────
+// Note: we keep a reference to `props` so we can use props.showErrors in template
 const props = defineProps({
     form: { type: Object, required: true },
     computedAge: { type: [Number, String], default: "" },
@@ -378,15 +253,22 @@ const props = defineProps({
     showErrors: { type: Boolean, default: false },
 });
 
+// Objects keep reactivity when destructured (they are passed by reference)
 const { form, errors } = props;
-const showErrors = toRef(props, "showErrors");
 
+// Make sure objectifs is always an array before rendering
 if (!Array.isArray(form.objectifs)) form.objectifs = [];
 
-// ─── Logique ──────────────────────────────────────────────────────────────────
+// ─── Functions ─────────────────────────────────────────────────────────────────
+
+// Add or remove a goal from the selected list when the user clicks a GoalCard
 function toggleGoal(value) {
-    form.objectifs = form.objectifs.includes(value)
-        ? form.objectifs.filter((v) => v !== value)
-        : [...form.objectifs, value];
+    if (form.objectifs.includes(value)) {
+        // Already selected → remove it
+        form.objectifs = form.objectifs.filter((v) => v !== value);
+    } else {
+        // Not yet selected → add it
+        form.objectifs = [...form.objectifs, value];
+    }
 }
 </script>

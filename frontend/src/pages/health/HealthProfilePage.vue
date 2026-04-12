@@ -1,8 +1,5 @@
 <template>
-    
-    <div
-        class="w-full px-4 py-4 sm:px-6 lg:px-8"
-    >
+    <div class="w-full px-4 py-4 sm:px-6 lg:px-8">
         <header class="mb-4 flex items-start gap-3 sm:gap-4">
             <div
                 class="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-400 to-purple-500 shadow-md shadow-purple-300/80 sm:h-12 sm:w-12"
@@ -23,12 +20,12 @@
                 <h1
                     class="text-[42px] font-bold leading-none tracking-[-0.01em] text-purple-900 sm:text-[48px]"
                 >
-                    Health Profile
+                    Profil de santé
                 </h1>
                 <p
                     class="mt-1 text-[12px] font-medium leading-none text-slate-500 sm:text-[13px]"
                 >
-                    Manage your health information
+                    Gérez vos informations de santé
                 </p>
             </div>
         </header>
@@ -1347,7 +1344,9 @@ function formatDateWithSlashes(value) {
 
 // Convert DD/MM/YYYY → YYYY-MM-DD for the API, rejecting invalid dates (e.g. 02/50/2026)
 function frenchDateToIso(value) {
-    const match = String(value || "").trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    const match = String(value || "")
+        .trim()
+        .match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (!match) return null;
     const day = Number(match[1]);
     const month = Number(match[2]);
@@ -1363,7 +1362,9 @@ function frenchDateToIso(value) {
 // Convert YYYY-MM-DD → DD/MM/YYYY for display
 function isoDateToFrench(value) {
     if (!value) return "";
-    const match = String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const match = String(value)
+        .trim()
+        .match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (!match) return "";
     const frenchDate = `${match[3]}/${match[2]}/${match[1]}`;
     return frenchDate;
@@ -1806,9 +1807,7 @@ async function saveSection(section) {
                 resetEditFlags();
                 editing.health = true;
             }
-            notifications.warning(
-                "Veuillez corriger les champs en erreur.",
-            );
+            notifications.warning("Veuillez corriger les champs en erreur.");
         } else {
             notifications.error("Erreur lors de la sauvegarde du profil.");
         }

@@ -1,5 +1,5 @@
 <?php
-
+// Fabrique pour generer des entrees de journal fictives
 namespace Database\Factories;
 
 use App\Models\User;

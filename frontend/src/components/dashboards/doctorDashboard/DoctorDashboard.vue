@@ -88,10 +88,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useNotificationsStore } from "@/stores/notifications";
 import api from "@/services/api";
-import {
-    IconAddUser,
-    IconUsers,
-} from "@/components/doctors/DoctorIcons.js";
+import { IconAddUser, IconUsers } from "@/components/doctors/DoctorIcons.js";
 import {
     mapInvitation,
     mapPatient,
@@ -117,13 +114,13 @@ const selectedPatient = ref(null);
 const tabs = computed(() => [
     {
         key: "patients",
-        label: "My Patients",
+        label: "Mes patients",
         count: patients.value.length,
         icon: IconUsers,
     },
     {
         key: "invitations",
-        label: "Add Invitations",
+        label: "Ajouter des invitations",
         count: invitations.value.length,
         icon: IconAddUser,
     },
@@ -146,7 +143,9 @@ async function loadData() {
             .map(mapInvitation);
         patients.value = (patRes?.data?.data ?? []).map(mapPatient);
     } catch {
-        setError("Unable to load doctor data at this time.");
+        setError(
+            "Impossible de charger les données du médecin pour le moment.",
+        );
         invitations.value = processedInvitations.value = patients.value = [];
     }
 }
@@ -159,7 +158,9 @@ async function openPatient(patient) {
         const detail = mapPatientDetail(res?.data?.data, patient);
         selectedPatient.value = detail;
     } catch {
-        setError("Unable to load patient details at this time.");
+        setError(
+            "Impossible de charger les détails du patient pour le moment.",
+        );
     }
 }
 
@@ -181,7 +182,7 @@ async function manageInvitation(id, action, onSuccess) {
         onSuccess();
     } catch {
         setError(
-            `Unable to ${action === "accept" ? "accept" : "reject"} this invitation at this time.`,
+            `Impossible d'${action === "accept" ? "accepter" : "rejeter"} cette invitation pour le moment.`,
         );
     } finally {
         actionInvitationId.value = null;

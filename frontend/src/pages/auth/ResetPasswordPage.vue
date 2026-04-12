@@ -202,7 +202,11 @@
                     :disabled="loading"
                     class="h-12 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-purple-700 font-semibold text-white transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    {{ loading ? "Resetting..." : "Reset my password" }}
+                    {{
+                        loading
+                            ? "Réinitialisation en cours..."
+                            : "Réinitialiser mon mot de passe"
+                    }}
                 </button>
             </form>
 
@@ -228,14 +232,15 @@
                             </div>
                             <div>
                                 <p class="font-semibold text-emerald-900">
-                                    Success!
+                                    Succès !
                                 </p>
                                 <p class="mt-1 text-sm text-emerald-700">
-                                    Your password has been reset successfully.
+                                    Votre mot de passe a été réinitialisé avec
+                                    succès.
                                 </p>
                                 <p class="mt-2 text-xs text-emerald-600">
-                                    You will be redirected to the login page
-                                    shortly.
+                                    Vous serez redirigé vers la page de
+                                    connexion en bref.
                                 </p>
                             </div>
                         </div>
@@ -245,7 +250,7 @@
                         class="h-12 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-purple-700 font-semibold text-white transition hover:shadow-lg"
                         @click="$router.push({ name: 'login' })"
                     >
-                        Go to Login
+                        Aller à la connexion
                     </button>
                 </div>
             </Transition>
@@ -262,10 +267,10 @@
 
             <!-- Info box -->
             <div class="rounded-xl bg-purple-50 p-4 text-sm text-purple-800">
-                <p class="font-semibold">🔒 Security</p>
+                <p class="font-semibold">🔒 Sécurité</p>
                 <p class="mt-1">
-                    We will never ask you for your password via email. Keep it
-                    secret.
+                    Nous ne vous demanderons jamais votre mot de passe par
+                    e-mail. Gardez-le secret.
                 </p>
             </div>
         </div>
@@ -309,7 +314,7 @@ onMounted(() => {
     const token = route.query.token;
 
     if (!email || !token) {
-        errorMessage.value = "Invalid or expired reset link.";
+        errorMessage.value = "Lien de réinitialisation invalide ou expiré.";
         setTimeout(() => {
             router.push({ name: "login" });
         }, 2000);
@@ -326,17 +331,18 @@ async function resetPassword() {
     errorMessage.value = "";
 
     if (!form.password) {
-        errors.password = "Password is required.";
+        errors.password = "Le mot de passe est obligatoire.";
         return;
     }
 
     if (form.password.length < 8) {
-        errors.password = "Password must contain at least 8 characters.";
+        errors.password =
+            "Le mot de passe doit contenir au moins 8 caractères.";
         return;
     }
 
     if (form.password !== form.passwordConfirmation) {
-        errors.passwordConfirmation = "Passwords do not match.";
+        errors.passwordConfirmation = "Les mots de passe ne correspondent pas.";
         return;
     }
 
@@ -373,9 +379,13 @@ async function resetPassword() {
                     apiErrors.password_confirmation[0];
             }
         } else {
-            errorMessage.value = "An error occurred. Please try again.";
+            errorMessage.value =
+                "Une erreur s'est produite. Veuillez réessayer.";
         }
-        notifications.error(errorMessage.value || "Error resetting password.");
+        notifications.error(
+            errorMessage.value ||
+                "Erreur lors de la réinitialisation du mot de passe.",
+        );
     } finally {
         loading.value = false;
     }

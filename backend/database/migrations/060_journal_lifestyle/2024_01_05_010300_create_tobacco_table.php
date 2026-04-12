@@ -1,5 +1,5 @@
 <?php
-
+// Migration: creer la table de l'utilisation de tabac
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 
 class DoctorInvitationService
 {
-    // Check if a pending invitation exists for a given email
+    // Verifier si une invitation en attente existe
     public function existsForEmail(string $email): bool
     {
         return DoctorInvitation::whereRaw('LOWER(doctor_email) = ?', [strtolower($email)])
@@ -20,7 +20,7 @@ class DoctorInvitationService
             ->exists();
     }
 
-    // Link all pending invitations matching the doctor's email to their account
+    // Lier les invitations en attente au compte du medecin
     public function linkToDoctor(User $doctor): bool
     {
         if ($doctor->role !== 'doctor' || !$doctor->account?->email) {
@@ -32,7 +32,7 @@ class DoctorInvitationService
             ->update(['doctor_user_id' => $doctor->id]) > 0;
     }
 
-    // Create, update, or revoke the invitation when a health profile is saved
+    // Creer, mettre a jour ou revoquer l'invitation du profil de sante
     public function sync(HealthProfile $profile, ?string $previousEmail, User $patient): void
     {
         $shouldInvite = (bool) $profile->doctor_invited && !empty($profile->doctor_email);
@@ -47,7 +47,7 @@ class DoctorInvitationService
         $doctorEmail  = strtolower(trim((string) $profile->doctor_email));
         $emailChanged = $doctorEmail !== ($previousEmail !== null ? strtolower(trim($previousEmail)) : null);
 
-        // Revoke old invitations when the doctor email changed
+        // Revoquer les anciennes invitations si l'email a change
         if ($emailChanged) {
             DoctorInvitation::where('patient_user_id', $patient->id)
                 ->whereIn('status', ['pending', 'accepted'])
@@ -57,12 +57,12 @@ class DoctorInvitationService
 
         $doctor = $this->resolveDoctor($doctorEmail);
 
-        // Prevent self-invitation
+        // Eviter l'auto-invitation
         if ($doctor?->id === $patient->id) {
             return;
         }
 
-        // Promote to doctor role if the account exists but has a different role
+        // Promouvoir en role medecin si le compte existe
         if ($doctor && $doctor->role !== 'doctor') {
             try {
                 $doctor->update(['role' => 'doctor']);
@@ -91,7 +91,7 @@ class DoctorInvitationService
                     'revoked_at'     => null,
                 ]);
             } else {
-                // Still active — keep doctor_user_id in sync
+                // Toujours actif - maintenir la synchronisation
                 $existing->update(['doctor_user_id' => $doctor?->id]);
             }
         } else {
@@ -118,7 +118,7 @@ class DoctorInvitationService
         }
     }
 
-    // Find an accepted invitation between a doctor and a patient
+    // Trouver une invitation acceptee entre un medecin et un patient
     public function findAccepted(int $doctorId, int $patientId): ?DoctorInvitation
     {
         return DoctorInvitation::where('doctor_user_id', $doctorId)
@@ -129,15 +129,15 @@ class DoctorInvitationService
             ->first();
     }
 
-    // Check if a doctor owns an invitation, linking their account if not yet linked
+    // Verifier si un medecin possede une invitation et lier son compte
     public function authorizeAndLink(DoctorInvitation $invitation, User $doctor): bool
     {
-        // Already linked to this doctor
+        // Deja lie a ce medecin
         if ($invitation->doctor_user_id === $doctor->id) {
             return true;
         }
 
-        // Not linked yet — match by email and link now
+        // Pas encore lie - correspondre par email et lier maintenant
         $doctorEmail     = strtolower($doctor->account?->email ?? '');
         $invitationEmail = strtolower($invitation->doctor_email);
 
@@ -149,7 +149,7 @@ class DoctorInvitationService
         return false;
     }
 
-    // Resolve a user account by email address
+    // Resoudre un compte utilisateur par adresse email
     private function resolveDoctor(string $email): ?User
     {
         return User::whereHas('account', fn ($q) => $q->whereRaw('LOWER(email) = ?', [$email]))->first();

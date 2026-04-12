@@ -1,5 +1,5 @@
 <?php
-
+// Fabrique pour generer des invitations de medecin fictives
 namespace Database\Factories;
 
 use App\Models\User;

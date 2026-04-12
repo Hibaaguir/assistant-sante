@@ -211,26 +211,26 @@
                     <h2
                         class="m-0 text-[clamp(1.8rem,3.5vw,2.75rem)] font-extrabold leading-tight"
                     >
-                        Start your health journey today
+                        Commencez votre parcours santé aujourd'hui
                     </h2>
                     <p
                         class="mx-auto mt-4 max-w-[60ch] leading-7 text-violet-50"
                     >
-                        Join thousands of users who are taking control of their
-                        health with clarity and simplicity.
+                        Rejoignez des milliers d'utilisateurs qui prennent le
+                        contrôle de leur santé avec clarté et simplicité.
                     </p>
                     <div class="mt-6 flex flex-wrap justify-center gap-3">
                         <RouterLink
                             :to="{ name: 'register' }"
                             class="inline-flex min-h-[46px] items-center justify-center rounded-xl bg-white px-5 text-[0.92rem] font-bold text-blue-700 no-underline transition hover:-translate-y-0.5"
                         >
-                            Create Free Account
+                            Créer un compte gratuit
                         </RouterLink>
                         <RouterLink
                             :to="{ name: 'login' }"
                             class="inline-flex min-h-[46px] items-center justify-center rounded-xl border border-violet-200/80 bg-transparent px-5 text-[0.92rem] font-bold text-white no-underline transition hover:-translate-y-0.5"
                         >
-                            Login
+                            Connexion
                         </RouterLink>
                     </div>
 
@@ -260,11 +260,11 @@
         <footer class="bg-[#101d46] px-5 py-7 text-center text-[#dbe7ff]">
             <p class="m-0 font-extrabold text-[#99a9ff]">HealthFlow</p>
             <p class="my-2">
-                Modern, calm and premium health tracking for everyone.
+                Suivi de santé moderne, calme et premium pour tous.
             </p>
             <small class="text-[#99a6ca]"
-                >Copyright {{ currentYear }} HealthFlow. All rights
-                reserved.</small
+                >Copyright {{ currentYear }} HealthFlow. Tous droits
+                réservés.</small
             >
         </footer>
     </div>
@@ -286,14 +286,14 @@ const currentYear = new Date().getFullYear();
 
 const CTA_BADGES = [
     {
-        label: "Secure Data",
+        label: "Données sécurisées",
         icon: "M12 3 6 6v5c0 4 2 7 6 10 4-3 6-6 6-10V6l-6-3Z",
     },
     {
-        label: "GDPR Compliant",
+        label: "Conforme au RGPD",
         icon: "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.3A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z",
     },
-    { label: "100% Free", icon: "M12 2v20M4 12h16" },
+    { label: "100% Gratuit", icon: "M12 2v20M4 12h16" },
 ];
 
 // ─── Animations IntersectionObserver ─────────────────────────

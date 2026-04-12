@@ -1,28 +1,41 @@
-import { defineComponent, h } from "vue";
 
+
+import { defineComponent } from "vue";
+
+/**
+ * Creates a Vue component that renders an SVG icon.
+ *
+ * @param {Array} nodes  - Array of [tagName, attributes] pairs for SVG elements.
+ * @param {Boolean} filled - If true, the icon is filled (solid); otherwise outlined.
+ * @returns Vue component
+ */
 export function createIcon(nodes, filled = false) {
+    // Build each SVG child element as an HTML string
+    const innerHtml = nodes
+        .map(([tag, attrs]) => {
+            // Convert the attributes object into an HTML attribute string
+            const attrStr = Object.entries(attrs)
+                .map(([key, val]) => `${key}="${val}"`)
+                .join(" ");
+            return `<${tag} ${attrStr}/>`;
+        })
+        .join("");
+
+    // Choose stroke vs fill style based on the `filled` flag
+    const svgAttrs = filled
+        ? `fill="currentColor" stroke="none"`
+        : `fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"`;
+
+    // Return a simple Vue component with a template string (no render function)
     return defineComponent({
-        name: "DoctorPatientIcon",
-        inheritAttrs: false,
-        setup(_, { attrs }) {
-            return () =>
-                h(
-                    "svg",
-                    {
-                        viewBox: "0 0 24 24",
-                        fill: filled ? "currentColor" : "none",
-                        stroke: filled ? "none" : "currentColor",
-                        strokeWidth: filled ? undefined : 1.8,
-                        strokeLinecap: "round",
-                        strokeLinejoin: "round",
-                        "aria-hidden": "true",
-                        ...attrs,
-                    },
-                    nodes.map(([tag, tagAttrs]) => h(tag, tagAttrs)),
-                );
-        },
+        name: "SvgIcon",
+        inheritAttrs: false, // Let class/style pass through to the <svg> element
+        template: `<svg viewBox="0 0 24 24" ${svgAttrs} aria-hidden="true" v-bind="$attrs">${innerHtml}</svg>`,
     });
 }
+
+// ─── Icon definitions ─────────────────────────────────────────────────────────
+// Each icon is defined as an array of [SVG tag, attributes] pairs.
 
 export const IconLogout = createIcon([
     ["path", { d: "M10 17 15 12 10 7" }],
@@ -81,6 +94,7 @@ export const IconPulse = createIcon([
     ["path", { d: "M3 12h4l2.2-5 3.6 10 2.6-6H21" }],
 ]);
 
+// Filled (solid) heart icon
 export const IconHeartFilled = createIcon(
     [
         [
@@ -90,7 +104,7 @@ export const IconHeartFilled = createIcon(
             },
         ],
     ],
-    true,
+    true, // filled = true → uses fill="currentColor"
 );
 
 export const IconSearch = createIcon([

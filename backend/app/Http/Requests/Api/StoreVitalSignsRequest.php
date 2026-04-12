@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api;
 
 class StoreVitalSignsRequest extends ApiFormRequest
 {
+    // Definir les regles de validation
     public function rules(): array
     {
         return [
@@ -15,19 +16,20 @@ class StoreVitalSignsRequest extends ApiFormRequest
         ];
     }
 
+    // Messages d'erreur en francais
     public function messages(): array
     {
         return [
-            'measured_at.required' => 'The measurement date is required.',
-            'measured_at.date' => 'The measurement date must be a valid date.',
-            'heart_rate.max' => 'The heart rate must not exceed 260 bpm.',
-            'heart_rate.min' => 'The heart rate must be at least 20 bpm.',
-            'systolic_pressure.max' => 'The systolic pressure must not exceed 300 mmHg.',
-            'systolic_pressure.min' => 'The systolic pressure must be at least 50 mmHg.',
-            'diastolic_pressure.max' => 'The diastolic pressure must not exceed 220 mmHg.',
-            'diastolic_pressure.min' => 'The diastolic pressure must be at least 30 mmHg.',
-            'oxygen_saturation.max' => 'The oxygen saturation must not exceed 100%.',
-            'oxygen_saturation.min' => 'The oxygen saturation must be at least 0%.',
+            'measured_at.required' => 'La date de mesure est obligatoire.',
+            'measured_at.date' => 'La date de mesure doit être une date valide.',
+            'heart_rate.max' => 'La fréquence cardiaque ne doit pas dépasser 260 bpm.',
+            'heart_rate.min' => 'La fréquence cardiaque doit être au moins 20 bpm.',
+            'systolic_pressure.max' => 'La pression systolique ne doit pas dépasser 300 mmHg.',
+            'systolic_pressure.min' => 'La pression systolique doit être au moins 50 mmHg.',
+            'diastolic_pressure.max' => 'La pression diastolique ne doit pas dépasser 220 mmHg.',
+            'diastolic_pressure.min' => 'La pression diastolique doit être au moins 30 mmHg.',
+            'oxygen_saturation.max' => 'La saturation en oxygène ne doit pas dépasser 100%.',
+            'oxygen_saturation.min' => 'La saturation en oxygène doit être au moins 0%.',
         ];
     }
 }

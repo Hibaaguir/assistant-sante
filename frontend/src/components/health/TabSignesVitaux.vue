@@ -141,9 +141,18 @@
                         type="date"
                         class="h-12 w-full rounded-2xl border border-slate-300 bg-white pl-5 pr-12 text-[16px] text-slate-900 outline-none focus:border-purple-500"
                     />
-                    <CalendarIcon
+                    <!-- Calendar icon (inline SVG — no render function needed) -->
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
                         class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"
-                    />
+                    >
+                        <path
+                            d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
+                        />
+                    </svg>
                 </div>
             </div>
             <div>
@@ -170,7 +179,17 @@
                 class="rounded-2xl border border-slate-200 bg-white px-5 py-5"
             >
                 <div class="mb-4 flex items-center gap-3 text-slate-900">
-                    <CalendarIcon class="h-6 w-6 text-slate-500" />
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        class="h-6 w-6 text-slate-500"
+                    >
+                        <path
+                            d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
+                        />
+                    </svg>
                     <h3 class="text-[22px] font-semibold leading-none">
                         {{ day.longDate }}
                     </h3>
@@ -231,7 +250,16 @@
                     class="text-slate-500 hover:text-slate-700"
                     @click="showModal = false"
                 >
-                    <CloseIcon />
+                    <!-- Close icon (inline SVG — no render function needed) -->
+                    <svg
+                        viewBox="0 0 24 24"
+                        class="h-6 w-6"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path d="m6 6 12 12M18 6 6 18" />
+                    </svg>
                 </button>
             </div>
 
@@ -356,206 +384,14 @@
 </template>
 
 <script setup>
-import {
-    computed,
-    defineComponent,
-    h,
-    onMounted,
-    reactive,
-    ref,
-    watch,
-} from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
+// Proper .vue components — no render functions needed
 import BloodPressureCard from "./BloodPressureCard.vue";
-
-// ─── Mini-composants locaux ───────────────────────────────────────────────────
-
-const CalendarIcon = defineComponent({
-    template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg>`,
-});
-
-const CloseIcon = defineComponent({
-    template: `<svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg>`,
-});
-
-// Carte principale pour Rythme cardiaque et Saturation (VitalCard)
-const VitalCard = defineComponent({
-    props: [
-        "label",
-        "accent",
-        "bg",
-        "border",
-        "iconBg",
-        "icon",
-        "key",
-        "displayValue",
-        "unit",
-        "canEdit",
-        "isEditing",
-    ],
-    emits: ["edit", "blur", "update:value"],
-    setup(props, { emit, slots }) {
-        const inputValue = ref(props.displayValue ?? "");
-
-        watch(
-            () => props.displayValue,
-            (newVal) => {
-                inputValue.value = newVal ?? "";
-            },
-        );
-
-        return () =>
-            h(
-                "article",
-                {
-                    class: `min-h-[162px] rounded-2xl border ${props.border} ${props.bg} px-6 py-6 cursor-pointer transition ${props.canEdit ? "hover:shadow-md" : ""}`,
-                },
-                [
-                    h("div", { class: "flex items-start justify-between" }, [
-                        h("div", {
-                            class: `flex h-12 w-12 items-center justify-center rounded-xl ${props.iconBg}`,
-                            innerHTML: props.icon,
-                        }),
-                        h(
-                            "span",
-                            {
-                                class: "rounded-full bg-[#dff6e4] px-3 py-1 text-[12px] leading-none text-[#08aa48]",
-                            },
-                            "Normal",
-                        ),
-                    ]),
-                    h(
-                        "p",
-                        {
-                            class: "mt-4 text-[16px] leading-none text-slate-700",
-                        },
-                        props.label,
-                    ),
-                    h(
-                        "div",
-                        {
-                            class: "mt-3 flex items-baseline gap-2 cursor-pointer",
-                            onClick: () => props.canEdit && emit("edit"),
-                        },
-                        props.isEditing
-                            ? [
-                                  h("input", {
-                                      type: "number",
-                                      value: inputValue.value,
-                                      class: "h-12 w-32 rounded-xl border-2 border-purple-500 bg-white px-3 text-[32px] font-semibold outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&]:[-moz-appearance:textfield]",
-                                      onInput: (e) => {
-                                          inputValue.value = e.target.value;
-                                          emit("update:value", e.target.value);
-                                      },
-                                      onBlur: () => emit("blur"),
-                                      autoFocus: true,
-                                  }),
-                              ]
-                            : slots.value?.() || slots.default?.(),
-                    ),
-                ],
-            );
-    },
-});
-
-// Carte historique (petite, dans la liste)
-const HistoryCard = defineComponent({
-    props: [
-        "label",
-        "accent",
-        "bg",
-        "border",
-        "iconBg",
-        "icon",
-        "value",
-        "unit",
-    ],
-    setup(props) {
-        return () =>
-            h(
-                "article",
-                {
-                    class: `rounded-xl border ${props.border} ${props.bg} px-4 py-3`,
-                },
-                [
-                    h("div", { class: "flex items-center gap-3" }, [
-                        h("div", {
-                            class: `flex h-10 w-10 items-center justify-center rounded-xl ${props.iconBg}`,
-                            innerHTML: props.icon,
-                        }),
-                        h("div", {}, [
-                            h(
-                                "p",
-                                {
-                                    class: "text-[13px] leading-none text-slate-700",
-                                },
-                                props.label,
-                            ),
-                            h(
-                                "p",
-                                {
-                                    class: "mt-2 text-[20px] font-semibold leading-none text-slate-900",
-                                },
-                                [
-                                    props.value,
-                                    h(
-                                        "span",
-                                        {
-                                            class: "text-[18px] font-medium text-slate-700",
-                                        },
-                                        ` ${props.unit}`,
-                                    ),
-                                ],
-                            ),
-                            h(
-                                "span",
-                                {
-                                    class: "mt-2 inline-block rounded-full bg-[#dff6e4] px-2.5 py-0.5 text-[12px] leading-none text-[#08aa48]",
-                                },
-                                "Normal",
-                            ),
-                        ]),
-                    ]),
-                ],
-            );
-    },
-});
-
-// Champ de la modale avec checkbox "pas mesuré"
-const ModalField = defineComponent({
-    props: ["label", "skip", "skipLabel"],
-    emits: ["update:skip"],
-    setup(props, { emit, slots }) {
-        return () =>
-            h("div", {}, [
-                h(
-                    "label",
-                    {
-                        class: "mb-2 block text-[18px] font-semibold text-slate-700",
-                    },
-                    props.label,
-                ),
-                slots.default?.(),
-                h(
-                    "label",
-                    {
-                        class: "mt-2 inline-flex items-center gap-2 text-[14px] text-slate-600",
-                    },
-                    [
-                        h("input", {
-                            type: "checkbox",
-                            class: "h-4 w-4 rounded border-slate-400",
-                            checked: props.skip,
-                            onChange: (e) =>
-                                emit("update:skip", e.target.checked),
-                        }),
-                        props.skipLabel,
-                    ],
-                ),
-            ]);
-    },
-});
+import VitalCard from "./VitalCard.vue";
+import HistoryCard from "./HistoryCard.vue";
+import ModalField from "./ModalField.vue";
 
 // ─── Métadonnées des signes vitaux (couleurs, icônes, labels) ─────────────────
 const VITAL_META = {

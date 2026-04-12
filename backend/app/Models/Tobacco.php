@@ -23,7 +23,7 @@ class Tobacco extends Model
         'updated_at'         => 'datetime',
     ];
 
-    // Relation: each tobacco entry belongs to a journal entry
+    // Relation: chaque entree de tabac appartient a une entree de journal
     public function journalEntry(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class, 'journal_entry_id');

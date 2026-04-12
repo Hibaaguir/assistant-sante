@@ -1,5 +1,5 @@
 <?php
-
+// Routes API protegees et publiques de l'application
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DoctorInvitationController;
 use App\Http\Controllers\Api\HealthDataController;
@@ -12,16 +12,8 @@ use App\Http\Controllers\Api\TreatmentCatalogController;
 use App\Http\Controllers\Api\UserAdminController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Public Routes (without Sanctum)
-|--------------------------------------------------------------------------
-*/
-/*
-|--------------------------------------------------------------------------
-| Authentication (public)
-|--------------------------------------------------------------------------
-*/
+// Routes publiques (sans Sanctum)
+// Authentification (publique)
 Route::prefix('auth')->group(function () {
     Route::post('/register',         [AuthController::class, 'register']);
     Route::post('/login',            [AuthController::class, 'login']);
@@ -31,15 +23,11 @@ Route::prefix('auth')->group(function () {
     Route::post('/reset-password',   [ForgotPasswordController::class, 'resetPassword']);
 });
 
-// Routes treatment catalogs (public, used during profile creation)
+// Routes des catalogues de traitement (publiques, utilisees lors de la creation du profil)
 Route::get('/treatment-catalogs/medication-types', [TreatmentCatalogController::class, 'medicationTypes']);
 Route::get('/treatment-catalogs/medication-names',  [TreatmentCatalogController::class, 'medicationNames']);
 
-/*
-|--------------------------------------------------------------------------
-| Protected Routes (Sanctum)
-|--------------------------------------------------------------------------
-*/
+// Routes protegees (Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
 
     // --- Session ---
@@ -47,7 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me',           [AuthController::class, 'getCurrentUser']);
     Route::post('/auth/logout',      [AuthController::class, 'logout']);
 
-    // --- User Profile ---
+    // --- Profil utilisateur ---
     Route::prefix('user-profile')->group(function () {
         Route::get('/',                      [UserProfileController::class, 'show']);
         Route::put('/name',                   [UserProfileController::class, 'updateName']);
@@ -56,13 +44,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/change-password', [UserProfileController::class, 'changePassword']);
     });
 
-    // --- Health Profile ---
+    // --- Profil de sante ---
     Route::prefix('health-profile')->group(function () {
         Route::post('/', [HealthProfileController::class, 'store']);
         Route::get('/',  [HealthProfileController::class, 'show']);
     });
 
-    // --- Treatment Catalog ---
+    // --- Catalogue de traitement ---
     Route::prefix('treatment-catalog')->group(function () {
         Route::get('/',  [TreatmentCatalogController::class, 'index']);
         Route::post('/', [TreatmentCatalogController::class, 'store']);
@@ -81,7 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{user}',      [UserAdminController::class, 'destroy']);
     });
 
-    // --- Journal Entries ---
+    // --- Entrees de journal ---
     Route::prefix('journal')->group(function () {
         Route::get('/',                [JournalEntryController::class, 'index']);
         Route::post('/',               [JournalEntryController::class, 'store']);
@@ -90,7 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{journalEntry}', [JournalEntryController::class, 'destroy']);
     });
 
-    // --- Health Data ---
+    // --- Donnees de sante ---
     Route::prefix('health-data')->group(function () {
         Route::get('/overview',      [HealthDataController::class, 'overview']);
         Route::get('/vitals',        [HealthDataController::class, 'indexVitals']);
@@ -103,7 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/treatment-checks/sync', [HealthDataController::class, 'syncTreatmentChecks']);
     });
 
-    // --- Doctor Invitations ---
+    // --- Invitations de medecin ---
     Route::prefix('doctor-invitations')->group(function () {
         Route::get('/',    [DoctorInvitationController::class, 'index']);
         Route::post('/{invitation}/accept',   [DoctorInvitationController::class, 'accept']);

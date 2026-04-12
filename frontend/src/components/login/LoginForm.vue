@@ -14,7 +14,7 @@
                         ></div>
                         <img
                             src="https://img.freepik.com/vecteurs-premium/appeler-medecin-ambulance-main-tenir-telephone-mobile-coeur-rouge-ligne-rythme-cardiaque-cardiogramme-ecran-document-assurance-maladie-signe-croise-accord-medical-rapport-diagnostic-clinique_284092-711.jpg?semt=ais_hybrid&w=600&q=85"
-                            alt="Medical illustration"
+                            alt="Illustration médicale"
                             class="relative w-72 h-80 object-cover rounded-3xl shadow-2xl border border-white/10"
                             loading="lazy"
                         />

@@ -1,53 +1,53 @@
 // ─── Navigation ───────────────────────────────────────────────
 
 export const homeNavigationLinks = [
-    { label: "Features", href: "#features" },
+    { label: "Fonctionnalités", href: "#features" },
     { label: "Solutions", href: "#solutions" },
-    { label: "About", href: "#about" },
+    { label: "À propos", href: "#about" },
 ];
 
 // ─── Features ──────────────────────────────────────────
 
 export const homeFeatures = [
     {
-        titre: "Daily Journal",
+        titre: "Journal quotidien",
         description:
-            "Track your sleep, stress, energy, nutrition, hydration and physical activity with a structured daily summary.",
+            "Suivez votre sommeil, votre stress, votre énergie, votre nutrition, votre hydratation et votre activité physique avec un résumé quotidien structuré.",
         accent: "#0ea5e9",
         icone: "journal",
     },
     {
-        titre: "Health Profile",
+        titre: "Profil de santé",
         description:
-            "Monitor your vital signs, biological analyses and keep a complete history of your measurements.",
+            "Surveillez vos signes vitaux, vos analyses biologiques et conservez un historique complet de vos mesures.",
         accent: "#22c55e",
         icone: "dossier",
     },
     {
-        titre: "Treatment Management",
+        titre: "Gestion des traitéments",
         description:
-            "AI-generated treatment calendar with reminders and simple dose confirmation.",
+            "Calendrier de traitement généré par l'IA avec rappels et confirmations simples de doses.",
         accent: "#8b5cf6",
         icone: "traitements",
     },
     {
-        titre: "AI Analytics",
+        titre: "Analyse IA",
         description:
-            "Continuous analysis to detect anomalies, identify trends and generate personalized recommendations.",
+            "Analyse continue pour détecter les anomalies, identifier les tendances et générer des recommandations personnalisées.",
         accent: "#ec4899",
         icone: "analyses",
     },
     {
-        titre: "Health Goals Tracking",
+        titre: "Suivi des objectifs de santé",
         description:
-            "Set your health goals and receive concrete advice to achieve them.",
+            "Définissez vos objectifs de santé et recevez des conseils concrets pour les atteindre.",
         accent: "#f59e0b",
         icone: "objectifs",
     },
     {
-        titre: "Doctor Collaboration",
+        titre: "Collaboration avec le médecin",
         description:
-            "Invite your doctor to access your data in read-only mode for better follow-up.",
+            "Invitez votre médecin à accéder à vos données en mode lecture seule pour un meilleur suivi.",
         accent: "#4f46e5",
         icone: "medecin",
     },
@@ -59,25 +59,25 @@ export const homeNarrativeSections = [
     {
         identifiant: "solutions",
         type: "image-gauche",
-        titreAvant: "Your health",
-        titreAccent: "daily companion",
+        titreAvant: "Votre assistant de santé",
+        titreAccent: "au quotidien",
         titreAccentClass: "text-sky-500",
         titreApres: "",
         variantePoints: "icone",
-        texte: "Fill out your structured daily journal covering all aspects of your well-being: sleep quality, stress levels, energy, nutrition (meals, calories, sugar, caffeine, hydration), habits (alcohol, tobacco), and physical activity.",
+        texte: "Remplissez votre journal quotidien structuré couvrant tous les aspects de votre bien-être : qualité du sommeil, niveaux de stress, énergie, nutrition (repas, calories, sucre, caféine, hydratation), habitudes (alcool, tabac) et activité physique.",
         image: "https://images.pexels.com/photos/7659564/pexels-photo-7659564.jpeg?auto=compress&cs=tinysrgb&w=1200",
-        alt: "Person taking notes for daily health tracking",
+        alt: "Personne prenant des notes pour le suivi quotidien de sa santé",
         points: [
             {
-                titre: "Quick daily check-ins",
-                description: "Takes only a few minutes each day.",
+                titre: "Enregistrement rapide quotidien",
+                description: "Cela ne prend que quelques minutes par jour.",
                 couleur: "#0ea5e9",
                 icone: "horloge",
             },
             {
-                titre: "Complete history",
+                titre: "Historique complet",
                 description:
-                    "All entries are fully editable and tracked over time.",
+                    "Toutes les entrées sont entièrement modifiables et suivies dans le temps.",
                 couleur: "#4f46e5",
                 icone: "fichier",
             },
@@ -86,32 +86,32 @@ export const homeNarrativeSections = [
     {
         identifiant: "analyses-ia",
         type: "image-droite",
-        titreAvant: "Smart health",
-        titreAccent: "insights",
+        titreAvant: "Analyses",
+        titreAccent: "intelligentes",
         titreAccentClass:
             "bg-gradient-to-r from-[#7c3aed] to-[#ec4899] bg-clip-text text-transparent",
         titreApres: "",
         variantePoints: "badge",
-        texte: "Our AI system continuously analyzes your health profile, daily entries and health records to detect anomalies, identify trends and generate personalized recommendations.",
+        texte: "Notre système IA analyse continuellement votre profil de santé, vos entrées quotidiennes et vos dossiers de santé pour détecter les anomalies, identifier les tendances et générer des recommandations personnalisées.",
         image: "https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=1200",
-        alt: "Medical dashboard with charts",
+        alt: "Tableau de bord médical avec graphiques",
         points: [
             {
-                titre: "Calm, non-alarming alerts",
+                titre: "Alertes calmes et non-alarmantes",
                 description:
-                    "Receive gentle notifications about important health patterns.",
+                    "Recevez des notifications douces sur les schémas de santé importants.",
                 couleur: "#ec4899",
             },
             {
-                titre: "Actionable recommendations",
+                titre: "Recommandations actionables",
                 description:
-                    "Get clear and practical advice to improve your lifestyle.",
+                    "Obtenez des conseils clairs et pratiques pour améliorer votre mode de vie.",
                 couleur: "#8b5cf6",
             },
             {
-                titre: "Preventive focus",
+                titre: "Focus préventif",
                 description:
-                    "Identify potential issues before they become problems.",
+                    "Identifiez les problèmes potentiels avant qu'ils ne deviennent des problématiques.",
                 couleur: "#f97316",
             },
         ],
@@ -119,20 +119,20 @@ export const homeNarrativeSections = [
     {
         identifiant: "about",
         type: "image-gauche",
-        titreAvant: "Share with your",
-        titreAccent: "health team",
+        titreAvant: "Partagez avec votre",
+        titreAccent: "équipe médicale",
         titreAccentClass:
             "bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] bg-clip-text text-transparent",
         titreApres: "",
         variantePoints: "securite",
-        texte: "Invite your doctor by email to access your health data in read-only mode. Healthcare professionals can view trends and key alerts without modifying any information.",
+        texte: "Invitez votre médecin par email à accéder à vos données de santé en mode lecture seule. Les professionnels de santé peuvent voir les tendances et les alertes clés sans modifier aucune information.",
         image: "https://images.pexels.com/photos/4173251/pexels-photo-4173251.jpeg?auto=compress&cs=tinysrgb&w=1200",
-        alt: "Doctor in office",
+        alt: "Médecin au cabinet",
         points: [
             {
-                titre: "Secure & Private",
+                titre: "Sécurisé et confidentiel",
                 description:
-                    "Your data remains under your control. Doctors can only see information you choose to share, and they cannot modify or delete your records.",
+                    "Vos données restent sous votre contrôle. Les médecins ne peuvent voir que les informations que vous choisissez de partager, et ils ne peuvent pas modifier ou supprimer vos dossiers.",
                 couleur: "#8b5cf6",
                 icone: "bouclier",
             },

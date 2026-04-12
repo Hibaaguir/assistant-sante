@@ -22,7 +22,7 @@ class DoctorInvitationController extends Controller
         private readonly HealthDataService $healthDataService,
     ) {}
 
-    // List all doctor invitations
+    // Récupérer toutes les invitations du médecin
     public function index(Request $request): JsonResponse
     {
         $invitations = DoctorInvitation::with($this->withPatient())
@@ -33,16 +33,16 @@ class DoctorInvitationController extends Controller
             ->map(fn(DoctorInvitation $inv) => $this->serializeInvitation($inv))
             ->values();
 
-        return response()->json(['message' => 'Invitations retrieved successfully.', 'data' => $invitations]);
+        return response()->json(['message' => 'Invitations récupérées avec succès.', 'data' => $invitations]);
     }
 
-    // Accept a doctor invitation
+    // Accepter une invitation médecin
     public function accept(Request $request, DoctorInvitation $invitation): JsonResponse
     {
         $user = $request->user();
 
         if (!$this->invitationService->authorizeAndLink($invitation, $user)) {
-            return response()->json(['message' => 'Unauthorized access to this invitation.'], 403);
+            return response()->json(['message' => 'Accès non autorisé à cette invitation.'], 403);
         }
 
         if ($invitation->status !== 'accepted') {
@@ -54,27 +54,27 @@ class DoctorInvitationController extends Controller
         }
 
         return response()->json([
-            'message' => 'Invitation accepted.',
+            'message' => 'Invitation acceptée.',
             'data'    => $this->serializeInvitation($invitation->fresh($this->withPatient())),
         ]);
     }
 
-    // Reject a doctor invitation
+    // Rejeter une invitation médecin
     public function reject(Request $request, DoctorInvitation $invitation): JsonResponse
     {
         if (!$this->invitationService->authorizeAndLink($invitation, $request->user())) {
-            return response()->json(['message' => 'Unauthorized access to this invitation.'], 403);
+            return response()->json(['message' => 'Accès non autorisé à cette invitation.'], 403);
         }
 
         $invitation->update(['status' => 'rejected', 'rejected_at' => now()]);
 
         return response()->json([
-            'message' => 'Invitation rejected.',
+            'message' => 'Invitation rejetée.',
             'data'    => $this->serializeInvitation($invitation->fresh($this->withPatient())),
         ]);
     }
 
-    // List all doctor's patients with a health summary
+    // Récupérer tous les patients du médecin avec un résumé de santé
     public function indexPatients(Request $request): JsonResponse
     {
         $patients = DoctorInvitation::with($this->withPatient())
@@ -111,10 +111,10 @@ class DoctorInvitationController extends Controller
             ->filter()
             ->values();
 
-        return response()->json(['message' => "Doctor's patients retrieved successfully.", 'data' => $patients]);
+        return response()->json(['message' => 'Patients du médecin récupérés avec succès.', 'data' => $patients]);
     }
 
-    // Show complete patient details
+    // Afficher les détails complets du patient
     public function showPatient(Request $request, User $patient): JsonResponse
     {
         $invitation = $this->authorizePatient($request, $patient);
@@ -130,7 +130,7 @@ class DoctorInvitationController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Patient details retrieved successfully.',
+            'message' => 'Détails du patient récupérés avec succès.',
             'data'    => [
                 'invitation_id'      => $invitation->id,
                 'accepted_at'        => $invitation->accepted_at?->toISOString(),
@@ -149,8 +149,8 @@ class DoctorInvitationController extends Controller
         ]);
     }
 
-    // Add a doctor observation for a patient on any date.
-    // Creates the health_data record automatically if it doesn't exist yet.
+    // Ajouter une observation du médecin sur un patient à n'importe quelle date
+    // Crée automatiquement le dossier health_data s'il n'existe pas
     public function storeObservation(Request $request, User $patient): JsonResponse
     {
         $invitation = $this->authorizePatient($request, $patient);
@@ -166,7 +166,7 @@ class DoctorInvitationController extends Controller
         );
         $healthData->update(['doctor_observation' => trim($validated['observation'])]);
 
-        return response()->json(['message' => 'Observation saved.', 'data' => [
+        return response()->json(['message' => 'Observation enregistrée.', 'data' => [
             'id'                 => $healthData->id,
             'date'               => $healthData->date->toDateString(),
             'doctor_observation' => $healthData->doctor_observation,
@@ -177,18 +177,20 @@ class DoctorInvitationController extends Controller
 
     // Authorize that the current doctor has an accepted invitation for this patient.
     // Returns the invitation on success, or a 403 JsonResponse on failure.
+    // Autoriser le médecin courant pour accéder au patient
+    // Retourne l'invitation si succès, ou une réponse 403 sinon
     private function authorizePatient(Request $request, User $patient): DoctorInvitation|JsonResponse
     {
         $invitation = $this->invitationService->findAccepted($request->user()->id, $patient->id);
 
         if (!$invitation) {
-            return response()->json(['message' => 'Unauthorized access to this patient.'], 403);
+            return response()->json(['message' => 'Accès non autorisé à ce patient.'], 403);
         }
 
         return $invitation;
     }
 
-    // Return only the patient fields needed by the frontend
+    // Retourner seulement les champs du patient nécessaires au frontend
     private function serializePatient(User $patient): array
     {
         return [
@@ -202,13 +204,13 @@ class DoctorInvitationController extends Controller
         ];
     }
 
-    // Eager-load relations for patient display
-    private function withPatient(): array
+    // Charger les relations pour l'affichage du patient
+    private function withPatient():array
     {
         return ['patient:id,account_id,name,date_of_birth,profile_photo,created_at', 'patient.account:id,email', 'patient.healthProfile'];
     }
 
-    // Serialize a doctor invitation for API responses
+    // Sérialiser une invitation médecin pour les réponses API
     private function serializeInvitation(DoctorInvitation $invitation): array
     {
         $patient = $invitation->patient;

@@ -1,5 +1,5 @@
 <?php
-
+// Migration: creer la table des activites physiques
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

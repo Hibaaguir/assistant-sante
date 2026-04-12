@@ -34,7 +34,7 @@ class VitalSigns extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Relation: vital signs belong to a health_data entry (owner is health_data.user_id)
+    // Relation: les signes vitaux appartiennent a une entree health_data (le proprietaire est health_data.user_id)
     public function healthData(): BelongsTo
     {
         return $this->belongsTo(HealthData::class, 'health_data_id');

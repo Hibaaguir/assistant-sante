@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api;
 
 class StoreJournalEntryRequest extends ApiFormRequest
 {
+    // Definir les regles de validation
     public function rules(): array
     {
         return [
@@ -35,29 +36,30 @@ class StoreJournalEntryRequest extends ApiFormRequest
         ];
     }
 
+    // Messages d'erreur en francais
     public function messages(): array
     {
         return [
-            'entry_date.required' => 'The entry date is required.',
-            'entry_date.date' => 'The entry date must be a valid date.',
-            'sleep.max' => 'Sleep hours must not exceed 24.',
-            'sleep.min' => 'Sleep hours must be at least 0.',
-            'stress.max' => 'Stress level must not exceed 10.',
-            'stress.min' => 'Stress level must be at least 0.',
-            'energy.max' => 'Energy level must not exceed 10.',
-            'energy.min' => 'Energy level must be at least 0.',
-            'caffeine.max' => 'Caffeine intake must not exceed 20.',
-            'caffeine.min' => 'Caffeine intake must be at least 0.',
-            'hydration.max' => 'Hydration must not exceed 20 liters.',
-            'hydration.min' => 'Hydration must be at least 0 liters.',
-            'sugar_intake.string' => 'Sugar intake must be a text value.',
-            'sugar_intake.max' => 'Sugar intake must not exceed 255 characters.',
-            'tobacco.required' => 'Tobacco status is required.',
-            'tobacco.boolean' => 'Tobacco status must be true or false.',
-            'alcohol.required' => 'Alcohol status is required.',
-            'alcohol.boolean' => 'Alcohol status must be true or false.',
-            'alcohol_glasses.max' => 'Alcohol glasses must not exceed 100.',
-            'alcohol_glasses.min' => 'Alcohol glasses must be at least 0.',
+            'entry_date.required' => 'La date de l\'entrée est obligatoire.',
+            'entry_date.date' => 'La date de l\'entrée doit être une date valide.',
+            'sleep.max' => 'Les heures de sommeil ne doivent pas dépasser 24.',
+            'sleep.min' => 'Les heures de sommeil doivent être au moins 0.',
+            'stress.max' => 'Le niveau de stress ne doit pas dépasser 10.',
+            'stress.min' => 'Le niveau de stress doit être au moins 0.',
+            'energy.max' => 'Le niveau d\'énergie ne doit pas dépasser 10.',
+            'energy.min' => 'Le niveau d\'énergie doit être au moins 0.',
+            'caffeine.max' => 'L\'apport en caféine ne doit pas dépasser 20.',
+            'caffeine.min' => 'L\'apport en caféine doit être au moins 0.',
+            'hydration.max' => 'L\'hydratation ne doit pas dépasser 20 litres.',
+            'hydration.min' => 'L\'hydratation doit être au moins 0 litre.',
+            'sugar_intake.string' => 'L\'apport en sucre doit être une valeur texte.',
+            'sugar_intake.max' => 'L\'apport en sucre ne doit pas dépasser 255 caractères.',
+            'tobacco.required' => 'Le statut du tabac est obligatoire.',
+            'tobacco.boolean' => 'Le statut du tabac doit être vrai ou faux.',
+            'alcohol.required' => 'Le statut de l\'alcool est obligatoire.',
+            'alcohol.boolean' => 'Le statut de l\'alcool doit être vrai ou faux.',
+            'alcohol_glasses.max' => 'Les verres d\'alcool ne doivent pas dépasser 100.',
+            'alcohol_glasses.min' => 'Les verres d\'alcool doivent être au moins 0.',
         ];
     }
 }

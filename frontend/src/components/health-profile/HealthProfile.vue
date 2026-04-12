@@ -129,22 +129,25 @@
                 <div
                     class="mb-8 rounded-3xl border border-gray-100 bg-white p-8 shadow-sm md:p-12"
                 >
-                    <!-- Alertes -->
-                    <AlertBanner
+                    <!-- Error / success / warning alert messages -->
+                    <p
                         v-if="saveError"
-                        color="red"
-                        :message="saveError"
-                    />
-                    <AlertBanner
+                        class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                    >
+                        {{ saveError }}
+                    </p>
+                    <p
                         v-if="saveSuccess"
-                        color="emerald"
-                        :message="saveSuccess"
-                    />
-                    <AlertBanner
+                        class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+                    >
+                        {{ saveSuccess }}
+                    </p>
+                    <p
                         v-if="stepError && currentStep !== 1"
-                        color="amber"
-                        :message="stepError"
-                    />
+                        class="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700"
+                    >
+                        {{ stepError }}
+                    </p>
 
                     <!-- Étapes -->
                     <Etape1
@@ -185,49 +188,13 @@
 </template>
 
 <script setup>
-import {
-    computed,
-    defineComponent,
-    h,
-    onMounted,
-    reactive,
-    ref,
-    watch,
-} from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import api from "@/services/api";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import Etape1 from "./HealthProfileStep1.vue";
 import Etape2 from "./HealthProfileStep2.vue";
 import Etape3 from "./HealthProfileStep3.vue";
-
-// ─── Mini-composant alerte ────────────────────────────────────────────────────
-const COLOR_MAP = {
-    red: { border: "border-red-200", bg: "bg-red-50", text: "text-red-700" },
-    emerald: {
-        border: "border-emerald-200",
-        bg: "bg-emerald-50",
-        text: "text-emerald-700",
-    },
-    amber: {
-        border: "border-amber-200",
-        bg: "bg-amber-50",
-        text: "text-amber-700",
-    },
-};
-const AlertBanner = defineComponent({
-    props: { color: String, message: String },
-    setup: (p) => () => {
-        const c = COLOR_MAP[p.color] ?? COLOR_MAP.red;
-        return h(
-            "p",
-            {
-                class: `mb-5 rounded-xl border ${c.border} ${c.bg} px-4 py-3 text-sm ${c.text}`,
-            },
-            p.message,
-        );
-    },
-});
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const TOTAL_STEPS = 3;

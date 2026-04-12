@@ -24,7 +24,7 @@ class AnalysisResult extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Relation: analysis result belongs to a health_data entry (owner is health_data.user_id)
+    // Relation: le resultat appartient a une entree health_data (le proprietaire est health_data.user_id)
     public function healthData(): BelongsTo
     {
         return $this->belongsTo(HealthData::class, 'health_data_id');

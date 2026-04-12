@@ -1,5 +1,5 @@
 <?php
-
+// Routes de commandes console de l'application
 use App\Mail\DoctorInvitationMail;
 use App\Models\Account;
 use App\Models\User;
@@ -8,18 +8,14 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schedule;
 
-/*
-|--------------------------------------------------------------------------
-| Artisan Commands
-|--------------------------------------------------------------------------
-*/
+
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
 Artisan::command('mail:test-doctor-invitation {email : Recipient email address}', function (string $email) {
-    // Create a temporary account and user for the test patient
+    // Creer un compte et un utilisateur temporaire pour le patient de test
     $account = new Account([
         'email' => 'patient-test@example.com',
         'password' => 'test',
@@ -28,10 +24,10 @@ Artisan::command('mail:test-doctor-invitation {email : Recipient email address}'
 
     $patient = new User([
         'name' => 'Test Patient',
-        'account_id' => null, // Not persisted
+        'account_id' => null, // Non persiste
     ]);
 
-    // Set the relation manually
+    // Definir la relation manuellement
     $patient->setRelation('account', $account);
 
     Mail::to($email)->send(new DoctorInvitationMail($patient, $email));
@@ -39,11 +35,7 @@ Artisan::command('mail:test-doctor-invitation {email : Recipient email address}'
     $this->info("Invitation email sent to {$email}.");
 })->purpose('Send a doctor invitation via the configured SMTP service');
 
-/*
-|--------------------------------------------------------------------------
-| Scheduled Tasks
-|--------------------------------------------------------------------------
-*/
+
 
 $tz = config('app.timezone');
 

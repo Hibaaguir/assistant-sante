@@ -37,15 +37,15 @@ export const useNotificationsStore = defineStore("notifications", () => {
         items.value = [];
     }
 
-    function success(message, title = "Success") {
+    function success(message, title = "Succès") {
         return add({ type: "success", title, message });
     }
 
-    function error(message, title = "Error") {
+    function error(message, title = "Erreur") {
         return add({ type: "error", title, message, duration: 6000 });
     }
 
-    function warning(message, title = "Warning") {
+    function warning(message, title = "Avertissement") {
         return add({ type: "warning", title, message, duration: 5000 });
     }
 
@@ -53,20 +53,20 @@ export const useNotificationsStore = defineStore("notifications", () => {
         return add({ type: "info", title, message });
     }
 
-    function itemAdded(message = "Item added successfully.") {
-        return success(message, "Added");
+    function itemAdded(message = "L'élément a été ajouté avec succès.") {
+        return success(message, "Ajouté");
     }
 
-    function itemUpdated(message = "Item updated successfully.") {
-        return info(message, "Updated");
+    function itemUpdated(message = "L'élément a été mis à jour avec succès.") {
+        return info(message, "Mis à jour");
     }
 
-    function itemDeleted(message = "Item deleted successfully.") {
-        return success(message, "Deleted");
+    function itemDeleted(message = "L'élément a été supprimé avec succès.") {
+        return success(message, "Supprimé");
     }
 
-    function actionCancelled(message = "Action cancelled successfully.") {
-        return warning(message, "Cancelled");
+    function actionCancelled(message = "L'action a été annulée avec succès.") {
+        return warning(message, "Annulé");
     }
 
     return {

@@ -1,5 +1,5 @@
 <?php
-
+// Semoir principal pour initialiser les donnees de la base de donnees
 namespace Database\Seeders;
 
 use App\Models\Account;
@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        // Admin account (create if not exists)
+        // Compte administrateur (creer s'il n'existe pas)
         $adminAccount = Account::firstOrCreate(
             ['email' => 'admin@gmail.com'],
             ['password' => Hash::make('admin1234'), 'account_status' => 'active']
@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // Test user account (create if not exists)
+        // Compte utilisateur de test (creer s'il n'existe pas)
         $testAccount = Account::firstOrCreate(
             ['email' => 'test@example.com'],
             ['password' => Hash::make('password'), 'account_status' => 'active']
