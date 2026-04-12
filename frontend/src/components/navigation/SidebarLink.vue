@@ -1,15 +1,15 @@
 ﻿<template>
     <RouterLink :to="to" class="block">
         <div
-            class="flex items-center gap-3 rounded-[14px] px-5 py-3.5 text-[16px] font-semibold transition"
+            class="flex items-center gap-3 rounded-lg px-4 py-3.5 text-[15px] font-600 transition-all duration-200 cursor-pointer"
             :class="
                 active
-                    ? 'bg-white bg-opacity-80 text-purple-600 shadow-md shadow-white/40 rounded-r-3xl'
-                    : 'text-purple-600 hover:bg-purple-200/40'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
             "
         >
             <span
-                class="inline-flex h-5 w-5 items-center justify-center"
+                class="inline-flex h-6 w-6 items-center justify-center"
                 v-html="icon"
             />
             <span>{{ label }}</span>

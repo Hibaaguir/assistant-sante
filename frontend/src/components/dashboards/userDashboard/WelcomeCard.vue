@@ -4,20 +4,20 @@
 -->
 <template>
     <div
-        class="mb-6 rounded-3xl bg-gradient-to-r from-purple-100 via-purple-100 to-purple-200 p-6 shadow-lg md:p-8"
+        class="mb-6 rounded-3xl bg-white border border-slate-200 p-6 shadow-sm md:p-8"
     >
         <div class="flex items-center justify-between gap-4">
             <!-- Text content -->
             <div class="flex-1">
-                <p class="text-sm font-medium text-purple-800">
+                <p class="text-sm font-medium text-blue-800">
                     {{ currentDate }}
                 </p>
                 <h2
-                    class="mt-3 text-3xl font-bold text-purple-900 md:text-4xl leading-tight"
+                    class="mt-3 text-3xl font-bold text-blue-900 md:text-4xl leading-tight"
                 >
                     Bienvenue, {{ userName }} !
                 </h2>
-                <p class="mt-2 text-base font-medium text-purple-800">
+                <p class="mt-2 text-base font-medium text-blue-800">
                     Continuez à surveiller votre santé au quotidien
                 </p>
             </div>

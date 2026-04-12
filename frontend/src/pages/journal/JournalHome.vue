@@ -1,13 +1,13 @@
 <template>
-    <div class="w-full p-4 sm:p-6 lg:p-8">
+    <div class="w-full p-4 sm:p-6 lg:p-8 bg-white">
         <section
-            class="relative overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-[#eef4ff] via-[#f7f4ff] to-[#f4fbf6] p-6 shadow-sm sm:p-8 lg:p-10"
+            class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 lg:p-10"
         >
             <div
-                class="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[#8b5cf6]/20 blur-2xl"
+                class="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-transparent blur-2xl"
             ></div>
             <div
-                class="pointer-events-none absolute -bottom-12 left-10 h-36 w-36 rounded-full bg-[#22c55e]/20 blur-2xl"
+                class="pointer-events-none absolute -bottom-12 left-10 h-36 w-36 rounded-full bg-transparent blur-2xl"
             ></div>
 
             <div class="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
@@ -21,10 +21,7 @@
                         class="mt-6 text-5xl font-extrabold tracking-tight text-slate-900 sm:text-6xl"
                     >
                         Suivé votre journée en
-                        <span
-                            class="bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent"
-                            >toute simplicité</span
-                        >
+                        <span class="text-blue-600">toute simplicité</span>
                     </h2>
                     <p
                         class="mt-4 max-w-xl text-base text-slate-600 sm:text-lg"
@@ -35,9 +32,10 @@
                     </p>
 
                     <div class="mt-6 flex flex-wrap items-center gap-3">
-                        <button
-                            type="button"
-                            class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-5 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/25 transition hover:-translate-y-0.5"
+                        <!-- Use BaseButton instead of repeating the gradient button style -->
+                        <BaseButton
+                            variant="primary"
+                            size="md"
                             @click="router.push({ name: 'journal-assistant' })"
                         >
                             <svg
@@ -54,14 +52,14 @@
                                 <path d="M5 12h14" />
                             </svg>
                             Ajouter une entree
-                        </button>
-                        <button
-                            type="button"
-                            class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        </BaseButton>
+                        <BaseButton
+                            variant="secondary"
+                            size="md"
                             @click="router.push({ name: 'journal-history' })"
                         >
                             Voir l'historique
-                        </button>
+                        </BaseButton>
                     </div>
                 </div>
 
@@ -159,6 +157,7 @@
 import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import CarteInfosDerniereEntree from "@/components/journal-entries/LastEntryInfoCard.vue";
 import { useJournalStore } from "@/stores/journal";
 

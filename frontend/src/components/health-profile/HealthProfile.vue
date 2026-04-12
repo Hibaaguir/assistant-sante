@@ -1,17 +1,5 @@
 <template>
-    <div
-        class="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50 relative overflow-hidden"
-    >
-        <!-- Reflet mauve pastel visible -->
-        <div
-            class="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-purple-300/40 blur-3xl opacity-60"
-        ></div>
-        <div
-            class="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-purple-300/35 blur-3xl opacity-50"
-        ></div>
-        <div
-            class="pointer-events-none absolute top-1/2 left-1/2 h-80 w-80 rounded-full bg-purple-200/25 blur-3xl opacity-40"
-        ></div>
+    <div class="min-h-screen bg-white relative overflow-hidden">
         <!-- En-tête sticky avec stepper -->
         <header
             class="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur-sm"
@@ -272,73 +260,94 @@ watch(
     },
 );
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// Return the CSS classes for a step circle (completed / active / inactive)
 function stepClass(n) {
-    if (currentStep.value > n) return "bg-purple-500 text-white";
-    if (currentStep.value === n)
-        return "bg-purple-500 text-white ring-4 ring-purple-100";
+    if (currentStep.value > n)  return "bg-purple-500 text-white";
+    if (currentStep.value === n) return "bg-purple-500 text-white ring-4 ring-purple-100";
     return "bg-slate-200 text-slate-500";
 }
 
+// Keep only non-empty strings from an array
 function normalizeArray(v) {
-    return Array.isArray(v)
-        ? v.filter((s) => typeof s === "string" && s.trim())
-        : [];
+    if (!Array.isArray(v)) return [];
+    return v.filter((s) => typeof s === "string" && s.trim());
 }
 
+// Convert a frequency value to a positive integer — returns null if invalid
 function normalizeFrequency(v) {
     if (v === null || v === undefined || v === "") return null;
-    const n = Number(v);
-    return Number.isFinite(n) ? Math.max(1, Math.trunc(n)) : null;
+    const number = Number(v);
+    if (!Number.isFinite(number)) return null;
+    return Math.max(1, Math.trunc(number));
 }
 
+// Get the first readable error message from API validation errors
 function extractApiError(errors) {
     if (!errors || typeof errors !== "object") return "Validation invalide.";
-    return (
-        Object.values(errors)
-            .flatMap((e) => (Array.isArray(e) ? e : [e]))
-            .filter(Boolean)
-            .join(" ") || "Validation invalide."
-    );
+
+    // Flatten all error arrays into a single list of messages
+    const messages = Object.values(errors)
+        .flat()
+        .filter(Boolean);
+
+    return messages.join(" ") || "Validation invalide.";
 }
 
+// Clear all step 1 error messages
 function clearStep1Errors() {
-    Object.assign(step1Errors, {
-        sexe: "",
-        taille: "",
-        poids: "",
-        objectifs: "",
-    });
+    step1Errors.sexe      = "";
+    step1Errors.taille    = "";
+    step1Errors.poids     = "";
+    step1Errors.objectifs = "";
 }
 
+// Log out and redirect to the registration page
 function redirectLogin() {
     authStore.removeToken();
     router.replace({ name: "register" });
 }
 
 // ─── Validation ───────────────────────────────────────────────────────────────
+
+// Validate step 1: gender, height, weight, goals
 function validateStep1() {
     clearStep1Errors();
-    if (!form.sexe) step1Errors.sexe = "Veuillez sélectionner votre genre.";
+
+    // Gender is required
+    if (!form.sexe) {
+        step1Errors.sexe = "Veuillez sélectionner votre genre.";
+    }
+
+    // Height: required and must be between 80 and 250 cm
     if (!form.taille) {
         step1Errors.taille = "La taille est obligatoire.";
     } else {
-        const t = Number(form.taille);
-        if (!Number.isFinite(t) || t < 80 || t > 250)
+        const height = Number(form.taille);
+        if (height < 80 || height > 250) {
             step1Errors.taille = "La taille doit être entre 80 et 250 cm.";
+        }
     }
+
+    // Weight: required and must be between 35 and 250 kg
     if (!form.poids) {
         step1Errors.poids = "Le poids est obligatoire.";
     } else {
-        const p = Number(form.poids);
-        if (!Number.isFinite(p) || p < 35 || p > 250)
+        const weight = Number(form.poids);
+        if (weight < 35 || weight > 250) {
             step1Errors.poids = "Le poids doit être entre 35 et 250 kg.";
+        }
     }
-    if (!Array.isArray(form.objectifs) || !form.objectifs.length)
+
+    // At least one goal must be selected
+    if (!form.objectifs.length) {
         step1Errors.objectifs = "Veuillez sélectionner au moins un objectif.";
+    }
+
+    // Return true only if no errors were found
     return !Object.values(step1Errors).some(Boolean);
 }
 
+// Validate step 2: blood type is required
 function validateStep2() {
     if (!form.groupe_sanguin) {
         stepError.value = "Le groupe sanguin est obligatoire.";
@@ -347,17 +356,23 @@ function validateStep2() {
     return true;
 }
 
+// Validate step 3: if doctor sharing is enabled, email is required and must be valid
 function validateStep3() {
-    if (form.consulte_medecin && form.medecin_peut_consulter) {
-        if (!form.medecin_email) {
-            stepError.value = "Veuillez renseigner l'email du médecin.";
-            return false;
-        }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.medecin_email)) {
-            stepError.value = "L'email du médecin est invalide.";
-            return false;
-        }
+    const doctorSharingEnabled = form.consulte_medecin && form.medecin_peut_consulter;
+
+    if (!doctorSharingEnabled) return true;
+
+    if (!form.medecin_email) {
+        stepError.value = "Veuillez renseigner l'email du médecin.";
+        return false;
     }
+
+    const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.medecin_email);
+    if (!emailIsValid) {
+        stepError.value = "L'email du médecin est invalide.";
+        return false;
+    }
+
     return true;
 }
 
@@ -377,80 +392,98 @@ function goNext() {
     currentStep.value++;
 }
 
-// ─── Construction du payload ──────────────────────────────────────────────────
-function buildPayload() {
-    return {
-        gender:
-            typeof form.sexe === "string"
-                ? form.sexe.toLowerCase().trim()
-                : form.sexe,
-        height: form.taille,
-        weight: form.poids,
-        blood_type: form.groupe_sanguin,
-        goals: normalizeArray(form.objectifs),
-        allergies: normalizeArray(form.allergies),
-        chronic_diseases: normalizeArray(form.maladies_chroniques),
-        treatments: Array.isArray(form.traitements)
-            ? form.traitements
-                  .map((t) => ({
-                      type: t?.type ?? null,
-                      name: t?.name ?? null,
-                      dose: t?.dose ?? null,
-                      frequency_unit: t?.frequency_unit ?? null,
-                      frequency_count: normalizeFrequency(t?.frequency_count),
-                      start_date: toIsoDate(t?.start_date) ?? null,
-                      end_date: toIsoDate(t?.end_date) ?? null,
-                      duration: t?.duration ?? null,
-                  }))
-                  .filter((t) => t.type)
-            : [],
-
-        smoker: form.fumeur,
-        alcoholic: form.alcool,
-        doctor_invited: form.medecin_peut_consulter,
-        doctor_email: form.medecin_peut_consulter ? form.medecin_email : null,
-    };
-}
-
-// Conversion JJ/MM/AAAA -> YYYY-MM-DD pour le backend, rejette les dates invalides (ex: 02/50/2026)
+// Convert a date from DD/MM/YYYY format to YYYY-MM-DD (the format the API expects)
+// Returns null if the date string is missing or invalid
 function toIsoDate(frDate) {
-    const match = String(frDate || "").match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    const text = String(frDate || "");
+
+    // Must match exactly DD/MM/YYYY
+    const match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (!match) return null;
-    const day = Number(match[1]);
+
+    const day   = Number(match[1]);
     const month = Number(match[2]);
-    const year = Number(match[3]);
+    const year  = Number(match[3]);
+
+    // Double-check the date is real (e.g. rejects 31/02/2024)
     const date = new Date(year, month - 1, day);
-    const isValid =
+    const isReal =
         date.getFullYear() === year &&
         date.getMonth() === month - 1 &&
         date.getDate() === day;
-    return isValid ? `${match[3]}-${match[2]}-${match[1]}` : null;
+
+    if (!isReal) return null;
+
+    return `${match[3]}-${match[2]}-${match[1]}`;
 }
 
-// ─── Sauvegarde finale ────────────────────────────────────────────────────────
+// Convert a single treatment object into the format expected by the API
+function buildTreatment(t) {
+    return {
+        type:            t?.type            ?? null,
+        name:            t?.name            ?? null,
+        dose:            t?.dose            ?? null,
+        frequency_unit:  t?.frequency_unit  ?? null,
+        frequency_count: normalizeFrequency(t?.frequency_count),
+        start_date:      toIsoDate(t?.start_date) ?? null,
+        end_date:        toIsoDate(t?.end_date)   ?? null,
+        duration:        t?.duration        ?? null,
+    };
+}
+
+// Build the complete data object to send to the API
+function buildPayload() {
+    // Clean up treatments: convert each one and remove those without a type
+    const treatments = Array.isArray(form.traitements)
+        ? form.traitements.map(buildTreatment).filter((t) => t.type)
+        : [];
+
+    return {
+        gender:          String(form.sexe || "").toLowerCase().trim(),
+        height:          form.taille,
+        weight:          form.poids,
+        blood_type:      form.groupe_sanguin,
+        goals:           normalizeArray(form.objectifs),
+        allergies:       normalizeArray(form.allergies),
+        chronic_diseases: normalizeArray(form.maladies_chroniques),
+        treatments,
+        smoker:          form.fumeur,
+        alcoholic:       form.alcool,
+        doctor_invited:  form.medecin_peut_consulter,
+        doctor_email:    form.medecin_peut_consulter ? form.medecin_email : null,
+    };
+}
+
+// Save the completed health profile to the API
 async function enregistrer() {
     if (!validateStep3()) return;
-    stepError.value = "";
-    saveError.value = "";
-    saveSuccess.value = "";
-    saving.value = true;
 
-    const payload = buildPayload();
+    // Clear previous messages
+    stepError.value   = "";
+    saveError.value   = "";
+    saveSuccess.value = "";
+    saving.value      = true;
+
     try {
-        await api.post("/health-profile", payload);
+        await api.post("/health-profile", buildPayload());
         authStore.setHealthProfile(true);
         saveSuccess.value = "Profil enregistré avec succès.";
         router.push({ name: "health-settings" });
     } catch (err) {
-        if (err.response?.status === 401) {
+        const status = err.response?.status;
+
+        if (status === 401) {
+            // Not logged in — redirect to registration
             redirectLogin();
             return;
         }
-        if (err.response?.status === 422) {
-            const d = err.response.data;
-            saveError.value = d?.errors
-                ? extractApiError(d.errors)
-                : d?.message?.trim() || "Erreur de validation (422).";
+
+        if (status === 422) {
+            // Server validation failed — show the first error message
+            const data = err.response.data;
+            saveError.value = data?.errors
+                ? extractApiError(data.errors)
+                : data?.message?.trim() || "Erreur de validation (422).";
         } else {
             saveError.value = "Erreur lors de l'enregistrement du profil.";
         }
@@ -459,64 +492,59 @@ async function enregistrer() {
     }
 }
 
-// ─── Chargement initial ───────────────────────────────────────────────────────
+// Load the existing health profile when the page opens
 onMounted(async () => {
+    // Redirect to registration if the user is not logged in
     if (!authStore.isAuthenticated) {
         router.replace({ name: "register" });
         return;
     }
+
     try {
         const { data } = await api.get("/health-profile");
-        console.log("ProfilSante - Réponse GET /profil-sante:", data);
 
+        // Save the user's birth date (used to compute age)
         dateNaissance.value = data?.user?.date_of_birth
             ? String(data.user.date_of_birth)
             : "";
+
         authStore.setHealthProfile(Boolean(data?.data));
 
-        const profil = data?.data;
+        const profile = data?.data;
 
-        if (!profil) {
-            loading.value = false;
-            return;
-        }
+        // No profile yet — stay on the creation form
+        if (!profile) return;
 
-        const estComplet =
-            profil.gender &&
-            profil.height &&
-            profil.weight &&
-            profil.blood_type;
-
-        if (estComplet) {
+        // Profile is already complete — go straight to the settings page
+        const isComplete = profile.gender && profile.height && profile.weight && profile.blood_type;
+        if (isComplete) {
             router.replace({ name: "health-settings" });
             return;
         }
 
-        // Pre-fill form with existing data
-        form.sexe = profil.gender || "";
-        form.taille = profil.height || "";
-        form.poids = profil.weight || "";
-        form.groupe_sanguin = profil.blood_type || "";
-        form.objectifs = profil.goals || [];
-        form.allergies = profil.allergies || [];
-        form.maladies_chroniques = profil.chronic_diseases || [];
-        form.traitements = profil.treatments || [];
-        form.fumeur = profil.smoker || false;
-        form.alcool = profil.alcoholic || false;
-        form.consulte_medecin = profil.doctor_invited || false;
-        form.medecin_peut_consulter = profil.doctor_invited || false;
-        form.medecin_email = profil.doctor_email || "";
+        // Pre-fill the form with whatever was already saved
+        form.sexe                = profile.gender        || "";
+        form.taille              = profile.height        || "";
+        form.poids               = profile.weight        || "";
+        form.groupe_sanguin      = profile.blood_type    || "";
+        form.objectifs           = profile.goals         || [];
+        form.allergies           = profile.allergies     || [];
+        form.maladies_chroniques = profile.chronic_diseases || [];
+        form.traitements         = profile.treatments    || [];
+        form.fumeur              = profile.smoker        || false;
+        form.alcool              = profile.alcoholic     || false;
+        form.consulte_medecin    = profile.doctor_invited || false;
+        form.medecin_peut_consulter = profile.doctor_invited || false;
+        form.medecin_email       = profile.doctor_email  || "";
     } catch (err) {
-        console.error("ProfilSante - Erreur lors du chargement:", err);
+        // Session expired — redirect to login
         if (err.response?.status === 401) {
-            console.log("Non authentifié, redirection vers login");
             redirectLogin();
             return;
         }
         saveError.value =
             "Impossible de charger le profil santé: " +
             (err.response?.data?.message || err.message);
-        console.error("Détails de l'erreur:", err.response?.data);
     } finally {
         loading.value = false;
     }

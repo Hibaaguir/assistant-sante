@@ -3,9 +3,9 @@
   Patient main layout: notifications and health chart.
 -->
 <template>
-    <div class="w-full px-4 py-4 sm:px-6 lg:px-8">
+    <div class="w-full px-4 py-4 sm:px-6 lg:px-8 bg-white">
         <header class="mb-8">
-            <h1 class="text-[42px] font-bold leading-tight text-purple-900">
+            <h1 class="text-[42px] font-bold leading-tight text-blue-600">
                 Tableau de bord
             </h1>
             <p class="mt-3 text-base text-slate-600 font-medium">

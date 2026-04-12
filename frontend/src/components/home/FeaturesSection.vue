@@ -1,6 +1,17 @@
-<!-- components/accueil/FeaturesSection.vue -->
+<!-- components/home/FeaturesSection.vue -->
+<!--
+  FeaturesSection.vue
+  ─────────────────────────────────────────────────────────────
+  Displays a list of feature points in one of three visual styles.
+
+  Props:
+    points  – Array of { titre, description, couleur?, icone? }
+    variant – 'icone' | 'badge' | 'securite'
+
+  Used by: PublicHomePage.vue
+-->
 <template>
-    <!-- Variant: icon (solutions) -->
+    <!-- Variant: icon list (used in "solutions" section) -->
     <ul v-if="variant === 'icone'" class="m-0 grid list-none gap-2.5 p-0">
         <li
             v-for="point in points"
@@ -34,7 +45,7 @@
         </li>
     </ul>
 
-    <!-- Variant: badge (analytics) -->
+    <!-- Variant: badge list (used in "analytics" section) -->
     <ul v-else-if="variant === 'badge'" class="m-0 grid list-none gap-2.5 p-0">
         <li
             v-for="point in points"
@@ -57,7 +68,7 @@
         </li>
     </ul>
 
-    <!-- Variant: security (about) -->
+    <!-- Variant: security highlight (used in "about" section) -->
     <ul v-else-if="variant === 'securite'" class="m-0 list-none p-0">
         <li
             class="flex items-start gap-3 rounded-xl border border-[#c7cbff] bg-[#f2f4ff] px-4 py-4"

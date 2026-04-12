@@ -1,13 +1,13 @@
 <template>
-    <div class="w-full p-4 sm:p-6 lg:p-8">
+    <div class="w-full p-4 sm:p-6 lg:p-8 bg-white">
         <div
-            class="relative mb-4 overflow-hidden rounded-3xl border border-[#d6e2ff] bg-gradient-to-br from-[#edf4ff] via-[#f8f4ff] to-[#eefaf4] p-5 shadow-sm sm:p-6"
+            class="relative mb-4 overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
         >
             <div
-                class="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#7c3aed]/15 blur-2xl"
+                class="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-transparent blur-2xl"
             ></div>
             <div
-                class="pointer-events-none absolute -bottom-10 left-8 h-24 w-24 rounded-full bg-[#2563eb]/15 blur-2xl"
+                class="pointer-events-none absolute -bottom-10 left-8 h-24 w-24 rounded-full bg-transparent blur-2xl"
             ></div>
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -27,11 +27,8 @@
                     </p>
                 </div>
                 <div class="flex gap-2">
-                    <button
-                        type="button"
-                        class="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-                        @click="showFilter = true"
-                    >
+                    <!-- Use BaseButton to avoid repeating the same button style everywhere -->
+                    <BaseButton variant="secondary" @click="showFilter = true">
                         <svg
                             viewBox="0 0 24 24"
                             class="h-3.5 w-3.5"
@@ -45,30 +42,20 @@
                             <path d="M3 5h18l-7 8v5l-4 2v-7z" />
                         </svg>
                         Filtrer
-                    </button>
-                    <button
-                        type="button"
-                        class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-500/25 transition hover:-translate-y-0.5"
-                        @click="router.push({ name: 'journal' })"
-                    >
+                    </BaseButton>
+                    <BaseButton variant="primary" @click="router.push({ name: 'journal' })">
                         Retour
-                    </button>
+                    </BaseButton>
                 </div>
             </div>
         </div>
         <NotificationsOnline />
 
-        <p
-            v-if="noticeMessage"
-            class="mb-4 rounded-xl border px-4 py-3 text-[15px] font-semibold"
-            :class="
-                noticeTone === 'success'
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                    : 'border-amber-300 bg-amber-50 text-amber-700'
-            "
-        >
-            {{ noticeMessage }}
-        </p>
+        <!-- AlertMessage picks the right color automatically based on tone -->
+        <AlertMessage
+            :message="noticeMessage"
+            :type="noticeTone === 'success' ? 'success' : 'warning'"
+        />
 
         <div
             v-if="store.filter.type !== 'all'"
@@ -95,7 +82,12 @@
                 :entree="entry"
                 :editing="false"
                 :filter-type="store.filter.type"
-                @edit="router.push({ name: 'journal-assistant', query: { edit: entry.id } })"
+                @edit="
+                    router.push({
+                        name: 'journal-assistant',
+                        query: { edit: entry.id },
+                    })
+                "
                 @request-delete="requestDeletion(entry.id)"
             />
         </div>
@@ -110,13 +102,9 @@
             <p class="mt-1 text-sm text-slate-500">
                 Réinitialise le filtre pour afficher tout l'historique.
             </p>
-            <button
-                type="button"
-                class="mt-4 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 py-2 text-sm font-semibold text-white"
-                @click="resetFilter"
-            >
+            <BaseButton class="mt-4" @click="resetFilter">
                 Réinitialiser le filtre
-            </button>
+            </BaseButton>
         </div>
 
         <div
@@ -126,13 +114,9 @@
             <p class="text-sm font-semibold text-slate-800">
                 Aucune entrée enregistrée pour le moment.
             </p>
-            <button
-                type="button"
-                class="mt-4 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 py-2 text-sm font-semibold text-white"
-                @click="router.push({ name: 'journal-assistant' })"
-            >
+            <BaseButton class="mt-4" @click="router.push({ name: 'journal-assistant' })">
                 Ajouter une entrée
-            </button>
+            </BaseButton>
         </div>
 
         <FilterModal
@@ -162,6 +146,8 @@ import FilterModal from "@/components/journal-entries/FilterModal.vue";
 import CarteEntreeHistorique from "@/components/journal-entries/EntryHistoryCard.vue";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
 import NotificationsOnline from "@/components/ui/NotificationsOnline.vue";
+import AlertMessage from "@/components/ui/AlertMessage.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import { useJournalStore } from "@/stores/journal";
 import { useNotificationsStore } from "@/stores/notifications";
 
@@ -194,40 +180,53 @@ const activeFilterLabel = computed(() => {
 
 const hasEntries = computed(() => store.entries.length > 0);
 const hasFilteredEntries = computed(() => store.filteredEntries.length > 0);
-const showNoResults = computed(() => hasEntries.value && !hasFilteredEntries.value);
-
-const noticeTone = computed(() =>
-    route.query.notice === "saved" ? "success" : route.query.notice === "canceled" ? "info" : "",
+const showNoResults = computed(
+    () => hasEntries.value && !hasFilteredEntries.value,
 );
+
+// Decide which color to use for the notice banner (from the URL query)
+const noticeTone = computed(() => {
+    if (route.query.notice === "saved")    return "success";
+    if (route.query.notice === "canceled") return "warning";
+    return "";
+});
+
+// Get the notice banner text based on the URL query
 const noticeMessage = computed(() => {
-    if (route.query.notice === "saved") return "Modifications enregistrées avec succès.";
+    if (route.query.notice === "saved")    return "Modifications enregistrées avec succès.";
     if (route.query.notice === "canceled") return "Modifications annulées.";
     return "";
 });
 
+// Apply the selected filter and close the filter modal
 const applyFilter = (nextFilter) => {
     store.definirFiltre(nextFilter);
     showFilter.value = false;
 };
 
+// Reset the filter and close the filter modal
 const resetFilter = () => {
     store.reinitialiserFiltre();
     showFilter.value = false;
 };
 
+// Start a deletion request — store the ID and open the confirmation dialog
 const requestDeletion = (id) => {
-    pendingDeleteId.value = id;
+    pendingDeleteId.value   = id;
     showDeleteConfirm.value = true;
 };
 
+// Cancel the deletion and close the dialog
 const cancelDeletion = () => {
-    pendingDeleteId.value = null;
+    pendingDeleteId.value   = null;
     showDeleteConfirm.value = false;
     notifications.actionCancelled();
 };
 
+// Confirm and perform the deletion
 const confirmDeletion = async () => {
     if (!pendingDeleteId.value) return;
+
     try {
         await store.supprimerEntree(pendingDeleteId.value);
         notifications.itemDeleted();
@@ -235,7 +234,8 @@ const confirmDeletion = async () => {
         const message = error?.response?.data?.message || "Erreur lors de la suppression.";
         notifications.error(message);
     } finally {
-        pendingDeleteId.value = null;
+        // Always close the dialog when done
+        pendingDeleteId.value   = null;
         showDeleteConfirm.value = false;
     }
 };

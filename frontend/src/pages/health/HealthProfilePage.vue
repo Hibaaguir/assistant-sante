@@ -2,7 +2,7 @@
     <div class="w-full px-4 py-4 sm:px-6 lg:px-8">
         <header class="mb-4 flex items-start gap-3 sm:gap-4">
             <div
-                class="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-400 to-purple-500 shadow-md shadow-purple-300/80 sm:h-12 sm:w-12"
+                class="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 sm:h-12 sm:w-12"
             >
                 <svg
                     viewBox="0 0 24 24"
@@ -18,7 +18,7 @@
             </div>
             <div>
                 <h1
-                    class="text-[42px] font-bold leading-none tracking-[-0.01em] text-purple-900 sm:text-[48px]"
+                    class="text-[42px] font-bold leading-none tracking-[-0.01em] text-blue-600 sm:text-[48px]"
                 >
                     Profil de santé
                 </h1>
@@ -49,11 +49,8 @@
         <div v-else class="grid gap-4 lg:grid-cols-2">
             <!-- Section: Informations de base -->
             <section
-                class="min-h-[250px] rounded-[14px] border border-purple-200 bg-gradient-to-br from-purple-50 via-white to-purple-100 p-4 shadow-[0_4px_16px_rgba(59,130,246,0.1)] sm:p-5 relative overflow-hidden"
+                class="min-h-[250px] rounded-[14px] border border-slate-200 bg-white p-4 sm:p-5 relative overflow-hidden"
             >
-                <div
-                    class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-blue-200/20 blur-2xl"
-                ></div>
                 <div class="mb-5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <span
@@ -251,11 +248,8 @@
 
             <!-- Section: Santé -->
             <section
-                class="min-h-[250px] rounded-[14px] border border-purple-200 bg-gradient-to-br from-purple-50 via-white to-purple-100 p-4 shadow-[0_4px_16px_rgba(168,85,247,0.1)] sm:p-5 relative overflow-hidden"
+                class="min-h-[250px] rounded-[14px] border border-slate-200 bg-white p-4 sm:p-5 relative overflow-hidden"
             >
-                <div
-                    class="pointer-events-none absolute -left-8 -bottom-8 h-28 w-28 rounded-full bg-purple-200/20 blur-2xl"
-                ></div>
                 <div class="mb-5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <span
@@ -564,11 +558,8 @@
 
             <!-- Section: Habitudes -->
             <section
-                class="min-h-[250px] rounded-[14px] border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-emerald-100 p-4 shadow-[0_4px_16px_rgba(34,197,94,0.1)] sm:p-5 relative overflow-hidden"
+                class="min-h-[250px] rounded-[14px] border border-slate-200 bg-white p-4 sm:p-5 relative overflow-hidden"
             >
-                <div
-                    class="pointer-events-none absolute -right-10 -bottom-10 h-32 w-32 rounded-full bg-cyan-200/15 blur-2xl"
-                ></div>
                 <div class="mb-5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <span
@@ -922,12 +913,12 @@
 
             <!-- Section: Suivi médecin -->
             <section
-                class="min-h-[250px] rounded-[14px] border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-violet-100 p-4 shadow-[0_2px_8px_rgba(15,23,42,0.08)] sm:p-5"
+                class="min-h-[250px] rounded-[14px] border border-slate-200 bg-white p-4 sm:p-5"
             >
                 <div class="mb-5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <span
-                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-700"
+                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700"
                         >
                             <svg
                                 viewBox="0 0 24 24"
@@ -1064,138 +1055,227 @@ import { useNotificationsStore } from "@/stores/notifications";
 import NotificationsOnline from "@/components/ui/NotificationsOnline.vue";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
 
-const router = useRouter();
-const authStore = useAuthStore();
+// ─── Stores & Router ──────────────────────────────────────────────────────────
+const router        = useRouter();
+const authStore     = useAuthStore();
 const notifications = useNotificationsStore();
-const loading = ref(true);
-const loadError = ref("");
-const doctorEmailError = ref("");
-const savingSection = ref("");
 
-// Reactive profile data (English API keys)
+// ─── Page state ───────────────────────────────────────────────────────────────
+const loading          = ref(true);  // true while the page is loading data
+const loadError        = ref("");    // shown when the initial API call fails
+const savingSection    = ref("");    // name of the section currently being saved
+const doctorEmailError = ref("");    // error message for the doctor email field
+
+// ─── Profile & user data ──────────────────────────────────────────────────────
+// `profile` holds the health data from the API
+// `user` holds basic account info (name, birth date)
 const profile = reactive({});
-const user = reactive({ name: "", dateOfBirth: "" });
+const user    = reactive({ name: "", dateOfBirth: "" });
 
+// ─── Section edit state ───────────────────────────────────────────────────────
+// editing.X = true means the user has clicked the pencil for that section
+const editing = reactive({ base: false, health: false, habits: false, doctor: false });
+
+// ─── Field-level error messages ───────────────────────────────────────────────
 const sectionErrors = reactive({
-    base: { gender: "", height: "", weight: "", form: [] },
+    base:   { gender: "", height: "", weight: "", form: [] },
     health: { goals: "", form: [] },
 });
 
-const editing = reactive({
-    base: false,
-    health: false,
-    habits: false,
-    doctor: false,
-});
-
-// Draft with English keys matching API contract
+// ─── Draft (what the user is currently editing) ───────────────────────────────
+// Changes stay here until the user hits "Enregistrer"
 const draft = reactive({
-    gender: "",
-    height: "",
-    weight: "",
-    bloodType: "",
-    goals: [],
-    allergies: [],
+    gender:          "",
+    height:          "",
+    weight:          "",
+    bloodType:       "",
+    goals:           [],
+    allergies:       [],
     chronicDiseases: [],
-    treatments: [],
-    smoker: false,
-    alcoholic: false,
+    treatments:      [],
+    smoker:          false,
+    alcoholic:       false,
     doctorCanConsult: false,
-    doctorEmail: "",
+    doctorEmail:     "",
 });
 
+// ─── Dropdown option lists ────────────────────────────────────────────────────
 const goalOptions = [
-    "Maintenir mon poids",
-    "Perdre du poids",
-    "Avoir plus d'energie",
-    "Mieux dormir",
-    "Reduire mon stress",
-    "Suivre ma sante regulierement",
+    "Maintenir mon poids", "Perdre du poids", "Avoir plus d'energie",
+    "Mieux dormir", "Reduire mon stress", "Suivre ma sante regulierement",
 ];
+
 const allergyOptions = ref([
-    "Pollen",
-    "Acariens",
-    "Poils d'animaux",
-    "Poussiere",
-    "Arachides",
-    "Fruits de mer",
-    "Lait (lactose)",
-    "Oeufs",
-    "Gluten",
-    "Penicilline",
-    "Aspirine",
-    "Piqures d'insectes",
-    "Moisissures",
+    "Pollen", "Acariens", "Poils d'animaux", "Poussiere", "Arachides",
+    "Fruits de mer", "Lait (lactose)", "Oeufs", "Gluten",
+    "Penicilline", "Aspirine", "Piqures d'insectes", "Moisissures",
 ]);
+
 const diseaseOptions = ref([
-    "Diabete",
-    "Hypertension arterielle",
-    "Asthme",
-    "Maladie cardiaque",
-    "Maladie renale chronique",
-    "Maladie thyroidienne",
-    "Arthrite",
-    "Epilepsie",
-    "Migraine chronique",
-    "Maladie pulmonaire chronique",
-    "Cholesterol eleve",
-    "Depression",
-    "Anemie",
+    "Diabete", "Hypertension arterielle", "Asthme", "Maladie cardiaque",
+    "Maladie renale chronique", "Maladie thyroidienne", "Arthrite", "Epilepsie",
+    "Migraine chronique", "Maladie pulmonaire chronique", "Cholesterol eleve",
+    "Depression", "Anemie",
 ]);
-const treatmentTypes = ref([]);
-const treatmentNamesByType = reactive({});
-const customInputs = reactive({ allergies: "", chronicDiseases: "" });
+
+// ─── Treatment autocomplete catalog ──────────────────────────────────────────
+const treatmentTypes       = ref([]);    // known treatment types
+const treatmentNamesByType = reactive({}); // { type: [name1, name2, ...] }
+
+// ─── Multi-select UI state ────────────────────────────────────────────────────
+const customInputs          = reactive({ allergies: "", chronicDiseases: "" });
 const selectedAllergyOption = ref("");
 const selectedDiseaseOption = ref("");
-const showTreatmentEditor = ref(false);
-const editingTreatmentIndex = ref(-1);
+
+// ─── Treatment editor state ───────────────────────────────────────────────────
+const showTreatmentEditor        = ref(false);
+const editingTreatmentIndex      = ref(-1);   // -1 = new, >= 0 = editing existing
 const confirmDeleteTreatmentOpen = ref(false);
 const pendingDeleteTreatmentIndex = ref(-1);
+
+// Blank form for the treatment editor
 const treatmentDraft = reactive({
-    type: "",
-    name: "",
-    dose: "",
-    frequency_unit: "day",
-    frequency_count: 1,
-    start_date: "",
-    end_date: "",
+    type: "", name: "", dose: "",
+    frequency_unit: "day", frequency_count: 1,
+    start_date: "", end_date: "",
 });
 
-// ─── Catalog helpers ──────────────────────────────────────────────────────────
+// ─ Valeurs calculées
 
+// Calculate the user's age from their birth date
+const computedAge = computed(() => {
+    if (!user.dateOfBirth) return "";
+
+    const dob = new Date(user.dateOfBirth);
+    if (isNaN(dob.getTime())) return "";
+
+    const today = new Date();
+    let age     = today.getFullYear() - dob.getFullYear();
+
+    // Has the birthday happened yet this year?
+    const birthdayPassed =
+        today.getMonth() > dob.getMonth() ||
+        (today.getMonth() === dob.getMonth() && today.getDate() >= dob.getDate());
+
+    if (!birthdayPassed) age -= 1;
+
+    return age >= 0 ? `${age} ans` : "";
+});
+
+// Available names for the type currently typed in the treatment editor
+const treatmentNamesForSelectedType = computed(() =>
+    getTreatmentNamesByType(treatmentDraft.type),
+);
+
+// ─ Helpers d'affichage
+
+// Convert a boolean to a human-readable "Oui" / "Non"
+function yesNo(value) {
+    return value ? "Oui" : "Non";
+}
+
+// Join an array into a comma-separated string — returns "-" if empty
+function joinList(value) {
+    if (!Array.isArray(value) || value.length === 0) return "-";
+    return value.filter(Boolean).join(", ");
+}
+
+// Keep only non-empty strings from an array
+function normalizeList(value) {
+    if (!Array.isArray(value)) return [];
+    return value.map((item) => String(item || "").trim()).filter(Boolean);
+}
+
+// Build a short summary of treatments for the read-only view
+function treatmentsSummary(treatments) {
+    if (!Array.isArray(treatments) || treatments.length === 0) return "-";
+    const names = treatments
+        .map((t) => (t && typeof t === "object" ? t.name || t.type || "" : ""))
+        .filter(Boolean);
+    return names.length ? names.join(", ") : `${treatments.length} traitement(s)`;
+}
+
+// ─ Helpers pour les dates
+
+// Auto-format digits as DD/MM/YYYY while the user types
+function formatDateWithSlashes(value) {
+    const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+}
+
+// Convert DD/MM/YYYY → YYYY-MM-DD for the API — returns null if invalid
+function frenchDateToIso(value) {
+    const text = String(value || "").trim();
+    // La date doit être au format JJ/MM/AAAA (ex: 25/03/2026)
+    const parts = text.split("/");
+    if (parts.length !== 3) return null;
+
+    const day   = Number(parts[0]);
+    const month = Number(parts[1]);
+    const year  = Number(parts[2]);
+
+    // Vérifier que les parties sont des chiffres valides
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+
+    // Vérifier que la date est réelle (ex: 31/02 est impossible)
+    const date = new Date(year, month - 1, day);
+    const isValid = date.getFullYear() === year
+        && date.getMonth() === month - 1
+        && date.getDate()  === day;
+
+    if (!isValid) return null;
+
+    // Retourner au format AAAA-MM-JJ (format attendu par l'API)
+    const dd = String(day).padStart(2, "0");
+    const mm = String(month).padStart(2, "0");
+    return `${year}-${mm}-${dd}`;
+}
+
+// Convert YYYY-MM-DD → DD/MM/YYYY for display in forms
+function isoDateToFrench(value) {
+    if (!value) return "";
+    const match = String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return match ? `${match[3]}/${match[2]}/${match[1]}` : "";
+}
+
+// Called on every keystroke in a date field — applies the slashes automatically
+function handleTreatmentDateInput(event, key) {
+    treatmentDraft[key] = formatDateWithSlashes(event?.target?.value ?? "");
+}
+
+// ─ Catalogue des traitements
+
+// Trim and collapse extra whitespace from a text value
 function normalizeTreatmentText(value) {
-    return String(value || "")
-        .trim()
-        .replace(/\s+/g, " ");
+    return String(value || "").trim().replace(/\s+/g, " ");
 }
 
-function appendUniqueCatalogOption(targetRef, value) {
-    const normalized = normalizeTreatmentText(value);
-    if (!normalized) return;
-    const exists = targetRef.value.some(
-        (item) =>
-            item.localeCompare(normalized, "fr", { sensitivity: "base" }) === 0,
-    );
-    if (exists) return;
-    targetRef.value = [...targetRef.value, normalized].sort((a, b) =>
-        a.localeCompare(b, "fr", { sensitivity: "base" }),
-    );
+// Add a value to a list ref only if it doesn't already exist (case-insensitive)
+function appendUniqueCatalogOption(listRef, value) {
+    const text = normalizeTreatmentText(value);
+    if (!text) return;
+    const textLower = text.toLowerCase();
+    const alreadyExists = listRef.value.some((item) => item.toLowerCase() === textLower);
+    if (alreadyExists) return;
+    listRef.value = [...listRef.value, text].sort((a, b) => a.localeCompare(b));
 }
 
+// Register a treatment type in the local catalog (create its names list if missing)
 function ensureTreatmentType(type) {
-    const normalized = normalizeTreatmentText(type);
-    if (!normalized) return "";
-    if (!treatmentTypes.value.includes(normalized)) {
-        treatmentTypes.value = [...treatmentTypes.value, normalized].sort(
-            (a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }),
+    const text = normalizeTreatmentText(type);
+    if (!text) return "";
+    if (!treatmentTypes.value.includes(text)) {
+        treatmentTypes.value = [...treatmentTypes.value, text].sort((a, b) =>
+            a.localeCompare(b, "fr", { sensitivity: "base" }),
         );
     }
-    if (!Array.isArray(treatmentNamesByType[normalized])) {
-        treatmentNamesByType[normalized] = [];
-    }
-    return normalized;
+    if (!Array.isArray(treatmentNamesByType[text])) treatmentNamesByType[text] = [];
+    return text;
 }
 
+// Add a treatment name to the catalog under its type
 function mergeTreatmentCatalogEntry(type, name = "") {
     const normalizedType = ensureTreatmentType(type);
     if (!normalizedType) return;
@@ -1208,40 +1288,35 @@ function mergeTreatmentCatalogEntry(type, name = "") {
     }
 }
 
+// Merge the full catalog received from the API into our local lists
 function applyTreatmentCatalog(catalog) {
     const types = Array.isArray(catalog?.types) ? catalog.types : [];
     types.forEach((type) => ensureTreatmentType(type));
-    const namesByType =
-        catalog?.names_by_type && typeof catalog.names_by_type === "object"
-            ? catalog.names_by_type
-            : {};
+    const namesByType = typeof catalog?.names_by_type === "object" ? catalog.names_by_type : {};
     Object.entries(namesByType).forEach(([type, names]) => {
         ensureTreatmentType(type);
-        (Array.isArray(names) ? names : []).forEach((name) =>
-            mergeTreatmentCatalogEntry(type, name),
-        );
+        (Array.isArray(names) ? names : []).forEach((name) => mergeTreatmentCatalogEntry(type, name));
     });
 }
 
+// Fetch the treatment catalog from the server (fails silently — it's optional)
 async function loadTreatmentCatalog() {
     try {
         const response = await api.get("/treatment-catalog");
         applyTreatmentCatalog(response?.data?.data || {});
     } catch (_) {
-        // Catalog is optional; profile remains editable without it.
+        // Catalog not available — the form still works without it
     }
 }
 
+// Get the list of known names for a given treatment type
 function getTreatmentNamesByType(type) {
     const normalized = ensureTreatmentType(type);
     if (!normalized) return [];
     return treatmentNamesByType[normalized];
 }
 
-const treatmentNamesForSelectedType = computed(() =>
-    getTreatmentNamesByType(treatmentDraft.type),
-);
-
+// Persist a new type/name to the shared catalog on the server
 async function persistTreatmentCatalogEntry(type, name = "") {
     const normalizedType = normalizeTreatmentText(type);
     if (!normalizedType) return;
@@ -1251,144 +1326,193 @@ async function persistTreatmentCatalogEntry(type, name = "") {
     });
 }
 
-// ─── Computed ─────────────────────────────────────────────────────────────────
+// ─ Helpers pour les sélections multiples
 
-const computedAge = computed(() => {
-    if (!user.dateOfBirth) return "";
-    const dob = new Date(user.dateOfBirth);
-    if (Number.isNaN(dob.getTime())) return "";
-    const today = new Date();
-    let age = today.getFullYear() - dob.getFullYear();
-    const monthDiff = today.getMonth() - dob.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate()))
-        age -= 1;
-    return age >= 0 ? `${age} ans` : "";
-});
-
-// ─── Display helpers ──────────────────────────────────────────────────────────
-
-function yesNo(value) {
-    return value ? "Oui" : "Non";
-}
-
-function joinList(value) {
-    if (!Array.isArray(value) || value.length === 0) return "-";
-    return value.filter(Boolean).join(", ");
-}
-
-function normalizeList(value) {
-    if (!Array.isArray(value)) return [];
-    return value.map((item) => String(item || "").trim()).filter(Boolean);
-}
-
-function treatmentsSummary(value) {
-    if (!Array.isArray(value) || value.length === 0) return "-";
-    const labels = value
-        .map((item) =>
-            item && typeof item === "object"
-                ? item.name || item.type || ""
-                : "",
-        )
-        .filter(Boolean);
-    return labels.length ? labels.join(", ") : `${value.length} traitement(s)`;
-}
-
-// ─── Multi-select helpers ─────────────────────────────────────────────────────
-
+// Check if a value is already in a draft list field
 function isSelected(key, value) {
     return Array.isArray(draft[key]) && draft[key].includes(value);
 }
 
+// Add or remove a value from a draft list field
 function toggleSelected(key, value) {
     if (!Array.isArray(draft[key])) draft[key] = [];
     if (draft[key].includes(value)) {
         draft[key] = draft[key].filter((item) => item !== value);
-        return;
+    } else {
+        draft[key] = [...draft[key], value];
     }
-    draft[key] = [...draft[key], value];
 }
 
+// Add a custom value typed by the user (not from the dropdown)
 async function addCustom(key, value) {
-    const normalized = String(value || "").trim();
-    if (!normalized) return;
+    const text = String(value || "").trim();
+    if (!text) return;
     if (!Array.isArray(draft[key])) draft[key] = [];
-    if (!draft[key].includes(normalized))
-        draft[key] = [...draft[key], normalized];
-    if (key === "allergies")
-        appendUniqueCatalogOption(allergyOptions, normalized);
-    if (key === "chronicDiseases")
-        appendUniqueCatalogOption(diseaseOptions, normalized);
+    if (!draft[key].includes(text)) draft[key] = [...draft[key], text];
+    // Keep the dropdown list up to date for future use
+    if (key === "allergies")       appendUniqueCatalogOption(allergyOptions, text);
+    if (key === "chronicDiseases") appendUniqueCatalogOption(diseaseOptions, text);
     customInputs[key] = "";
 }
 
+// Add a value chosen from a dropdown
 function addSelectedOption(key, value, kind) {
-    const normalized = String(value || "").trim();
-    if (!normalized) return;
+    const text = String(value || "").trim();
+    if (!text) return;
     if (!Array.isArray(draft[key])) draft[key] = [];
-    if (!draft[key].includes(normalized))
-        draft[key] = [...draft[key], normalized];
+    if (!draft[key].includes(text)) draft[key] = [...draft[key], text];
+    // Reset the dropdown after selection
     if (kind === "allergy") selectedAllergyOption.value = "";
     if (kind === "disease") selectedDiseaseOption.value = "";
 }
 
-// ─── Date helpers ─────────────────────────────────────────────────────────────
+// ─ Éditeur de traitement
 
-function formatDateWithSlashes(value) {
-    const digits = String(value || "")
-        .replace(/\D/g, "")
-        .slice(0, 8);
-    if (digits.length <= 2) return digits;
-    if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
-}
-
-// Convert DD/MM/YYYY → YYYY-MM-DD for the API, rejecting invalid dates (e.g. 02/50/2026)
-function frenchDateToIso(value) {
-    const match = String(value || "")
-        .trim()
-        .match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (!match) return null;
-    const day = Number(match[1]);
-    const month = Number(match[2]);
-    const year = Number(match[3]);
-    const date = new Date(year, month - 1, day);
-    const isValid =
-        date.getFullYear() === year &&
-        date.getMonth() === month - 1 &&
-        date.getDate() === day;
-    return isValid ? `${match[3]}-${match[2]}-${match[1]}` : null;
-}
-
-// Convert YYYY-MM-DD → DD/MM/YYYY for display
-function isoDateToFrench(value) {
-    if (!value) return "";
-    const match = String(value)
-        .trim()
-        .match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (!match) return "";
-    const frenchDate = `${match[3]}/${match[2]}/${match[1]}`;
-    return frenchDate;
-}
-
-function handleTreatmentDateInput(event, key) {
-    treatmentDraft[key] = formatDateWithSlashes(event?.target?.value ?? "");
-}
-
+// When the type field changes, clear the name if it no longer belongs to the new type
 function handleTreatmentTypeInput() {
-    const normalized = normalizeTreatmentText(treatmentDraft.type);
-    if (!normalized) {
+    const text = normalizeTreatmentText(treatmentDraft.type);
+    if (!text) {
         treatmentDraft.name = "";
         return;
     }
-    treatmentDraft.type = ensureTreatmentType(normalized);
+    treatmentDraft.type = ensureTreatmentType(text);
     const available = getTreatmentNamesByType(treatmentDraft.type);
     if (treatmentDraft.name && !available.includes(treatmentDraft.name)) {
         treatmentDraft.name = "";
     }
 }
 
-// ─── Doctor email validation ──────────────────────────────────────────────────
+// Clear all treatment editor fields
+function resetTreatmentDraft() {
+    Object.assign(treatmentDraft, {
+        type: "", name: "", dose: "",
+        frequency_unit: "day", frequency_count: 1,
+        start_date: "", end_date: "",
+    });
+}
 
+// Open the treatment editor — pre-fill if editing an existing one
+function openTreatmentEditor(index = -1) {
+    showTreatmentEditor.value   = true;
+    editingTreatmentIndex.value = index;
+
+    // No valid index → blank form for a new treatment
+    if (index < 0 || !draft.treatments[index]) {
+        resetTreatmentDraft();
+        return;
+    }
+
+    // Pre-fill with the existing treatment's data
+    const item = draft.treatments[index];
+    treatmentDraft.type            = item.type            || "";
+    treatmentDraft.name            = item.name            || "";
+    treatmentDraft.dose            = item.dose            || "";
+    treatmentDraft.frequency_unit  = item.frequency_unit  || "day";
+    treatmentDraft.frequency_count = Number(item.frequency_count ?? 1);
+    treatmentDraft.start_date      = item.start_date      || "";
+    treatmentDraft.end_date        = item.end_date        || "";
+    handleTreatmentTypeInput();
+}
+
+// Close the editor and reset all its fields
+function cancelTreatmentEdit() {
+    showTreatmentEditor.value   = false;
+    editingTreatmentIndex.value = -1;
+    resetTreatmentDraft();
+}
+
+// Close the editor and notify the user the action was cancelled
+function cancelTreatmentEditWithNotice() {
+    cancelTreatmentEdit();
+    notifications.actionCancelled();
+}
+
+// Save (add or update) a treatment from the editor form
+async function saveTreatmentDraft() {
+    const type = normalizeTreatmentText(treatmentDraft.type);
+    const name = normalizeTreatmentText(treatmentDraft.name);
+    if (!type || !name) return;
+
+    // Both dates are required and must be valid
+    const isoStart = frenchDateToIso(treatmentDraft.start_date);
+    const isoEnd   = frenchDateToIso(treatmentDraft.end_date);
+    if (!isoStart || !isoEnd) {
+        notifications.warning("Veuillez renseigner les dates de début et fin du traitement (format: JJ/MM/AAAA).");
+        return;
+    }
+    if (isoEnd <= isoStart) {
+        notifications.warning("La date de fin doit être après la date de début.");
+        return;
+    }
+
+    // Build the treatment object (dates stay in DD/MM/YYYY for the draft)
+    const treatment = {
+        type, name,
+        dose:            treatmentDraft.dose           || null,
+        frequency_unit:  treatmentDraft.frequency_unit || "day",
+        frequency_count: Number(treatmentDraft.frequency_count || 1),
+        start_date:      treatmentDraft.start_date,
+        end_date:        treatmentDraft.end_date,
+    };
+
+    if (!Array.isArray(draft.treatments)) draft.treatments = [];
+
+    const isUpdate = editingTreatmentIndex.value > -1;
+    if (isUpdate) {
+        draft.treatments.splice(editingTreatmentIndex.value, 1, treatment);
+    } else {
+        draft.treatments.push(treatment);
+    }
+
+    // Update the local autocomplete catalog
+    ensureTreatmentType(type);
+    mergeTreatmentCatalogEntry(type, name);
+
+    // Try to save the new entry to the shared server catalog
+    try {
+        await persistTreatmentCatalogEntry(type, name);
+    } catch {
+        notifications.warning("Traitement ajoute au profil local, mais la mise a jour du catalogue partage a echoue.");
+    }
+
+    cancelTreatmentEdit();
+    if (isUpdate) notifications.itemUpdated();
+    else          notifications.itemAdded();
+}
+
+// Remove a treatment from the draft list by index
+function removeTreatment(index) {
+    if (!Array.isArray(draft.treatments)) return;
+    draft.treatments.splice(index, 1);
+    notifications.itemDeleted();
+}
+
+// Ask the user to confirm before deleting a treatment
+function requestRemoveTreatment(index) {
+    pendingDeleteTreatmentIndex.value = index;
+    confirmDeleteTreatmentOpen.value  = true;
+}
+
+// User cancelled the delete dialog
+function cancelRemoveTreatment() {
+    confirmDeleteTreatmentOpen.value  = false;
+    pendingDeleteTreatmentIndex.value = -1;
+    notifications.actionCancelled();
+}
+
+// User confirmed the delete — remove the treatment
+function confirmRemoveTreatment() {
+    const index = pendingDeleteTreatmentIndex.value;
+    confirmDeleteTreatmentOpen.value  = false;
+    pendingDeleteTreatmentIndex.value = -1;
+    const isValid = index >= 0 && Array.isArray(draft.treatments) && index < draft.treatments.length;
+    if (!isValid) return;
+    removeTreatment(index);
+}
+
+// ─ Validation de l'email du médecin
+
+// Validate the doctor's email — only required when sharing is enabled
 function validateDoctorEmail() {
     if (!draft.doctorCanConsult) {
         doctorEmailError.value = "";
@@ -1400,212 +1524,73 @@ function validateDoctorEmail() {
         return false;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        doctorEmailError.value =
-            "Format invalide: utilisez un email de type nom@domaine.com.";
+        doctorEmailError.value = "Format invalide: utilisez un email de type nom@domaine.com.";
         return false;
     }
     doctorEmailError.value = "";
     return true;
 }
 
-// ─── Treatment editor ─────────────────────────────────────────────────────────
-
-function resetTreatmentDraft() {
-    Object.assign(treatmentDraft, {
-        type: "",
-        name: "",
-        dose: "",
-        frequency_unit: "day",
-        frequency_count: 1,
-        start_date: "",
-        end_date: "",
-    });
-}
-
-function openTreatmentEditor(index = -1) {
-    showTreatmentEditor.value = true;
-    editingTreatmentIndex.value = index;
-    if (index < 0) {
-        resetTreatmentDraft();
-        return;
-    }
-    const item = draft.treatments[index];
-    if (!item || typeof item !== "object") {
-        resetTreatmentDraft();
-        return;
-    }
-    treatmentDraft.type = item.type || "";
-    treatmentDraft.name = item.name || "";
-    treatmentDraft.dose = item.dose || "";
-    treatmentDraft.frequency_unit = item.frequency_unit || "day";
-    treatmentDraft.frequency_count = Number(item.frequency_count ?? 1);
-    // draft.treatments already stores dates in DD/MM/YYYY format
-    treatmentDraft.start_date = item.start_date || "";
-    treatmentDraft.end_date = item.end_date || "";
-    handleTreatmentTypeInput();
-}
-
-function cancelTreatmentEdit() {
-    showTreatmentEditor.value = false;
-    editingTreatmentIndex.value = -1;
-    resetTreatmentDraft();
-}
-
-function cancelTreatmentEditWithNotice() {
-    cancelTreatmentEdit();
-    notifications.actionCancelled();
-}
-
-async function saveTreatmentDraft() {
-    const normalizedType = normalizeTreatmentText(treatmentDraft.type);
-    const normalizedName = normalizeTreatmentText(treatmentDraft.name);
-    if (!normalizedType || !normalizedName) return;
-
-    // Validate dates (must be in DD/MM/YYYY format)
-    const isoStartDate = frenchDateToIso(treatmentDraft.start_date);
-    const isoEndDate = frenchDateToIso(treatmentDraft.end_date);
-
-    if (!isoStartDate || !isoEndDate) {
-        notifications.warning(
-            "Veuillez renseigner les dates de début et fin du traitement (format: JJ/MM/AAAA).",
-        );
-        return;
-    }
-
-    if (isoEndDate <= isoStartDate) {
-        notifications.warning(
-            "La date de fin doit être après la date de début.",
-        );
-        return;
-    }
-
-    const isUpdate = editingTreatmentIndex.value > -1;
-    const nextTreatment = {
-        type: normalizedType,
-        name: normalizedName,
-        dose: treatmentDraft.dose || null,
-        frequency_unit: treatmentDraft.frequency_unit || "day",
-        frequency_count: Number(treatmentDraft.frequency_count || 1),
-        // Store as DD/MM/YYYY for consistency in draft
-        start_date: treatmentDraft.start_date,
-        end_date: treatmentDraft.end_date,
-    };
-
-    if (!Array.isArray(draft.treatments)) draft.treatments = [];
-    if (isUpdate) {
-        draft.treatments.splice(editingTreatmentIndex.value, 1, nextTreatment);
-    } else {
-        draft.treatments.push(nextTreatment);
-    }
-
-    ensureTreatmentType(normalizedType);
-    mergeTreatmentCatalogEntry(normalizedType, normalizedName);
-
-    try {
-        await persistTreatmentCatalogEntry(normalizedType, normalizedName);
-    } catch {
-        notifications.warning(
-            "Traitement ajoute au profil local, mais la mise a jour du catalogue partage a echoue.",
-        );
-    }
-
-    cancelTreatmentEdit();
-    if (isUpdate) notifications.itemUpdated();
-    else notifications.itemAdded();
-}
-
-function removeTreatment(index) {
-    if (!Array.isArray(draft.treatments)) return;
-    draft.treatments.splice(index, 1);
-    notifications.itemDeleted();
-}
-
-function requestRemoveTreatment(index) {
-    pendingDeleteTreatmentIndex.value = index;
-    confirmDeleteTreatmentOpen.value = true;
-}
-
-function cancelRemoveTreatment() {
-    confirmDeleteTreatmentOpen.value = false;
-    pendingDeleteTreatmentIndex.value = -1;
-    notifications.actionCancelled();
-}
-
-function confirmRemoveTreatment() {
-    const index = pendingDeleteTreatmentIndex.value;
-    confirmDeleteTreatmentOpen.value = false;
-    pendingDeleteTreatmentIndex.value = -1;
-    if (
-        index < 0 ||
-        !Array.isArray(draft.treatments) ||
-        index >= draft.treatments.length
-    )
-        return;
-    removeTreatment(index);
-}
-
-// ─── Sync draft from profile (all English keys) ───────────────────────────────
+// ─ Synchronisation brouillon ↔ profil
 
 function syncDraftFromProfile() {
-    draft.gender = profile.gender || "";
-    draft.height = profile.height ?? "";
-    draft.weight = profile.weight ?? "";
-    draft.bloodType = profile.blood_type || "";
-    draft.goals = normalizeList(profile.goals);
-    draft.allergies = normalizeList(profile.allergies);
+    // Basic info
+    draft.gender    = profile.gender      || "";
+    draft.height    = profile.height      ?? "";
+    draft.weight    = profile.weight      ?? "";
+    draft.bloodType = profile.blood_type  || "";
+
+    // Health lists
+    draft.goals           = normalizeList(profile.goals);
+    draft.allergies       = normalizeList(profile.allergies);
     draft.chronicDiseases = normalizeList(profile.chronic_diseases);
 
-    draft.allergies.forEach((item) =>
-        appendUniqueCatalogOption(allergyOptions, item),
-    );
-    draft.chronicDiseases.forEach((item) =>
-        appendUniqueCatalogOption(diseaseOptions, item),
-    );
+    // Add the user's existing items to the dropdowns for future use
+    draft.allergies.forEach((item)       => appendUniqueCatalogOption(allergyOptions, item));
+    draft.chronicDiseases.forEach((item) => appendUniqueCatalogOption(diseaseOptions, item));
 
-    const rawTreatments = Array.isArray(profile.treatments)
-        ? profile.treatments
-        : [];
-    draft.treatments = rawTreatments.map((t) => ({
-        type: t.type || "",
-        name: t.name || "",
-        dose: t.dose || null,
-        frequency_unit: t.frequency_unit || "day",
+    // Treatments — convert dates from YYYY-MM-DD (API) to DD/MM/YYYY (form)
+    draft.treatments = (Array.isArray(profile.treatments) ? profile.treatments : []).map((t) => ({
+        type:            t.type            || "",
+        name:            t.name            || "",
+        dose:            t.dose            || null,
+        frequency_unit:  t.frequency_unit  || "day",
         frequency_count: t.frequency_count || 1,
-        // Convert YYYY-MM-DD to DD/MM/YYYY for display
-        start_date: isoDateToFrench(t.start_date) || "",
-        end_date: isoDateToFrench(t.end_date) || "",
+        start_date:      isoDateToFrench(t.start_date) || "",
+        end_date:        isoDateToFrench(t.end_date)   || "",
     }));
 
+    // Register treatments in the autocomplete catalog
     draft.treatments.forEach((item) => {
-        if (!item || typeof item !== "object") return;
         const type = normalizeTreatmentText(item.type || "");
         const name = normalizeTreatmentText(item.name || "");
-        if (type) ensureTreatmentType(type);
+        if (type)        ensureTreatmentType(type);
         if (type && name) mergeTreatmentCatalogEntry(type, name);
     });
 
-    draft.smoker = Boolean(profile.smoker);
-    draft.alcoholic = Boolean(profile.alcoholic);
+    // Habits & doctor sharing
+    draft.smoker           = Boolean(profile.smoker);
+    draft.alcoholic        = Boolean(profile.alcoholic);
     draft.doctorCanConsult = Boolean(profile.doctor_invited);
-    draft.doctorEmail = profile.doctor_email || "";
+    draft.doctorEmail      = profile.doctor_email || "";
 
-    doctorEmailError.value = "";
-    customInputs.allergies = "";
-    customInputs.chronicDiseases = "";
-    selectedAllergyOption.value = "";
-    selectedDiseaseOption.value = "";
+    // Reset all temporary UI state
+    doctorEmailError.value        = "";
+    customInputs.allergies        = "";
+    customInputs.chronicDiseases  = "";
+    selectedAllergyOption.value   = "";
+    selectedDiseaseOption.value   = "";
     cancelTreatmentEdit();
 }
 
-// ─── Section editing ──────────────────────────────────────────────────────────
+// ─ Contrôles d'édition des sections
 
+// Turn off editing mode for every section
 function resetEditFlags() {
-    editing.base = false;
-    editing.health = false;
-    editing.habits = false;
-    editing.doctor = false;
+    editing.base = editing.health = editing.habits = editing.doctor = false;
 }
 
+// Open a section for editing
 function startEdit(section) {
     syncDraftFromProfile();
     clearSectionErrors();
@@ -1613,6 +1598,7 @@ function startEdit(section) {
     editing[section] = true;
 }
 
+// Close a section and discard unsaved changes
 function cancelEdit(section) {
     syncDraftFromProfile();
     clearSectionErrors(section);
@@ -1620,220 +1606,219 @@ function cancelEdit(section) {
     notifications.actionCancelled();
 }
 
+// ─ Validation
+
+// Clear error messages — passing null clears all sections
 function clearSectionErrors(section = null) {
     if (section === null || section === "base") {
         sectionErrors.base.gender = "";
         sectionErrors.base.height = "";
         sectionErrors.base.weight = "";
-        sectionErrors.base.form = [];
+        sectionErrors.base.form   = [];
     }
     if (section === null || section === "health") {
         sectionErrors.health.goals = "";
-        sectionErrors.health.form = [];
+        sectionErrors.health.form  = [];
     }
 }
 
+// Validate the "Informations de base" section
 function validateBaseSection() {
     clearSectionErrors("base");
-    if (!draft.gender)
+
+    if (!draft.gender) {
         sectionErrors.base.gender = "Veuillez selectionner le sexe.";
-    if (draft.height === "" || draft.height === null)
+    }
+
+    if (draft.height === "" || draft.height === null) {
         sectionErrors.base.height = "La taille est obligatoire.";
-    if (draft.weight === "" || draft.weight === null)
+    } else {
+        const height = Number(draft.height);
+        if (height < 80 || height > 250) {
+            sectionErrors.base.height = "La taille doit etre une valeur entre 80 et 250 cm.";
+        }
+    }
+
+    if (draft.weight === "" || draft.weight === null) {
         sectionErrors.base.weight = "Le poids est obligatoire.";
-    const height = Number(draft.height);
-    if (
-        sectionErrors.base.height === "" &&
-        (!Number.isFinite(height) || height < 80 || height > 250)
-    )
-        sectionErrors.base.height =
-            "La taille doit etre une valeur entre 80 et 250 cm.";
-    const weight = Number(draft.weight);
-    if (
-        sectionErrors.base.weight === "" &&
-        (!Number.isFinite(weight) || weight < 35 || weight > 250)
-    )
-        sectionErrors.base.weight =
-            "Le poids doit etre une valeur entre 35 et 250 kg.";
-    return (
-        !sectionErrors.base.gender &&
-        !sectionErrors.base.height &&
-        !sectionErrors.base.weight
-    );
+    } else {
+        const weight = Number(draft.weight);
+        if (weight < 35 || weight > 250) {
+            sectionErrors.base.weight = "Le poids doit etre une valeur entre 35 et 250 kg.";
+        }
+    }
+
+    return !sectionErrors.base.gender && !sectionErrors.base.height && !sectionErrors.base.weight;
 }
 
+// Validate the "Santé" section — at least one goal must be selected
 function validateHealthSection() {
     clearSectionErrors("health");
-    if (!Array.isArray(draft.goals) || draft.goals.length === 0)
-        sectionErrors.health.goals =
-            "Veuillez selectionner au moins un objectif.";
+    if (!draft.goals.length) {
+        sectionErrors.health.goals = "Veuillez selectionner au moins un objectif.";
+    }
     return !sectionErrors.health.goals;
 }
 
-// ─── Build API payload (all English keys) ────────────────────────────────────
+// ─ Construction de la charge API
 
-function buildPayload() {
-    const goals = normalizeList(draft.goals);
-    const allergies = normalizeList(draft.allergies);
-    const chronicDiseases = normalizeList(draft.chronicDiseases);
-    const treatments = Array.isArray(draft.treatments) ? draft.treatments : [];
-    const doctorCanConsult = Boolean(draft.doctorCanConsult);
-
+// Convert a single treatment from draft format to the API format
+function buildTreatmentForApi(t) {
     return {
-        gender:
-            typeof draft.gender === "string"
-                ? draft.gender.toLowerCase().trim()
-                : draft.gender,
-        height: draft.height === "" ? null : Number(draft.height),
-        weight: draft.weight === "" ? null : Number(draft.weight),
-        blood_type: draft.bloodType || null,
-        goals,
-        allergies,
-        chronic_diseases: chronicDiseases,
-        treatments: treatments
-            .map((t) => ({
-                type: t?.type ?? null,
-                name: t?.name ?? null,
-                dose: t?.dose ?? null,
-                frequency_unit: t?.frequency_unit ?? null,
-                frequency_count: t?.frequency_count
-                    ? Number(t.frequency_count)
-                    : null,
-                // Convert DD/MM/YYYY to YYYY-MM-DD for the API
-                start_date: frenchDateToIso(t?.start_date) ?? null,
-                end_date: frenchDateToIso(t?.end_date) ?? null,
-            }))
-            .filter((t) => t.type),
-        smoker: Boolean(draft.smoker),
-        alcoholic: Boolean(draft.alcoholic),
-        doctor_invited: doctorCanConsult,
-        doctor_email: doctorCanConsult ? draft.doctorEmail || null : null,
+        type:            t?.type            ?? null,
+        name:            t?.name            ?? null,
+        dose:            t?.dose            ?? null,
+        frequency_unit:  t?.frequency_unit  ?? null,
+        frequency_count: t?.frequency_count ? Number(t.frequency_count) : null,
+        start_date:      frenchDateToIso(t?.start_date) ?? null,  // DD/MM/YYYY → YYYY-MM-DD
+        end_date:        frenchDateToIso(t?.end_date)   ?? null,
     };
 }
 
-// ─── Save section ─────────────────────────────────────────────────────────────
+// Build the full payload to send to the API
+function buildPayload() {
+    const sharingWithDoctor = Boolean(draft.doctorCanConsult);
+    return {
+        gender:           String(draft.gender || "").toLowerCase().trim(),
+        height:           draft.height === "" ? null : Number(draft.height),
+        weight:           draft.weight === "" ? null : Number(draft.weight),
+        blood_type:       draft.bloodType  || null,
+        goals:            normalizeList(draft.goals),
+        allergies:        normalizeList(draft.allergies),
+        chronic_diseases: normalizeList(draft.chronicDiseases),
+        treatments:       (draft.treatments ?? []).map(buildTreatmentForApi).filter((t) => t.type),
+        smoker:           Boolean(draft.smoker),
+        alcoholic:        Boolean(draft.alcoholic),
+        doctor_invited:   sharingWithDoctor,
+        doctor_email:     sharingWithDoctor ? draft.doctorEmail || null : null,
+    };
+}
 
+// ─ Gestion des erreurs API
+
+// Map API validation errors back to the UI error fields
+function handleValidationErrors(section, backendErrors) {
+    clearSectionErrors();
+    const messages = [];
+
+    if (backendErrors.gender) {
+        sectionErrors.base.gender = "Veuillez selectionner le sexe.";
+        messages.push(sectionErrors.base.gender);
+    }
+    if (backendErrors.height) {
+        sectionErrors.base.height = "La taille doit etre une valeur entre 80 et 250 cm.";
+        messages.push(sectionErrors.base.height);
+    }
+    if (backendErrors.weight) {
+        sectionErrors.base.weight = "Le poids doit etre une valeur entre 35 et 250 kg.";
+        messages.push(sectionErrors.base.weight);
+    }
+    if (backendErrors.goals) {
+        sectionErrors.health.goals = "Veuillez selectionner au moins un objectif.";
+        messages.push(sectionErrors.health.goals);
+    }
+
+    // If no known fields matched, fall back to showing the raw API messages
+    const finalMessages = messages.length
+        ? [...new Set(messages)]
+        : Object.values(backendErrors).flat().filter(Boolean).map(String);
+
+    if (sectionErrors[section]) {
+        sectionErrors[section].form = finalMessages.length ? finalMessages : ["Validation invalide."];
+    }
+
+    // If errors belong to a different section than the one currently open, switch to it
+    const hasBaseErrors   = Boolean(sectionErrors.base.gender || sectionErrors.base.height || sectionErrors.base.weight);
+    const hasHealthErrors = Boolean(sectionErrors.health.goals);
+    if (hasBaseErrors && !editing.base) {
+        resetEditFlags();
+        editing.base = true;
+    } else if (hasHealthErrors && !editing.health) {
+        resetEditFlags();
+        editing.health = true;
+    }
+
+    notifications.warning("Veuillez corriger les champs en erreur.");
+}
+
+// ─ Sauvegarde des sections
+
+// Validate and save the given section to the API
 async function saveSection(section) {
-    if (section === "base" && !validateBaseSection()) {
-        notifications.warning("Veuillez corriger les champs en erreur.");
-        return;
-    }
-    if (section === "health" && !validateHealthSection()) {
-        notifications.warning("Veuillez corriger les champs en erreur.");
-        return;
-    }
-    if (section === "doctor" && !validateDoctorEmail()) return;
+    // Run the appropriate validation first
+    if (section === "base"   && !validateBaseSection())   { notifications.warning("Veuillez corriger les champs en erreur."); return; }
+    if (section === "health" && !validateHealthSection())  { notifications.warning("Veuillez corriger les champs en erreur."); return; }
+    if (section === "doctor" && !validateDoctorEmail())    return;
 
     savingSection.value = section;
     clearSectionErrors(section);
+
     try {
         const response = await api.post("/health-profile", buildPayload());
-        Object.assign(profile, response?.data?.data || {});
 
-        // Backend returns response.data.user with `name` and `date_of_birth`
-        const apiUser = response?.data?.user || {};
-        user.name = apiUser.name || user.name;
+        // Update the local profile with fresh data from the server
+        Object.assign(profile, response?.data?.data || {});
+        const apiUser    = response?.data?.user || {};
+        user.name        = apiUser.name          || user.name;
         user.dateOfBirth = apiUser.date_of_birth || user.dateOfBirth;
 
         authStore.setHealthProfile(true);
         syncDraftFromProfile();
         editing[section] = false;
         notifications.itemUpdated();
-    } catch (e) {
-        if (e?.response?.status === 401) {
+    } catch (err) {
+        const status = err?.response?.status;
+
+        if (status === 401) {
+            // Session expired — log out and redirect
             authStore.removeToken();
             router.replace({ name: "register" });
             return;
         }
-        if (e?.response?.status === 422 && e?.response?.data?.errors) {
-            if (
-                section === "doctor" &&
-                (e.response.data.errors?.doctor_email ||
-                    e.response.data.errors?.medecin_email)
-            ) {
-                const doctorFieldError =
-                    e.response.data.errors.doctor_email ||
-                    e.response.data.errors.medecin_email;
-                doctorEmailError.value = Array.isArray(doctorFieldError)
-                    ? doctorFieldError[0]
-                    : "Email medecin invalide.";
+
+        if (status === 422 && err?.response?.data?.errors) {
+            const errors = err.response.data.errors;
+
+            // Special case: doctor email error from the server
+            if (section === "doctor" && (errors?.doctor_email || errors?.medecin_email)) {
+                const emailError = errors.doctor_email || errors.medecin_email;
+                doctorEmailError.value = Array.isArray(emailError) ? emailError[0] : "Email medecin invalide.";
                 notifications.warning(doctorEmailError.value);
                 return;
             }
-            clearSectionErrors();
-            const backendErrors = e.response.data.errors || {};
-            const mappedMessages = [];
-            if (backendErrors.gender) {
-                sectionErrors.base.gender = "Veuillez selectionner le sexe.";
-                mappedMessages.push(sectionErrors.base.gender);
-            }
-            if (backendErrors.height) {
-                sectionErrors.base.height =
-                    "La taille doit etre une valeur entre 80 et 250 cm.";
-                mappedMessages.push(sectionErrors.base.height);
-            }
-            if (backendErrors.weight) {
-                sectionErrors.base.weight =
-                    "Le poids doit etre une valeur entre 35 et 250 kg.";
-                mappedMessages.push(sectionErrors.base.weight);
-            }
-            if (backendErrors.goals) {
-                sectionErrors.health.goals =
-                    "Veuillez selectionner au moins un objectif.";
-                mappedMessages.push(sectionErrors.health.goals);
-            }
-            const fallbackMessages = Object.values(backendErrors)
-                .flatMap((entry) => (Array.isArray(entry) ? entry : [entry]))
-                .filter(Boolean)
-                .map(String);
-            const finalMessages = mappedMessages.length
-                ? [...new Set(mappedMessages)]
-                : fallbackMessages;
-            if (sectionErrors[section]) {
-                sectionErrors[section].form = finalMessages.length
-                    ? finalMessages
-                    : ["Validation invalide."];
-            }
-            const hasBaseErrors = Boolean(
-                sectionErrors.base.gender ||
-                sectionErrors.base.height ||
-                sectionErrors.base.weight,
-            );
-            const hasHealthErrors = Boolean(sectionErrors.health.goals);
-            if (hasBaseErrors && !editing.base) {
-                resetEditFlags();
-                editing.base = true;
-            } else if (hasHealthErrors && !editing.health) {
-                resetEditFlags();
-                editing.health = true;
-            }
-            notifications.warning("Veuillez corriger les champs en erreur.");
-        } else {
-            notifications.error("Erreur lors de la sauvegarde du profil.");
+
+            // Map all other 422 errors to the right UI fields
+            handleValidationErrors(section, errors);
+            return;
         }
+
+        notifications.error("Erreur lors de la sauvegarde du profil.");
     } finally {
         savingSection.value = "";
     }
 }
 
-// ─── Mount ────────────────────────────────────────────────────────────────────
+// ─ Chargement du profil au démarrage
 
 onMounted(async () => {
     try {
+        // Load autocomplete suggestions for the treatment fields
         await loadTreatmentCatalog();
+
+        // Load the user's health profile
         const response = await api.get("/health-profile");
         Object.assign(profile, response?.data?.data || {});
 
-        // Backend returns response.data.user with English fields: name, date_of_birth
-        const apiUser = response?.data?.user || {};
-
-        user.name = apiUser.name || "";
+        const apiUser    = response?.data?.user || {};
+        user.name        = apiUser.name          || "";
         user.dateOfBirth = apiUser.date_of_birth || "";
 
         authStore.setHealthProfile(Boolean(response?.data?.data));
+
+        // Copy the loaded profile into the draft so forms are ready to edit
         syncDraftFromProfile();
-    } catch (e) {
-        if (e?.response?.status === 401) {
+    } catch (err) {
+        if (err?.response?.status === 401) {
             authStore.removeToken();
             router.replace({ name: "register" });
             return;

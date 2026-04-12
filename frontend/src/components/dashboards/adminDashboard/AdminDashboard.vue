@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+    <div class="w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8 bg-white">
         <!-- Header -->
         <header
             class="rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-sm"
@@ -21,7 +21,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-4xl font-bold text-indigo-700">
+                    <h1 class="text-4xl font-bold text-blue-600">
                         Espace Administrateur
                     </h1>
                     <p class="mt-2 text-base font-medium text-slate-700">
@@ -31,29 +31,10 @@
             </div>
         </header>
 
-        <!-- Error -->
-        <div
-            v-if="errorMessage"
-            class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
-        >
-            {{ errorMessage }}
-        </div>
-
-        <!-- Success -->
-        <div
-            v-if="successMessage"
-            class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"
-        >
-            {{ successMessage }}
-        </div>
-
-        <!-- Deletion -->
-        <div
-            v-if="deletionMessage"
-            class="mt-4 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-medium text-orange-700"
-        >
-            {{ deletionMessage }}
-        </div>
+        <!-- Status messages — uses AlertMessage to avoid repeating the same colored-box code -->
+        <AlertMessage :message="errorMessage" type="error" />
+        <AlertMessage :message="successMessage" type="success" />
+        <AlertMessage :message="deletionMessage" type="warning" />
 
         <!-- Stats -->
         <section
@@ -180,11 +161,7 @@
                             </td>
                         </tr>
 
-                        <tr
-                            v-for="u in filteredUsers"
-                            v-else
-                            :key="u.id"
-                        >
+                        <tr v-for="u in filteredUsers" v-else :key="u.id">
                             <!-- Name & email -->
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
@@ -221,11 +198,7 @@
                                             : 'bg-emerald-100 text-emerald-700'
                                     "
                                 >
-                                    {{
-                                        isDoctor(u)
-                                            ? "Médecin"
-                                            : "Patient"
-                                    }}
+                                    {{ isDoctor(u) ? "Médecin" : "Patient" }}
                                 </span>
                                 <p
                                     v-if="u.specialty"
@@ -259,11 +232,7 @@
                                         />
                                         <path v-else d="m9 9 6 6M15 9l-6 6" />
                                     </svg>
-                                    {{
-                                        isActive(u)
-                                            ? "Actif"
-                                            : "Inactif"
-                                    }}
+                                    {{ isActive(u) ? "Actif" : "Inactif" }}
                                 </span>
                             </td>
 
@@ -338,6 +307,7 @@
 import { computed, onMounted, ref } from "vue";
 import DeleteUserModal from "@/components/dashboards/adminDashboard/DeleteUserModal.vue";
 import StatisticCard from "@/components/dashboards/adminDashboard/StatisticCard.vue";
+import AlertMessage from "@/components/ui/AlertMessage.vue";
 import {
     listAdminUsers,
     deleteAdminUser,
@@ -345,41 +315,49 @@ import {
 } from "@/services/admin";
 
 // ─── State ────────────────────────────────────────────────────────────────────
-const users = ref([]);
-const loadingList = ref(false);
-const errorMessage = ref("");
-const successMessage = ref("");
+const users         = ref([]);
+const loadingList   = ref(false);
+const errorMessage  = ref("");
+const successMessage= ref("");
 const deletionMessage = ref("");
-const searchText = ref("");
-const showFilters = ref(true);
-const filterType = ref("Tous");
-const filterStatus = ref("Tous");
-const deleteModalOpen = ref(false);
-const userIdToDelete = ref(null);
+const searchText    = ref("");
+const showFilters   = ref(true);
+const filterType    = ref("Tous");
+const filterStatus  = ref("Tous");
+const deleteModalOpen  = ref(false);
+const userIdToDelete   = ref(null);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+// Check if a user is a doctor
 const isDoctor = (u) => u.type === "Doctor";
+
+// Check if a user account is active
 const isActive = (u) => u.status === "Active";
 
+// Get the first two initials from a full name (e.g. "Marie Dupont" → "MD")
 function initials(fullName) {
     return String(fullName || "")
         .split(" ")
         .filter(Boolean)
-        .map((p) => p[0]?.toUpperCase() ?? "")
+        .map((word) => word[0]?.toUpperCase() ?? "")
         .slice(0, 2)
         .join("");
 }
 
+// Extract a readable error message from an API error
 function errorMessageFrom(err) {
     return err?.response?.data?.message ?? null;
 }
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
+
+// Count users by category for the stats cards at the top
 const statistics = computed(() => ({
-    total: users.value.length,
+    total:    users.value.length,
     patients: users.value.filter((u) => u.type === "Patient").length,
-    doctors: users.value.filter((u) => isDoctor(u)).length,
-    active: users.value.filter((u) => isActive(u)).length,
+    doctors:  users.value.filter((u) => isDoctor(u)).length,
+    active:   users.value.filter((u) => isActive(u)).length,
 }));
 
 const statsCards = computed(() => [
@@ -421,18 +399,22 @@ const statsCards = computed(() => [
     },
 ]);
 
+// Filter users based on the search text and dropdown filters
 const filteredUsers = computed(() => {
     const search = searchText.value.trim().toLowerCase();
 
     return users.value.filter((u) => {
+        // Search box: match by name or email (ignore case)
         const matchesSearch =
             search === "" ||
             u.name.toLowerCase().includes(search) ||
             u.email.toLowerCase().includes(search);
 
+        // Type filter: "Tous" means show everyone
         const matchesType =
             filterType.value === "Tous" || u.type === filterType.value;
 
+        // Status filter: "Tous" means show everyone
         const matchesStatus =
             filterStatus.value === "Tous" || u.status === filterStatus.value;
 
@@ -441,13 +423,15 @@ const filteredUsers = computed(() => {
 });
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
+
+// Load the full user list from the API
 async function loadUsers() {
-    loadingList.value = true;
+    loadingList.value  = true;
     errorMessage.value = "";
     try {
         users.value = await listAdminUsers();
     } catch (err) {
-        users.value = [];
+        users.value    = [];
         errorMessage.value =
             errorMessageFrom(err) ??
             "Une erreur est survenue lors du chargement des utilisateurs.";
@@ -456,31 +440,32 @@ async function loadUsers() {
     }
 }
 
+// Toggle a user between Active and Inactive
 async function toggleStatus(u) {
     const newStatus = isActive(u) ? "Inactive" : "Active";
-    const oldStatus = u.status;
-    const userName = u.name;
-    errorMessage.value = "";
+    const oldStatus = u.status; // keep the old status in case we need to undo
+    const userName  = u.name;
+
+    errorMessage.value  = "";
     successMessage.value = "";
 
+    // Immediately update the UI before the API responds (optimistic update)
     u.status = newStatus;
 
     try {
         await toggleUserStatus(u.id, newStatus);
 
-        successMessage.value =
-            newStatus === "Active"
-                ? `${userName} a été activé avec succès.`
-                : `${userName} a été désactivé avec succès.`;
+        // Show a success message, then hide it after 4 seconds
+        successMessage.value = newStatus === "Active"
+            ? `${userName} a été activé avec succès.`
+            : `${userName} a été désactivé avec succès.`;
 
-        setTimeout(() => {
-            successMessage.value = "";
-        }, 4000);
+        setTimeout(() => { successMessage.value = ""; }, 4000);
 
-        loadUsers().catch(() => {
-            u.status = oldStatus;
-        });
+        // Refresh the list silently; if it fails, undo the UI change
+        loadUsers().catch(() => { u.status = oldStatus; });
     } catch (err) {
+        // API call failed — revert the status back to what it was
         u.status = oldStatus;
         errorMessage.value =
             errorMessageFrom(err) ??
@@ -488,28 +473,28 @@ async function toggleStatus(u) {
     }
 }
 
+// Open the delete confirmation modal for a user
 function openDeleteModal(u) {
     if (!u?.id) {
-        errorMessage.value =
-            "Erreur : impossible d'identifier cet utilisateur.";
+        errorMessage.value = "Erreur : impossible d'identifier cet utilisateur.";
         return;
     }
-    userIdToDelete.value = u.id;
+    userIdToDelete.value  = u.id;
     deleteModalOpen.value = true;
 }
 
+// Close the delete modal and reset related state
 function closeDeleteModal() {
     deleteModalOpen.value = false;
-    userIdToDelete.value = null;
-    errorMessage.value = "";
-    successMessage.value = "Suppression annulée.";
-    setTimeout(() => {
-        successMessage.value = "";
-    }, 3000);
+    userIdToDelete.value  = null;
+    errorMessage.value    = "";
+    successMessage.value  = "Suppression annulée.";
+    setTimeout(() => { successMessage.value = ""; }, 3000);
 }
 
+// Delete the selected user after confirmation
 async function confirmDeletion() {
-    errorMessage.value = "";
+    errorMessage.value   = "";
     successMessage.value = "";
     deletionMessage.value = "";
 
@@ -519,34 +504,31 @@ async function confirmDeletion() {
         return;
     }
 
-    const idToDelete = userIdToDelete.value;
-    const index = users.value.findIndex((u) => u.id === idToDelete);
-    const deletedUser = index !== -1 ? users.value[index] : null;
-    const userName = deletedUser?.name || "Utilisateur";
+    const idToDelete  = userIdToDelete.value;
+    const index       = users.value.findIndex((u) => u.id === idToDelete);
+    const deletedUser = users.value[index] ?? null;
+    const userName    = deletedUser?.name || "Utilisateur";
 
-    if (index !== -1) {
-        users.value.splice(index, 1);
-    }
+    // Remove from the UI immediately (optimistic delete)
+    if (index !== -1) users.value.splice(index, 1);
 
     closeDeleteModal();
 
     try {
         await deleteAdminUser(idToDelete);
 
+        // Show success message, then hide it after 4 seconds
         deletionMessage.value = `${userName} a été supprimé avec succès.`;
-        setTimeout(() => {
-            deletionMessage.value = "";
-        }, 4000);
+        setTimeout(() => { deletionMessage.value = ""; }, 4000);
 
+        // Refresh the list silently
         loadUsers().catch(() => {
-            if (deletedUser && index !== -1) {
-                users.value.splice(index, 0, deletedUser);
-            }
+            // If refresh fails, put the user back in the list
+            if (deletedUser && index !== -1) users.value.splice(index, 0, deletedUser);
         });
     } catch (err) {
-        if (deletedUser && index !== -1) {
-            users.value.splice(index, 0, deletedUser);
-        }
+        // API call failed — put the user back in the list
+        if (deletedUser && index !== -1) users.value.splice(index, 0, deletedUser);
         errorMessage.value =
             errorMessageFrom(err) ??
             "La suppression a échoué. Veuillez réessayer.";

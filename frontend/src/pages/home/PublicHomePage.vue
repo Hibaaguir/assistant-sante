@@ -1,12 +1,5 @@
 <template>
-    <div
-        class="min-h-screen bg-[#eef2f7] text-slate-900"
-        style="
-            background-image:
-                radial-gradient(circle at 15% 0%, #f1f8ff 0%, transparent 45%),
-                radial-gradient(circle at 85% 20%, #f8f2ff 0%, transparent 40%);
-        "
-    >
+    <div class="min-h-screen bg-white text-slate-900">
         <!-- Header -->
         <header
             class="sticky top-0 z-40 border-b border-slate-200/90 bg-white/90 backdrop-blur-md"
@@ -16,7 +9,7 @@
             >
                 <RouterLink
                     :to="{ name: 'public-home' }"
-                    class="inline-flex items-center gap-2.5 font-extrabold tracking-[0.02em] text-purple-600 no-underline"
+                    class="inline-flex items-center gap-2.5 font-extrabold tracking-[0.02em] text-blue-600 no-underline"
                 >
                     <span
                         class="inline-flex h-7 w-7 items-center justify-center rounded-[9px] bg-gradient-to-br from-purple-400 to-purple-500 shadow-[0_12px_22px_-16px_rgba(168,85,247,0.4)]"
@@ -40,7 +33,7 @@
                         v-for="item in homeNavigationLinks"
                         :key="item.label"
                         :href="item.href"
-                        class="text-[0.94rem] font-semibold text-slate-700 no-underline transition-colors hover:text-purple-600"
+                        class="text-[0.94rem] font-semibold text-slate-700 no-underline transition-colors hover:text-blue-600"
                     >
                         {{ item.label }}
                     </a>
@@ -273,7 +266,7 @@
 <script setup>
 import { onBeforeUnmount, onMounted } from "vue";
 import FeatureCard from "@/components/home/FeatureCard.vue";
-import FeaturesSection from "@/pages/home/FeaturesSection.vue";
+import FeaturesSection from "@/components/home/FeaturesSection.vue";
 import {
     homeFeatures,
     homeNavigationLinks,

@@ -1,19 +1,28 @@
 <template>
     <aside
-        class="hidden h-screen w-[300px] shrink-0 self-start border-r border-purple-200 bg-gradient-to-b from-purple-100 via-purple-100 to-purple-200 lg:sticky lg:top-0 lg:flex lg:flex-col"
+        class="hidden h-screen w-[300px] shrink-0 self-start border-r border-slate-200 bg-white lg:sticky lg:top-0 lg:flex lg:flex-col shadow-sm"
     >
         <!-- Logo -->
-        <div class="border-b border-purple-200 px-8 py-9">
-            <h1 class="text-[44px] font-semibold leading-none tracking-tight">
-                <span class="text-purple-600">HealthFlow</span>
-            </h1>
-            <p class="mt-3 text-[15px] text-purple-500">
+        <div class="border-b border-slate-200 px-6 py-8">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-600">
+                    <svg viewBox="0 0 24 24" class="h-7 w-7 text-white" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 21s-6.5-4.5-9-8.5C.7 8.4 3 4 7.3 4c2 0 3.6 1 4.7 2.6C13.1 5 14.7 4 16.7 4 21 4 23.3 8.4 21 12.5 18.5 16.5 12 21 12 21z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-[26px] font-bold leading-none text-slate-900">
+                        HealthFlow
+                    </h1>
+                </div>
+            </div>
+            <p class="text-[14px] font-medium text-slate-500 pl-15">
                 Votre assistant santé
             </p>
         </div>
 
         <!-- Navigation -->
-        <nav class="flex-1 space-y-3 overflow-y-auto px-6 py-8">
+        <nav class="flex-1 space-y-2 overflow-y-auto px-4 py-6">
             <ElementNavLaterale
                 v-for="item in NAV_ITEMS"
                 :key="item.name"

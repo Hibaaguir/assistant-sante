@@ -1,8 +1,8 @@
 <template>
-    <div class="w-full px-5 py-4 sm:px-7">
+    <div class="w-full px-5 py-4 sm:px-7 bg-white">
         <header>
             <h1
-                class="text-[38px] font-bold leading-tight tracking-[-0.01em] text-purple-900"
+                class="text-[38px] font-bold leading-tight tracking-[-0.01em] text-blue-600"
             >
                 Données de santé
             </h1>
@@ -14,16 +14,16 @@
 
         <!-- Observations du médecin -->
         <section v-if="doctorObservations.length" class="mt-4 space-y-3">
-            <h2 class="text-[16px] font-semibold text-purple-900">
+            <h2 class="text-[16px] font-semibold text-blue-600">
                 Observations de votre médecin
             </h2>
             <article
                 v-for="obs in doctorObservations"
                 :key="obs.id"
-                class="rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-50 to-white px-5 py-4"
+                class="rounded-2xl border border-slate-200 bg-white px-5 py-4"
             >
                 <p
-                    class="text-[11px] font-semibold uppercase tracking-wide text-purple-500"
+                    class="text-[11px] font-semibold uppercase tracking-wide text-blue-600"
                 >
                     {{ formatObsDate(obs.date) }}
                 </p>
@@ -33,48 +33,16 @@
             </article>
         </section>
 
-        <section
-            class="mt-4 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm"
-        >
-            <div class="grid grid-cols-3 gap-1">
-                <button
-                    type="button"
-                    class="h-10 rounded-xl text-[15px] font-semibold transition"
-                    :class="
-                        activeTab === 'vitals'
-                            ? 'bg-gradient-to-r from-purple-300 to-purple-400 text-purple-900'
-                            : 'text-slate-600 hover:bg-slate-50'
-                    "
-                    @click="activeTab = 'vitals'"
-                >
-                    Signes vitaux
-                </button>
-                <button
-                    type="button"
-                    class="h-10 rounded-xl text-[15px] font-semibold transition"
-                    :class="
-                        activeTab === 'labs'
-                            ? 'bg-gradient-to-r from-purple-300 to-purple-400 text-purple-900'
-                            : 'text-slate-600 hover:bg-slate-50'
-                    "
-                    @click="activeTab = 'labs'"
-                >
-                    Analyse medical
-                </button>
-                <button
-                    type="button"
-                    class="h-10 rounded-xl text-[15px] font-semibold transition"
-                    :class="
-                        activeTab === 'treatments'
-                            ? 'bg-gradient-to-r from-purple-300 to-purple-400 text-purple-900'
-                            : 'text-slate-600 hover:bg-slate-50'
-                    "
-                    @click="activeTab = 'treatments'"
-                >
-                    Traitements
-                </button>
-            </div>
-        </section>
+        <!-- TabBar replaces 3 repeated button blocks — add tabs here to extend -->
+        <TabBar
+            v-model="activeTab"
+            class="mt-4"
+            :tabs="[
+                { value: 'vitals',     label: 'Signes vitaux' },
+                { value: 'labs',       label: 'Analyse medical' },
+                { value: 'treatments', label: 'Traitements' },
+            ]"
+        />
 
         <div v-if="showAddButton" class="mt-4 flex justify-end gap-2">
             <button
@@ -157,6 +125,7 @@ import TabAnalyseBiologique from "@/components/health/TabAnalyseBiologique.vue";
 import TabTraitements from "@/components/health/TabTraitements.vue";
 import { useNotificationsStore } from "@/stores/notifications";
 import NotificationsOnline from "@/components/ui/NotificationsOnline.vue";
+import TabBar from "@/components/ui/TabBar.vue";
 
 const vitalsTab = ref(null);
 const labsTab = ref(null);
@@ -218,14 +187,15 @@ const formatObsDate = (val) => {
 };
 
 function normalizeSeries(values, fallback = 0) {
+    if (!Array.isArray(values)) return [];
     let last = fallback;
-    return (Array.isArray(values) ? values : []).map((v) => {
+    return values.map((v) => {
         const n = Number(v);
-        if (Number.isFinite(n)) {
+        if (!isNaN(n)) {
             last = n;
             return n;
         }
-        return last;
+        return last; // valeur manquante → on répète la dernière connue
     });
 }
 
@@ -233,7 +203,10 @@ function buildLast7Days() {
     const today = new Date();
     const todayKey = today.toISOString().slice(0, 10);
     const monday = new Date(today);
-    const dayOffset = (today.getDay() + 6) % 7;
+    // getDay() : 0=Dimanche, 1=Lundi, ..., 6=Samedi
+    // On veut que Lundi soit le premier jour (offset = 0)
+    const dayOfWeek = today.getDay();
+    const dayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
     monday.setDate(today.getDate() - dayOffset);
 
     return Array.from({ length: 7 }).map((_, idx) => {

@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full p-4 sm:p-6 lg:p-8">
+    <div class="w-full p-4 sm:p-6 lg:p-8 bg-white">
         <div
             class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
         >
@@ -244,18 +244,49 @@
                             >
                                 <div class="flex items-start justify-between">
                                     <div>
-                                        <p class="text-sm font-semibold text-slate-800">Verre</p>
-                                        <p class="text-xs text-slate-500">0.5L par unité</p>
+                                        <p
+                                            class="text-sm font-semibold text-slate-800"
+                                        >
+                                            Verre
+                                        </p>
+                                        <p class="text-xs text-slate-500">
+                                            0.5L par unité
+                                        </p>
                                     </div>
-                                    <svg viewBox="0 0 24 24" class="h-4 w-4 text-sky-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                        <path d="M7 3h10l-1 16a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2L7 3z" />
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        class="h-4 w-4 text-sky-600"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            d="M7 3h10l-1 16a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2L7 3z"
+                                        />
                                         <path d="M8 8h8" />
                                     </svg>
                                 </div>
-                                <div class="mt-3 flex items-center justify-between">
-                                    <button type="button" class="h-7 w-7 rounded-md border bg-slate-100 text-sm text-slate-500" @click="adjustCups(-1)">-</button>
-                                    <span class="text-lg font-bold">{{ form.cupCount }}</span>
-                                    <button type="button" class="h-7 w-7 rounded-md bg-indigo-600 text-sm font-semibold text-white" @click="adjustCups(1)">+</button>
+                                <div
+                                    class="mt-3 flex items-center justify-between"
+                                >
+                                    <button
+                                        type="button"
+                                        class="h-7 w-7 rounded-md border bg-slate-100 text-sm text-slate-500"
+                                        @click="adjustCups(-1)"
+                                    >
+                                        -
+                                    </button>
+                                    <span class="text-lg font-bold">{{
+                                        form.cupCount
+                                    }}</span>
+                                    <button
+                                        type="button"
+                                        class="h-7 w-7 rounded-md bg-indigo-600 text-sm font-semibold text-white"
+                                        @click="adjustCups(1)"
+                                    >
+                                        +
+                                    </button>
                                 </div>
                             </div>
 
@@ -264,18 +295,47 @@
                             >
                                 <div class="flex items-start justify-between">
                                     <div>
-                                        <p class="text-sm font-semibold text-slate-800">Bouteille</p>
-                                        <p class="text-xs text-slate-500">1.5L par unité</p>
+                                        <p
+                                            class="text-sm font-semibold text-slate-800"
+                                        >
+                                            Bouteille
+                                        </p>
+                                        <p class="text-xs text-slate-500">
+                                            1.5L par unité
+                                        </p>
                                     </div>
-                                    <svg viewBox="0 0 24 24" class="h-4 w-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        class="h-4 w-4 text-cyan-600"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        aria-hidden="true"
+                                    >
                                         <path d="M10 3h4v3h2v15H8V6h2z" />
                                         <path d="M10 11h4" />
                                     </svg>
                                 </div>
-                                <div class="mt-3 flex items-center justify-between">
-                                    <button type="button" class="h-7 w-7 rounded-md border bg-slate-100 text-sm text-slate-500" @click="adjustBottles(-1)">-</button>
-                                    <span class="text-lg font-bold">{{ form.bottleCount }}</span>
-                                    <button type="button" class="h-7 w-7 rounded-md bg-cyan-600 text-sm font-semibold text-white" @click="adjustBottles(1)">+</button>
+                                <div
+                                    class="mt-3 flex items-center justify-between"
+                                >
+                                    <button
+                                        type="button"
+                                        class="h-7 w-7 rounded-md border bg-slate-100 text-sm text-slate-500"
+                                        @click="adjustBottles(-1)"
+                                    >
+                                        -
+                                    </button>
+                                    <span class="text-lg font-bold">{{
+                                        form.bottleCount
+                                    }}</span>
+                                    <button
+                                        type="button"
+                                        class="h-7 w-7 rounded-md bg-cyan-600 text-sm font-semibold text-white"
+                                        @click="adjustBottles(1)"
+                                    >
+                                        +
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -448,47 +508,76 @@
                                 <span>Tabac</span>
                                 <span
                                     class="relative h-6 w-10 rounded-full transition-colors"
-                                    :class="form.tobacco ? 'bg-pink-600' : 'bg-slate-300'"
+                                    :class="
+                                        form.tobacco
+                                            ? 'bg-pink-600'
+                                            : 'bg-slate-300'
+                                    "
                                     aria-hidden="true"
                                 >
                                     <span
                                         class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform"
-                                        :class="form.tobacco ? 'translate-x-4' : 'translate-x-0'"
+                                        :class="
+                                            form.tobacco
+                                                ? 'translate-x-4'
+                                                : 'translate-x-0'
+                                        "
                                     />
                                 </span>
                             </button>
 
                             <div v-if="form.tobacco" class="mt-4 space-y-3">
                                 <div>
-                                    <label class="text-xs font-semibold text-slate-700">
+                                    <label
+                                        class="text-xs font-semibold text-slate-700"
+                                    >
                                         Type <span class="text-red-500">*</span>
                                     </label>
                                     <div class="mt-2 flex flex-wrap gap-2">
                                         <button
                                             type="button"
                                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors"
-                                            :class="form.tobaccoTypes.cigarette ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-300 bg-white text-slate-700'"
-                                            @click="toggleTobaccoType('cigarette')"
+                                            :class="
+                                                form.tobaccoTypes.cigarette
+                                                    ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
+                                                    : 'border-slate-300 bg-white text-slate-700'
+                                            "
+                                            @click="
+                                                toggleTobaccoType('cigarette')
+                                            "
                                         >
                                             Cigarette
                                         </button>
                                         <button
                                             type="button"
                                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors"
-                                            :class="form.tobaccoTypes.vape ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-300 bg-white text-slate-700'"
+                                            :class="
+                                                form.tobaccoTypes.vape
+                                                    ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
+                                                    : 'border-slate-300 bg-white text-slate-700'
+                                            "
                                             @click="toggleTobaccoType('vape')"
                                         >
                                             Vape
                                         </button>
                                     </div>
-                                    <p v-if="submitAttempted && tobaccoErrors.types" class="mt-1 text-sm text-red-500">
+                                    <p
+                                        v-if="
+                                            submitAttempted &&
+                                            tobaccoErrors.types
+                                        "
+                                        class="mt-1 text-sm text-red-500"
+                                    >
                                         {{ tobaccoErrors.types }}
                                     </p>
                                 </div>
 
                                 <div v-if="form.tobaccoTypes.cigarette">
-                                    <label class="text-xs font-semibold text-slate-700">
-                                        Nombre de cigarettes par jour <span class="text-red-500">*</span>
+                                    <label
+                                        class="text-xs font-semibold text-slate-700"
+                                    >
+                                        Nombre de cigarettes par jour
+                                        <span class="text-red-500">*</span>
                                     </label>
                                     <input
                                         v-model.number="form.cigarettesPerDay"
@@ -497,15 +586,27 @@
                                         placeholder="Ex: 5"
                                         class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                                     />
-                                    <p v-if="submitAttempted && tobaccoErrors.cigarettesPerDay" class="mt-1 text-sm text-red-500">
+                                    <p
+                                        v-if="
+                                            submitAttempted &&
+                                            tobaccoErrors.cigarettesPerDay
+                                        "
+                                        class="mt-1 text-sm text-red-500"
+                                    >
                                         {{ tobaccoErrors.cigarettesPerDay }}
                                     </p>
                                 </div>
 
-                                <div v-if="form.tobaccoTypes.vape" class="space-y-3">
+                                <div
+                                    v-if="form.tobaccoTypes.vape"
+                                    class="space-y-3"
+                                >
                                     <div>
-                                        <label class="text-xs font-semibold text-slate-700">
-                                            Nombre de taffes prise par jour <span class="text-red-500">*</span>
+                                        <label
+                                            class="text-xs font-semibold text-slate-700"
+                                        >
+                                            Nombre de taffes prise par jour
+                                            <span class="text-red-500">*</span>
                                         </label>
                                         <input
                                             v-model.number="form.vapeLiquidMl"
@@ -514,7 +615,13 @@
                                             placeholder="Ex: 3"
                                             class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                                         />
-                                        <p v-if="submitAttempted && tobaccoErrors.vapeLiquidMl" class="mt-1 text-sm text-red-500">
+                                        <p
+                                            v-if="
+                                                submitAttempted &&
+                                                tobaccoErrors.vapeLiquidMl
+                                            "
+                                            class="mt-1 text-sm text-red-500"
+                                        >
                                             {{ tobaccoErrors.vapeLiquidMl }}
                                         </p>
                                     </div>
@@ -530,22 +637,40 @@
                                 class="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
                                 @click="toggleAlcohol"
                             >
-                                <span>Alcool <span v-if="form.alcohol" class="text-red-500">*</span></span>
+                                <span
+                                    >Alcool
+                                    <span
+                                        v-if="form.alcohol"
+                                        class="text-red-500"
+                                        >*</span
+                                    ></span
+                                >
                                 <span
                                     class="relative h-6 w-10 rounded-full transition-colors"
-                                    :class="form.alcohol ? 'bg-pink-600' : 'bg-slate-300'"
+                                    :class="
+                                        form.alcohol
+                                            ? 'bg-pink-600'
+                                            : 'bg-slate-300'
+                                    "
                                     aria-hidden="true"
                                 >
                                     <span
                                         class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform"
-                                        :class="form.alcohol ? 'translate-x-4' : 'translate-x-0'"
+                                        :class="
+                                            form.alcohol
+                                                ? 'translate-x-4'
+                                                : 'translate-x-0'
+                                        "
                                     />
                                 </span>
                             </button>
 
                             <div v-if="form.alcohol" class="mt-4">
-                                <label class="text-xs font-semibold text-slate-700">
-                                    Nombre de verres par jour <span class="text-red-500">*</span>
+                                <label
+                                    class="text-xs font-semibold text-slate-700"
+                                >
+                                    Nombre de verres par jour
+                                    <span class="text-red-500">*</span>
                                 </label>
                                 <input
                                     v-model.number="form.alcoholDrinks"
@@ -554,7 +679,12 @@
                                     placeholder="Ex: 2"
                                     class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
                                 />
-                                <p v-if="submitAttempted && alcoholErrors.drinks" class="mt-1 text-sm text-red-500">
+                                <p
+                                    v-if="
+                                        submitAttempted && alcoholErrors.drinks
+                                    "
+                                    class="mt-1 text-sm text-red-500"
+                                >
                                     {{ alcoholErrors.drinks }}
                                 </p>
                             </div>
@@ -661,7 +791,13 @@ const meals = [
 ];
 
 const activities = ref([
-    "Marche","Course","Vélo","Natation","Yoga","Musculation","Sport collectif",
+    "Marche",
+    "Course",
+    "Vélo",
+    "Natation",
+    "Yoga",
+    "Musculation",
+    "Sport collectif",
 ]);
 const sugarLabels = { low: "Faible", medium: "Modéré", high: "Élevé" };
 const intensityLabels = { light: "Légère", medium: "Modérée", high: "Intense" };
@@ -707,87 +843,136 @@ const hydrationTotal = computed(() => {
     const extra = Math.max(0, Number(form.customHydration) || 0);
     return form.cupCount * 0.5 + form.bottleCount * 1.5 + extra;
 });
+// Convert calories to a clean integer — returns null if the value is invalid
 const normalizeMealCalories = (value) => {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed) || parsed < 0) return null;
-    return Math.round(parsed);
+    const number = Number(value);
+    if (!Number.isFinite(number) || number < 0) return null;
+    return Math.round(number);
 };
+
+// Total calories from all meals added
 const mealsCaloriesTotal = computed(() =>
     form.meals.reduce((sum, meal) => {
         const calories = normalizeMealCalories(meal?.calories);
         return sum + (calories ?? 0);
     }, 0),
 );
+
+// CSS classes for the sugar badge, based on the selected sugar level
 const SUGAR_BADGE = {
-    high: "border-rose-300 bg-rose-100 text-rose-800",
+    high:   "border-rose-300 bg-rose-100 text-rose-800",
     medium: "border-amber-300 bg-amber-100 text-amber-800",
-    low: "border-emerald-300 bg-emerald-100 text-emerald-800",
+    low:    "border-emerald-300 bg-emerald-100 text-emerald-800",
 };
 const sugarBadgeClasses = computed(() => SUGAR_BADGE[form.sugar] ?? SUGAR_BADGE.low);
+
+// Check tobacco fields — returns an object with error messages (null = no error)
 const tobaccoErrors = computed(() => {
     const errors = { types: null, cigarettesPerDay: null, vapeLiquidMl: null };
+
+    // If tobacco is off, no errors needed
     if (!form.tobacco) return errors;
-    if (!form.tobaccoTypes.cigarette && !form.tobaccoTypes.vape)
+
+    // At least one tobacco type must be chosen
+    if (!form.tobaccoTypes.cigarette && !form.tobaccoTypes.vape) {
         errors.types = "Veuillez selectionner un type.";
-    if (form.tobaccoTypes.cigarette && (form.cigarettesPerDay === null || form.cigarettesPerDay <= 0))
+    }
+
+    // If cigarette is chosen, the daily count is required
+    if (form.tobaccoTypes.cigarette && !form.cigarettesPerDay) {
         errors.cigarettesPerDay = "Veuillez remplir le champ.";
-    if (form.tobaccoTypes.vape && (form.vapeLiquidMl === null || form.vapeLiquidMl <= 0))
+    }
+
+    // If vape is chosen, the liquid amount is required
+    if (form.tobaccoTypes.vape && !form.vapeLiquidMl) {
         errors.vapeLiquidMl = "Veuillez remplir le champ.";
+    }
+
     return errors;
 });
+
+// True when any tobacco error exists
 const hasTobaccoErrors = computed(() => Object.values(tobaccoErrors.value).some(Boolean));
+
+// True when an activity is selected (makes the duration field required)
 const isDurationRequired = computed(() => Boolean(form.activityType));
+
+// Check activity fields — duration is required if an activity is selected
 const activityErrors = computed(() => {
     const errors = { duration: null };
+
     if (!isDurationRequired.value) return errors;
-    if (!Number.isFinite(Number(form.activityDuration)) || Number(form.activityDuration) <= 0)
+
+    if (!form.activityDuration || form.activityDuration <= 0) {
         errors.duration = "Veuillez remplir la durée (minutes).";
+    }
+
     return errors;
 });
+
+// True when any activity error exists
 const hasActivityErrors = computed(() => Object.values(activityErrors.value).some(Boolean));
+
+// Check alcohol fields — quantity is required if alcohol is enabled
 const alcoholErrors = computed(() => {
     const errors = { drinks: null };
+
     if (!form.alcohol) return errors;
-    if (form.alcoholDrinks === null || form.alcoholDrinks <= 0)
+
+    if (!form.alcoholDrinks || form.alcoholDrinks <= 0) {
         errors.drinks = "Veuillez remplir le champ.";
+    }
+
     return errors;
 });
+
+// True when any alcohol error exists
 const hasAlcoholErrors = computed(() => Object.values(alcoholErrors.value).some(Boolean));
 
 onMounted(async () => {
+    // Load all journal entries from the server
     await store.initialiser();
+
+    // If we are creating a new entry, nothing more to do
     if (!isEditMode.value) return;
-    // If the store was loading when we called initialiser(), the entry may not
-    // be in memory yet — force a reload in that case.
+
+    // Try to find the entry we want to edit (by its ID from the URL)
     let entry = store.obtenirParId(editEntryId.value);
+
+    // If not found yet, reload from server and try again
     if (!entry) {
         await store.chargerEntrees();
         entry = store.obtenirParId(editEntryId.value);
     }
+
+    // Entry still not found — stop here (nothing to pre-fill)
     if (!entry) return;
-    form.sleep = Number(entry.sleep ?? 7);
-    form.stress = Number(entry.stress ?? 5);
-    form.energy = STATIC_ENERGY;
-    form.sugar = entry.sugar ?? "low";
-    form.caffeine = Number(entry.caffeine ?? 0);
-    // Normalize meal keys: API returns meal_type/description, addMeal uses type/label
-    form.meals = (Array.isArray(entry.meals) ? entry.meals : []).map((m) => ({
-        type: m.type || m.meal_type || "",
-        label: m.label || m.description || "",
+
+    // Pre-fill the form with the existing entry data
+    form.sleep            = Number(entry.sleep ?? 7);
+    form.stress           = Number(entry.stress ?? 5);
+    form.energy           = STATIC_ENERGY;
+    form.sugar            = entry.sugar ?? "low";
+    form.caffeine         = Number(entry.caffeine ?? 0);
+    form.activityType     = entry.activityType ?? "";
+    form.activityDuration = Number(entry.activityDuration ?? 0);
+    form.intensity        = entry.intensity ?? "medium";
+    form.tobacco          = Boolean(entry.tobacco);
+    form.alcohol          = Boolean(entry.alcohol);
+    form.tobaccoTypes     = entry.tobaccoTypes ?? { cigarette: false, vape: false };
+    form.cigarettesPerDay = entry.cigarettesPerDay ?? null;
+    form.vapeLiquidMl     = entry.vapeLiquidMl ?? null;
+    form.alcoholDrinks    = entry.alcoholDrinks ?? null;
+    form.cupCount         = 0;
+    form.bottleCount      = 0;
+    form.customHydration  = Number(entry.hydration ?? 0);
+
+    // The API may return different field names — normalize them to type/label
+    form.meals = (entry.meals ?? []).map((m) => ({
+        type:     m.type     || m.meal_type    || "",
+        label:    m.label    || m.description  || "",
         calories: m.calories ?? null,
     }));
-    form.activityType = entry.activityType ?? "";
-    form.activityDuration = Number(entry.activityDuration ?? 0);
-    form.intensity = entry.intensity ?? "medium";
-    form.tobacco = Boolean(entry.tobacco);
-    form.alcohol = Boolean(entry.alcohol);
-    form.tobaccoTypes = entry.tobaccoTypes ?? { cigarette: false, vape: false };
-    form.cigarettesPerDay = entry.cigarettesPerDay ?? null;
-    form.vapeLiquidMl = entry.vapeLiquidMl ?? null;
-    form.alcoholDrinks = entry.alcoholDrinks ?? null;
-    form.cupCount = 0;
-    form.bottleCount = 0;
-    form.customHydration = Number(entry.hydration ?? 0);
 });
 
 const addMeal = () => {
@@ -827,10 +1012,17 @@ const cancelDeleteMeal = () => {
 };
 
 const adjustCaffeine = (delta) => {
-    form.caffeine = Math.min(20, Math.max(0, Number(form.caffeine || 0) + delta));
+    form.caffeine = Math.min(
+        20,
+        Math.max(0, Number(form.caffeine || 0) + delta),
+    );
 };
-const adjustCups = (delta) => { form.cupCount = Math.max(0, form.cupCount + delta); };
-const adjustBottles = (delta) => { form.bottleCount = Math.max(0, form.bottleCount + delta); };
+const adjustCups = (delta) => {
+    form.cupCount = Math.max(0, form.cupCount + delta);
+};
+const adjustBottles = (delta) => {
+    form.bottleCount = Math.max(0, form.bottleCount + delta);
+};
 
 const goNext = () => {
     submitAttempted.value = false;
@@ -892,69 +1084,81 @@ const toggleAlcohol = () => {
     if (!form.alcohol) form.alcoholDrinks = null;
 };
 
+// Go back to the journal list and mark the edit as cancelled
 const cancelEdit = async () => {
     if (!isEditMode.value) return;
     await store.loadEntries();
     router.push({ name: "journal-history", query: { notice: "canceled" } });
 };
 
+// Build the data object to send to the API
+function buildPayload() {
+    return {
+        sleep:            Number(form.sleep),
+        stress:           Number(form.stress),
+        energy:           STATIC_ENERGY,
+        sugar:            form.sugar,
+        caffeine:         Number(form.caffeine),
+        hydration:        Number(hydrationTotal.value.toFixed(1)),
+        meals:            [...form.meals],
+        calories:         mealsCaloriesTotal.value,
+        activityType:     form.activityType || "Marche",
+        activityDuration: Number(form.activityDuration) || 0,
+        intensity:        form.intensity,
+        tobacco:          form.tobacco,
+        alcohol:          form.alcohol,
+        tobaccoTypes: {
+            // Only keep tobacco type if tobacco is actually enabled
+            cigarette: form.tobacco && form.tobaccoTypes.cigarette,
+            vape:      form.tobacco && form.tobaccoTypes.vape,
+        },
+        cigarettesPerDay: form.tobacco && form.tobaccoTypes.cigarette ? Number(form.cigarettesPerDay) : null,
+        vapeLiquidMl:     form.tobacco && form.tobaccoTypes.vape      ? Number(form.vapeLiquidMl)     : null,
+        alcoholDrinks:    form.alcohol                                 ? Number(form.alcoholDrinks)    : 0,
+    };
+}
+
+// Get a readable error message from an API error response
+function getApiError(error) {
+    const status = error?.response?.status;
+
+    if (status === 422) {
+        // Server returned validation errors — show the first one
+        const firstError = Object.values(error.response.data.errors || {})[0];
+        return Array.isArray(firstError) ? firstError[0] : "Validation invalide.";
+    }
+
+    if (status === 401) {
+        return "Session expirée. Reconnectez-vous.";
+    }
+
+    return "Erreur lors de l'enregistrement du journal.";
+}
+
+// Save or update the journal entry
 const save = async () => {
     submitAttempted.value = true;
+
+    // Stop if the user has not filled required fields
     if (hasActivityErrors.value || hasTobaccoErrors.value || hasAlcoholErrors.value) return;
+
     saveError.value = "";
+
     try {
-        const payload = {
-            sleep: Number(form.sleep),
-            stress: Number(form.stress),
-            energy: STATIC_ENERGY,
-            sugar: form.sugar,
-            caffeine: Number(form.caffeine),
-            hydration: Number(hydrationTotal.value.toFixed(1)),
-            meals: [...form.meals],
-            calories: mealsCaloriesTotal.value,
-            activityType: form.activityType || "Marche",
-            activityDuration: Number.isFinite(Number(form.activityDuration))
-                ? Number(form.activityDuration) : 0,
-            intensity: form.intensity,
-            tobacco: form.tobacco,
-            alcohol: form.alcohol,
-            tobaccoTypes: {
-                cigarette: form.tobacco ? form.tobaccoTypes.cigarette : false,
-                vape: form.tobacco ? form.tobaccoTypes.vape : false,
-            },
-            cigarettesPerDay:
-                form.tobacco && form.tobaccoTypes.cigarette
-                    ? Number(form.cigarettesPerDay) : null,
-            vapeLiquidMl:
-                form.tobacco && form.tobaccoTypes.vape
-                    ? Number(form.vapeLiquidMl) : null,
-            alcoholDrinks:
-                form.alcohol && form.alcoholDrinks !== null
-                    ? Number(form.alcoholDrinks) : 0,
-        };
+        const payload = buildPayload();
 
         if (isEditMode.value) {
+            // Update an existing entry
             await store.mettreAJourEntree(editEntryId.value, payload);
             router.push({ name: "journal-history", query: { notice: "saved" } });
-            return;
+        } else {
+            // Create a new entry
+            await store.ajouterEntree(payload);
+            notifications.itemAdded();
+            router.push({ name: "journal" });
         }
-
-        await store.ajouterEntree(payload);
-        notifications.itemAdded();
-        router.push({ name: "journal" });
     } catch (error) {
-        if (error?.response?.status === 422 && error?.response?.data?.errors) {
-            const firstError = Object.values(error.response.data.errors)?.[0];
-            saveError.value = Array.isArray(firstError) ? firstError[0] : "Validation invalide.";
-            notifications.warning(saveError.value);
-            return;
-        }
-        if (error?.response?.status === 401) {
-            saveError.value = "Session expiree. Reconnectez-vous.";
-            notifications.error(saveError.value);
-            return;
-        }
-        saveError.value = "Erreur lors de l'enregistrement du journal.";
+        saveError.value = getApiError(error);
         notifications.error(saveError.value);
     }
 };
@@ -983,7 +1187,9 @@ const save = async () => {
     border: 2px solid #4338ca;
     border-radius: 999px;
     background: #4338ca;
-    box-shadow: 0 0 0 3px rgba(224, 231, 255, 0.95), 0 2px 8px rgba(55, 48, 163, 0.45);
+    box-shadow:
+        0 0 0 3px rgba(224, 231, 255, 0.95),
+        0 2px 8px rgba(55, 48, 163, 0.45);
     margin-top: -6px;
 }
 .range-base::-moz-range-track {
@@ -998,6 +1204,8 @@ const save = async () => {
     border: 2px solid #4338ca;
     border-radius: 999px;
     background: #4338ca;
-    box-shadow: 0 0 0 3px rgba(224, 231, 255, 0.95), 0 2px 8px rgba(55, 48, 163, 0.45);
+    box-shadow:
+        0 0 0 3px rgba(224, 231, 255, 0.95),
+        0 2px 8px rgba(55, 48, 163, 0.45);
 }
 </style>

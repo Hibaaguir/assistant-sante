@@ -2,6 +2,12 @@ export default {
     content: ["./index.html", "./src/**/*.vue", "./src/**/*.js"],
     theme: {
         extend: {
+            fontFamily: {
+                sans: ["Inter", "system-ui", "sans-serif"],
+            },
+            letterSpacing: {
+                tight: "-0.01em",
+            },
             colors: {
                 brand: {
                     50: "#fff7f7",
