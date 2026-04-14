@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\HealthData;
 use App\Models\HealthProfile;
 use App\Models\Treatment;
 use App\Models\TreatmentCatalog;
@@ -35,7 +36,7 @@ class HealthProfileController extends Controller
             'treatments.*.type'            => 'required_with:treatments|string|max:120',
             'treatments.*.name'            => 'nullable|string|max:255',
             'treatments.*.dose'            => 'nullable|string|max:120',
-            'treatments.*.frequency_unit'  => 'nullable|in:day,week,month',
+            'treatments.*.frequency_unit'  => 'nullable|string|max:30',
             'treatments.*.frequency_count' => 'nullable|integer|min:1',
             'treatments.*.duration'        => 'nullable|string|max:120',
             'treatments.*.start_date'      => 'nullable|date',
@@ -83,7 +84,12 @@ class HealthProfileController extends Controller
 
         // Remplacer tous les traitements existants
         if (!empty($treatments)) {
-            Treatment::where('user_id', $user->id)->delete();
+            $profileHealthData = HealthData::firstOrCreate([
+                'user_id' => $user->id,
+                'date'    => Carbon::today()->toDateString(),
+            ]);
+
+            Treatment::whereHas('healthData', fn ($q) => $q->where('user_id', $user->id))->delete();
 
             foreach ($treatments as $treatment) {
                 $startDate = $treatment['start_date'] ?? null;
@@ -104,7 +110,7 @@ class HealthProfileController extends Controller
                 ]) : null;
 
                 Treatment::create([
-                    'user_id'              => $user->id,
+                    'health_data_id'       => $profileHealthData->id,
                     'treatment_catalog_id' => $catalog?->id,
                     'dose'                 => $treatment['dose']            ?? null,
                     'frequency'            => $treatment['frequency_unit']  ?? null,

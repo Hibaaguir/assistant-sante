@@ -19,7 +19,7 @@ class TreatmentFactory extends Factory
         $hasEndDate = $this->faker->boolean(30);
 
         return [
-            'user_id' => 1,
+            'health_data_id' => 1,
             'treatment_catalog_id' => 1,
             'dose' => $this->faker->randomElement(['1 tablet', '2 tablets', '250 mg', '500 mg', '10 ml']),
             'frequency' => $this->faker->randomElement(['day', 'week', 'month']),

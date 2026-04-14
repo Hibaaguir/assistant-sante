@@ -38,7 +38,7 @@ class HealthDataService
 
         $treatments = Treatment::query()
             ->with('treatmentCatalog')
-            ->where('user_id', $userId)
+            ->whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
             ->where(function ($q) use ($today) {
                 $q->whereNull('start_date')->orWhere('start_date', '<=', $today);
             })

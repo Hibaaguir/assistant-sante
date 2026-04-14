@@ -163,11 +163,17 @@ class JournalEntryController extends Controller
         // Enregistrer l'activité physique (une seule par entrée)
         $entry->physicalActivities()->delete();
         if (!empty($data['activity_type'])) {
-            $intensity = trim((string) ($data['intensity'] ?? ''));
+            $intensity = strtolower(trim((string) ($data['intensity'] ?? '')));
+            if ($intensity === 'light') {
+                $intensity = 'low';
+            }
+            if (!in_array($intensity, ['low', 'medium', 'high'], true)) {
+                $intensity = 'medium';
+            }
             $entry->physicalActivities()->create([
                 'activity_type'    => $data['activity_type'],
                 'duration_minutes' => $data['activity_duration'] ?? null,
-                'intensity'        => $intensity !== '' ? $intensity : 'medium',
+                'intensity'        => $intensity,
             ]);
         }
 

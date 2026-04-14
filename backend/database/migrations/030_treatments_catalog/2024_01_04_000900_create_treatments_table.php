@@ -10,7 +10,8 @@ return new class extends Migration
     {
         Schema::create('treatments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            // FK added in a later migration because health_data is created in domain 040.
+            $table->unsignedBigInteger('health_data_id');
             $table->foreignId('treatment_catalog_id')->nullable()->constrained('treatment_catalogs')->nullOnDelete();
 
             $table->string('dose', 120)->nullable();
@@ -22,9 +23,10 @@ return new class extends Migration
 
             $table->timestamps();
 
+            $table->index('health_data_id');
             $table->index('treatment_catalog_id');
             $table->index('start_date');
-            $table->index(['user_id', 'treatment_catalog_id']);
+            $table->index(['health_data_id', 'treatment_catalog_id']);
         });
     }
 

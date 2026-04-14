@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class User extends Model
 {
@@ -61,8 +62,15 @@ class User extends Model
     }
 
     // Relations avec les traitements
-    public function treatments()
+    public function treatments(): HasManyThrough
     {
-        return $this->hasMany(Treatment::class, 'user_id', 'id');
+        return $this->hasManyThrough(
+            Treatment::class,
+            HealthData::class,
+            'user_id',
+            'health_data_id',
+            'id',
+            'id'
+        );
     }
 }

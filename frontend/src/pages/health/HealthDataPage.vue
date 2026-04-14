@@ -155,8 +155,43 @@ function openAddModal() {
     else vitalsTab.value?.ouvrirModalAjout();
 }
 
-function toDate(isoDate) {
-    return isoDate ? new Date(`${isoDate}T00:00:00`) : null;
+function toDate(rawDate) {
+    if (!rawDate) return null;
+
+    const text = String(rawDate).trim();
+    if (!text) return null;
+
+    // Accept legacy French format DD/MM/YYYY.
+    const frMatch = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (frMatch) {
+        const day = Number(frMatch[1]);
+        const month = Number(frMatch[2]);
+        const year = Number(frMatch[3]);
+        const date = new Date(year, month - 1, day);
+        const isValid =
+            date.getFullYear() === year &&
+            date.getMonth() === month - 1 &&
+            date.getDate() === day;
+        return isValid ? date : null;
+    }
+
+    // Keep only YYYY-MM-DD when API returns datetime values.
+    const isoDay = text.includes("T") ? text.slice(0, 10) : text;
+    const isoMatch = isoDay.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+        const year = Number(isoMatch[1]);
+        const month = Number(isoMatch[2]);
+        const day = Number(isoMatch[3]);
+        const date = new Date(year, month - 1, day);
+        const isValid =
+            date.getFullYear() === year &&
+            date.getMonth() === month - 1 &&
+            date.getDate() === day;
+        return isValid ? date : null;
+    }
+
+    const parsed = new Date(text);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 const formatShortLabel = (iso) =>
@@ -168,11 +203,9 @@ const formatShortLabel = (iso) =>
 const formatDate = (iso) => toDate(iso)?.toLocaleDateString("fr-FR") ?? "";
 
 const formatObsDate = (val) => {
-    const iso = val ? String(val).slice(0, 10) : null;
-    if (!iso) return "";
-    const d = new Date(`${iso}T00:00:00`);
-    return isNaN(d)
-        ? iso
+    const d = toDate(val);
+    return !d
+        ? String(val || "")
         : d.toLocaleDateString("fr-FR", {
               weekday: "long",
               day: "numeric",

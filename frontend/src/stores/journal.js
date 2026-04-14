@@ -62,7 +62,7 @@ function toVue(model) {
         calories: Number(model.calories ?? 0),
         activityType: activity?.activity_type ?? "",
         activityDuration: Number(activity?.duration_minutes ?? 0),
-        intensity: activity?.intensity ?? "medium",
+        intensity: activity?.intensity === "low" ? "light" : (activity?.intensity ?? "medium"),
         tobacco: tobaccoList.length > 0,
         alcohol: Boolean(model.alcohol),
         tobaccoTypes: {
@@ -97,7 +97,7 @@ function toPayload(entry) {
         calories: calories ?? calculateCaloriesFromMeals(mealsBruts),
         activity_type: entry.activityType ?? null,
         activity_duration: convertToIntOrNull(entry.activityDuration),
-        intensity: entry.intensity ?? "medium",
+        intensity: entry.intensity === "light" ? "low" : (entry.intensity ?? "medium"),
         tobacco: Boolean(entry.tobacco),
         alcohol: Boolean(entry.alcohol),
         tobacco_types: entry.tobaccoTypes ?? { cigarette: false, vape: false },

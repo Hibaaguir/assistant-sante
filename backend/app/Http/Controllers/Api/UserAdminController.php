@@ -48,7 +48,7 @@ class UserAdminController extends Controller
         $this->verifyAdminAccess($request);
 
         $data = $request->validate([
-            'status' => 'required|in:Actif,Inactif,Active,Inactive',
+            'status' => 'required|string|max:20',
         ]);
 
         $account = $user->account;

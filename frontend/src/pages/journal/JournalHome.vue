@@ -2,33 +2,31 @@
     <div class="flex flex-col gap-4 p-4 lg:p-5" style="min-height: calc(100vh - 61px)">
 
         <!-- Hero -->
-        <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-6 text-white shadow-lg">
-            <div class="absolute -right-8 -top-8 h-48 w-48 rounded-full bg-white/5"></div>
-            <div class="absolute -bottom-10 -left-6 h-36 w-36 rounded-full bg-white/5"></div>
+        <section class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-sm">
 
             <div class="relative grid items-center gap-6 lg:grid-cols-[1fr_auto]">
                 <div>
-                    <span class="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">
+                    <span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
                         Journal Quotidien HealthFlow
                     </span>
                     <h2 class="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">
                         Suivez votre journée en<br/>
-                        <span class="text-blue-200">toute simplicité</span>
+                        <span class="text-blue-600">toute simplicité</span>
                     </h2>
-                    <p class="mt-2 max-w-lg text-sm text-blue-100">
+                    <p class="mt-2 max-w-lg text-sm text-slate-500">
                         Consignez vos indicateurs quotidiens : sommeil, nutrition,
                         hydratation, activité physique et habitudes de vie.
                     </p>
                     <div class="mt-4 flex flex-wrap gap-3">
                         <button
-                            class="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-blue-700 shadow hover:bg-blue-50 transition"
+                            class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-200 transition hover:brightness-105"
                             @click="router.push({ name: 'journal-assistant' })"
                         >
                             <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
                             Ajouter une entrée
                         </button>
                         <button
-                            class="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/20 transition"
+                            class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
                             @click="router.push({ name: 'journal-history' })"
                         >
                             Voir l'historique
@@ -38,49 +36,21 @@
                 <img
                     src="/Reste en forme et actif.png"
                     alt="Reste en forme et actif"
-                    class="hidden lg:block h-[170px] w-[170px] object-contain drop-shadow-xl"
+                    class="hidden lg:block h-[180px] w-[460px] rounded-2xl border border-slate-200 object-cover shadow-sm"
                 />
             </div>
         </section>
-
-        <!-- Stats rapides -->
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-                <p class="text-xs font-medium text-slate-400">Dernière entrée</p>
-                <p class="mt-1 text-lg font-bold text-slate-900 truncate">
-                    {{ latestEntry ? latestEntry.dateLabel : '—' }}
-                </p>
-            </div>
-            <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-                <p class="text-xs font-medium text-slate-400">Sommeil</p>
-                <p class="mt-1 text-lg font-bold text-indigo-600">
-                    {{ latestEntry ? sleepLabel(latestEntry.sleep) : '—' }}
-                </p>
-            </div>
-            <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-                <p class="text-xs font-medium text-slate-400">Niveau de stress</p>
-                <p class="mt-1 text-lg font-bold text-rose-500">
-                    {{ latestEntry ? stressLabel(latestEntry.stress) : '—' }}
-                </p>
-            </div>
-            <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-                <p class="text-xs font-medium text-slate-400">Énergie</p>
-                <p class="mt-1 text-lg font-bold text-emerald-600">
-                    {{ latestEntry ? energyLabel(latestEntry.energy) : '—' }}
-                </p>
-            </div>
-        </div>
 
         <!-- Cards principale -->
         <div class="grid flex-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
 
             <!-- Dernière entrée détail -->
-            <div class="flex flex-col rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+            <div class="flex flex-col rounded-3xl border border-violet-200 bg-white p-5 shadow-sm">
                 <div class="flex items-center gap-2 mb-4">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100">
                         <span class="text-base">🗓️</span>
                     </div>
-                    <h3 class="text-[15px] font-bold text-slate-900">Dernière entrée</h3>
+                    <h3 class="text-[30px] font-extrabold leading-none text-slate-900 sm:text-[44px]">Dernière entrée</h3>
                 </div>
                 <div v-if="latestEntry" class="flex-1 space-y-3 text-sm text-slate-700">
                     <div class="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5">
@@ -100,56 +70,35 @@
                         <span class="font-semibold text-emerald-600">{{ energyLabel(latestEntry.energy) }}</span>
                     </div>
                 </div>
-                <div v-else class="flex flex-1 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 py-8 text-sm text-slate-400">
-                    Aucune donnée disponible
+                <div v-else class="flex flex-1 items-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                    Aucune donnée
                 </div>
-                <button
-                    class="mt-4 w-full rounded-xl border border-slate-200 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
-                    @click="router.push({ name: 'journal-history' })"
-                >
-                    Voir tout l'historique →
-                </button>
             </div>
 
             <!-- Autres infos -->
             <CarteInfosDerniereEntree :derniere-entree="latestEntry" />
 
             <!-- Conseil + Objectif -->
-            <div class="flex flex-col gap-4">
-                <div class="flex-1 rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-indigo-50 p-5 shadow-sm">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100">
-                            <span class="text-base">💡</span>
-                        </div>
-                        <h3 class="text-[15px] font-bold text-slate-900">Conseil du jour</h3>
+            <div class="rounded-3xl border border-violet-200 bg-gradient-to-br from-violet-50 to-indigo-50 p-5 shadow-sm">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100">
+                        <span class="text-base">💡</span>
                     </div>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        Maintenez une saisie régulière de vos données pour obtenir
-                        un suivi clair, utile et exploitable dans le temps.
-                    </p>
+                    <h3 class="text-[30px] font-extrabold leading-none text-slate-900 sm:text-[44px]">Conseil du jour</h3>
                 </div>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Maintenez une saisie régulière de vos données pour obtenir un suivi
+                    clair, utile et exploitable dans le temps.
+                </p>
 
-                <div class="flex-1 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-teal-50 p-5 shadow-sm">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100">
-                            <span class="text-base">🎯</span>
-                        </div>
-                        <h3 class="text-[15px] font-bold text-slate-900">Objectif quotidien</h3>
+                <div class="mt-5 rounded-2xl border border-violet-200 bg-white px-4 py-3">
+                    <div class="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                        <span class="text-base">🎯</span>
+                        Objectif quotidien
                     </div>
-                    <div class="space-y-2">
-                        <div class="flex items-center gap-2 text-sm text-slate-600">
-                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                            2.0 L d'eau minimum
-                        </div>
-                        <div class="flex items-center gap-2 text-sm text-slate-600">
-                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                            30 min d'activité légère
-                        </div>
-                        <div class="flex items-center gap-2 text-sm text-slate-600">
-                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                            7h de sommeil recommandées
-                        </div>
-                    </div>
+                    <p class="mt-1 text-sm text-slate-600">
+                        Atteindre au moins 2.0 L d'eau et 30 min d'activité légère.
+                    </p>
                 </div>
             </div>
         </div>

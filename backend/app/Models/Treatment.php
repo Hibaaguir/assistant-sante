@@ -11,7 +11,7 @@ class Treatment extends Model
     protected $table = 'treatments';
 
     protected $fillable = [
-        'user_id',
+        'health_data_id',
         'treatment_catalog_id',
         'dose',
         'frequency',
@@ -28,10 +28,10 @@ class Treatment extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Relation: le traitement appartient a un utilisateur
-    public function user(): BelongsTo
+    // Relation: le traitement appartient a une entree health_data
+    public function healthData(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(HealthData::class, 'health_data_id');
     }
 
     // Relation: fait reference a un element du catalogue de traitement

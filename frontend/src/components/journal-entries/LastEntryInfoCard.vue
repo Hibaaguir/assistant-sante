@@ -1,6 +1,6 @@
 ﻿<template>
     <div
-        class="rounded-[28px] border border-[#ddd2ff] bg-gradient-to-br from-[#f5f0ff] via-white to-[#eef4ff] p-8 shadow-sm shadow-violet-200/50 transition hover:-translate-y-0.5 hover:shadow-md"
+        class="rounded-[28px] border border-violet-200 bg-white p-8 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
         <h3 class="text-4xl font-extrabold text-slate-900">
             📋 Autres informations

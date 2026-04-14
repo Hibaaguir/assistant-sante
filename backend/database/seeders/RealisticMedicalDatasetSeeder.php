@@ -84,7 +84,15 @@ class RealisticMedicalDatasetSeeder extends Seeder
                 ]);
             }
 
-            $treatments = $this->createTreatments($user, $patientData['treatments'], $startDate);
+            $seedHealthData = HealthData::firstOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'date' => $startDate->toDateString(),
+                ],
+                ['doctor_observation' => null]
+            );
+
+            $treatments = $this->createTreatments($seedHealthData, $patientData['treatments'], $startDate);
 
             for ($dayOffset = 0; $dayOffset < 30; $dayOffset++) {
                 $date = $startDate->copy()->addDays($dayOffset);
@@ -107,11 +115,13 @@ class RealisticMedicalDatasetSeeder extends Seeder
                 $this->seedPhysicalActivity($journal, $patientIndex, $dayOffset, $metrics);
                 $this->seedTobacco($journal, $patientData, $dayOffset);
 
-                $healthData = HealthData::create([
-                    'user_id' => $user->id,
-                    'date' => $date->toDateString(),
-                    'doctor_observation' => $this->buildDoctorObservation($patientData, $metrics, $dayOffset),
-                ]);
+                $healthData = HealthData::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'date' => $date->toDateString(),
+                    ],
+                    ['doctor_observation' => $this->buildDoctorObservation($patientData, $metrics, $dayOffset)]
+                );
 
                 $measuredAt = $date->copy()->setTime(7 + (($patientIndex + $dayOffset) % 3), 10 + (($dayOffset * 7) % 45));
 
@@ -134,6 +144,16 @@ class RealisticMedicalDatasetSeeder extends Seeder
 
     private function clearPatientMedicalData(User $user): void
     {
+        $treatmentIds = Treatment::query()
+            ->whereHas('healthData', fn ($q) => $q->where('user_id', $user->id))
+            ->pluck('id');
+
+        if ($treatmentIds->isNotEmpty()) {
+            Notification::query()->whereIn('treatment_id', $treatmentIds)->delete();
+            TreatmentCheck::query()->whereIn('treatment_id', $treatmentIds)->delete();
+            Treatment::query()->whereIn('id', $treatmentIds)->delete();
+        }
+
         $healthDataIds = HealthData::query()->where('user_id', $user->id)->pluck('id');
         if ($healthDataIds->isNotEmpty()) {
             VitalSigns::query()->whereIn('health_data_id', $healthDataIds)->delete();
@@ -142,18 +162,11 @@ class RealisticMedicalDatasetSeeder extends Seeder
             HealthData::query()->whereIn('id', $healthDataIds)->delete();
         }
 
-        $treatmentIds = Treatment::query()->where('user_id', $user->id)->pluck('id');
-        if ($treatmentIds->isNotEmpty()) {
-            Notification::query()->whereIn('treatment_id', $treatmentIds)->delete();
-            TreatmentCheck::query()->whereIn('treatment_id', $treatmentIds)->delete();
-            Treatment::query()->whereIn('id', $treatmentIds)->delete();
-        }
-
         JournalEntry::query()->where('user_id', $user->id)->delete();
         DoctorInvitation::query()->where('patient_user_id', $user->id)->delete();
     }
 
-    private function createTreatments(User $user, array $treatmentRows, Carbon $monthStart): Collection
+    private function createTreatments(HealthData $healthData, array $treatmentRows, Carbon $monthStart): Collection
     {
         $created = collect();
 
@@ -174,7 +187,7 @@ class RealisticMedicalDatasetSeeder extends Seeder
             }
 
             $created->push(Treatment::create([
-                'user_id' => $user->id,
+                'health_data_id' => $healthData->id,
                 'treatment_catalog_id' => $catalog->id,
                 'dose' => $row['dose'],
                 'frequency' => $row['frequency'] ?? 'day',

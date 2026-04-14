@@ -61,10 +61,18 @@ return new class extends Migration
             $table->index(['treatment_id', 'check_date']);
             $table->index(['health_data_id', 'check_date']);
         });
+
+        Schema::table('treatments', function (Blueprint $table) {
+            $table->foreign('health_data_id')->references('id')->on('health_data')->cascadeOnDelete();
+        });
     }
 
     public function down(): void
     {
+        Schema::table('treatments', function (Blueprint $table) {
+            $table->dropForeign(['health_data_id']);
+        });
+
         Schema::dropIfExists('treatment_checks');
         Schema::dropIfExists('analysis_results');
         Schema::dropIfExists('vital_signs');
