@@ -354,7 +354,8 @@
 
                     <div class="space-y-2">
                         <label class="text-sm font-medium text-gray-900"
-                            >Type de traitement</label
+                            >Type de traitement
+                            <span class="text-red-500">*</span></label
                         >
                         <button
                             type="button"
@@ -425,7 +426,8 @@
 
                     <div class="space-y-2">
                         <label class="text-sm font-medium text-gray-900"
-                            >Nom du traitement</label
+                            >Nom du traitement
+                            <span class="text-red-500">*</span></label
                         >
                         <button
                             type="button"
@@ -519,7 +521,7 @@
 
                     <div class="space-y-2">
                         <label class="text-sm font-medium text-gray-900"
-                            >Dose</label
+                            >Dose <span class="text-red-500">*</span></label
                         >
                         <input
                             v-model.trim="treatment.dose"
@@ -543,12 +545,19 @@
 
                     <div class="space-y-2">
                         <label class="text-sm font-medium text-gray-900"
-                            >Frequence</label
+                            >Frequence
+                            <span class="text-red-500">*</span></label
                         >
                         <div class="grid grid-cols-2 gap-3">
                             <select
                                 v-model="treatment.frequency_unit"
-                                class="h-12 rounded-lg w-full border border-gray-200 px-4 bg-white outline-none focus:border-purple-400"
+                                class="h-12 rounded-lg w-full border px-4 bg-white outline-none focus:border-purple-400"
+                                :class="
+                                    treatmentErrors.frequency_unit
+                                        ? 'border-red-300'
+                                        : 'border-gray-200'
+                                "
+                                @change="treatmentErrors.frequency_unit = ''"
                             >
                                 <option value="day">Par jour</option>
                                 <option value="week">Par semaine</option>
@@ -580,6 +589,12 @@
                             </div>
                         </div>
                         <p
+                            v-if="treatmentErrors.frequency_unit"
+                            class="text-sm text-red-600"
+                        >
+                            {{ treatmentErrors.frequency_unit }}
+                        </p>
+                        <p
                             v-if="treatmentErrors.frequency_count"
                             class="text-sm text-red-600"
                         >
@@ -590,6 +605,7 @@
                     <div class="space-y-2">
                         <label class="text-sm font-medium text-gray-900"
                             >Debut de traitement
+                            <span class="text-red-500">*</span>
                             <span class="text-gray-400 font-normal"
                                 >(JJ/MM/AAAA)</span
                             ></label
@@ -624,6 +640,7 @@
                     <div class="space-y-2">
                         <label class="text-sm font-medium text-gray-900"
                             >Fin de traitement
+                            <span class="text-red-500">*</span>
                             <span class="text-gray-400 font-normal"
                                 >(JJ/MM/AAAA)</span
                             ></label
@@ -826,6 +843,7 @@ const treatmentErrors = reactive({
     type: "",
     name: "",
     dose: "",
+    frequency_unit: "",
     frequency_count: "",
     start_date: "",
     end_date: "",
@@ -978,6 +996,7 @@ function clearTreatmentErrors() {
     treatmentErrors.type = "";
     treatmentErrors.name = "";
     treatmentErrors.dose = "";
+    treatmentErrors.frequency_unit = "";
     treatmentErrors.frequency_count = "";
     treatmentErrors.start_date = "";
     treatmentErrors.end_date = "";
@@ -1014,6 +1033,11 @@ function validateTreatment() {
     }
     if (!treatment.dose.trim()) {
         treatmentErrors.dose = "La dose est obligatoire.";
+        isValid = false;
+    }
+
+    if (!String(treatment.frequency_unit || "").trim()) {
+        treatmentErrors.frequency_unit = "L'unité de fréquence est obligatoire.";
         isValid = false;
     }
 

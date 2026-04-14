@@ -1,6 +1,6 @@
 <!--
   NotificationsWidget.vue
-  Treatment notification reminders: loading, auto-refresh, mark as read.
+  Treatment notification reminders: loading, auto-refresh.
 -->
 <template>
     <section
@@ -80,18 +80,6 @@
                                 {{ formatDate(n.created_at) }}
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            class="mt-1 shrink-0 rounded-md border bg-white px-2 py-1 text-xs font-semibold transition"
-                            :class="
-                                n.kind === 'missed'
-                                    ? 'border-red-200 text-red-600 hover:bg-red-50'
-                                    : 'border-purple-200 text-purple-700 hover:bg-purple-100'
-                            "
-                            @click="markRead(n.id)"
-                        >
-                            ✓
-                        </button>
                     </div>
                 </li>
             </ul>
@@ -148,17 +136,6 @@ async function load(silent = false) {
 }
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
-async function markRead(id) {
-    try {
-        await api.post(`/notifications/${id}/read`);
-        const now = new Date().toISOString();
-        notifications.value = notifications.value.map((n) =>
-            n.id === id ? { ...n, read_at: n.read_at || now } : n,
-        );
-    } catch {
-        error.value = "Impossible de marquer cette notification comme lue.";
-    }
-}
 
 async function markAllRead() {
     try {

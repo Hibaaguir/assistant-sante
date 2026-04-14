@@ -10,8 +10,6 @@
                 Suivez vos indicateurs de santé au fil du temps
             </p>
         </header>
-        <NotificationsOnline />
-
         <!-- Observations du médecin -->
         <section v-if="doctorLatestObservation" class="mt-4 space-y-3">
             <h2 class="text-[16px] font-semibold text-blue-600">
@@ -122,7 +120,6 @@ import TabSignesVitaux from "@/components/health/TabSignesVitaux.vue";
 import TabAnalyseBiologique from "@/components/health/TabAnalyseBiologique.vue";
 import TabTraitements from "@/components/health/TabTraitements.vue";
 import { useNotificationsStore } from "@/stores/notifications";
-import NotificationsOnline from "@/components/ui/NotificationsOnline.vue";
 import TabBar from "@/components/ui/TabBar.vue";
 
 const vitalsTab = ref(null);

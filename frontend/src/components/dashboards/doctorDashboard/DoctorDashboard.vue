@@ -23,8 +23,6 @@
             </p>
         </header>
 
-        <NotificationsOnline />
-
         <!-- Onglets -->
         <nav class="mt-10 rounded-[18px] bg-[#eef0f3] p-[6px]">
             <div
@@ -94,7 +92,6 @@ import {
     mapPatient,
     mapPatientDetail,
 } from "@/components/doctors/doctorUtilities.js";
-import NotificationsOnline from "@/components/ui/NotificationsOnline.vue";
 import DoctorInvitations from "@/components/doctors/DoctorInvitations.vue";
 import DoctorPatientDetail from "@/components/doctors/DoctorPatientDetail.vue";
 import DoctorPatientList from "@/components/doctors/DoctorPatientList.vue";

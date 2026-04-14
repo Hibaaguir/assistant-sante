@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('journal_entry_id')->constrained('journal_entries')->cascadeOnDelete();
 
             // Type of tobacco
-            $table->enum('tobacco_type', ['cigarette', 'vape']);
+            $table->string('tobacco_type', 30);
 
             // Specific data
             $table->unsignedSmallInteger('cigarettes_per_day')->nullable(); // number of cigarettes per day

@@ -424,17 +424,21 @@ const filteredUsers = computed(() => {
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
 
-// Load the full user list from the API
+// Load the full user list from the API.
+// Returns true on success, false on failure (does NOT clear the list on failure).
 async function loadUsers() {
     loadingList.value  = true;
     errorMessage.value = "";
     try {
         users.value = await listAdminUsers();
+        return true;
     } catch (err) {
-        users.value    = [];
+        // Do NOT clear users.value here — keep the current list visible so
+        // users don't appear to vanish because of a background refresh failure.
         errorMessage.value =
             errorMessageFrom(err) ??
             "Une erreur est survenue lors du chargement des utilisateurs.";
+        return false;
     } finally {
         loadingList.value = false;
     }
@@ -462,8 +466,12 @@ async function toggleStatus(u) {
 
         setTimeout(() => { successMessage.value = ""; }, 4000);
 
-        // Refresh the list silently; if it fails, undo the UI change
-        loadUsers().catch(() => { u.status = oldStatus; });
+        // Refresh the list silently to sync with the server.
+        // If the refresh fails, revert the optimistic status change.
+        const refreshed = await loadUsers();
+        if (!refreshed) {
+            u.status = oldStatus;
+        }
     } catch (err) {
         // API call failed — revert the status back to what it was
         u.status = oldStatus;
@@ -483,13 +491,19 @@ function openDeleteModal(u) {
     deleteModalOpen.value = true;
 }
 
-// Close the delete modal and reset related state
+// Close the delete modal and reset related state (called on cancel)
 function closeDeleteModal() {
     deleteModalOpen.value = false;
     userIdToDelete.value  = null;
     errorMessage.value    = "";
     successMessage.value  = "Suppression annulée.";
     setTimeout(() => { successMessage.value = ""; }, 3000);
+}
+
+// Reset modal state without showing the "cancelled" message (used during actual deletion)
+function resetDeleteModal() {
+    deleteModalOpen.value = false;
+    userIdToDelete.value  = null;
 }
 
 // Delete the selected user after confirmation
@@ -500,7 +514,7 @@ async function confirmDeletion() {
 
     if (!userIdToDelete.value) {
         errorMessage.value = "Erreur : ID utilisateur invalide.";
-        closeDeleteModal();
+        resetDeleteModal();
         return;
     }
 
@@ -509,10 +523,12 @@ async function confirmDeletion() {
     const deletedUser = users.value[index] ?? null;
     const userName    = deletedUser?.name || "Utilisateur";
 
+    // Close the modal immediately — do NOT call closeDeleteModal() here as it
+    // shows a misleading "Suppression annulée." message during an actual deletion.
+    resetDeleteModal();
+
     // Remove from the UI immediately (optimistic delete)
     if (index !== -1) users.value.splice(index, 1);
-
-    closeDeleteModal();
 
     try {
         await deleteAdminUser(idToDelete);
@@ -521,9 +537,8 @@ async function confirmDeletion() {
         deletionMessage.value = `${userName} a été supprimé avec succès.`;
         setTimeout(() => { deletionMessage.value = ""; }, 4000);
 
-        // Refresh the list silently
+        // Refresh the list silently; restore the user if the refresh itself fails
         loadUsers().catch(() => {
-            // If refresh fails, put the user back in the list
             if (deletedUser && index !== -1) users.value.splice(index, 0, deletedUser);
         });
     } catch (err) {

@@ -49,8 +49,6 @@
                 </div>
             </div>
         </div>
-        <NotificationsOnline />
-
         <!-- AlertMessage picks the right color automatically based on tone -->
         <AlertMessage
             :message="noticeMessage"
@@ -145,7 +143,6 @@ import { useRoute, useRouter } from "vue-router";
 import FilterModal from "@/components/journal-entries/FilterModal.vue";
 import CarteEntreeHistorique from "@/components/journal-entries/EntryHistoryCard.vue";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
-import NotificationsOnline from "@/components/ui/NotificationsOnline.vue";
 import AlertMessage from "@/components/ui/AlertMessage.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { useJournalStore } from "@/stores/journal";

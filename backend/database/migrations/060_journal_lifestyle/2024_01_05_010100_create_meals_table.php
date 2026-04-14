@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('journal_entry_id')->constrained('journal_entries')->cascadeOnDelete();
 
             // Type of meal
-            $table->enum('meal_type', ['breakfast', 'lunch', 'dinner', 'snack'])->default('lunch');
+            $table->string('meal_type', 30)->default('lunch');
 
             // Meal details
             $table->text('description')->nullable(); // ex: "2 eggs, whole wheat bread"

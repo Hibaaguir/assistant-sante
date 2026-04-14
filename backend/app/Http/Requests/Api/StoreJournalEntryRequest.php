@@ -17,13 +17,13 @@ class StoreJournalEntryRequest extends ApiFormRequest
             'sugar_intake' => ['nullable', 'string', 'max:255'],
 
             'meals' => ['nullable', 'array'],
-            'meals.*.meal_type' => ['nullable', 'in:breakfast,lunch,dinner,snack'],
+            'meals.*.meal_type' => ['nullable', 'string', 'max:30'],
             'meals.*.description' => ['required_with:meals', 'string', 'max:255'],
             'meals.*.calories' => ['nullable', 'integer', 'min:0', 'max:65535'],
 
             'activity_type' => ['nullable', 'string', 'max:120'],
             'activity_duration' => ['nullable', 'integer', 'min:0', 'max:1440'],
-            'intensity' => ['nullable', 'in:low,medium,high'],
+            'intensity' => ['nullable', 'string', 'max:30'],
 
             'tobacco' => ['required', 'boolean'],
             'alcohol' => ['required', 'boolean'],

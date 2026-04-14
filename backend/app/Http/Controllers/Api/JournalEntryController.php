@@ -151,8 +151,9 @@ class JournalEntryController extends Controller
         if (isset($data['meals']) && is_array($data['meals'])) {
             $entry->meals()->delete();
             foreach ($data['meals'] as $meal) {
+                $mealType = trim((string) ($meal['meal_type'] ?? ''));
                 $entry->meals()->create([
-                    'meal_type'   => $meal['meal_type']   ?? null,
+                    'meal_type'   => $mealType !== '' ? $mealType : 'lunch',
                     'description' => $meal['description'] ?? null,
                     'calories'    => $meal['calories']    ?? null,
                 ]);
@@ -162,10 +163,11 @@ class JournalEntryController extends Controller
         // Enregistrer l'activité physique (une seule par entrée)
         $entry->physicalActivities()->delete();
         if (!empty($data['activity_type'])) {
+            $intensity = trim((string) ($data['intensity'] ?? ''));
             $entry->physicalActivities()->create([
                 'activity_type'    => $data['activity_type'],
                 'duration_minutes' => $data['activity_duration'] ?? null,
-                'intensity'        => $data['intensity']         ?? 'medium',
+                'intensity'        => $intensity !== '' ? $intensity : 'medium',
             ]);
         }
 

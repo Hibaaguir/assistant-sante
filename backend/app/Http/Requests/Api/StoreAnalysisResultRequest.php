@@ -11,7 +11,7 @@ class StoreAnalysisResultRequest extends ApiFormRequest
             'analysis_type' => ['required', 'string', 'max:120'],
             'result_name' => ['nullable', 'string', 'max:120'],
             'value' => ['required', 'numeric', 'min:0'],
-            'unit' => ['nullable', 'string', 'max:30'],
+            'unit' => ['required', 'string', 'max:30'],
             'analysis_date' => ['required', 'date'],
         ];
     }
@@ -28,6 +28,7 @@ class StoreAnalysisResultRequest extends ApiFormRequest
             'value.required' => 'La valeur est obligatoire.',
             'value.numeric' => 'La valeur doit être un nombre.',
             'value.min' => 'La valeur doit être au moins 0.',
+            'unit.required' => 'L\'unité est obligatoire.',
             'unit.string' => 'L\'unité doit être une chaîne de caractères.',
             'unit.max' => 'L\'unité ne doit pas dépasser 30 caractères.',
             'analysis_date.required' => 'La date d\'analyse est obligatoire.',

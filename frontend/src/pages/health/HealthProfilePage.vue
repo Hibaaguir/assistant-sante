@@ -30,8 +30,6 @@
             </div>
         </header>
 
-        <NotificationsOnline />
-
         <div
             v-if="loading"
             class="rounded-3xl border border-[#d8e6ff] bg-white/85 p-6 text-sm text-slate-600"
@@ -693,7 +691,7 @@
                                 <div>
                                     <label
                                         class="mb-1 block text-xs font-medium text-slate-600"
-                                        >Type</label
+                                        >Type <span class="text-red-500">*</span></label
                                     >
                                     <input
                                         v-model="treatmentDraft.type"
@@ -713,7 +711,7 @@
                                 <div>
                                     <label
                                         class="mb-1 block text-xs font-medium text-slate-600"
-                                        >Nom</label
+                                        >Nom <span class="text-red-500">*</span></label
                                     >
                                     <input
                                         v-model="treatmentDraft.name"
@@ -739,7 +737,7 @@
                                 <div>
                                     <label
                                         class="mb-1 block text-xs font-medium text-slate-600"
-                                        >Dose</label
+                                        >Dose <span class="text-red-500">*</span></label
                                     >
                                     <input
                                         v-model="treatmentDraft.dose"
@@ -750,7 +748,7 @@
                                 <div>
                                     <label
                                         class="mb-1 block text-xs font-medium text-slate-600"
-                                        >Fréquence</label
+                                        >Fréquence <span class="text-red-500">*</span></label
                                     >
                                     <div class="grid grid-cols-2 gap-2">
                                         <select
@@ -781,7 +779,7 @@
                                 <div>
                                     <label
                                         class="mb-1 block text-xs font-medium text-slate-600"
-                                        >Début (JJ/MM/AAAA)</label
+                                        >Début (JJ/MM/AAAA) <span class="text-red-500">*</span></label
                                     >
                                     <input
                                         :value="treatmentDraft.start_date"
@@ -800,7 +798,7 @@
                                 <div>
                                     <label
                                         class="mb-1 block text-xs font-medium text-slate-600"
-                                        >Fin (JJ/MM/AAAA)</label
+                                        >Fin (JJ/MM/AAAA) <span class="text-red-500">*</span></label
                                     >
                                     <input
                                         :value="treatmentDraft.end_date"
@@ -1052,7 +1050,6 @@ import { useAuthStore } from "@/stores/auth";
 import api from "@/services/api";
 import HealthFieldRow from "@/components/health/HealthFieldRow.vue";
 import { useNotificationsStore } from "@/stores/notifications";
-import NotificationsOnline from "@/components/ui/NotificationsOnline.vue";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
 
 // ─── Stores & Router ──────────────────────────────────────────────────────────
@@ -1431,7 +1428,14 @@ function cancelTreatmentEditWithNotice() {
 async function saveTreatmentDraft() {
     const type = normalizeTreatmentText(treatmentDraft.type);
     const name = normalizeTreatmentText(treatmentDraft.name);
-    if (!type || !name) return;
+    const dose = normalizeTreatmentText(treatmentDraft.dose);
+    const frequencyUnit = normalizeTreatmentText(treatmentDraft.frequency_unit);
+    const frequencyCount = Number(treatmentDraft.frequency_count);
+
+    if (!type || !name || !dose || !frequencyUnit || !Number.isFinite(frequencyCount) || frequencyCount < 1) {
+        notifications.warning("Tous les champs du traitement sont obligatoires.");
+        return;
+    }
 
     // Both dates are required and must be valid
     const isoStart = frenchDateToIso(treatmentDraft.start_date);
@@ -1448,9 +1452,9 @@ async function saveTreatmentDraft() {
     // Build the treatment object (dates stay in DD/MM/YYYY for the draft)
     const treatment = {
         type, name,
-        dose:            treatmentDraft.dose           || null,
-        frequency_unit:  treatmentDraft.frequency_unit || "day",
-        frequency_count: Number(treatmentDraft.frequency_count || 1),
+        dose,
+        frequency_unit:  frequencyUnit,
+        frequency_count: Math.round(frequencyCount),
         start_date:      treatmentDraft.start_date,
         end_date:        treatmentDraft.end_date,
     };
@@ -1660,6 +1664,42 @@ function validateHealthSection() {
     return !sectionErrors.health.goals;
 }
 
+function validateTreatmentsSection() {
+    const treatments = Array.isArray(draft.treatments) ? draft.treatments : [];
+
+    for (const item of treatments) {
+        const type = normalizeTreatmentText(item?.type);
+        const name = normalizeTreatmentText(item?.name);
+        const dose = normalizeTreatmentText(item?.dose);
+        const frequencyUnit = normalizeTreatmentText(item?.frequency_unit);
+        const frequencyCount = Number(item?.frequency_count);
+        const startDateIso = frenchDateToIso(item?.start_date);
+        const endDateIso = frenchDateToIso(item?.end_date);
+
+        const hasMissingField =
+            !type ||
+            !name ||
+            !dose ||
+            !frequencyUnit ||
+            !Number.isFinite(frequencyCount) ||
+            frequencyCount < 1 ||
+            !startDateIso ||
+            !endDateIso;
+
+        if (hasMissingField) {
+            notifications.warning("Tous les champs du traitement sont obligatoires.");
+            return false;
+        }
+
+        if (endDateIso <= startDateIso) {
+            notifications.warning("La date de fin doit être après la date de début.");
+            return false;
+        }
+    }
+
+    return true;
+}
+
 // ─ Construction de la charge API
 
 // Convert a single treatment from draft format to the API format
@@ -1748,6 +1788,7 @@ async function saveSection(section) {
     // Run the appropriate validation first
     if (section === "base"   && !validateBaseSection())   { notifications.warning("Veuillez corriger les champs en erreur."); return; }
     if (section === "health" && !validateHealthSection())  { notifications.warning("Veuillez corriger les champs en erreur."); return; }
+    if (section === "habits" && !validateTreatmentsSection()) return;
     if (section === "doctor" && !validateDoctorEmail())    return;
 
     savingSection.value = section;

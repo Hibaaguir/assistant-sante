@@ -113,7 +113,7 @@
                 <div>
                     <label
                         class="mb-2 block text-[13px] font-semibold text-slate-700"
-                        >Type d'analyse</label
+                        >Type d'analyse <span class="text-rose-600">*</span></label
                     >
                     <select
                         v-model="form.category"
@@ -176,7 +176,7 @@
                             <div>
                                 <label
                                     class="mb-2 block text-[13px] font-semibold text-slate-700"
-                                    >Nom du résultat</label
+                                    >Nom du résultat <span class="text-rose-600">*</span></label
                                 >
                                 <select
                                     v-model="row.result"
@@ -198,7 +198,7 @@
                                 <div>
                                     <label
                                         class="mb-2 block text-[13px] font-semibold text-slate-700"
-                                        >Valeur</label
+                                        >Valeur <span class="text-rose-600">*</span></label
                                     >
                                     <input
                                         v-model="row.value"
@@ -210,7 +210,7 @@
                                 <div>
                                     <label
                                         class="mb-2 block text-[13px] font-semibold text-slate-700"
-                                        >Unité</label
+                                        >Unité <span class="text-rose-600">*</span></label
                                     >
                                     <input
                                         v-model="row.unit"
@@ -237,7 +237,7 @@
                 <div>
                     <label
                         class="mb-2 block text-[13px] font-semibold text-slate-700"
-                        >Date</label
+                        >Date <span class="text-rose-600">*</span></label
                     >
                     <input
                         v-model="form.date"
@@ -491,11 +491,17 @@ async function saveAnalysis() {
         formError.value = "Veuillez choisir un type d'analyse.";
         return;
     }
+    const analysisDate = String(form.date || "").trim();
+    if (!analysisDate) {
+        formError.value = "La date de l'analyse est obligatoire.";
+        return;
+    }
 
     const rows = [];
     for (const row of form.results) {
         const result = row.result?.trim();
         const value = toNumber(row.value);
+        const unit = row.unit?.trim();
         if (!result) {
             formError.value = "Chaque résultat doit être sélectionné.";
             return;
@@ -505,12 +511,17 @@ async function saveAnalysis() {
                 "Chaque résultat doit avoir une valeur numérique valide.";
             return;
         }
+        if (!unit) {
+            formError.value =
+                "Chaque résultat doit avoir une unité. Si vous supprimez la suggestion, renseignez une unité manuellement.";
+            return;
+        }
         rows.push({
             analysis_type: form.category,
             result_name: result,
             value,
-            unit: row.unit || null,
-            analysis_date: isoDate(form.date),
+            unit,
+            analysis_date: isoDate(analysisDate),
         });
     }
     if (!rows.length) {

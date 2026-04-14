@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
 
             // Physical information
-            $table->enum('gender', ['male', 'female'])->nullable();
+            $table->string('gender', 30)->nullable();
             $table->float('height')->nullable();
             $table->float('initial_weight')->nullable();
             $table->float('current_weight')->nullable();

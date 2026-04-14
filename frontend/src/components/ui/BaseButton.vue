@@ -62,8 +62,8 @@ const variantStyles = {
 
 // Padding and font size for each size
 const sizeStyles = {
-    sm: "px-4 py-2 text-xs",
-    md: "px-5 py-3 text-sm",
-    lg: "px-8 py-3.5 text-base",
+    sm: "px-5 py-3 text-[15px]",
+    md: "px-6 py-3.5 text-[16px]",
+    lg: "px-9 py-4 text-[17px]",
 };
 </script>

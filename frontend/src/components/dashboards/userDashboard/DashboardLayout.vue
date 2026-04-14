@@ -26,7 +26,6 @@
 
         <WelcomeCard />
 
-        <NotificationsOnline />
         <NotificationsWidget />
 
         <div ref="pdfTargetRef" class="space-y-5">
@@ -76,7 +75,6 @@ import TreatmentMonthlyChart from "./TreatmentMonthlyChart.vue";
 import VitalSignsComparisonChart from "./VitalSignsComparisonChart.vue";
 import SleepTrendsChart from "./SleepTrendsChart.vue";
 import NotificationsWidget from "./NotificationsWidget.vue";
-import NotificationsOnline from "@/components/ui/NotificationsOnline.vue";
 import WelcomeCard from "./WelcomeCard.vue";
 import VitalSignsProgressiveLine from "./VitalSignsProgressiveLine.vue";
 import LabsDistributionChart from "./LabsDistributionChart.vue";

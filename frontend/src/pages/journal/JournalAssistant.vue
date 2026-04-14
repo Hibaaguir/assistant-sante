@@ -13,8 +13,6 @@
                 clair et régulier.
             </p>
         </div>
-        <NotificationsOnline />
-
         <div
             class="mt-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6"
         >
@@ -767,7 +765,6 @@ import { useRoute, useRouter } from "vue-router";
 import IndicateurEtapes from "@/components/journal-entries/StepIndicator.vue";
 import { useJournalStore } from "@/stores/journal";
 import { useNotificationsStore } from "@/stores/notifications";
-import NotificationsOnline from "@/components/ui/NotificationsOnline.vue";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
 
 const route = useRoute();

@@ -17,7 +17,7 @@
                 <div class="flex w-full items-center justify-end gap-3">
                     <button
                         type="button"
-                        class="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+                        class="inline-flex h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 text-[15px] font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
                         @click="logout"
                     >
                         <svg

@@ -20,13 +20,8 @@ class HealthProfileController extends Controller
     // Enregistrer ou mettre à jour le profil de santé
     public function store(Request $request): JsonResponse
     {
-        // Normaliser le genre en minuscules
-        if ($request->has('gender')) {
-            $request->merge(['gender' => strtolower(trim($request->gender))]);
-        }
-
         $data = $request->validate([
-            'gender'                       => 'required|in:male,female',
+            'gender'                       => 'required|string|max:30',
             'height'                       => 'required|numeric|min:30|max:250',
             'current_weight'               => 'required|numeric|min:1|max:300',
             'blood_type'                   => 'required|string|max:5',

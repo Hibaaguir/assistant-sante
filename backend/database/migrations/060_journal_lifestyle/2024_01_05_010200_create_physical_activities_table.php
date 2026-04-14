@@ -15,7 +15,7 @@ return new class extends Migration
             // Physical activity data
             $table->string('activity_type', 120)->nullable(); // ex: "running", "swimming", "weight training"
             $table->unsignedSmallInteger('duration_minutes')->nullable(); // duration in minutes
-            $table->enum('intensity', ['low', 'medium', 'high'])->default('medium'); // intensity
+            $table->string('intensity', 30)->default('medium'); // intensity
 
             // Metadata
             $table->timestamps();
