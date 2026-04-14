@@ -116,111 +116,59 @@
             </div>
         </div>
 
-        <div class="relative mt-6 space-y-4 pl-7">
-            <div
-                class="absolute left-[12px] top-0 h-full w-px bg-purple-200"
-            ></div>
-            <article
-                v-for="day in treatmentHistoryRows"
-                :key="`history-${day.dateKey}`"
-                class="relative rounded-2xl border p-4 shadow-sm"
-                :class="
-                    day.isComplete
-                        ? 'border-emerald-300 bg-emerald-50/50'
-                        : 'border-slate-200 bg-white'
-                "
-            >
-                <span
-                    class="absolute -left-[22px] top-6 inline-flex h-4 w-4 rounded-full ring-4 ring-white"
-                    :class="day.isComplete ? 'bg-emerald-500' : 'bg-slate-300'"
-                ></span>
+        <div class="mt-6 space-y-3">
 
-                <div class="flex items-start justify-between gap-3">
+            <p v-if="!treatmentHistoryRows.length" class="py-6 text-center text-sm text-slate-400">
+                Aucun historique disponible pour ces filtres.
+            </p>
+
+            <div v-for="day in treatmentHistoryRows" :key="day.dateKey"
+                class="rounded-2xl border bg-white p-5 shadow-sm"
+                :class="day.isComplete ? 'border-emerald-200' : 'border-slate-200'">
+
+                <!-- Date + badge -->
+                <div class="flex items-center justify-between">
                     <div>
-                        <h3
-                            class="text-[16px] font-semibold leading-none text-slate-900"
-                        >
-                            {{ formaterDateHistoriqueTraitement(day.dateKey) }}
-                        </h3>
-                        <p class="mt-2 text-[14px] text-slate-700">
-                            {{ day.taken }}/{{ day.total }} prises effectuées
-                        </p>
+                        <p class="font-bold text-slate-800 capitalize">{{ formaterDateHistoriqueTraitement(day.dateKey) }}</p>
+                        <p class="mt-0.5 text-sm text-slate-400">{{ day.taken }}/{{ day.total }} prises effectuées</p>
                     </div>
-                    <span
-                        v-if="day.isComplete"
-                        class="inline-flex h-8 items-center gap-1 rounded-full bg-emerald-600 px-4 text-[12px] font-semibold text-white"
-                    >
-                        <svg
-                            viewBox="0 0 24 24"
-                            class="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="3"
-                        >
-                            <path
-                                d="m5 13 4 4L19 7"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            />
-                        </svg>
-                        Complet
+                    <span class="rounded-full px-3 py-1 text-sm font-semibold"
+                        :class="day.isComplete ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'">
+                        {{ day.isComplete ? '✓ Complet' : `${day.taken}/${day.total}` }}
                     </span>
                 </div>
 
-                <div class="mt-4 grid gap-3 lg:grid-cols-2">
-                    <article
-                        v-for="med in day.meds"
-                        :key="`${day.dateKey}-${med.id}`"
-                        class="rounded-xl border border-slate-200 bg-white p-3"
-                    >
-                        <div class="flex items-center gap-3">
-                            <span
-                                class="inline-flex h-8 min-w-[32px] items-center justify-center rounded-lg px-2 text-[12px] font-semibold"
-                                :class="
-                                    med.isComplete
-                                        ? 'bg-emerald-100 text-emerald-700'
-                                        : 'bg-purple-100 text-purple-700'
-                                "
-                            >
-                                {{
-                                    med.isComplete
-                                        ? "✓"
-                                        : `${med.taken}/${med.total}`
-                                }}
-                            </span>
-                            <div>
-                                <p
-                                    class="text-[16px] font-semibold leading-none text-slate-900"
-                                >
-                                    {{ med.name }}
-                                </p>
-                                <p class="mt-1 text-[13px] text-slate-600">
-                                    {{ med.dose }}
-                                </p>
-                            </div>
-                        </div>
-                        <div
-                            class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200"
-                        >
-                            <div
-                                class="h-full rounded-full"
-                                :class="
-                                    med.isComplete
-                                        ? 'bg-emerald-600'
-                                        : 'bg-purple-600'
-                                "
-                                :style="{ width: `${med.progress}%` }"
-                            ></div>
-                        </div>
-                    </article>
-                </div>
-            </article>
+                <!-- Médicaments -->
+                <div class="mt-4 space-y-2">
+                    <div v-for="med in day.meds" :key="med.id"
+                        class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-4 py-3">
 
-            <div
-                v-if="!treatmentHistoryRows.length"
-                class="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-[13px] text-slate-600"
-            >
-                Aucun historique disponible pour ces filtres.
+                        <div>
+                            <p class="font-semibold text-slate-800">{{ med.name }}</p>
+                            <p class="text-sm text-slate-400">{{ med.dose }}</p>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button v-for="i in obtenirIndexPrises(day.dateKey, getMedFull(med.id))" :key="i"
+                                type="button"
+                                class="inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm font-medium transition"
+                                :class="estPriseCochee(day.dateKey, med.id, i)
+                                    ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
+                                    : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'"
+                                @click="basculerPrise(day.dateKey, getMedFull(med.id), i)">
+                                <span class="inline-flex h-5 w-5 items-center justify-center rounded border"
+                                    :class="estPriseCochee(day.dateKey, med.id, i)
+                                        ? 'border-emerald-500 bg-emerald-500 text-white'
+                                        : 'border-slate-300 bg-white'">
+                                    <svg viewBox="0 0 24 24" class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="3.5">
+                                        <path d="m5 13 4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                Prise {{ i }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -851,7 +799,7 @@ async function synchroniserSuiviTraitements() {
                 checks.push({
                     check_date: day.key,
                     medication_key: doseKey,
-                    medication_name: med.name,
+                    treatment_name: med.name,
                     dose: med.dose,
                     taken: Boolean(props.treatmentChecks[day.key][doseKey]),
                 });
@@ -882,6 +830,11 @@ async function basculerPrise(dayKey, med, doseIndex) {
             error?.response?.data?.message || "Erreur lors de la mise a jour.";
         notifications.error(message);
     }
+}
+
+// Retrouver le médicament complet (avec fréquence) depuis son id
+function getMedFull(medId) {
+    return props.treatmentMedicines.find((m) => m.id === medId);
 }
 
 function ouvrirJourTraitement(day) {

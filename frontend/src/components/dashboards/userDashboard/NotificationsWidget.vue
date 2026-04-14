@@ -49,7 +49,7 @@
                     :key="n.id"
                     class="rounded-xl border px-4 py-3"
                     :class="
-                        n.data?.notification_kind === 'missed'
+                        n.kind === 'missed'
                             ? 'border-red-200 bg-red-50'
                             : 'border-purple-200 bg-purple-50'
                     "
@@ -59,72 +59,23 @@
                             <!-- Icon + title -->
                             <div class="flex items-center gap-2">
                                 <span class="text-base">
-                                    {{
-                                        n.data?.notification_kind === "missed"
-                                            ? "⚠️"
-                                            : "💊"
-                                    }}
+                                    {{ n.kind === "missed" ? "⚠️" : "💊" }}
                                 </span>
                                 <p
                                     class="text-sm font-bold"
                                     :class="
-                                        n.data?.notification_kind === 'missed'
+                                        n.kind === 'missed'
                                             ? 'text-red-800'
                                             : 'text-purple-900'
                                     "
                                 >
-                                    {{ n.data?.title || "Rappel" }}
+                                    {{ n.kind === "missed" ? "Traitement oublié" : "Rappel de traitement" }}
                                 </p>
                             </div>
-                            <!-- Summary message -->
+                            <!-- Message -->
                             <p class="mt-1 text-xs text-slate-600">
-                                {{ n.data?.message }}
+                                {{ n.message }}
                             </p>
-                            <!-- Medication list -->
-                            <ul
-                                v-if="n.data?.items?.length"
-                                class="mt-2 space-y-1"
-                            >
-                                <li
-                                    v-for="item in n.data.items"
-                                    :key="item.medication_id"
-                                    class="flex items-center gap-2 text-xs"
-                                >
-                                    <span
-                                        class="inline-block h-1.5 w-1.5 rounded-full shrink-0"
-                                        :class="
-                                            item.missing > 0
-                                                ? 'bg-red-400'
-                                                : 'bg-green-400'
-                                        "
-                                    />
-                                    <span class="font-medium text-slate-800">{{
-                                        item.medication_name
-                                    }}</span>
-                                    <span
-                                        v-if="
-                                            n.data.notification_kind ===
-                                            'missed'
-                                        "
-                                        class="text-slate-500"
-                                    >
-                                        — {{ item.taken }}/{{ item.expected }}
-                                        prise(s)
-                                        <span
-                                            v-if="item.missing > 0"
-                                            class="font-semibold text-red-600"
-                                            >({{
-                                                item.missing
-                                            }}
-                                            oubliée(s))</span
-                                        >
-                                    </span>
-                                    <span v-else class="text-slate-500"
-                                        >— {{ item.expected }} prise(s)
-                                        prévue(s)</span
-                                    >
-                                </li>
-                            </ul>
                             <p class="mt-2 text-[11px] text-slate-400">
                                 {{ formatDate(n.created_at) }}
                             </p>
@@ -133,7 +84,7 @@
                             type="button"
                             class="mt-1 shrink-0 rounded-md border bg-white px-2 py-1 text-xs font-semibold transition"
                             :class="
-                                n.data?.notification_kind === 'missed'
+                                n.kind === 'missed'
                                     ? 'border-red-200 text-red-600 hover:bg-red-50'
                                     : 'border-purple-200 text-purple-700 hover:bg-purple-100'
                             "

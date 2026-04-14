@@ -69,13 +69,14 @@ class ForgotPasswordController extends Controller
             ->where('email', $account->email)
             ->first();
 
-        if (!$resetToken) {
+        if (!$resetToken || $request->token !== $resetToken->token) {
             return response()->json(['message' => 'Token invalide ou déjà utilisé.'], 422);
         }
 
-        // Vérifier que le token correspond à celui de la base de données
-        if ($request->token !== $resetToken->token) {
-            return response()->json(['message' => 'Token invalide.'], 422);
+        // Vérifier que le token n'a pas expiré (60 minutes)
+        if (now()->diffInMinutes($resetToken->created_at) > 60) {
+            DB::table('password_reset_tokens')->where('email', $account->email)->delete();
+            return response()->json(['message' => 'Ce lien a expiré. Veuillez refaire une demande.'], 422);
         }
 
         // Enregistrer le nouveau mot de passe

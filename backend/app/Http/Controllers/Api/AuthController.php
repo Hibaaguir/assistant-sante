@@ -78,7 +78,7 @@ class AuthController extends Controller
             'password'      => 'required|confirmed|min:8',
             'name'          => 'required|string|min:2|max:120',
             'specialty'     => 'required|string|min:2|max:120',
-            'date_of_birth' => 'nullable|date_format:Y-m-d|before_or_equal:today|before:' . Carbon::today()->subYears(25)->toDateString(),
+            'date_of_birth' => 'nullable|date_format:Y-m-d|before_or_equal:' . Carbon::today()->subYears(25)->toDateString(),
         ]);
 
         $email = strtolower(trim($data['email']));

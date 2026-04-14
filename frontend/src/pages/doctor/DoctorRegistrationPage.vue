@@ -529,9 +529,17 @@ function validateDateFormat() {
         return;
     }
 
-    // Le médecin doit avoir au moins 25 ans
-    const age = new Date().getFullYear() - year;
-    if (age < 25) {
+    // Le médecin doit avoir au moins 25 ans (calcul exact)
+    const today = new Date();
+    const minBirthDate = new Date(
+        today.getFullYear() - 25,
+        today.getMonth(),
+        today.getDate(),
+    );
+    dateObj.setHours(0, 0, 0, 0);
+    minBirthDate.setHours(0, 0, 0, 0);
+
+    if (dateObj > minBirthDate) {
         errors.date_naissance =
             "Vous devez avoir au moins 25 ans pour exercer.";
         return;
@@ -625,7 +633,17 @@ async function submit() {
             errors.date_naissance = Array.isArray(data.errors.date_of_birth)
                 ? data.errors.date_of_birth[0]
                 : "";
+
+            const firstValidationMessage =
+                errors.name ||
+                errors.email ||
+                errors.password ||
+                errors.specialite ||
+                errors.date_naissance;
+
             serverMessage.value =
+                firstValidationMessage ||
+                data?.message ||
                 "Veuillez corriger les erreurs du formulaire.";
         } else {
             serverMessage.value =

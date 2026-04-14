@@ -28,7 +28,7 @@ class HealthProfileController extends Controller
         $data = $request->validate([
             'gender'                       => 'required|in:male,female',
             'height'                       => 'required|numeric|min:30|max:250',
-            'weight'                       => 'required|numeric|min:1|max:300',
+            'current_weight'               => 'required|numeric|min:1|max:300',
             'blood_type'                   => 'required|string|max:5',
             'goals'                        => 'nullable|array',
             'goals.*'                      => 'string|max:120',
@@ -78,6 +78,11 @@ class HealthProfileController extends Controller
 
         $data['user_id'] = $user->id;
 
+        // initial_weight ne se remplit qu'à la création — jamais modifié ensuite
+        if (!$existingProfile) {
+            $data['initial_weight'] = $data['current_weight'];
+        }
+
         // Enregistrer ou mettre à jour le profil de santé
         $profile = HealthProfile::updateOrCreate(['user_id' => $user->id], $data);
 
@@ -99,8 +104,8 @@ class HealthProfileController extends Controller
 
                 // Chercher ou créer le médicament
                 $catalog = $type !== '' ? TreatmentCatalog::firstOrCreate([
-                    'medication_type' => $type,
-                    'medication_name' => $name,
+                    'treatment_type' => $type,
+                    'treatment_name' => $name,
                 ]) : null;
 
                 Treatment::create([
@@ -161,8 +166,8 @@ class HealthProfileController extends Controller
 
         $result = [
             'id'              => $treatment->id,
-            'type'            => $treatment->treatmentCatalog?->medication_type ?? '',
-            'name'            => $treatment->treatmentCatalog?->medication_name  ?? '',
+            'type'            => $treatment->treatmentCatalog?->treatment_type ?? '',
+            'name'            => $treatment->treatmentCatalog?->treatment_name  ?? '',
             'dose'            => $treatment->dose,
             'frequency_unit'  => $treatment->frequency,
             'frequency_count' => $treatment->daily_doses,

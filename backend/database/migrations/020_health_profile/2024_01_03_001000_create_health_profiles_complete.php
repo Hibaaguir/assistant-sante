@@ -15,7 +15,8 @@ return new class extends Migration
             // Physical information
             $table->enum('gender', ['male', 'female'])->nullable();
             $table->float('height')->nullable();
-            $table->float('weight')->nullable();
+            $table->float('initial_weight')->nullable();
+            $table->float('current_weight')->nullable();
             $table->string('blood_type')->nullable();
 
             // Goals & history

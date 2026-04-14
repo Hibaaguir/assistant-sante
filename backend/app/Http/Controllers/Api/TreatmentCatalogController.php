@@ -18,7 +18,7 @@ class TreatmentCatalogController extends Controller
     public function medicationTypes(): JsonResponse
     {
         $types = TreatmentCatalog::query()
-            ->pluck('medication_type')
+            ->pluck('treatment_type')
             ->filter(fn($type) => !is_null($type) && $type !== '')
             ->unique()
             ->sort()
@@ -33,8 +33,8 @@ class TreatmentCatalogController extends Controller
         $type = $request->query('type', '');
 
         $names = TreatmentCatalog::query()
-            ->where('medication_type', $type)
-            ->pluck('medication_name')
+            ->where('treatment_type', $type)
+            ->pluck('treatment_name')
             ->filter(fn($name) => !is_null($name) && $name !== '')
             ->unique()
             ->sort()

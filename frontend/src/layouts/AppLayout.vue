@@ -63,6 +63,7 @@ const MAIN_NAV_ROUTES = [
     "health-settings",
     "health-data",
     "ai-recommendations",
+    "notifications",
 ];
 
 const routeActive = computed(() => {

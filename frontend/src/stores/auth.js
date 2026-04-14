@@ -92,6 +92,12 @@ export const useAuthStore = defineStore("auth", () => {
             return null;
         }
 
+        // Retourner l'utilisateur en cache si déjà chargé — évite d'écraser
+        // les changements d'état locaux (ex: setHealthProfile) à chaque navigation
+        if (resolved.value && user.value) {
+            return user.value;
+        }
+
         if (!fetchInFlight) {
             fetchInFlight = api
                 .get("/auth/me")

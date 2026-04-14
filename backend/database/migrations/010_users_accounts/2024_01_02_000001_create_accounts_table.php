@@ -13,7 +13,6 @@ return new class extends Migration
             $table->string('email', 255)->unique();
             $table->string('password', 255);
             $table->string('account_status', 20)->default('active');
-            $table->string('remember_token', 100)->nullable();
             $table->timestamps();
         });
     }

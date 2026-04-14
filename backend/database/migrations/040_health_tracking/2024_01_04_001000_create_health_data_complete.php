@@ -53,9 +53,9 @@ return new class extends Migration
             $table->foreignId('health_data_id')->nullable()->constrained('health_data')->nullOnDelete();
             $table->date('check_date');
             $table->string('medication_key', 120)->nullable();
-            $table->timestamps();
             $table->boolean('taken')->default(false);
             $table->dateTime('checked_at')->nullable();
+            $table->timestamps();
 
             $table->unique(['treatment_id', 'check_date', 'medication_key'], 'treatment_checks_unique');
             $table->index(['treatment_id', 'check_date']);

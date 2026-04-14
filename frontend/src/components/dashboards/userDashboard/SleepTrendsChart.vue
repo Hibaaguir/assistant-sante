@@ -1,142 +1,156 @@
-<!--
-  SleepTrendsChart.vue
-  Radar chart (Chart.js) — tendances de sommeil par mois (6 derniers mois).
-  Chaque axe = un mois, valeur = moyenne des heures de sommeil.
-  Second dataset = objectif recommandé 8 h.
-  Données : GET /journal → entry.sleep (heures, 0-24).
--->
 <template>
     <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div class="mb-4">
-            <h2 class="text-2xl font-semibold text-slate-900">Tendances du sommeil</h2>
-            <p class="mt-0.5 text-sm text-slate-400">Moyenne mensuelle — 6 derniers mois</p>
+
+        <!-- Header -->
+        <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-slate-900">
+                    Sommeil — {{ selectedLabel }}
+                </h2>
+                <p class="mt-0.5 text-xs text-slate-400">Objectif 8 h</p>
+            </div>
+            <select v-model="selectedMonth" @change="rebuild"
+                class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400">
+                <option v-for="m in months" :key="m.key" :value="m.key">{{ m.label }}</option>
+            </select>
         </div>
 
-        <div v-if="loading" class="flex h-64 items-center justify-center text-slate-400">
-            Chargement...
-        </div>
-        <div v-else-if="noData" class="flex h-64 items-center justify-center text-slate-400">
-            Aucune donnée de sommeil disponible.
-        </div>
+        <div v-if="loading" class="flex h-52 items-center justify-center text-sm text-slate-400">Chargement…</div>
+        <div v-else-if="noData"  class="flex h-52 items-center justify-center text-sm text-slate-400">Aucune donnée de sommeil pour ce mois.</div>
 
         <template v-else>
-            <canvas ref="canvasRef" class="max-h-64"></canvas>
+            <!-- Chart -->
+            <div class="relative h-52">
+                <canvas ref="canvasRef"></canvas>
+            </div>
 
-            <div class="mt-3 flex flex-wrap gap-4 text-sm text-slate-600">
+            <!-- Legend -->
+            <div class="mt-3 flex flex-wrap gap-4 text-xs text-slate-600">
                 <span class="flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-3 rounded-full bg-[#8b5cf6]"></span>
+                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-[#8b5cf6]"></span>
                     Sommeil moyen
                 </span>
                 <span class="flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-3 rounded-full border-2 border-dashed border-[#f59e0b] bg-transparent"></span>
+                    <span class="inline-block h-2.5 w-2.5 rounded-full border-2 border-dashed border-[#f59e0b] bg-transparent"></span>
                     Objectif 8 h
                 </span>
             </div>
 
-            <!-- Monthly chips: green ≥ 7h, red < 7h -->
+            <!-- Week chips -->
             <div class="mt-3 flex flex-wrap gap-2">
                 <span
-                    v-for="item in monthlyData"
-                    :key="item.label"
+                    v-for="(w, i) in weekData"
+                    :key="i"
                     class="rounded-full px-3 py-0.5 text-xs font-medium"
-                    :class="item.avg !== null && item.avg >= 7
+                    :class="w.avg !== null && w.avg >= 7
                         ? 'bg-violet-100 text-violet-700'
                         : 'bg-rose-100 text-rose-600'"
                 >
-                    {{ item.label }} · {{ item.avg !== null ? item.avg + ' h' : '—' }}
+                    Sem {{ i + 1 }} · {{ w.avg !== null ? w.avg + ' h' : '—' }}
                 </span>
             </div>
         </template>
+
     </section>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
-import {
-    Chart,
-    RadarController,
-    RadialLinearScale,
-    PointElement,
-    LineElement,
-    Filler,
-    Tooltip,
-} from "chart.js";
+import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { Chart, registerables } from "chart.js";
 import api from "@/services/api";
 
-Chart.register(RadarController, RadialLinearScale, PointElement, LineElement, Filler, Tooltip);
+Chart.register(...registerables);
 
-const MONTHS_FR = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 const GOAL = 8;
 
-const canvasRef   = ref(null);
-const loading     = ref(true);
-const noData      = ref(false);
-const monthlyData = ref([]);
-let   chartInstance = null;
-
-function last6Months() {
+// ── Build list of last 6 months ───────────────────────────────────────────────
+function buildMonths() {
     return Array.from({ length: 6 }, (_, i) => {
         const d = new Date();
         d.setDate(1);
         d.setMonth(d.getMonth() - (5 - i));
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        return { key, label: `${MONTHS_FR[d.getMonth()]} ${d.getFullYear()}` };
     });
 }
 
+const months       = buildMonths();
+const selectedMonth = ref(months[months.length - 1].key);   // current month by default
+const selectedLabel = computed(() => months.find(m => m.key === selectedMonth.value)?.label ?? "");
+
+const canvasRef = ref(null);
+const loading   = ref(true);
+const noData    = ref(false);
+const weekData  = ref([]);   // [{ avg: 6.8 }, { avg: null }, ...]
+
+let chartInstance = null;
+let allEntries    = [];
+
+// ── Week index (0-3) from day-of-month ───────────────────────────────────────
+function weekIdx(dayStr) {
+    const day = parseInt((dayStr ?? "").slice(8, 10), 10);
+    if (day <=  7) return 0;
+    if (day <= 14) return 1;
+    if (day <= 21) return 2;
+    return 3;
+}
+
 function avg(arr) {
-    const v = arr.filter(x => x != null);
+    const v = arr.filter(x => x != null && !isNaN(x));
     return v.length ? +(v.reduce((s, x) => s + x, 0) / v.length).toFixed(1) : null;
 }
 
-async function load() {
-    const { data: res } = await api.get("/journal");
-    const entries = res?.data ?? [];
+// ── (Re)build chart for the selected month ────────────────────────────────────
+async function rebuild() {
+    noData.value = false;
+    chartInstance?.destroy();
+    chartInstance = null;
 
-    const months  = last6Months();
-    const buckets = Object.fromEntries(months.map(m => [m, []]));
+    const mk      = selectedMonth.value;
+    const buckets = [[], [], [], []];
 
-    for (const e of entries) {
+    for (const e of allEntries) {
         if (!e.entry_date || e.sleep == null) continue;
-        const mk = e.entry_date.slice(0, 7);
-        if (buckets[mk] !== undefined) buckets[mk].push(parseFloat(e.sleep));
+        if (e.entry_date.slice(0, 7) !== mk)  continue;
+        buckets[weekIdx(e.entry_date)].push(parseFloat(e.sleep));
     }
 
-    loading.value = false;
+    const avgs = buckets.map(b => avg(b));
+    weekData.value = avgs.map(a => ({ avg: a }));
 
-    const avgs = months.map(m => avg(buckets[m]));
     if (avgs.every(v => v === null)) {
         noData.value = true;
         return;
     }
 
-    monthlyData.value = months.map((m, i) => ({
-        label: MONTHS_FR[+m.split("-")[1] - 1],
-        avg:   avgs[i],
-    }));
-
     await nextTick();
 
     chartInstance = new Chart(canvasRef.value, {
-        type: "radar",
+        type: "line",
         data: {
-            labels: monthlyData.value.map(d => d.label),
+            labels: ["Sem 1", "Sem 2", "Sem 3", "Sem 4"],
             datasets: [
                 {
                     label: "Sommeil moyen (h)",
-                    data: avgs.map(v => v ?? 0),
+                    data: avgs.map(v => v ?? null),
                     borderColor: "#8b5cf6",
-                    backgroundColor: "rgba(139,92,246,0.15)",
+                    backgroundColor: "rgba(139,92,246,0.10)",
+                    borderWidth: 2.5,
                     pointBackgroundColor: "#8b5cf6",
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    tension: 0.4,
                     fill: true,
+                    spanGaps: true,
                 },
                 {
                     label: "Objectif 8 h",
-                    data: Array(months.length).fill(GOAL),
+                    data: [GOAL, GOAL, GOAL, GOAL],
                     borderColor: "#f59e0b",
                     borderDash: [6, 4],
-                    backgroundColor: "rgba(245,158,11,0.05)",
+                    borderWidth: 2,
+                    backgroundColor: "rgba(245,158,11,0.04)",
                     pointRadius: 0,
                     fill: true,
                 },
@@ -144,6 +158,8 @@ async function load() {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
             plugins: {
                 legend: { display: false },
                 tooltip: {
@@ -151,27 +167,35 @@ async function load() {
                         label: ctx =>
                             ctx.dataset.label === "Objectif 8 h"
                                 ? " Objectif : 8 h"
-                                : ` Moyenne : ${ctx.raw} h`,
+                                : ` Moyenne : ${ctx.raw ?? "—"} h`,
                     },
                 },
             },
             scales: {
-                r: {
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 11 } },
+                },
+                y: {
                     min: 0,
                     max: 12,
+                    grid: { color: "#f1f5f9" },
                     ticks: {
                         stepSize: 2,
-                        callback: v => v + " h",
                         font: { size: 10 },
-                        backdropColor: "transparent",
+                        callback: v => v + " h",
                     },
-                    grid:        { color: "#e2e8f0" },
-                    angleLines:  { color: "#e2e8f0" },
-                    pointLabels: { font: { size: 12 }, color: "#475569" },
                 },
             },
         },
     });
+}
+
+async function load() {
+    const { data: res } = await api.get("/journal");
+    allEntries    = res?.data ?? [];
+    loading.value = false;
+    await rebuild();
 }
 
 onMounted(load);

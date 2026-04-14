@@ -96,16 +96,34 @@
 
             <!-- Observations déjà enregistrées -->
             <div
-                v-if="patient.healthDataObservations?.length"
+                v-if="observationHistory.length"
                 class="mt-5 space-y-2 border-t border-[#edf0f5] pt-4"
             >
-                <p
-                    class="text-[12px] font-semibold uppercase tracking-wide text-[#7b8eab]"
-                >
-                    Observations précédentes
-                </p>
+                <div class="flex items-center justify-between gap-3">
+                    <p
+                        class="text-[12px] font-semibold uppercase tracking-wide text-[#7b8eab]"
+                    >
+                        {{
+                            showObservationHistory
+                                ? "Historique des observations"
+                                : "Dernière observation"
+                        }}
+                    </p>
+                    <button
+                        v-if="hasMoreObservations"
+                        type="button"
+                        class="text-[13px] font-semibold text-[#3f57c4] transition hover:text-[#2f44ad]"
+                        @click="showObservationHistory = !showObservationHistory"
+                    >
+                        {{
+                            showObservationHistory
+                                ? "Masquer l'historique"
+                                : "Consulter l'historique complet"
+                        }}
+                    </button>
+                </div>
                 <div
-                    v-for="obs in patient.healthDataObservations"
+                    v-for="obs in displayedObservations"
                     :key="obs.isoDate"
                     class="rounded-[14px] border border-[#e4ebf8] bg-[#f5f8ff] px-4 py-3"
                 >
@@ -520,6 +538,19 @@ const treatStatus = ref("all");
 const obsText = ref("");
 const obsSaving = ref(false);
 const obsMsg = ref(null);
+const showObservationHistory = ref(false);
+
+const observationHistory = computed(
+    () => props.patient?.healthDataObservations ?? [],
+);
+
+const hasMoreObservations = computed(() => observationHistory.value.length > 1);
+
+const displayedObservations = computed(() =>
+    showObservationHistory.value
+        ? observationHistory.value
+        : observationHistory.value.slice(0, 1),
+);
 
 // ─── Vitals filtrés ───────────────────────────────────────────────────────────
 const VITAL_CARDS = [
@@ -662,6 +693,7 @@ watch(
     () => {
         obsText.value = "";
         obsMsg.value = null;
+        showObservationHistory.value = false;
     },
 );
 </script>

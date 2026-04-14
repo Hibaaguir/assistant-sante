@@ -13,22 +13,20 @@
         <NotificationsOnline />
 
         <!-- Observations du médecin -->
-        <section v-if="doctorObservations.length" class="mt-4 space-y-3">
+        <section v-if="doctorLatestObservation" class="mt-4 space-y-3">
             <h2 class="text-[16px] font-semibold text-blue-600">
                 Observations de votre médecin
             </h2>
             <article
-                v-for="obs in doctorObservations"
-                :key="obs.id"
                 class="rounded-2xl border border-slate-200 bg-white px-5 py-4"
             >
                 <p
                     class="text-[11px] font-semibold uppercase tracking-wide text-blue-600"
                 >
-                    {{ formatObsDate(obs.date) }}
+                    {{ formatObsDate(doctorLatestObservation.date) }}
                 </p>
                 <p class="mt-2 text-[14px] leading-6 text-slate-700">
-                    {{ obs.observation }}
+                    {{ doctorLatestObservation.observation }}
                 </p>
             </article>
         </section>
@@ -153,7 +151,7 @@ const historySaturationValues = ref([]);
 const treatmentMedicines = ref([]);
 const treatmentChecks = reactive({});
 const treatmentDays = ref(buildLast7Days());
-const doctorObservations = ref([]); // [{ id, date, observation }]
+const doctorLatestObservation = ref(null); // { id, date, observation } | null
 
 function openAddModal() {
     if (activeTab.value === "labs") labsTab.value?.ouvrirModalAjout();
@@ -340,15 +338,17 @@ async function loadHealthData() {
             }
         }
 
-        doctorObservations.value = Array.isArray(data.doctor_observations)
-            ? data.doctor_observations
-                  .filter((o) => o.doctor_observation)
-                  .map((o) => ({
-                      id: o.id,
-                      date: o.date,
-                      observation: o.doctor_observation,
-                  }))
-            : [];
+        const latestObservation = Array.isArray(data.doctor_observations)
+            ? data.doctor_observations.find((o) => o?.doctor_observation)
+            : null;
+
+        doctorLatestObservation.value = latestObservation
+            ? {
+                  id: latestObservation.id,
+                  date: latestObservation.date,
+                  observation: latestObservation.doctor_observation,
+              }
+            : null;
     } catch (error) {
         const message =
             error?.response?.data?.message ||

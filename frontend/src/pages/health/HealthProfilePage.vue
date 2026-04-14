@@ -120,7 +120,7 @@
                     />
                     <HealthFieldRow
                         label="Poids"
-                        :value="profile.weight ? `${profile.weight} kg` : '-'"
+                        :value="profile.current_weight ? `${profile.current_weight} kg` : '-'"
                         icon="weight"
                     />
                 </div>
@@ -1537,7 +1537,7 @@ function syncDraftFromProfile() {
     // Basic info
     draft.gender    = profile.gender      || "";
     draft.height    = profile.height      ?? "";
-    draft.weight    = profile.weight      ?? "";
+    draft.weight    = profile.current_weight ?? "";
     draft.bloodType = profile.blood_type  || "";
 
     // Health lists
@@ -1681,7 +1681,7 @@ function buildPayload() {
     return {
         gender:           String(draft.gender || "").toLowerCase().trim(),
         height:           draft.height === "" ? null : Number(draft.height),
-        weight:           draft.weight === "" ? null : Number(draft.weight),
+        current_weight:   draft.weight === "" ? null : Number(draft.weight),
         blood_type:       draft.bloodType  || null,
         goals:            normalizeList(draft.goals),
         allergies:        normalizeList(draft.allergies),
@@ -1709,7 +1709,7 @@ function handleValidationErrors(section, backendErrors) {
         sectionErrors.base.height = "La taille doit etre une valeur entre 80 et 250 cm.";
         messages.push(sectionErrors.base.height);
     }
-    if (backendErrors.weight) {
+    if (backendErrors.current_weight) {
         sectionErrors.base.weight = "Le poids doit etre une valeur entre 35 et 250 kg.";
         messages.push(sectionErrors.base.weight);
     }

@@ -10,15 +10,15 @@ return new class extends Migration
     {
         Schema::create('treatment_catalogs', function (Blueprint $table) {
             $table->id();
-            $table->string('medication_type', 120)->nullable();
-            $table->string('medication_name', 255);
-            
+            $table->string('treatment_type', 120)->nullable();
+            $table->string('treatment_name', 255);
+
             // Metadata
             $table->timestamps();
-            
+
             // Indexes
-            $table->index('medication_type');
-            $table->index('medication_name');
+            $table->index('treatment_type');
+            $table->index('treatment_name');
         });
     }
 

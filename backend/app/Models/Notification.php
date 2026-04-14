@@ -9,24 +9,19 @@ class Notification extends Model
 {
     protected $table = 'notifications';
 
-    public $incrementing = false;
-
-    protected $keyType = 'string';
-
     protected $fillable = [
-        'id',
-        'type',
         'treatment_id',
-        'data',
+        'kind',
+        'target_date',
+        'message',
         'read_at',
     ];
 
     protected $casts = [
-        'data'    => 'array',
-        'read_at' => 'datetime',
+        'target_date' => 'date',
+        'read_at'     => 'datetime',
     ];
 
-    // Relation: la notification appartient a un traitement
     public function treatment(): BelongsTo
     {
         return $this->belongsTo(Treatment::class, 'treatment_id');

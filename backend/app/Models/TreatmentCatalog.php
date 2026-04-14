@@ -10,8 +10,8 @@ class TreatmentCatalog extends Model
     protected $table = 'treatment_catalogs';
 
     protected $fillable = [
-        'medication_type',
-        'medication_name',
+        'treatment_type',
+        'treatment_name',
     ];
 
     protected $casts = [

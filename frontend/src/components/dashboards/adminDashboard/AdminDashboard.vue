@@ -102,7 +102,7 @@
                         class="h-11 w-full rounded-xl border border-slate-300 px-3 text-base outline-none focus:border-slate-400"
                     >
                         <option value="Tous">Tous</option>
-                        <option value="Patient">Patient</option>
+                        <option value="Patient">Usager</option>
                         <option value="Doctor">Médecin</option>
                     </select>
                 </label>
@@ -198,7 +198,7 @@
                                             : 'bg-emerald-100 text-emerald-700'
                                     "
                                 >
-                                    {{ isDoctor(u) ? "Médecin" : "Patient" }}
+                                    {{ isDoctor(u) ? "Médecin" : "Usager" }}
                                 </span>
                                 <p
                                     v-if="u.specialty"
@@ -371,7 +371,7 @@ const statsCards = computed(() => [
         },
     },
     {
-        label: "Patients",
+        label: "Usagers",
         value: statistics.value.patients,
         color: "emerald",
         icon: {

@@ -80,7 +80,7 @@ class HealthDataService
                 'health_data_id' => $check->health_data_id,
                 'check_date'     => $check->check_date?->toDateString(),
                 'medication_key' => $check->medication_key,
-                'medication_name'=> $treatment?->treatmentCatalog?->medication_name,
+                'treatment_name'=> $treatment?->treatmentCatalog?->treatment_name,
                 'dose'           => $treatment?->dose,
                 'taken'          => (bool) $check->taken,
                 'checked_at'     => $check->checked_at?->toDateTimeString(),
@@ -146,8 +146,8 @@ class HealthDataService
     // Normaliser un medicament pour l'affichage
     private function normalizeMedicine(Treatment $treatment): ?array
     {
-        $name = trim((string) ($treatment->treatmentCatalog?->medication_name ?? ''));
-        $type = trim((string) ($treatment->treatmentCatalog?->medication_type ?? ''));
+        $name = trim((string) ($treatment->treatmentCatalog?->treatment_name ?? ''));
+        $type = trim((string) ($treatment->treatmentCatalog?->treatment_type ?? ''));
 
         if ($name === '' && $type === '') return null;
 

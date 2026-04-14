@@ -10,22 +10,22 @@ class TreatmentCatalogService
     public function buildCatalog(): array
     {
         $items = TreatmentCatalog::query()
-            ->orderBy('medication_type')
-            ->orderBy('medication_name')
-            ->get(['medication_type', 'medication_name']);
+            ->orderBy('treatment_type')
+            ->orderBy('treatment_name')
+            ->get(['treatment_type', 'treatment_name']);
 
         $types = [];
         $namesByType = [];
 
         foreach ($items as $item) {
-            $type = $this->normalizeText($item->medication_type);
+            $type = $this->normalizeText($item->treatment_type);
             if ($type === null) {
                 continue;
             }
 
             $this->appendUniqueValue($types, $type);
 
-            $name = $this->normalizeText($item->medication_name);
+            $name = $this->normalizeText($item->treatment_name);
             if ($name === null) {
                 continue;
             }
@@ -64,8 +64,8 @@ class TreatmentCatalogService
         $lowerName = mb_strtolower($normalizedName, 'UTF-8');
 
         $existing = TreatmentCatalog::query()
-            ->whereRaw('LOWER(medication_type) = ?', [$lowerType])
-            ->whereRaw('LOWER(medication_name) = ?', [$lowerName])
+            ->whereRaw('LOWER(treatment_type) = ?', [$lowerType])
+            ->whereRaw('LOWER(treatment_name) = ?', [$lowerName])
             ->first();
 
         if ($existing) {
@@ -73,8 +73,8 @@ class TreatmentCatalogService
         }
 
         TreatmentCatalog::query()->create([
-            'medication_type' => $normalizedType,
-            'medication_name' => $normalizedName,
+            'treatment_type' => $normalizedType,
+            'treatment_name' => $normalizedName,
         ]);
     }
 

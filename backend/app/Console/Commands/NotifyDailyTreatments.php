@@ -6,11 +6,9 @@ use App\Models\Notification;
 use App\Models\Treatment;
 use App\Models\TreatmentCheck;
 use App\Models\User;
-use App\Notifications\DailyTreatmentNotification;
 use App\Services\HealthDataService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 
 class NotifyDailyTreatments extends Command
 {
@@ -78,22 +76,15 @@ class NotifyDailyTreatments extends Command
 
         $isMissed = $type === 'missed';
 
+        $medicineName = (string) ($stats['items'][0]['treatment_name'] ?? 'Traitement');
+
         Notification::create([
-            'id'            => Str::uuid()->toString(),
-            'type'          => DailyTreatmentNotification::class,
             'treatment_id' => $traitementId,
-            'data'          => [
-                'notification_kind' => $type,
-                'target_date'       => $date->toDateString(),
-                'title'             => $isMissed ? 'Forgotten treatments today' : 'Treatment reminders for today',
-                'message'           => $isMissed
-                    ? "You missed {$stats['missing_total']} dose(s) out of {$stats['expected_total']} expected."
-                    : "You have {$stats['expected_total']} dose(s) expected today.",
-                'expected_total'    => $stats['expected_total'],
-                'taken_total'       => $stats['taken_total'],
-                'missing_total'     => $stats['missing_total'],
-                'items'             => $stats['items'],
-            ],
+            'kind'         => $type,
+            'target_date'  => $date->toDateString(),
+            'message'      => $isMissed
+                ? "Vous avez oublié de prendre {$medicineName} aujourd'hui."
+                : "N'oubliez pas de prendre {$medicineName} aujourd'hui.",
         ]);
 
         $counts[$type]++;
@@ -115,7 +106,7 @@ class NotifyDailyTreatments extends Command
         return [
             'items'          => [[
                 'medication_id'   => $medicineId,
-                'medication_name' => $medicineName,
+                'treatment_name' => $medicineName,
                 'expected'        => $expected,
                 'taken'           => $taken,
                 'missing'         => $missing,
@@ -136,9 +127,8 @@ class NotifyDailyTreatments extends Command
     {
         return Notification::query()
             ->where('treatment_id', $traitementId)
-            ->where('type', DailyTreatmentNotification::class)
-            ->where('data->notification_kind', $type)
-            ->where('data->target_date', $date->toDateString())
+            ->where('kind', $type)
+            ->where('target_date', $date->toDateString())
             ->exists();
     }
 }

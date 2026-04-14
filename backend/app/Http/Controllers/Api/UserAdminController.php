@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UserAdminController extends Controller
 {
@@ -18,16 +19,21 @@ class UserAdminController extends Controller
         $users = User::whereNotIn('role', ['admin', 'administrator'])
             ->latest('id')
             ->get()
-            ->map(fn(User $user) => [
-                'id'            => $user->id,
-                'name'          => (string) $user->name,
-                'email'         => (string) ($user->account?->email ?? ''),
-                'type'          => strtolower((string) $user->role) === 'doctor' ? 'Médecin' : 'Patient',
-                'specialty'     => (string) ($user->specialty ?? ''),
-                'status'        => strtolower((string) ($user->account?->account_status ?? '')) === 'inactive' ? 'Inactif' : 'Actif',
-                'created_at'    => $user->created_at?->format('d/m/Y'),
-                'last_activity' => $user->updated_at?->format('d/m/Y'),
-            ])
+            ->map(function (User $user): array {
+                $role = strtolower(trim((string) $user->role));
+                $isDoctor = in_array($role, ['doctor', 'medecin', 'médecin'], true);
+
+                return [
+                    'id'            => $user->id,
+                    'name'          => (string) $user->name,
+                    'email'         => (string) ($user->account?->email ?? ''),
+                    'type'          => $isDoctor ? 'Médecin' : 'Patient',
+                    'specialty'     => (string) ($user->specialty ?? ''),
+                    'status'        => strtolower((string) ($user->account?->account_status ?? '')) === 'inactive' ? 'Inactif' : 'Actif',
+                    'created_at'    => $user->created_at?->format('d/m/Y'),
+                    'last_activity' => $user->updated_at?->format('d/m/Y'),
+                ];
+            })
             ->values();
 
         return response()->json([
@@ -42,7 +48,7 @@ class UserAdminController extends Controller
         $this->verifyAdminAccess($request);
 
         $data = $request->validate([
-            'status' => 'required|in:Actif,Inactif',
+            'status' => 'required|in:Actif,Inactif,Active,Inactive',
         ]);
 
         $account = $user->account;
@@ -51,7 +57,12 @@ class UserAdminController extends Controller
             return response()->json(['message' => 'Aucun compte lié à cet utilisateur.'], 422);
         }
 
-        $account->update(['account_status' => strtolower($data['status'])]);
+        $normalizedStatus = strtolower((string) $data['status']);
+        $account->update([
+            'account_status' => in_array($normalizedStatus, ['inactif', 'inactive'], true)
+                ? 'inactive'
+                : 'active',
+        ]);
 
         return response()->json(['message' => 'Statut de l\'utilisateur mis à jour avec succès.']);
     }
@@ -63,8 +74,21 @@ class UserAdminController extends Controller
 
         abort_if($request->user()?->id === $user->id, 422, 'Vous ne pouvez pas supprimer votre propre compte.');
 
-        $user->tokens()->delete();
-        $user->delete();
+        DB::transaction(function () use ($user): void {
+            $account = $user->account;
+
+            // Nettoyer d'abord les tokens personnels, puis supprimer le compte.
+            // La suppression du compte cascade automatiquement vers `users`.
+            $user->tokens()->delete();
+
+            if ($account) {
+                $account->delete();
+                return;
+            }
+
+            // Fallback défensif si l'utilisateur n'a pas de compte lié.
+            $user->delete();
+        });
 
         return response()->json(['message' => 'Utilisateur supprimé avec succès.']);
     }

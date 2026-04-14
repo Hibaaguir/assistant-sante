@@ -36,20 +36,11 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useAuthStore } from "@/stores/auth";
 import ElementNavLaterale from "./SidebarLink.vue";
 
 defineProps({
     active: { type: String, default: "" },
 });
-
-const authStore = useAuthStore();
-
-// ─── Helpers ──────────────────────────────────────────────────
-
-const ROLES = { medecin: "Médecin", usager: "Patient" };
-const roleLabel = computed(() => ROLES[authStore.userRole] ?? "");
 
 const nav = (name, label, icon) => ({ name, label, icon, to: { name } });
 
@@ -91,6 +82,15 @@ const NAV_ITEMS = [
         `<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
       <path d="M3 12h4l2-6 4 12 2-6h4"/>
       <circle cx="12" cy="12" r="9"/>
+    </svg>`,
+    ),
+
+    nav(
+        "notifications",
+        "Notifications",
+        `<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
     </svg>`,
     ),
 

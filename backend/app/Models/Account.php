@@ -15,7 +15,7 @@ class Account extends Model
         'account_status',
     ];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password'];
 
     public function user()
     {

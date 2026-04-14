@@ -2,7 +2,6 @@
 // Fabrique pour generer des entrees de journal fictives
 namespace Database\Factories;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -12,16 +11,24 @@ class JournalEntryFactory extends Factory
 {
     public function definition(): array
     {
+        $alcohol = fake()->boolean(25);
+
         return [
-            'user_id' => User::factory(),
+            'user_id' => 1,
             'entry_date' => fake()->dateTimeBetween('-90 days', 'now')->format('Y-m-d'),
-            'sleep' => fake()->numberBetween(4, 9),
-            'stress' => fake()->numberBetween(1, 9),
-            'energy' => fake()->numberBetween(2, 9),
-            'caffeine' => fake()->numberBetween(0, 6),
-            'hydration' => fake()->randomFloat(1, 0.6, 4.5),
-            'alcohol' => fake()->boolean(30),
-            'alcohol_glasses' => fake()->numberBetween(0, 4),
+            'sleep' => fake()->numberBetween(4, 10),
+            'stress' => fake()->numberBetween(0, 10),
+            'energy' => fake()->numberBetween(0, 10),
+            'caffeine' => fake()->numberBetween(0, 8),
+            'hydration' => fake()->randomFloat(1, 0.8, 4.5),
+            'sugar_intake' => fake()->randomElement([
+                'Low sugar intake',
+                'Moderate sugar intake',
+                'High sugar intake',
+                'No added sugar today',
+            ]),
+            'alcohol' => $alcohol,
+            'alcohol_glasses' => $alcohol ? fake()->numberBetween(1, 4) : null,
         ];
     }
 }

@@ -41,4 +41,5 @@ class HealthData extends Model
     {
         return $this->hasMany(TreatmentCheck::class, 'health_data_id');
     }
+
 }

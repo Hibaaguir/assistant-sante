@@ -16,6 +16,7 @@ import DashboardPage from "@/pages/userDashboard/DashboardPage.vue";
 import DoctorRegistrationPage from "@/pages/doctor/DoctorRegistrationPage.vue";
 import PlaceholderPage from "@/pages/PlaceholderPage.vue";
 import PublicHomePage from "@/pages/home/PublicHomePage.vue";
+import NotificationsPage from "@/pages/notifications/NotificationsPage.vue";
 
 // All application routes with their components and access guards
 const routes = [
@@ -94,6 +95,11 @@ const routes = [
                 name: "ai-recommendations",
                 component: PlaceholderPage,
                 props: { title: "Recommandations IA" },
+            },
+            {
+                path: "notifications",
+                name: "notifications",
+                component: NotificationsPage,
             },
         ],
     },

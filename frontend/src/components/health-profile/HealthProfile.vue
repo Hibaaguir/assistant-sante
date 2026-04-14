@@ -441,7 +441,7 @@ function buildPayload() {
     return {
         gender:          String(form.sexe || "").toLowerCase().trim(),
         height:          form.taille,
-        weight:          form.poids,
+        current_weight:  form.poids,
         blood_type:      form.groupe_sanguin,
         goals:           normalizeArray(form.objectifs),
         allergies:       normalizeArray(form.allergies),
@@ -516,7 +516,7 @@ onMounted(async () => {
         if (!profile) return;
 
         // Profile is already complete — go straight to the settings page
-        const isComplete = profile.gender && profile.height && profile.weight && profile.blood_type;
+        const isComplete = profile.gender && profile.height && profile.current_weight && profile.blood_type;
         if (isComplete) {
             router.replace({ name: "health-settings" });
             return;
@@ -525,7 +525,7 @@ onMounted(async () => {
         // Pre-fill the form with whatever was already saved
         form.sexe                = profile.gender        || "";
         form.taille              = profile.height        || "";
-        form.poids               = profile.weight        || "";
+        form.poids               = profile.current_weight || "";
         form.groupe_sanguin      = profile.blood_type    || "";
         form.objectifs           = profile.goals         || [];
         form.allergies           = profile.allergies     || [];

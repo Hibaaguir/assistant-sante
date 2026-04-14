@@ -20,7 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return '/login';
         });
-        
+
         // Ajouter le middleware CORS pour l'API
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,

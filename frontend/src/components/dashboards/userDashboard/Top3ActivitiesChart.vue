@@ -1,12 +1,12 @@
 <!--
   Top3ActivitiesChart.vue — Top 5 activités physiques (classement par durée totale)
-  Template : cartes de classement, sans affichage du temps.
+    Version simplifiée : tableau minimal et filtres semaine/mois.
   Données : GET /journal → physicalActivities[].
 -->
 <template>
     <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-2xl font-semibold text-slate-900">Top 5 activités</h2>
+                        <h2 class="text-xl font-semibold text-slate-900">Top 5 activités</h2>
             <div class="flex gap-2">
                 <button
                     v-for="f in filters"
@@ -22,33 +22,34 @@
             </div>
         </div>
 
-        <div v-if="loading" class="flex h-48 items-center justify-center text-slate-400">
+        <div v-if="loading" class="flex h-44 items-center justify-center text-sm text-slate-400">
             Chargement...
         </div>
 
-        <div v-else-if="!top5.length" class="flex h-48 items-center justify-center text-slate-400">
+        <div v-else-if="!top5.length" class="flex h-44 items-center justify-center text-sm text-slate-400">
             Aucune activité sur cette période.
         </div>
 
-        <ol v-else class="space-y-2">
-            <li
-                v-for="(item, i) in top5"
-                :key="item.label"
-                class="flex items-center gap-3 rounded-xl border px-4 py-3"
-                :class="CARD[i] ?? 'border-slate-100 bg-slate-50'"
-            >
-                <span
-                    class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold"
-                    :class="BADGE[i] ?? 'bg-slate-200 text-slate-600'"
+        <table v-else class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500">
+                    <th class="w-16 py-2 text-left">Rang</th>
+                    <th class="py-2 text-left">Activité</th>
+                    <th class="w-24 py-2 text-right">Durée</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr
+                    v-for="(item, i) in top5"
+                    :key="item.label"
+                    class="border-b border-slate-100 last:border-0"
                 >
-                    {{ i + 1 }}
-                </span>
-                <span class="text-xl">{{ icon(item.label) }}</span>
-                <span class="flex-1 truncate font-semibold text-slate-800 capitalize">
-                    {{ item.label }}
-                </span>
-            </li>
-        </ol>
+                    <td class="py-2.5 text-slate-700">{{ i + 1 }}</td>
+                    <td class="py-2.5 font-medium text-slate-800">{{ formatActivityLabel(item.label) }}</td>
+                    <td class="py-2.5 text-right font-semibold text-slate-700">{{ item.duration }} min</td>
+                </tr>
+            </tbody>
+        </table>
     </section>
 </template>
 
@@ -56,33 +57,12 @@
 import { ref, onMounted } from "vue";
 import api from "@/services/api";
 
-const CARD  = [
-    "border-amber-200  bg-amber-50",
-    "border-slate-200  bg-slate-50",
-    "border-orange-200 bg-orange-50",
-    "border-purple-100 bg-purple-50",
-    "border-blue-100   bg-blue-50",
-];
-const BADGE = [
-    "bg-amber-400  text-white",
-    "bg-slate-400  text-white",
-    "bg-orange-400 text-white",
-    "bg-purple-400 text-white",
-    "bg-blue-400   text-white",
-];
-const ICON_MAP = {
-    course: "🏃", running: "🏃", natation: "🏊", swimming: "🏊",
-    vélo: "🚴", velo: "🚴", cycling: "🚴", yoga: "🧘", pilates: "🧘",
-    musculation: "💪", gym: "💪", fitness: "💪", marche: "🚶",
-    football: "⚽", tennis: "🎾", basket: "🏀", boxe: "🥊", danse: "💃",
-};
-
-function icon(name) {
-    const k = name.toLowerCase();
-    for (const [key, emoji] of Object.entries(ICON_MAP)) {
-        if (k.includes(key)) return emoji;
-    }
-    return "🏅";
+function formatActivityLabel(label) {
+    const clean = String(label ?? "Autre")
+        .replace(/[_-]+/g, " ")
+        .trim()
+        .toLowerCase();
+    return clean.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 const filters    = [{ label: "Par semaine", days: 7 }, { label: "Par mois", days: 30 }];
@@ -110,7 +90,7 @@ function compute() {
     top5.value = Object.entries(totals)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
-        .map(([label]) => ({ label }));
+        .map(([label, duration]) => ({ label, duration: Number(duration) }));
 }
 
 async function load() {

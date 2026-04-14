@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class HealthProfile extends Model
 {
@@ -14,7 +13,8 @@ class HealthProfile extends Model
         'user_id',
         'gender',
         'height',
-        'weight',
+        'initial_weight',
+        'current_weight',
         'blood_type',
         'goals',
         'allergies',
@@ -47,7 +47,7 @@ class HealthProfile extends Model
     {
         return $this->gender !== null 
             && $this->height !== null 
-            && $this->weight !== null 
+            && $this->initial_weight !== null
             && $this->blood_type !== null;
     }
 }
