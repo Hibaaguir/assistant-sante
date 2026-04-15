@@ -39,7 +39,7 @@ class HealthDataController extends Controller
             ->get();
 
         $treatmentChecks = TreatmentCheck::with('treatment.treatmentCatalog')
-            ->whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
+            ->where('user_id', $userId)
             ->where('check_date', '>=', $startDate)
             ->orderBy('check_date')
             ->get();
@@ -199,7 +199,7 @@ class HealthDataController extends Controller
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
 
         $checks = TreatmentCheck::with('treatment.treatmentCatalog')
-            ->whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
+            ->where('user_id', $userId)
             ->where('check_date', '>=', $startDate)
             ->orderBy('check_date')
             ->get();
@@ -226,21 +226,16 @@ class HealthDataController extends Controller
                 continue;
             }
 
-            $healthData = HealthData::firstOrCreate([
-                'user_id' => $userId,
-                'date'    => $check['check_date'],
-            ]);
-
             TreatmentCheck::updateOrCreate(
                 [
+                    'user_id'        => $userId,
                     'treatment_id'   => $treatmentId,
                     'check_date'     => $check['check_date'],
                     'medication_key' => $check['medication_key'],
                 ],
                 [
-                    'health_data_id' => $healthData->id,
-                    'taken'          => $check['taken'],
-                    'checked_at'     => $check['taken'] ? ($check['checked_at'] ?? now()) : null,
+                    'taken'      => $check['taken'],
+                    'checked_at' => $check['taken'] ? ($check['checked_at'] ?? now()) : null,
                 ]
             );
         }

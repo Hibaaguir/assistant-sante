@@ -124,7 +124,7 @@ class DoctorInvitationController extends Controller
         $vitalsStart = Carbon::today()->subDays($vitalsDays - 1)->startOfDay();
 
         $treatmentChecks = TreatmentCheck::with('treatment.treatmentCatalog')
-            ->whereHas('healthData', fn ($q) => $q->where('user_id', $patient->id))
+            ->where('user_id', $patient->id)
             ->where('check_date', '>=', Carbon::today()->subDays(29)->toDateString())
             ->orderBy('check_date')
             ->get();

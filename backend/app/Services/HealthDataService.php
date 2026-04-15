@@ -76,8 +76,8 @@ class HealthDataService
             $treatment = $check->treatment;
             return [
                 'id'             => $check->id,
+                'user_id'        => $check->user_id,
                 'treatment_id'   => $check->treatment_id,
-                'health_data_id' => $check->health_data_id,
                 'check_date'     => $check->check_date?->toDateString(),
                 'medication_key' => $check->medication_key,
                 'treatment_name'=> $treatment?->treatmentCatalog?->treatment_name,

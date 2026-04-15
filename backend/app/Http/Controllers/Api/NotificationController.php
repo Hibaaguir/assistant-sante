@@ -86,7 +86,7 @@ class NotificationController extends Controller
             }
 
             if ($isNightWindow) {
-                $missedAny = TreatmentCheck::whereHas('healthData', fn ($q) => $q->where('user_id', $user->id))
+                $missedAny = TreatmentCheck::where('user_id', $user->id)
                     ->where('treatment_id', $treatment->id)
                     ->whereDate('check_date', $today->toDateString())
                     ->where('taken', false)

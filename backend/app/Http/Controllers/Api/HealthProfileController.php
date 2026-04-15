@@ -74,9 +74,13 @@ class HealthProfileController extends Controller
 
         $data['user_id'] = $user->id;
 
-        // initial_weight ne se remplit qu'à la création — jamais modifié ensuite
+        // initial_weight est fixe: il est défini une seule fois puis n'est plus modifié.
+        // - Nouveau profil: utiliser le poids saisi.
+        // - Profil legacy avec initial_weight null: récupérer le premier poids connu.
         if (!$existingProfile) {
             $data['initial_weight'] = $data['current_weight'];
+        } elseif ($existingProfile->initial_weight === null) {
+            $data['initial_weight'] = $existingProfile->current_weight ?? $data['current_weight'];
         }
 
         // Enregistrer ou mettre à jour le profil de santé

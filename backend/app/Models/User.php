@@ -73,4 +73,9 @@ class User extends Model
             'id'
         );
     }
+
+    public function treatmentChecks(): HasMany
+    {
+        return $this->hasMany(TreatmentCheck::class, 'user_id', 'id');
+    }
 }

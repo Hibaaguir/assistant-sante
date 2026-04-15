@@ -13,7 +13,7 @@ class AdminAccountSeeder extends Seeder
     {
         $email = strtolower(trim((string) env('ADMIN_SEED_EMAIL', 'admin@gmail.com')));
         $password = (string) env('ADMIN_SEED_PASSWORD', 'admin1234');
-        $name = trim((string) env('ADMIN_SEED_NAME', 'Administrator'));
+        $name = trim((string) env('ADMIN_SEED_NAME', 'Administrateur'));
 
         $account = Account::updateOrCreate(
             ['email' => $email],

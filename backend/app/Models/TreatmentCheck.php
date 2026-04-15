@@ -11,7 +11,7 @@ class TreatmentCheck extends Model
 
     protected $fillable = [
         'treatment_id',
-        'health_data_id',
+        'user_id',
         'check_date',
         'medication_key',
         'taken',
@@ -31,8 +31,8 @@ class TreatmentCheck extends Model
         return $this->belongsTo(Treatment::class, 'treatment_id');
     }
 
-    public function healthData(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(HealthData::class, 'health_data_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

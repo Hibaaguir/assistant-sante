@@ -20,7 +20,7 @@ class TreatmentCheckFactory extends Factory
 
         return [
             'treatment_id'   => 1,
-            'health_data_id' => 1,
+            'user_id'        => 1,
             'check_date' => $checkDate,
             'medication_key' => '1__dose_1',
             'taken' => $taken,

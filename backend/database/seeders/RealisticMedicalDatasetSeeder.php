@@ -15,6 +15,7 @@ use App\Models\TreatmentCheck;
 use App\Models\User;
 use App\Models\VitalSigns;
 use Carbon\Carbon;
+use Faker\Generator;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
@@ -24,16 +25,21 @@ class RealisticMedicalDatasetSeeder extends Seeder
 {
     private const DEFAULT_PASSWORD = 'password123';
 
+    private Generator $faker;
+
     public function run(): void
     {
+        $this->faker = fake('fr_FR');
+
         $startDate = Carbon::today()->subDays(29)->startOfDay();
+        $doctors   = $this->seedDoctors();
 
         foreach ($this->patients() as $patientIndex => $patientData) {
             $account = Account::updateOrCreate(
-                ['email' => $patientData['email']],
+                ['email' => strtolower((string) $patientData['email'])],
                 [
                     'password' => Hash::make(self::DEFAULT_PASSWORD),
-                    'account_status' => 'active',
+                    'account_status' => $patientData['account_status'] ?? 'active',
                 ]
             );
 
@@ -51,13 +57,18 @@ class RealisticMedicalDatasetSeeder extends Seeder
                 ]
             );
 
+            // Nettoyer les donnees medicales pour garantir un seed deterministe et coherent.
             $this->clearPatientMedicalData($user);
+
+            $doctorEmail = isset($patientData['doctor_email']) && $patientData['doctor_email']
+                ? strtolower(trim((string) $patientData['doctor_email']))
+                : null;
 
             $profile = HealthProfile::updateOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'gender'         => $patientData['gender'],
-                    'height'         => $patientData['height'],
+                    'gender' => $patientData['gender'],
+                    'height' => $patientData['height'],
                     'initial_weight' => $patientData['initial_weight'],
                     'current_weight' => $patientData['initial_weight'],
                     'blood_type' => $patientData['blood_type'],
@@ -66,23 +77,12 @@ class RealisticMedicalDatasetSeeder extends Seeder
                     'chronic_diseases' => $patientData['chronic_diseases'],
                     'smoker' => $patientData['smoker'],
                     'alcoholic' => $patientData['alcoholic'],
-                    'doctor_invited' => !empty($patientData['doctor_email']),
-                    'doctor_email' => $patientData['doctor_email'],
+                    'doctor_invited' => $doctorEmail !== null,
+                    'doctor_email' => $doctorEmail,
                 ]
             );
 
-            if (!empty($patientData['doctor_email'])) {
-                DoctorInvitation::create([
-                    'patient_user_id' => $user->id,
-                    'doctor_user_id' => null,
-                    'doctor_email' => $patientData['doctor_email'],
-                    'status' => 'pending',
-                    'token' => Str::random(64),
-                    'accepted_at' => null,
-                    'rejected_at' => null,
-                    'revoked_at' => null,
-                ]);
-            }
+            $this->createOrUpdateDoctorInvitation($user, $patientData, $doctors, $startDate);
 
             $seedHealthData = HealthData::firstOrCreate(
                 [
@@ -94,9 +94,13 @@ class RealisticMedicalDatasetSeeder extends Seeder
 
             $treatments = $this->createTreatments($seedHealthData, $patientData['treatments'], $startDate);
 
+            $lastWeight = (float) $patientData['initial_weight'];
+
             for ($dayOffset = 0; $dayOffset < 30; $dayOffset++) {
                 $date = $startDate->copy()->addDays($dayOffset);
+
                 $metrics = $this->buildDailyMetrics($patientData, $patientIndex, $dayOffset, $date);
+                $lastWeight = (float) $metrics['weight'];
 
                 $journal = JournalEntry::create([
                     'user_id' => $user->id,
@@ -111,9 +115,9 @@ class RealisticMedicalDatasetSeeder extends Seeder
                     'alcohol_glasses' => $metrics['alcohol_glasses'],
                 ]);
 
-                $this->seedMeals($journal, $patientIndex, $dayOffset, $metrics);
+                $this->seedMeals($journal, $metrics);
                 $this->seedPhysicalActivity($journal, $patientIndex, $dayOffset, $metrics);
-                $this->seedTobacco($journal, $patientData, $dayOffset);
+                $this->seedTobacco($journal, $patientData, $metrics);
 
                 $healthData = HealthData::updateOrCreate(
                     [
@@ -123,7 +127,10 @@ class RealisticMedicalDatasetSeeder extends Seeder
                     ['doctor_observation' => $this->buildDoctorObservation($patientData, $metrics, $dayOffset)]
                 );
 
-                $measuredAt = $date->copy()->setTime(7 + (($patientIndex + $dayOffset) % 3), 10 + (($dayOffset * 7) % 45));
+                $measuredAt = $date->copy()->setTime(
+                    7 + (($patientIndex + $dayOffset) % 3),
+                    10 + (($dayOffset * 7) % 45)
+                );
 
                 VitalSigns::create([
                     'health_data_id' => $healthData->id,
@@ -135,11 +142,83 @@ class RealisticMedicalDatasetSeeder extends Seeder
                 ]);
 
                 $this->seedAnalysisResults($healthData, $patientData, $metrics, $dayOffset, $date);
-                $this->seedTreatmentChecksAndNotifications($user, $treatments, $healthData, $metrics, $patientData['adherence'], $patientIndex, $dayOffset, $date);
+                $this->seedTreatmentChecksAndNotifications(
+                    $user,
+                    $treatments,
+                    $metrics,
+                    (float) $patientData['adherence'],
+                    $patientIndex,
+                    $dayOffset,
+                    $date
+                );
             }
 
-            $profile->refresh();
+            $profile->update(['current_weight' => round($lastWeight, 1)]);
         }
+    }
+
+    private function seedDoctors(): Collection
+    {
+        $doctors = collect($this->doctors())->map(function (array $doctor) {
+            $account = Account::updateOrCreate(
+                ['email' => strtolower($doctor['email'])],
+                [
+                    'password' => Hash::make(self::DEFAULT_PASSWORD),
+                    'account_status' => 'active',
+                ]
+            );
+
+            $dob = Carbon::parse($doctor['date_of_birth']);
+
+            $user = User::updateOrCreate(
+                ['account_id' => $account->id],
+                [
+                    'name' => $doctor['name'],
+                    'date_of_birth' => $dob->toDateString(),
+                    'profile_photo' => null,
+                    'age' => $dob->age,
+                    'role' => 'doctor',
+                    'specialty' => $doctor['specialty'],
+                ]
+            );
+
+            return ['email' => strtolower($doctor['email']), 'user' => $user];
+        });
+
+        return $doctors->keyBy('email')->map(fn (array $row) => $row['user']);
+    }
+
+    private function createOrUpdateDoctorInvitation(User $patient, array $patientData, Collection $doctors, Carbon $startDate): void
+    {
+        $doctorEmail = isset($patientData['doctor_email']) && $patientData['doctor_email']
+            ? strtolower(trim((string) $patientData['doctor_email']))
+            : null;
+
+        if (!$doctorEmail) {
+            return;
+        }
+
+        $status = strtolower((string) ($patientData['invitation_status'] ?? 'pending'));
+        if (!in_array($status, ['pending', 'accepted', 'rejected'], true)) {
+            $status = 'pending';
+        }
+
+        $doctorUser = $doctors->get($doctorEmail);
+
+        DoctorInvitation::updateOrCreate(
+            [
+                'patient_user_id' => $patient->id,
+                'doctor_email' => $doctorEmail,
+            ],
+            [
+                'doctor_user_id' => ($status === 'accepted' || $status === 'rejected') ? $doctorUser?->id : null,
+                'status' => $status,
+                'token' => Str::random(64),
+                'accepted_at' => $status === 'accepted' ? $startDate->copy()->addDays($this->faker->numberBetween(2, 12)) : null,
+                'rejected_at' => $status === 'rejected' ? $startDate->copy()->addDays($this->faker->numberBetween(1, 8)) : null,
+                'revoked_at' => null,
+            ]
+        );
     }
 
     private function clearPatientMedicalData(User $user): void
@@ -158,7 +237,6 @@ class RealisticMedicalDatasetSeeder extends Seeder
         if ($healthDataIds->isNotEmpty()) {
             VitalSigns::query()->whereIn('health_data_id', $healthDataIds)->delete();
             AnalysisResult::query()->whereIn('health_data_id', $healthDataIds)->delete();
-            TreatmentCheck::query()->whereIn('health_data_id', $healthDataIds)->delete();
             HealthData::query()->whereIn('id', $healthDataIds)->delete();
         }
 
@@ -172,8 +250,8 @@ class RealisticMedicalDatasetSeeder extends Seeder
 
         foreach ($treatmentRows as $row) {
             $catalog = TreatmentCatalog::firstOrCreate([
-                'treatment_type' => $row['type'],
-                'treatment_name' => $row['name'],
+                'treatment_type' => trim((string) $row['type']),
+                'treatment_name' => trim((string) $row['name']),
             ]);
 
             $startDate = $monthStart->copy()->addDays((int) ($row['start_offset'] ?? 0));
@@ -205,20 +283,71 @@ class RealisticMedicalDatasetSeeder extends Seeder
         $wave = sin(($dayOffset + ($patientIndex * 2)) / 5);
         $isWeekend = $date->isWeekend();
 
-        $sleep = $this->clampInt((int) round($patientData['baseline']['sleep'] + ($isWeekend ? 1 : 0) - ($wave > 0.6 ? 1 : 0)), 5, 9);
-        $stress = $this->clampInt((int) round($patientData['baseline']['stress'] + ($isWeekend ? -1 : 1) + ($wave > 0.7 ? 1 : 0) - ($sleep >= 8 ? 1 : 0)), 1, 10);
-        $energy = $this->clampInt((int) round($patientData['baseline']['energy'] + ($sleep >= 8 ? 1 : 0) - ($stress >= 7 ? 1 : 0) + ($wave < -0.5 ? -1 : 0)), 1, 10);
+        $sleep = $this->clampInt(
+            (int) round($patientData['baseline']['sleep'] + ($isWeekend ? 1 : 0) - ($wave > 0.6 ? 1 : 0)),
+            5,
+            9
+        );
 
-        $caffeine = $this->clampInt(1 + (int) (($dayOffset + $patientIndex) % 4) + ($stress >= 7 ? 1 : 0), 0, 8);
-        $hydration = $this->clampFloat((float) ($patientData['baseline']['hydration'] + ($isWeekend ? 0.3 : 0.0) - ($caffeine >= 4 ? 0.2 : 0.0)), 1.4, 4.0);
+        $stress = $this->clampInt(
+            (int) round(
+                $patientData['baseline']['stress']
+                + ($isWeekend ? -1 : 1)
+                + ($wave > 0.7 ? 1 : 0)
+                - ($sleep >= 8 ? 1 : 0)
+            ),
+            1,
+            10
+        );
+
+        $energy = $this->clampInt(
+            (int) round(
+                $patientData['baseline']['energy']
+                + ($sleep >= 8 ? 1 : 0)
+                - ($stress >= 7 ? 1 : 0)
+                + ($wave < -0.5 ? -1 : 0)
+            ),
+            1,
+            10
+        );
+
+        $caffeine = $this->clampInt(1 + (($dayOffset + $patientIndex) % 4) + ($stress >= 7 ? 1 : 0), 0, 8);
+        $hydration = $this->clampFloat(
+            (float) ($patientData['baseline']['hydration'] + ($isWeekend ? 0.3 : 0.0) - ($caffeine >= 4 ? 0.2 : 0.0)),
+            1.4,
+            4.0
+        );
 
         $alcohol = (bool) ($patientData['alcoholic'] && $isWeekend && (($dayOffset + $patientIndex) % 2 === 0));
         $alcoholGlasses = $alcohol ? (1 + (($dayOffset + $patientIndex) % 3)) : null;
 
-        $heartRate = $this->clampInt((int) round($patientData['baseline']['heart_rate'] + ($wave * 4) + ($stress >= 8 ? 3 : 0)), 55, 120);
-        $systolic = $this->clampInt((int) round($patientData['baseline']['systolic_pressure'] + ($wave * 5) + ($stress >= 8 ? 4 : 0)), 95, 170);
-        $diastolic = $this->clampInt((int) round($patientData['baseline']['diastolic_pressure'] + ($wave * 3) + ($stress >= 8 ? 2 : 0)), 55, 110);
-        $oxygen = $this->clampInt((int) round($patientData['baseline']['oxygen_saturation'] - ($patientData['smoker'] ? 1 : 0) + ($wave < -0.7 ? -1 : 0)), 90, 100);
+        $heartRate = $this->clampInt(
+            (int) round($patientData['baseline']['heart_rate'] + ($wave * 4) + ($stress >= 8 ? 3 : 0)),
+            55,
+            120
+        );
+
+        $systolic = $this->clampInt(
+            (int) round($patientData['baseline']['systolic_pressure'] + ($wave * 5) + ($stress >= 8 ? 4 : 0)),
+            95,
+            170
+        );
+
+        $diastolic = $this->clampInt(
+            (int) round($patientData['baseline']['diastolic_pressure'] + ($wave * 3) + ($stress >= 8 ? 2 : 0)),
+            55,
+            110
+        );
+
+        $oxygen = $this->clampInt(
+            (int) round($patientData['baseline']['oxygen_saturation'] - ($patientData['smoker'] ? 1 : 0) + ($wave < -0.7 ? -1 : 0)),
+            90,
+            100
+        );
+
+        $weightTrend = (float) ($patientData['weight_trend'] ?? 0.0);
+        $initialWeight = (float) $patientData['initial_weight'];
+        $weight = $initialWeight + ($dayOffset * ($weightTrend / 30)) + ($wave * 0.6) + $this->faker->randomFloat(1, -0.3, 0.3);
 
         return [
             'sleep' => $sleep,
@@ -233,35 +362,43 @@ class RealisticMedicalDatasetSeeder extends Seeder
             'systolic_pressure' => $systolic,
             'diastolic_pressure' => $diastolic,
             'oxygen_saturation' => $oxygen,
+            'weight' => round($this->clampFloat($weight, 45.0, 130.0), 1),
         ];
     }
 
-    private function seedMeals(JournalEntry $journal, int $patientIndex, int $dayOffset, array $metrics): void
+    private function seedMeals(JournalEntry $journal, array $metrics): void
     {
-        $breakfasts = [
-            ['Oatmeal with banana and yogurt', 380],
-            ['Boiled eggs with whole grain bread', 410],
-            ['Greek yogurt, nuts and berries', 360],
-        ];
-        $lunches = [
-            ['Grilled chicken with quinoa and vegetables', 620],
-            ['Lentil soup with mixed salad', 540],
-            ['Baked fish with brown rice and greens', 600],
-        ];
-        $dinners = [
-            ['Vegetable omelet and tomato salad', 500],
-            ['Turkey stew with steamed vegetables', 560],
-            ['Chickpea bowl with olive oil and herbs', 520],
-        ];
-        $snacks = [
-            ['Apple with almonds', 180],
-            ['Low-fat yogurt', 140],
-            ['Whole grain crackers and cheese', 210],
+        $petitsDejeuners = [
+            ['Porridge a la banane et amandes', 390],
+            ['Omelette aux fines herbes et pain complet', 420],
+            ['Yaourt nature, fruits rouges et noix', 360],
+            ['Tartines completes, avocat et fromage frais', 410],
         ];
 
-        [$bDesc, $bCal] = $breakfasts[($dayOffset + $patientIndex) % count($breakfasts)];
-        [$lDesc, $lCal] = $lunches[($dayOffset + $patientIndex + 1) % count($lunches)];
-        [$dDesc, $dCal] = $dinners[($dayOffset + $patientIndex + 2) % count($dinners)];
+        $dejeuners = [
+            ['Poulet grille, quinoa et legumes de saison', 620],
+            ['Soupe de lentilles et salade composee', 540],
+            ['Poisson au four, riz complet et brocolis', 600],
+            ['Couscous legumes et pois chiches', 640],
+        ];
+
+        $diners = [
+            ['Poelee de legumes et dinde', 530],
+            ['Veloute de courgettes et tartine proteinee', 500],
+            ['Salade composee, oeufs et pommes de terre', 560],
+            ['Ratatouille maison et filet de poisson', 520],
+        ];
+
+        $collations = [
+            ['Pomme et amandes', 180],
+            ['Fromage blanc et graines de chia', 160],
+            ['Carottes croquantes et houmous', 190],
+            ['Poire et noix', 170],
+        ];
+
+        [$bDesc, $bCal] = $petitsDejeuners[$this->faker->numberBetween(0, count($petitsDejeuners) - 1)];
+        [$dDesc, $dCal] = $dejeuners[$this->faker->numberBetween(0, count($dejeuners) - 1)];
+        [$sDesc, $sCal] = $diners[$this->faker->numberBetween(0, count($diners) - 1)];
 
         $journal->meals()->create([
             'meal_type' => 'breakfast',
@@ -271,22 +408,22 @@ class RealisticMedicalDatasetSeeder extends Seeder
 
         $journal->meals()->create([
             'meal_type' => 'lunch',
-            'description' => $lDesc,
-            'calories' => $lCal,
-        ]);
-
-        $journal->meals()->create([
-            'meal_type' => 'dinner',
             'description' => $dDesc,
             'calories' => $dCal,
         ]);
 
-        if ($metrics['stress'] >= 7 || (($dayOffset + $patientIndex) % 3 === 0)) {
-            [$sDesc, $sCal] = $snacks[($dayOffset + $patientIndex) % count($snacks)];
+        $journal->meals()->create([
+            'meal_type' => 'dinner',
+            'description' => $sDesc,
+            'calories' => $sCal,
+        ]);
+
+        if ($metrics['stress'] >= 7 || $this->faker->boolean(35)) {
+            [$cDesc, $cCal] = $collations[$this->faker->numberBetween(0, count($collations) - 1)];
             $journal->meals()->create([
                 'meal_type' => 'snack',
-                'description' => $sDesc,
-                'calories' => $sCal,
+                'description' => $cDesc,
+                'calories' => $cCal,
             ]);
         }
     }
@@ -297,8 +434,9 @@ class RealisticMedicalDatasetSeeder extends Seeder
             return;
         }
 
-        $activities = ['walking', 'cycling', 'yoga', 'light strength', 'swimming'];
+        $activities = ['marche rapide', 'velo', 'yoga', 'renforcement musculaire', 'natation'];
         $activityType = $activities[($dayOffset + $patientIndex) % count($activities)];
+
         $duration = 25 + ((($dayOffset + $patientIndex) % 5) * 10);
 
         $intensity = 'low';
@@ -316,7 +454,7 @@ class RealisticMedicalDatasetSeeder extends Seeder
         ]);
     }
 
-    private function seedTobacco(JournalEntry $journal, array $patientData, int $dayOffset): void
+    private function seedTobacco(JournalEntry $journal, array $patientData, array $metrics): void
     {
         if (!$patientData['smoker']) {
             return;
@@ -324,7 +462,7 @@ class RealisticMedicalDatasetSeeder extends Seeder
 
         $journal->tobacco()->create([
             'tobacco_type' => 'cigarette',
-            'cigarettes_per_day' => 4 + (($dayOffset + strlen($patientData['name'])) % 8),
+            'cigarettes_per_day' => max(2, min(20, 5 + ($metrics['stress'] - 5) + $this->faker->numberBetween(-1, 3))),
             'puffs_per_day' => null,
         ]);
     }
@@ -335,31 +473,31 @@ class RealisticMedicalDatasetSeeder extends Seeder
             return null;
         }
 
-        if ($metrics['systolic_pressure'] >= 140) {
-            return 'Blood pressure remains elevated. Reinforce treatment adherence and reduce dietary salt.';
+        if ($metrics['systolic_pressure'] >= 145) {
+            return 'Tension arterielle encore elevee. Revoir l adherence therapeutique et reduire le sel alimentaire.';
         }
 
         if ($metrics['stress'] >= 8) {
-            return 'Stress level is high this week. Encourage rest routines and regular hydration.';
+            return 'Niveau de stress important cette semaine. Renforcer les routines de sommeil et la respiration guidee.';
         }
 
-        if (in_array('Type 2 Diabetes', $patientData['chronic_diseases'], true)) {
-            return 'Glycemic trend is stable overall. Continue medication and regular meal timing.';
+        if (in_array('Diabete de type 2', $patientData['chronic_diseases'], true)) {
+            return 'Equilibre glycemique globalement acceptable. Poursuivre les traitements et regulariser les repas.';
         }
 
-        return 'Clinical follow-up is stable. Continue current treatment and lifestyle plan.';
+        return 'Etat clinique stable. Maintenir le plan actuel et programmer le prochain suivi.';
     }
 
     private function seedAnalysisResults(HealthData $healthData, array $patientData, array $metrics, int $dayOffset, Carbon $date): void
     {
-        $hasDiabetes = in_array('Type 2 Diabetes', $patientData['chronic_diseases'], true);
+        $hasDiabetes = in_array('Diabete de type 2', $patientData['chronic_diseases'], true);
         $glucoseBase = $hasDiabetes ? 7.0 : 5.0;
         $glucoseValue = round($glucoseBase + (($metrics['stress'] - 5) * 0.18) + (($dayOffset % 5 === 0) ? 0.15 : 0.0), 2);
 
         AnalysisResult::create([
             'health_data_id' => $healthData->id,
             'analysis_type' => 'Glucose',
-            'result_name' => 'Fasting blood glucose',
+            'result_name' => 'Glycemie a jeun',
             'value' => max(3.6, $glucoseValue),
             'unit' => 'mmol/L',
             'analysis_date' => $date->toDateString(),
@@ -367,10 +505,11 @@ class RealisticMedicalDatasetSeeder extends Seeder
 
         if ($dayOffset % 7 === 0) {
             $crp = round(1.2 + (($metrics['stress'] >= 7) ? 1.3 : 0.4) + (($dayOffset % 14 === 0) ? 0.6 : 0.0), 2);
+
             AnalysisResult::create([
                 'health_data_id' => $healthData->id,
                 'analysis_type' => 'Inflammation',
-                'result_name' => 'C-reactive protein',
+                'result_name' => 'CRP',
                 'value' => $crp,
                 'unit' => 'mg/L',
                 'analysis_date' => $date->toDateString(),
@@ -379,10 +518,11 @@ class RealisticMedicalDatasetSeeder extends Seeder
 
         if ($dayOffset % 10 === 0) {
             $cholesterol = round(172 + (($metrics['stress'] >= 7) ? 16 : 7) + (($dayOffset % 20 === 0) ? 8 : 0), 2);
+
             AnalysisResult::create([
                 'health_data_id' => $healthData->id,
-                'analysis_type' => 'Lipid panel',
-                'result_name' => 'Total cholesterol',
+                'analysis_type' => 'Bilan lipidique',
+                'result_name' => 'Cholesterol total',
                 'value' => $cholesterol,
                 'unit' => 'mg/dL',
                 'analysis_date' => $date->toDateString(),
@@ -393,7 +533,6 @@ class RealisticMedicalDatasetSeeder extends Seeder
     private function seedTreatmentChecksAndNotifications(
         User $user,
         Collection $treatments,
-        HealthData $healthData,
         array $metrics,
         float $adherence,
         int $patientIndex,
@@ -411,7 +550,10 @@ class RealisticMedicalDatasetSeeder extends Seeder
                 'treatment_id' => $treatment->id,
                 'kind' => 'reminder',
                 'target_date' => $date->toDateString(),
-                'message' => "Do not forget to take " . ($treatment->treatmentCatalog?->treatment_name ?? 'your treatment') . ' today.',
+                'message' => 'N oubliez pas de prendre ' . ($treatment->treatmentCatalog?->treatment_name ?? 'votre traitement') . ' aujourd hui.',
+                'read_at' => $date->lt(Carbon::today()->subDays(2)) && $this->faker->boolean(60)
+                    ? $date->copy()->setTime(21, $this->faker->numberBetween(0, 45))
+                    : null,
             ]);
 
             $doses = strtolower((string) $treatment->frequency) === 'day'
@@ -437,7 +579,7 @@ class RealisticMedicalDatasetSeeder extends Seeder
 
                 TreatmentCheck::create([
                     'treatment_id' => $treatment->id,
-                    'health_data_id' => $healthData->id,
+                    'user_id' => $user->id,
                     'check_date' => $date->toDateString(),
                     'medication_key' => $treatment->id . '__dose_' . $doseIndex,
                     'taken' => $taken,
@@ -450,7 +592,8 @@ class RealisticMedicalDatasetSeeder extends Seeder
                     'treatment_id' => $treatment->id,
                     'kind' => 'missed',
                     'target_date' => $date->toDateString(),
-                    'message' => "You missed at least one dose of " . ($treatment->treatmentCatalog?->treatment_name ?? 'your treatment') . ' today.',
+                    'message' => 'Vous avez manque au moins une prise de ' . ($treatment->treatmentCatalog?->treatment_name ?? 'votre traitement') . ' aujourd hui.',
+                    'read_at' => null,
                 ]);
             }
         }
@@ -467,6 +610,7 @@ class RealisticMedicalDatasetSeeder extends Seeder
         }
 
         $frequency = strtolower((string) ($treatment->frequency ?? 'day'));
+
         if ($frequency === 'week') {
             return $treatment->start_date
                 ? $date->dayOfWeek === $treatment->start_date->dayOfWeek
@@ -485,14 +629,14 @@ class RealisticMedicalDatasetSeeder extends Seeder
     private function buildSugarIntakeLabel(int $stress, int $caffeine): string
     {
         if ($stress >= 8 || $caffeine >= 5) {
-            return 'High sugar intake';
+            return 'Consommation elevee';
         }
 
         if ($stress <= 3 && $caffeine <= 2) {
-            return 'Low sugar intake';
+            return 'Consommation faible';
         }
 
-        return 'Moderate sugar intake';
+        return 'Consommation moderee';
     }
 
     private function clampInt(int $value, int $min, int $max): int
@@ -505,24 +649,61 @@ class RealisticMedicalDatasetSeeder extends Seeder
         return max($min, min($value, $max));
     }
 
-    private function patients(): array
+    private function doctors(): array
     {
         return [
+            [
+                'name' => 'Dr Nadia Mansouri',
+                'email' => 'dr.nadia@example.test',
+                'specialty' => 'Cardiologie',
+                'date_of_birth' => '1979-02-11',
+            ],
+            [
+                'name' => 'Dr Samir Khadraoui',
+                'email' => 'dr.samir@example.test',
+                'specialty' => 'Endocrinologie',
+                'date_of_birth' => '1982-09-20',
+            ],
+            [
+                'name' => 'Dr Leila Ferjani',
+                'email' => 'dr.leila@example.test',
+                'specialty' => 'Pneumologie',
+                'date_of_birth' => '1985-06-08',
+            ],
+        ];
+    }
+
+    private function patients(): array
+    {
+        $objectifOptions = [
+            'Reduire la tension arterielle',
+            'Mieux controler la glycemie',
+            'Ameliorer la qualite du sommeil',
+            'Augmenter l activite physique quotidienne',
+            'Stabiliser le poids',
+            'Diminuer les episodes de migraine',
+            'Renforcer l adherence aux traitements',
+            'Reduire le stress quotidien',
+        ];
+
+        $allergieOptions = ['Pollen', 'Acarien', 'Penicilline', 'Fruits de mer', 'Aucune'];
+        $maladieOptions = ['Hypertension', 'Diabete de type 2', 'Asthme', 'Hypothyroidie', 'Aucune'];
+
+        $base = [
             [
                 'name' => 'Amina Benali',
                 'email' => 'amina.benali@example.test',
                 'date_of_birth' => '1989-04-18',
                 'gender' => 'female',
-                'height'         => 165.0,
+                'height' => 165.0,
                 'initial_weight' => 74.0,
                 'blood_type' => 'A+',
-                'goals' => ['Lower blood pressure', 'Better glucose control', 'Improve sleep quality'],
-                'allergies' => ['Pollen'],
-                'chronic_diseases' => ['Hypertension', 'Type 2 Diabetes'],
                 'smoker' => false,
                 'alcoholic' => false,
                 'doctor_email' => 'dr.nadia@example.test',
+                'invitation_status' => 'accepted',
                 'adherence' => 0.93,
+                'weight_trend' => -1.4,
                 'baseline' => [
                     'sleep' => 7,
                     'stress' => 5,
@@ -543,16 +724,15 @@ class RealisticMedicalDatasetSeeder extends Seeder
                 'email' => 'youssef.karim@example.test',
                 'date_of_birth' => '1978-09-11',
                 'gender' => 'male',
-                'height'         => 178.0,
+                'height' => 178.0,
                 'initial_weight' => 88.0,
                 'blood_type' => 'O+',
-                'goals' => ['Improve breathing', 'Quit smoking', 'Increase daily activity'],
-                'allergies' => ['Dust mites'],
-                'chronic_diseases' => ['Asthma'],
                 'smoker' => true,
                 'alcoholic' => false,
-                'doctor_email' => null,
+                'doctor_email' => 'dr.leila@example.test',
+                'invitation_status' => 'pending',
                 'adherence' => 0.86,
+                'weight_trend' => -0.8,
                 'baseline' => [
                     'sleep' => 6,
                     'stress' => 6,
@@ -573,16 +753,15 @@ class RealisticMedicalDatasetSeeder extends Seeder
                 'email' => 'sara.haddad@example.test',
                 'date_of_birth' => '1994-01-27',
                 'gender' => 'female',
-                'height'         => 162.0,
+                'height' => 162.0,
                 'initial_weight' => 62.0,
                 'blood_type' => 'B+',
-                'goals' => ['Maintain stable energy', 'Improve concentration'],
-                'allergies' => [],
-                'chronic_diseases' => ['Hypothyroidism'],
                 'smoker' => false,
                 'alcoholic' => true,
                 'doctor_email' => 'dr.samir@example.test',
+                'invitation_status' => 'accepted',
                 'adherence' => 0.95,
+                'weight_trend' => -0.4,
                 'baseline' => [
                     'sleep' => 7,
                     'stress' => 4,
@@ -595,7 +774,7 @@ class RealisticMedicalDatasetSeeder extends Seeder
                 ],
                 'treatments' => [
                     ['type' => 'Therapie hormonale', 'name' => 'Levothyroxine', 'dose' => '50 mcg', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -30],
-                    ['type' => 'Supplement vitamine', 'name' => 'Vitamine D', 'dose' => '1000 IU', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -12],
+                    ['type' => 'Supplement vitamine', 'name' => 'Vitamine D', 'dose' => '1000 UI', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -12],
                 ],
             ],
             [
@@ -603,16 +782,15 @@ class RealisticMedicalDatasetSeeder extends Seeder
                 'email' => 'mehdi.boussaid@example.test',
                 'date_of_birth' => '1968-06-03',
                 'gender' => 'male',
-                'height'         => 173.0,
+                'height' => 173.0,
                 'initial_weight' => 91.0,
                 'blood_type' => 'AB+',
-                'goals' => ['Stabilize blood pressure', 'Improve medication adherence'],
-                'allergies' => ['Penicillin'],
-                'chronic_diseases' => ['Hypertension'],
                 'smoker' => false,
                 'alcoholic' => false,
-                'doctor_email' => null,
-                'adherence' => 0.9,
+                'doctor_email' => 'dr.nadia@example.test',
+                'invitation_status' => 'rejected',
+                'adherence' => 0.90,
+                'weight_trend' => -0.6,
                 'baseline' => [
                     'sleep' => 6,
                     'stress' => 5,
@@ -633,16 +811,15 @@ class RealisticMedicalDatasetSeeder extends Seeder
                 'email' => 'lina.trabelsi@example.test',
                 'date_of_birth' => '1992-12-15',
                 'gender' => 'female',
-                'height'         => 169.0,
+                'height' => 169.0,
                 'initial_weight' => 68.0,
                 'blood_type' => 'O-',
-                'goals' => ['Reduce migraine episodes', 'Keep stress under control'],
-                'allergies' => ['Seafood'],
-                'chronic_diseases' => [],
                 'smoker' => false,
                 'alcoholic' => true,
                 'doctor_email' => null,
+                'invitation_status' => null,
                 'adherence' => 0.88,
+                'weight_trend' => -0.3,
                 'baseline' => [
                     'sleep' => 7,
                     'stress' => 6,
@@ -658,6 +835,118 @@ class RealisticMedicalDatasetSeeder extends Seeder
                     ['type' => 'Supplement vitamine', 'name' => 'Vitamine C', 'dose' => '500 mg', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -7],
                 ],
             ],
+            [
+                'name' => 'Rachid Mansour',
+                'email' => 'rachid.mansour@example.test',
+                'date_of_birth' => '1984-03-02',
+                'gender' => 'male',
+                'height' => 176.0,
+                'initial_weight' => 82.0,
+                'blood_type' => 'A-',
+                'smoker' => true,
+                'alcoholic' => false,
+                'doctor_email' => 'dr.leila@example.test',
+                'invitation_status' => 'accepted',
+                'adherence' => 0.84,
+                'weight_trend' => -0.9,
+                'baseline' => [
+                    'sleep' => 6,
+                    'stress' => 7,
+                    'energy' => 5,
+                    'hydration' => 1.8,
+                    'heart_rate' => 82,
+                    'systolic_pressure' => 134,
+                    'diastolic_pressure' => 85,
+                    'oxygen_saturation' => 95,
+                ],
+                'treatments' => [
+                    ['type' => 'Inhalateur respiratoire', 'name' => 'Albuterol', 'dose' => '1 inhalation', 'frequency' => 'day', 'daily_doses' => 2, 'start_offset' => -16],
+                    ['type' => 'Antidouleur', 'name' => 'Ibuprofene', 'dose' => '400 mg', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -4],
+                ],
+            ],
+            [
+                'name' => 'Ines Gharsalli',
+                'email' => 'ines.gharsalli@example.test',
+                'date_of_birth' => '1997-08-24',
+                'gender' => 'female',
+                'height' => 160.0,
+                'initial_weight' => 59.0,
+                'blood_type' => 'B-',
+                'smoker' => false,
+                'alcoholic' => false,
+                'doctor_email' => 'dr.samir@example.test',
+                'invitation_status' => 'pending',
+                'adherence' => 0.96,
+                'weight_trend' => 0.2,
+                'baseline' => [
+                    'sleep' => 8,
+                    'stress' => 4,
+                    'energy' => 7,
+                    'hydration' => 2.5,
+                    'heart_rate' => 68,
+                    'systolic_pressure' => 112,
+                    'diastolic_pressure' => 72,
+                    'oxygen_saturation' => 99,
+                ],
+                'treatments' => [
+                    ['type' => 'Antihistaminique', 'name' => 'Loratadine', 'dose' => '10 mg', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -11],
+                    ['type' => 'Supplement vitamine', 'name' => 'Fer', 'dose' => '1 comprime', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -9],
+                ],
+            ],
+            [
+                'name' => 'Nabil Ouali',
+                'email' => 'nabil.ouali@example.test',
+                'date_of_birth' => '1971-11-19',
+                'gender' => 'male',
+                'height' => 171.0,
+                'initial_weight' => 85.0,
+                'blood_type' => 'O+',
+                'smoker' => false,
+                'alcoholic' => true,
+                'doctor_email' => null,
+                'invitation_status' => null,
+                'adherence' => 0.87,
+                'weight_trend' => -0.5,
+                'baseline' => [
+                    'sleep' => 6,
+                    'stress' => 6,
+                    'energy' => 5,
+                    'hydration' => 2.0,
+                    'heart_rate' => 78,
+                    'systolic_pressure' => 132,
+                    'diastolic_pressure' => 83,
+                    'oxygen_saturation' => 96,
+                ],
+                'treatments' => [
+                    ['type' => 'Antihypertenseur', 'name' => 'Ramipril', 'dose' => '5 mg', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -21],
+                    ['type' => 'Anticoagulant', 'name' => 'Rivaroxaban', 'dose' => '20 mg', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -19],
+                ],
+            ],
         ];
+
+        return collect($base)->map(function (array $patient) use ($objectifOptions, $allergieOptions, $maladieOptions) {
+            $goals = $this->faker->randomElements($objectifOptions, $this->faker->numberBetween(2, 3));
+
+            $allergies = $this->faker->randomElements($allergieOptions, $this->faker->numberBetween(0, 2));
+            $allergies = array_values(array_filter($allergies, fn (string $item) => $item !== 'Aucune'));
+
+            $diseases = $this->faker->randomElements($maladieOptions, $this->faker->numberBetween(0, 2));
+            $diseases = array_values(array_filter($diseases, fn (string $item) => $item !== 'Aucune'));
+
+            // Renforcer les scenarios cliniques deja definis pour conserver des cas metiers stables.
+            if ($patient['name'] === 'Amina Benali') {
+                $diseases = ['Hypertension', 'Diabete de type 2'];
+            }
+            if ($patient['name'] === 'Youssef Karim') {
+                $diseases = ['Asthme'];
+                $allergies = ['Acarien'];
+            }
+
+            $patient['goals'] = $goals;
+            $patient['allergies'] = $allergies;
+            $patient['chronic_diseases'] = $diseases;
+
+            return $patient;
+        })->all();
     }
 }
