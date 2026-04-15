@@ -23,7 +23,7 @@ class NotificationController extends Controller
 
         $this->triggerMedicationNotifications($user);
 
-        $treatmentIds = $user->treatments()->pluck('id');
+        $treatmentIds = $user->treatments()->pluck('treatments.id');
 
         $notifications = Notification::whereIn('treatment_id', $treatmentIds)
             ->latest()
@@ -48,7 +48,7 @@ class NotificationController extends Controller
     // Marquer toutes les notifications comme lues
     public function markAllAsRead(Request $request): JsonResponse
     {
-        $treatmentIds = $request->user()->treatments()->pluck('id');
+        $treatmentIds = $request->user()->treatments()->pluck('treatments.id');
 
         Notification::whereIn('treatment_id', $treatmentIds)
             ->whereNull('read_at')

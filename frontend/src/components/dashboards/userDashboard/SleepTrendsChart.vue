@@ -1,56 +1,54 @@
 <template>
-    <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-
-        <!-- Header -->
-        <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <section class="mt-5 overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
+        <div class="flex items-start justify-between gap-3 px-4 pt-4 pb-3 sm:px-5">
             <div>
-                <h2 class="text-lg font-semibold text-slate-900">
-                    Sommeil — {{ selectedLabel }}
+                <h2 class="text-3xl font-bold leading-none text-slate-800">
+                    <span class="mr-1">🌙</span>Sommeil — {{ selectedMonthName }}
                 </h2>
-                <p class="mt-0.5 text-xs text-slate-400">Objectif 8 h</p>
+                <p class="mt-2 text-base font-medium text-slate-400">
+                    Moyenne par semaine · Objectif 8 h / nuit
+                </p>
             </div>
-            <select v-model="selectedMonth" @change="rebuild"
-                class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400">
-                <option v-for="m in months" :key="m.key" :value="m.key">{{ m.label }}</option>
-            </select>
+
+            <div class="relative shrink-0">
+                <select
+                    v-model="selectedMonth"
+                    @change="rebuild"
+                    class="appearance-none rounded-xl border border-indigo-100 bg-indigo-50 py-1.5 pl-3 pr-8 text-sm font-semibold text-indigo-600 outline-none transition hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-300"
+                >
+                    <option v-for="m in months" :key="m.key" :value="m.key">
+                        {{ m.label }}
+                    </option>
+                </select>
+                <span
+                    class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-indigo-500"
+                >
+                    ▾
+                </span>
+            </div>
         </div>
 
-        <div v-if="loading" class="flex h-52 items-center justify-center text-sm text-slate-400">Chargement…</div>
-        <div v-else-if="noData"  class="flex h-52 items-center justify-center text-sm text-slate-400">Aucune donnée de sommeil pour ce mois.</div>
-
-        <template v-else>
-            <!-- Chart -->
-            <div class="relative h-52">
-                <canvas ref="canvasRef"></canvas>
+        <div class="border-t border-slate-200 px-2 pt-3 pb-4 sm:px-4">
+            <div v-if="loading" class="flex h-56 items-center justify-center text-sm text-slate-400">
+                Chargement...
             </div>
 
-            <!-- Legend -->
-            <div class="mt-3 flex flex-wrap gap-4 text-xs text-slate-600">
-                <span class="flex items-center gap-1.5">
-                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-[#8b5cf6]"></span>
-                    Sommeil moyen
-                </span>
-                <span class="flex items-center gap-1.5">
-                    <span class="inline-block h-2.5 w-2.5 rounded-full border-2 border-dashed border-[#f59e0b] bg-transparent"></span>
-                    Objectif 8 h
-                </span>
-            </div>
+            <template v-else>
+                <div class="relative h-56">
+                    <canvas ref="canvasRef"></canvas>
+                </div>
 
-            <!-- Week chips -->
-            <div class="mt-3 flex flex-wrap gap-2">
-                <span
-                    v-for="(w, i) in weekData"
-                    :key="i"
-                    class="rounded-full px-3 py-0.5 text-xs font-medium"
-                    :class="w.avg !== null && w.avg >= 7
-                        ? 'bg-violet-100 text-violet-700'
-                        : 'bg-rose-100 text-rose-600'"
-                >
-                    Sem {{ i + 1 }} · {{ w.avg !== null ? w.avg + ' h' : '—' }}
-                </span>
-            </div>
-        </template>
-
+                <div class="mt-2 flex flex-wrap gap-2.5 px-1">
+                    <span
+                        v-for="(w, i) in weekData"
+                        :key="i"
+                        class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500"
+                    >
+                        Sem {{ i + 1 }} · {{ w.avg !== null ? `${w.avg} h` : "—" }}
+                    </span>
+                </div>
+            </template>
+        </div>
     </section>
 </template>
 
@@ -61,98 +59,110 @@ import api from "@/services/api";
 
 Chart.register(...registerables);
 
-const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+const MONTHS_FR = [
+    "Janvier",
+    "Février",
+    "Mars",
+    "Avril",
+    "Mai",
+    "Juin",
+    "Juillet",
+    "Août",
+    "Septembre",
+    "Octobre",
+    "Novembre",
+    "Décembre",
+];
 const GOAL = 8;
 
-// ── Build list of last 6 months ───────────────────────────────────────────────
+// Build a month picker for the last 12 months.
 function buildMonths() {
-    return Array.from({ length: 6 }, (_, i) => {
+    return Array.from({ length: 12 }, (_, i) => {
         const d = new Date();
         d.setDate(1);
-        d.setMonth(d.getMonth() - (5 - i));
+        d.setMonth(d.getMonth() - (11 - i));
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        return { key, label: `${MONTHS_FR[d.getMonth()]} ${d.getFullYear()}` };
+        return { key, label: MONTHS_FR[d.getMonth()] };
     });
 }
 
-const months       = buildMonths();
+const months = buildMonths();
 const selectedMonth = ref(months[months.length - 1].key);   // current month by default
-const selectedLabel = computed(() => months.find(m => m.key === selectedMonth.value)?.label ?? "");
+const selectedMonthName = computed(
+    () => months.find((m) => m.key === selectedMonth.value)?.label ?? "",
+);
 
 const canvasRef = ref(null);
-const loading   = ref(true);
-const noData    = ref(false);
-const weekData  = ref([]);   // [{ avg: 6.8 }, { avg: null }, ...]
+const loading = ref(true);
+const weekData = ref([]); // [{ avg: 6.8 }, { avg: null }, ...]
 
 let chartInstance = null;
-let allEntries    = [];
+let allEntries = [];
 
-// ── Week index (0-3) from day-of-month ───────────────────────────────────────
+// Week index (0-4) from day-of-month.
 function weekIdx(dayStr) {
     const day = parseInt((dayStr ?? "").slice(8, 10), 10);
-    if (day <=  7) return 0;
+    if (day <= 7) return 0;
     if (day <= 14) return 1;
     if (day <= 21) return 2;
-    return 3;
+    if (day <= 28) return 3;
+    return 4;
 }
 
 function avg(arr) {
-    const v = arr.filter(x => x != null && !isNaN(x));
-    return v.length ? +(v.reduce((s, x) => s + x, 0) / v.length).toFixed(1) : null;
+    const v = arr.filter((x) => x != null && !isNaN(x));
+    return v.length
+        ? +(v.reduce((s, x) => s + x, 0) / v.length).toFixed(1)
+        : null;
 }
 
-// ── (Re)build chart for the selected month ────────────────────────────────────
+// (Re)build chart for the selected month.
 async function rebuild() {
-    noData.value = false;
     chartInstance?.destroy();
     chartInstance = null;
 
-    const mk      = selectedMonth.value;
-    const buckets = [[], [], [], []];
+    const mk = selectedMonth.value;
+    const buckets = [[], [], [], [], []];
 
     for (const e of allEntries) {
         if (!e.entry_date || e.sleep == null) continue;
-        if (e.entry_date.slice(0, 7) !== mk)  continue;
+        if (e.entry_date.slice(0, 7) !== mk) continue;
         buckets[weekIdx(e.entry_date)].push(parseFloat(e.sleep));
     }
 
-    const avgs = buckets.map(b => avg(b));
-    weekData.value = avgs.map(a => ({ avg: a }));
-
-    if (avgs.every(v => v === null)) {
-        noData.value = true;
-        return;
-    }
+    const avgs = buckets.map((b) => avg(b));
+    const chartSeries = avgs.map((v) => (v == null ? 0 : v));
+    weekData.value = avgs.map((a) => ({ avg: a }));
 
     await nextTick();
 
     chartInstance = new Chart(canvasRef.value, {
         type: "line",
         data: {
-            labels: ["Sem 1", "Sem 2", "Sem 3", "Sem 4"],
+            labels: ["Sem 1", "Sem 2", "Sem 3", "Sem 4", "Sem 5"],
             datasets: [
                 {
-                    label: "Sommeil moyen (h)",
-                    data: avgs.map(v => v ?? null),
-                    borderColor: "#8b5cf6",
-                    backgroundColor: "rgba(139,92,246,0.10)",
-                    borderWidth: 2.5,
-                    pointBackgroundColor: "#8b5cf6",
-                    pointRadius: 5,
+                    label: "Sommeil moyen",
+                    data: chartSeries,
+                    borderColor: "#4f46e5",
+                    backgroundColor: "rgba(79, 70, 229, 0.14)",
+                    borderWidth: 2.75,
+                    pointBackgroundColor: "#ef4444",
+                    pointBorderColor: "#4f46e5",
+                    pointBorderWidth: 2,
+                    pointRadius: 5.5,
                     pointHoverRadius: 7,
-                    tension: 0.4,
+                    tension: 0.45,
                     fill: true,
-                    spanGaps: true,
                 },
                 {
                     label: "Objectif 8 h",
-                    data: [GOAL, GOAL, GOAL, GOAL],
-                    borderColor: "#f59e0b",
-                    borderDash: [6, 4],
+                    data: [GOAL, GOAL, GOAL, GOAL, GOAL],
+                    borderColor: "#818cf8",
+                    borderDash: [5, 4],
                     borderWidth: 2,
-                    backgroundColor: "rgba(245,158,11,0.04)",
                     pointRadius: 0,
-                    fill: true,
+                    fill: false,
                 },
             ],
         },
@@ -163,28 +173,34 @@ async function rebuild() {
             plugins: {
                 legend: { display: false },
                 tooltip: {
+                    backgroundColor: "#111827",
+                    titleColor: "#f8fafc",
+                    bodyColor: "#f8fafc",
                     callbacks: {
-                        label: ctx =>
+                        label: (ctx) =>
                             ctx.dataset.label === "Objectif 8 h"
-                                ? " Objectif : 8 h"
-                                : ` Moyenne : ${ctx.raw ?? "—"} h`,
+                                ? " Objectif : 8 h / nuit"
+                                : ` Sommeil : ${(weekData.value[ctx.dataIndex]?.avg ?? 0)} h`,
                     },
                 },
             },
             scales: {
                 x: {
-                    grid: { display: false },
-                    ticks: { font: { size: 11 } },
+                    grid: { display: false, drawBorder: false },
+                    ticks: { color: "#475569", font: { size: 12 } },
+                    border: { display: false },
                 },
                 y: {
                     min: 0,
-                    max: 12,
-                    grid: { color: "#f1f5f9" },
+                    max: 11,
+                    grid: { color: "#e2e8f0", drawBorder: false },
                     ticks: {
-                        stepSize: 2,
-                        font: { size: 10 },
-                        callback: v => v + " h",
+                        stepSize: 1,
+                        color: "#64748b",
+                        font: { size: 12 },
+                        callback: (v) => (v === 11 || v % 2 === 0 ? `${v} h` : ""),
                     },
+                    border: { display: false },
                 },
             },
         },
@@ -193,7 +209,7 @@ async function rebuild() {
 
 async function load() {
     const { data: res } = await api.get("/journal");
-    allEntries    = res?.data ?? [];
+    allEntries = res?.data ?? [];
     loading.value = false;
     await rebuild();
 }

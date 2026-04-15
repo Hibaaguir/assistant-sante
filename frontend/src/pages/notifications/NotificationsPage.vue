@@ -32,6 +32,10 @@
         <!-- Contenu -->
         <div v-if="loading" class="py-16 text-center text-sm text-slate-400">Chargement...</div>
 
+        <div v-else-if="error" class="rounded-2xl border border-red-200 bg-red-50 py-16 text-center text-sm text-red-700">
+            {{ error }}
+        </div>
+
         <div v-else-if="!filtered.length" class="rounded-2xl border border-slate-200 bg-white py-16 text-center text-sm text-slate-400">
             Aucune notification pour ces filtres.
         </div>
@@ -72,7 +76,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import api from "@/services/api";
+import { useAuthStore } from "@/stores/auth";
+
+const router = useRouter();
+const authStore = useAuthStore();
 
 const TYPE_FILTERS = [
     { value: "all",      label: "Toutes"   },
@@ -88,6 +97,7 @@ const DATE_FILTERS = [
 
 const loading     = ref(true);
 const all         = ref([]);
+const error       = ref("");
 const filterType  = ref("all");
 const filterDays  = ref(7);
 
@@ -110,9 +120,21 @@ function formatDate(dateStr) {
 }
 
 async function load() {
-    const { data: res } = await api.get("/notifications");
-    all.value   = res?.data ?? [];
-    loading.value = false;
+    loading.value = true;
+    error.value = "";
+    try {
+        const { data: res } = await api.get("/notifications");
+        all.value = Array.isArray(res?.data) ? res.data : [];
+    } catch (e) {
+        if (e?.response?.status === 401) {
+            await authStore.logout({ callApi: false });
+            await router.replace({ name: "login" });
+            return;
+        }
+        error.value = "Impossible de charger les notifications pour le moment.";
+    } finally {
+        loading.value = false;
+    }
 }
 
 onMounted(load);

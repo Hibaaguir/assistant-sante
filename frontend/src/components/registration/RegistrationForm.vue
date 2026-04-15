@@ -1,4 +1,4 @@
-<!--
++<!--
   InscriptionPage.vue
   Formulaire d'inscription : nom, email, date de naissance, mot de passe.
 -->
@@ -191,7 +191,10 @@
                             </div>
 
                             <!-- Confirmation mot de passe -->
-                            <FormField label="Confirmer le mot de passe">
+                            <FormField
+                                label="Confirmer le mot de passe"
+                                :error="errors.password_confirmation"
+                            >
                                 <template #icon>
                                     <path
                                         stroke-linecap="round"
@@ -205,7 +208,8 @@
                                     type="password"
                                     placeholder="••••••••"
                                     autocomplete="new-password"
-                                    v-bind="inputProps('password')"
+                                    v-bind="inputProps('password_confirmation')"
+                                    @input="errors.password_confirmation = ''"
                                 />
                             </FormField>
 
@@ -300,6 +304,7 @@ const errors = reactive({
     email: "",
     date_naissance: "",
     password: "",
+    password_confirmation: "",
 });
 const loading = ref(false);
 const serverMessage = ref("");
@@ -355,7 +360,7 @@ function validerDate() {
     }
     const [, d, mo, y] = m.map(Number);
     const date = new Date(y, mo - 1, d);
-    errors.date_naissance =
+    if (
         mo < 1 ||
         mo > 12 ||
         d < 1 ||
@@ -363,8 +368,30 @@ function validerDate() {
         date.getFullYear() !== y ||
         date.getMonth() !== mo - 1 ||
         date.getDate() !== d
-            ? "Date invalide. Utilisez JJ/MM/AAAA."
-            : "";
+    ) {
+        errors.date_naissance = "Date invalide. Utilisez JJ/MM/AAAA.";
+        return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date > today) {
+        errors.date_naissance =
+            "La date de naissance ne peut pas être dans le futur.";
+        return;
+    }
+
+    const adultLimit = new Date(
+        today.getFullYear() - 18,
+        today.getMonth(),
+        today.getDate(),
+    );
+    if (date > adultLimit) {
+        errors.date_naissance = "Vous devez avoir au moins 18 ans.";
+        return;
+    }
+
+    errors.date_naissance = "";
 }
 
 function isoDate(str) {
@@ -384,6 +411,9 @@ async function soumettre() {
     if (!form.date_naissance)
         errors.date_naissance = "La date de naissance est obligatoire.";
     if (!form.password) errors.password = "Le mot de passe est obligatoire.";
+    if (!form.password_confirmation)
+        errors.password_confirmation =
+            "La confirmation du mot de passe est obligatoire.";
 
     // Validation format
     if (form.name.length > 0 && form.name.length < 3)
@@ -394,8 +424,11 @@ async function soumettre() {
         const e = pwdError(form.password);
         if (e) errors.password = e;
     }
-    if (form.password && form.password !== form.password_confirmation)
-        errors.password = "Les mots de passe ne correspondent pas.";
+    if (form.password && form.password_confirmation) {
+        if (form.password !== form.password_confirmation)
+            errors.password_confirmation =
+                "Les mots de passe ne correspondent pas.";
+    }
     validerDate();
 
     if (Object.values(errors).some(Boolean)) return;
@@ -429,11 +462,25 @@ async function soumettre() {
         if (status === 422 && data.errors) {
             errors.name = first(data.errors.name);
             errors.email = first(data.errors.email);
-            errors.date_naissance = first(data.errors.date_of_birth);
+            errors.date_naissance = first(data.errors.date_naissance);
+            if (!errors.date_naissance)
+                errors.date_naissance = first(data.errors.date_of_birth);
+            if (!errors.date_naissance)
+                errors.date_naissance = first(data.errors.birth_date);
             errors.password = first(data.errors.password);
+            errors.password_confirmation =
+                first(data.errors.password_confirmation);
             serverMessage.value =
-                "Veuillez corriger les erreurs du formulaire.";
+                data?.message || "Veuillez corriger les erreurs du formulaire.";
             return;
+        }
+
+        const backendMessage = first(data?.message || data?.error);
+        if (
+            backendMessage &&
+            /(date|birth|naissance|18\s*ans|mineur)/i.test(backendMessage)
+        ) {
+            errors.date_naissance = backendMessage;
         }
         if (status === 409 && data.errors?.email) {
             errors.email = first(data.errors.email);
