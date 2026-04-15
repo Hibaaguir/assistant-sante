@@ -3,12 +3,27 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ["Inter", "system-ui", "sans-serif"],
+                sans: ["Montserrat", "system-ui", "sans-serif"],
             },
             letterSpacing: {
                 tight: "-0.01em",
             },
             colors: {
+                primary: {
+                    DEFAULT: "#149bd7",
+                },
+                blue: {
+                    50: "#eef9fd",
+                    100: "#d7eff9",
+                    200: "#afdff3",
+                    300: "#82cdec",
+                    400: "#4cb8e2",
+                    500: "#149bd7",
+                    600: "#128dc4",
+                    700: "#0f74a1",
+                    800: "#0d5c7f",
+                    900: "#0a4660",
+                },
                 brand: {
                     50: "#fff7f7",
                     100: "#ffe9ed",

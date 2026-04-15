@@ -151,7 +151,7 @@
                             />
                             <button
                                 type="button"
-                                class="mt-3 w-full rounded-lg bg-gradient-to-r from-[#2563eb] to-[#7c3aed] py-2 text-sm font-semibold text-white disabled:opacity-50"
+                                class="mt-3 w-full rounded-lg bg-gradient-to-r from-[#149bd7] to-[#7c3aed] py-2 text-sm font-semibold text-white disabled:opacity-50"
                                 :disabled="!mealDraft.label.trim()"
                                 @click="addMeal"
                             >
@@ -348,7 +348,7 @@
                             />
                         </div>
                         <div
-                            class="mt-2 rounded-lg bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-3 py-2 text-sm font-semibold text-white"
+                            class="mt-2 rounded-lg bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-3 py-2 text-sm font-semibold text-white"
                         >
                             <div class="flex items-center justify-between">
                                 <span>Total</span>
@@ -429,7 +429,7 @@
                                 />
                                 <button
                                     type="button"
-                                    class="rounded-lg bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="rounded-lg bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
                                     :disabled="!newActivityName.trim()"
                                     @click="addNewActivity"
                                 >
@@ -707,7 +707,7 @@
                 <button
                     v-if="step < 3"
                     type="button"
-                    class="rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
+                    class="rounded-xl bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
                     @click="goNext"
                 >
                     Suivant ›
@@ -723,7 +723,7 @@
                         </button>
                         <button
                             type="button"
-                            class="rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
+                            class="rounded-xl bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
                             @click="save"
                         >
                             ✓ Enregistrer les modifications
@@ -732,7 +732,7 @@
                     <button
                         v-else
                         type="button"
-                        class="rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
+                        class="rounded-xl bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
                         @click="save"
                     >
                         ✓ Enregistrer la journée

@@ -13,7 +13,7 @@ export const homeFeatures = [
         titre: "Journal quotidien",
         description:
             "Suivez votre sommeil, votre stress, votre énergie, votre nutrition, votre hydratation et votre activité physique avec un résumé quotidien structuré.",
-        accent: "#0ea5e9",
+        accent: "#149bd7",
         icone: "journal",
     },
     {
@@ -71,7 +71,7 @@ export const homeNarrativeSections = [
             {
                 titre: "Enregistrement rapide quotidien",
                 description: "Cela ne prend que quelques minutes par jour.",
-                couleur: "#0ea5e9",
+                couleur: "#149bd7",
                 icone: "horloge",
             },
             {

@@ -1,18 +1,11 @@
 <template>
-  <!--
-    Composant racine de l'application.
-    Il delegue tout l'affichage au routeur.
-    Cette structure minimale simplifie l'organisation globale.
-  -->
-  <router-view />
-  <AppToasts />
+    <Typography as="div" class="min-h-full">
+        <router-view />
+        <AppToasts />
+    </Typography>
 </template>
 
 <script setup>
 import AppToasts from "@/components/ui/AppToasts.vue";
-/*
-  Aucun state local ici.
-  Le routeur pilote l'ensemble des pages.
-  Ce fichier reste volontairement minimal.
-*/
+import Typography from "@/components/ui/Typography.vue";
 </script>

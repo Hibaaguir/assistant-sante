@@ -53,7 +53,7 @@ defineProps({
 // Visual styles for each variant
 const variantStyles = {
     primary:
-        "bg-gradient-to-r from-[#2563eb] to-[#7c3aed] text-white shadow-md shadow-indigo-500/25 hover:-translate-y-0.5",
+        "bg-gradient-to-r from-[#149bd7] to-[#7c3aed] text-white shadow-md shadow-indigo-500/25 hover:-translate-y-0.5",
     secondary:
         "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50",
     danger:

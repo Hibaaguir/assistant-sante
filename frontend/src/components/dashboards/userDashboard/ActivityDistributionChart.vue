@@ -69,7 +69,7 @@ Chart.register(DoughnutController, ArcElement, Legend, Tooltip);
 
 const COLORS = [
     "#6366f1", "#10b981", "#f59e0b",
-    "#f43f5e", "#3b82f6", "#8b5cf6",
+    "#f43f5e", "#149bd7", "#8b5cf6",
     "#14b8a6", "#ec4899",
 ];
 

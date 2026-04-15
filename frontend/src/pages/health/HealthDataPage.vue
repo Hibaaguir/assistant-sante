@@ -6,13 +6,15 @@
             >
                 Données de santé
             </h1>
-            <p class="mt-1 text-[13px] text-slate-500">
+            <p class="mt-2 text-[15px] leading-7 text-black">
                 Suivez vos indicateurs de santé au fil du temps
             </p>
         </header>
         <!-- Observations du médecin -->
         <section v-if="doctorLatestObservation" class="mt-4 space-y-3">
-            <h2 class="text-[16px] font-semibold text-blue-600">
+            <h2
+                class="text-[clamp(1.55rem,1.2rem+0.8vw,1.95rem)] font-bold leading-tight text-black"
+            >
                 Observations de votre médecin
             </h2>
             <article
@@ -23,7 +25,7 @@
                 >
                     {{ formatObsDate(doctorLatestObservation.date) }}
                 </p>
-                <p class="mt-2 text-[14px] leading-6 text-slate-700">
+                <p class="mt-2 text-[15px] leading-7 text-black">
                     {{ doctorLatestObservation.observation }}
                 </p>
             </article>

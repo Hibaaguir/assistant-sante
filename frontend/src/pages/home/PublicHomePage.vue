@@ -70,7 +70,7 @@
                     >
                         Prenez le contrôle de votre
                         <span
-                            class="bg-gradient-to-r from-[#3b82f6] to-[#d946ef] bg-clip-text text-transparent"
+                            class="bg-gradient-to-r from-[#149bd7] to-[#d946ef] bg-clip-text text-transparent"
                             >santé</span
                         >
                     </h1>

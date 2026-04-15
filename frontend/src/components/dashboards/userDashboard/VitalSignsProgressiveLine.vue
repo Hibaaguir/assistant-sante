@@ -8,7 +8,7 @@
                 <p class="text-xs text-slate-400">
                     <span class="font-medium text-[#f87171]">━</span> {{ currentLabel }}
                     &nbsp;vs&nbsp;
-                    <span class="font-medium text-[#60a5fa]">━ ─</span> {{ prevLabel }}
+                    <span class="font-medium text-[#149bd7]">━ ─</span> {{ prevLabel }}
                 </p>
             </div>
             <select v-model="selectedKey" @change="rebuild"
@@ -143,7 +143,7 @@ async function rebuild() {
                 {
                     label: prevLabel.value,
                     data: prevData,
-                    borderColor: "#60a5fa",
+                    borderColor: "#149bd7",
                     backgroundColor: "rgba(96,165,250,0.07)",
                     borderWidth: 2,
                     borderDash: [5, 3],

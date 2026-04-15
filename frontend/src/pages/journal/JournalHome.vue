@@ -18,7 +18,7 @@
                     </p>
                     <div class="flex flex-wrap gap-4 items-center">
                         <button
-                            class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-indigo-300 transition hover:brightness-110 hover:shadow-xl"
+                            class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-indigo-300 transition hover:brightness-110 hover:shadow-xl"
                             @click="router.push({ name: 'journal-assistant' })"
                         >
                             <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>

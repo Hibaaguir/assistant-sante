@@ -157,7 +157,7 @@ async function load() {
                 ctx.save();
                 ctx.beginPath();
                 ctx.setLineDash([6, 4]);
-                ctx.strokeStyle = "#0ea5e9";
+                ctx.strokeStyle = "#149bd7";
                 ctx.lineWidth   = 1.5;
                 ctx.moveTo(chartArea.left,  y);
                 ctx.lineTo(chartArea.right, y);

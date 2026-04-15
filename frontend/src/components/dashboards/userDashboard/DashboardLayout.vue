@@ -3,7 +3,7 @@
   Patient main layout: notifications and health chart.
 -->
 <template>
-    <div class="w-full px-4 py-4 sm:px-6 lg:px-8 bg-white">
+    <div class="user-dashboard-scope w-full px-4 py-4 sm:px-6 lg:px-8 bg-white">
         <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
                 <h1 class="text-[42px] font-bold leading-tight text-blue-600">
@@ -137,3 +137,42 @@ async function downloadDashboardPdf() {
     }
 }
 </script>
+
+<style scoped>
+.user-dashboard-scope :deep(h1) {
+    font-size: 2.15rem !important;
+    line-height: 1.2 !important;
+}
+
+.user-dashboard-scope :deep(h2) {
+    font-size: 1.35rem !important;
+    line-height: 1.25 !important;
+}
+
+.user-dashboard-scope :deep(h3) {
+    font-size: 1.2rem !important;
+    line-height: 1.3 !important;
+}
+
+.user-dashboard-scope :deep(h4) {
+    font-size: 1.05rem !important;
+}
+
+.user-dashboard-scope :deep(h5) {
+    font-size: 0.95rem !important;
+}
+
+.user-dashboard-scope :deep(h6) {
+    font-size: 0.9rem !important;
+}
+
+@media (max-width: 768px) {
+    .user-dashboard-scope :deep(h1) {
+        font-size: 1.85rem !important;
+    }
+
+    .user-dashboard-scope :deep(h2) {
+        font-size: 1.2rem !important;
+    }
+}
+</style>

@@ -42,7 +42,7 @@ const MONTHS_FR = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct"
 
 // One distinct color per analysis type
 const PALETTE = [
-    "#6366f1","#f87171","#34d399","#60a5fa","#fbbf24",
+    "#6366f1","#f87171","#34d399","#149bd7","#fbbf24",
     "#a78bfa","#f472b6","#2dd4bf","#fb923c","#94a3b8","#4ade80","#e879f9",
 ];
 

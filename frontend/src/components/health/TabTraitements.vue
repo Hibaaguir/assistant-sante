@@ -51,7 +51,7 @@
             <article
                 class="rounded-2xl border border-[#a8cdfb] bg-[#ebf6fe] p-4"
             >
-                <p class="text-[13px] text-[#2c67f6]">Prises totales</p>
+                <p class="text-[13px] text-[#149bd7]">Prises totales</p>
                 <p
                     class="mt-1 text-[24px] font-semibold leading-none text-slate-900"
                 >

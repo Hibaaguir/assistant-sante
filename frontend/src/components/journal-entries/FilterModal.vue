@@ -1,4 +1,4 @@
-﻿<template>
+<template>
     <div
         v-if="open"
         class="fixed inset-0 z-50 bg-black/35 backdrop-blur-sm p-4"
@@ -7,7 +7,7 @@
         <div
             class="mx-auto mt-6 w-full max-w-[540px] rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-[#f9f7ff] to-[#f3f8ff] p-4 shadow-[0_25px_50px_rgba(15,23,42,0.25)] sm:mt-10 sm:p-5"
         >
-            <!-- En-tête -->
+            <!-- En-t�te -->
             <div class="mb-4 flex items-center justify-between">
                 <h3 class="text-4xl font-extrabold leading-none text-slate-900">
                     Filtrer l'historique
@@ -17,7 +17,7 @@
                     class="text-slate-500"
                     @click="$emit('close')"
                 >
-                    ×
+                    �
                 </button>
             </div>
 
@@ -37,25 +37,25 @@
                 </button>
             </div>
 
-            <!-- Sélecteur de date / mois -->
+            <!-- S�lecteur de date / mois -->
             <DatePicker
                 v-if="model.type === 'month'"
                 v-model="model.month"
                 type="month"
-                label="Sélectionnez un mois"
+                label="S�lectionnez un mois"
             />
             <DatePicker
                 v-if="model.type === 'date'"
                 v-model="model.date"
                 type="date"
-                label="Sélectionnez une date"
+                label="S�lectionnez une date"
             />
 
             <!-- Actions -->
             <div class="mt-4 flex gap-2">
                 <button
                     type="button"
-                    class="flex-1 rounded-xl bg-gradient-to-r from-[#2563eb] to-[#7c3aed] py-2 text-sm font-semibold text-white"
+                    class="flex-1 rounded-xl bg-gradient-to-r from-[#149bd7] to-[#7c3aed] py-2 text-sm font-semibold text-white"
                     @click="$emit('apply', model)"
                 >
                     Appliquer
@@ -65,7 +65,7 @@
                     class="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-500"
                     @click="$emit('reset')"
                 >
-                    Réinitialiser
+                    R�initialiser
                 </button>
             </div>
         </div>
@@ -82,24 +82,24 @@ const props = defineProps({
 
 defineEmits(["close", "apply", "reset"]);
 
-// ─── Constantes ───────────────────────────────────────────────
+// --- Constantes -----------------------------------------------
 
 const SELECTED = "border-violet-400 bg-violet-50 text-slate-900";
 const UNSELECTED = "border-slate-300 bg-white text-slate-700";
 
 const OPTIONS = [
-    { id: "all", label: "Toutes les données", icon: "🗃️" },
-    { id: "date", label: "Par date", icon: "📅" },
-    { id: "month", label: "Par mois", icon: "🗓️" },
-    { id: "nutrition", label: "Nutrition", icon: "🥗" },
-    { id: "hydration", label: "Hydratation", icon: "💧" },
-    { id: "activity", label: "Activités", icon: "🏃" },
-    { id: "sleep", label: "Sommeil", icon: "😴" },
-    { id: "stress", label: "Stress", icon: "🔥" },
-    { id: "energy", label: "Énergie", icon: "⚡" },
+    { id: "all", label: "Toutes les donn�es", icon: "???" },
+    { id: "date", label: "Par date", icon: "??" },
+    { id: "month", label: "Par mois", icon: "???" },
+    { id: "nutrition", label: "Nutrition", icon: "??" },
+    { id: "hydration", label: "Hydratation", icon: "??" },
+    { id: "activity", label: "Activit�s", icon: "??" },
+    { id: "sleep", label: "Sommeil", icon: "??" },
+    { id: "stress", label: "Stress", icon: "??" },
+    { id: "energy", label: "�nergie", icon: "?" },
 ];
 
-// ─── État local ───────────────────────────────────────────────
+// --- �tat local -----------------------------------------------
 
 const model = reactive({ type: "all", month: "", date: "" });
 

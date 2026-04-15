@@ -4,10 +4,12 @@
         class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
     >
         <div>
-            <h2 class="text-[24px] font-bold leading-none text-slate-900">
+            <h2
+                class="text-[clamp(1.75rem,1.4rem+0.9vw,2.2rem)] font-extrabold leading-tight text-black"
+            >
                 Derniers signes vitaux
             </h2>
-            <p class="mt-2 text-[14px] text-slate-500">
+            <p class="mt-2 text-[15px] leading-7 text-black">
                 {{
                     latestVitalMeasuredAtLabel
                         ? `Dernière entrée du ${latestVitalMeasuredAtLabel}`
@@ -82,7 +84,7 @@
         v-if="peutModifierDerniereMesure"
         class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
     >
-        <p class="text-[13px] text-slate-500">
+        <p class="text-[15px] leading-7 text-black">
             Cliquez sur une valeur pour la modifier directement dans la carte.
         </p>
         <div class="flex items-center gap-2">
@@ -116,7 +118,9 @@
         <div
             class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
         >
-            <h2 class="text-[24px] font-bold leading-none text-slate-900">
+            <h2
+                class="text-[clamp(1.75rem,1.4rem+0.9vw,2.2rem)] font-extrabold leading-tight text-black"
+            >
                 Historique des mesures
             </h2>
             <button
@@ -218,7 +222,7 @@
 
             <div
                 v-if="!historiqueFiltre.length"
-                class="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-[14px] text-slate-600"
+                class="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-[15px] leading-7 text-black"
             >
                 Aucune mesure ne correspond aux filtres sélectionnés.
             </div>
@@ -240,7 +244,7 @@
                     </h3>
                     <p
                         v-if="isEditingLatest"
-                        class="mt-2 text-[13px] text-slate-500"
+                        class="mt-2 text-[14px] leading-6 text-black"
                     >
                         Seule la dernière entrée peut être modifiée.
                     </p>
@@ -300,7 +304,7 @@
                                 :disabled="form.skipPressure"
                                 class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60"
                             />
-                            <p class="mt-1 text-[13px] text-slate-500">
+                            <p class="mt-1 text-[14px] text-black">
                                 Systolique
                             </p>
                         </div>
@@ -315,7 +319,7 @@
                                 class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60"
                             />
                             <p
-                                class="mt-1 text-right text-[13px] text-slate-500"
+                                class="mt-1 text-right text-[14px] text-black"
                             >
                                 Diastolique
                             </p>
@@ -356,7 +360,7 @@
                     />
                     <p
                         v-if="isEditingLatest"
-                        class="mt-2 text-[13px] text-slate-500"
+                        class="mt-2 text-[14px] leading-6 text-black"
                     >
                         La date reste verrouillée pour mettre à jour uniquement
                         la dernière mesure.
@@ -411,8 +415,8 @@ const VITAL_META = {
         unit: "mmHg",
         bg: "bg-[#ebf6fe]",
         border: "border-[#a8cdfb]",
-        iconBg: "bg-[#d5e7fd] text-[#2c67f6]",
-        accent: "#2c67f6",
+        iconBg: "bg-[#d5e7fd] text-[#149bd7]",
+        accent: "#149bd7",
         icon: `<svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>`,
     },
     oxygen: {

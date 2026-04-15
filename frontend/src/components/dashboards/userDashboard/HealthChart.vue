@@ -66,7 +66,7 @@ async function loadChart() {
             labels: vitals.labels ?? [],
             datasets: [
                 { label: "Fréquence cardiaque (bpm)",  data: vitals.heart_rate         ?? [], borderColor: "#f43f5e", fill: false, tension: 0.3 },
-                { label: "Pression systolique (mmHg)", data: vitals.systolic_pressure  ?? [], borderColor: "#3b82f6", fill: false, tension: 0.3 },
+                { label: "Pression systolique (mmHg)", data: vitals.systolic_pressure  ?? [], borderColor: "#149bd7", fill: false, tension: 0.3 },
                 { label: "Saturation oxygène (%)",     data: vitals.oxygen_saturation  ?? [], borderColor: "#8b5cf6", fill: false, tension: 0.3 },
             ],
         },
