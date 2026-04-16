@@ -4,14 +4,16 @@
 -->
 <template>
     <div class="user-dashboard-scope w-full px-4 py-4 sm:px-6 lg:px-8 bg-white">
-        <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <header
+            class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+        >
             <div>
-                <h1 class="text-[42px] font-bold leading-tight text-blue-600">
+                <Typography tag="h1" variant="h1-style">
                     Tableau de bord
-                </h1>
-                <p class="mt-3 text-base text-slate-600 font-medium">
+                </Typography>
+                <Typography tag="h2" variant="h4-style">
                     Aperçu de votre santé
-                </p>
+                </Typography>
             </div>
 
             <button
@@ -79,6 +81,7 @@ import WelcomeCard from "./WelcomeCard.vue";
 import VitalSignsProgressiveLine from "./VitalSignsProgressiveLine.vue";
 import LabsDistributionChart from "./LabsDistributionChart.vue";
 import WeightComparisonChart from "./WeightComparisonChart.vue";
+import Typography from "../../ui/Typography.vue";
 
 const pdfTargetRef = ref(null);
 const exportingPdf = ref(false);
@@ -103,7 +106,11 @@ async function downloadDashboardPdf() {
             image.src = dataUrl;
         });
 
-        const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+        const pdf = new jsPDF({
+            orientation: "portrait",
+            unit: "mm",
+            format: "a4",
+        });
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
 

@@ -2,13 +2,13 @@
     <div class="space-y-10">
         <!-- Step title -->
         <div class="mx-auto max-w-2xl text-center">
-            <h2 class="mb-4 text-4xl font-extrabold text-slate-900">
+            <Typography tag="h2" variant="h1-style">
                 Informations de base
-            </h2>
-            <p class="text-gray-500">
+            </Typography>
+            <Typography tag="p" variant="paragraph">
                 Commençons par quelques informations essentielles pour
                 personnaliser ton expérience
-            </p>
+            </Typography>
         </div>
 
         <div class="space-y-8">
@@ -154,6 +154,8 @@
 import GenderCard from "./GenderCard.vue";
 import ToggleCard from "./ToggleCard.vue";
 import GoalCard from "./GoalCard.vue";
+import Typography from "@/components/ui/Typography.vue";
+
 
 // ─── Static data ───────────────────────────────────────────────────────────────
 
@@ -170,10 +172,7 @@ const GENDERS = [
     {
         value: "female",
         label: "Femme",
-        iconPaths: [
-            "M12 13v7m-3-3h6",
-            "M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z",
-        ],
+        iconPaths: ["M12 13v7m-3-3h6", "M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"],
     },
 ];
 

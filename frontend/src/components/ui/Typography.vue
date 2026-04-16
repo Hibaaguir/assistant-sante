@@ -1,92 +1,123 @@
 <template>
-    <component :is="as" class="app-typography font-sans">
+    <component :is="tag" class="base-title" :class="variant">
         <slot />
     </component>
 </template>
 
 <script setup>
 defineProps({
-    as: {
+    tag: {
         type: String,
-        default: "section",
+        default: "h2",
+    },
+    variant: {
+        type: String,
+        default: "default",
+        validator: (v) =>
+            [
+                "default",
+                "primary",
+                "secondary",
+                "h1-style",
+                "h2-style",
+                "h3-style",
+                "h4-style",
+                "h5-style",
+                "paragraph",
+                "mauve",
+            ].includes(v),
     },
 });
 </script>
 
-<style scoped>
-.app-typography {
-    font-family: "Montserrat", sans-serif !important;
-}
-
-.app-typography :deep(p) {
-    font-family: "Montserrat", sans-serif !important;
-    font-size: 1.05rem !important;
-    line-height: 1.85 !important;
-    font-weight: 400 !important;
-    color: #000000 !important;
-    margin: 0 0 1rem;
-}
-
-.app-typography :deep(h1),
-.app-typography :deep(h2),
-.app-typography :deep(h3),
-.app-typography :deep(h4),
-.app-typography :deep(h5),
-.app-typography :deep(h6) {
-    font-family: "Montserrat", sans-serif !important;
-    letter-spacing: -0.01em !important;
-    line-height: 1.2 !important;
-    margin: 0 0 0.65em;
+<style lang="scss" scoped>
+.base-title {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
     text-wrap: balance;
-}
 
-.app-typography :deep(h1) {
-    font-size: 3rem !important;
-    font-weight: 800 !important;
-    color: #000000 !important;
-}
-
-.app-typography :deep(h2) {
-    font-size: 2.35rem !important;
-    font-weight: 700 !important;
-    color: #000000 !important;
-}
-
-.app-typography :deep(h3) {
-    font-size: 1.95rem !important;
-    font-weight: 700 !important;
-    color: var(--color-primary) !important;
-}
-
-.app-typography :deep(h4) {
-    font-size: 1.55rem !important;
-    font-weight: 600 !important;
-    color: #000000 !important;
-}
-
-.app-typography :deep(h5) {
-    font-size: 1.3rem !important;
-    font-weight: 600 !important;
-    color: #000000 !important;
-}
-
-.app-typography :deep(h6) {
-    font-size: 1.12rem !important;
-    font-weight: 600 !important;
-    color: #000000 !important;
-}
-
-@media (max-width: 768px) {
-    .app-typography :deep(h1) {
-        font-size: 2.4rem !important;
+    &.default {
+        font-size: 1.5rem;
+        color: #333;
     }
 
-    .app-typography :deep(h2) {
-        font-size: 2rem !important;
+    &.primary {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #0066cc;
+
+        @media (max-width: 1024px) {
+            font-size: 2.5rem;
+        }
+
+        @media (max-width: 768px) {
+            font-size: 2rem;
+        }
     }
 
-    .app-typography :deep(h3) {
-        font-size: 1.7rem !important;
+    &.secondary {
+        font-size: 1.25rem;
+        color: #666;
+        font-weight: 500;
+    }
+
+    &.h1-style {
+        font-size: 3rem;
+        font-weight: 800;
+        color: blue;
+
+        @media (max-width: 768px) {
+            font-size: 2.4rem;
+        }
+    }
+
+    &.h2-style {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: #1a1a1a;
+
+        @media (max-width: 768px) {
+            font-size: 1.875rem;
+        }
+    }
+
+    &.h3-style {
+        font-size: 1.95rem;
+        font-weight: 700;
+        color: #004e89;
+    }
+
+    &.h4-style {
+        font-size: 1.55rem;
+        font-weight: 500;
+        color: #000;
+    }
+
+    &.h5-style {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #000000;
+    }
+
+    &.paragraph {
+        font-size: 1.05rem;
+        line-height: 1.85;
+        font-weight: 400;
+        color: #000;
+        margin: 0 0 1rem;
+    }
+
+    &.mauve {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #a855f7;
+
+        @media (max-width: 768px) {
+            font-size: 1.5rem;
+        }
     }
 }
 </style>

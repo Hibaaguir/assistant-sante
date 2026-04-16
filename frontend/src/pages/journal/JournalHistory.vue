@@ -16,15 +16,13 @@
                     >
                         HealthFlow Journal
                     </p>
-                    <h2
-                        class="mt-4 text-5xl font-extrabold tracking-tight text-slate-900"
-                    >
+                    <Typography tag="h1" variant="h3-style" class="mt-4">
                         🗂️ Historique du journal
-                    </h2>
-                    <p class="mt-1 text-sm text-slate-600">
+                    </Typography>
+                    <Typography tag="h4" variant="h3-style" class="mt-1">
                         Consultez, filtrez et mettez a jour vos entrees
                         precedentes en toute clarte.
-                    </p>
+                    </Typography>
                 </div>
                 <div class="flex gap-2">
                     <!-- Use BaseButton to avoid repeating the same button style everywhere -->
@@ -43,7 +41,10 @@
                         </svg>
                         Filtrer
                     </BaseButton>
-                    <BaseButton variant="primary" @click="router.push({ name: 'journal' })">
+                    <BaseButton
+                        variant="primary"
+                        @click="router.push({ name: 'journal' })"
+                    >
                         Retour
                     </BaseButton>
                 </div>
@@ -57,16 +58,16 @@
 
         <div
             v-if="store.filter.type !== 'all'"
-            class="mb-4 flex items-center gap-2 text-sm"
+            class="mb-4 flex items-center gap-2 text-base"
         >
-            <span class="text-slate-500">Filtre actif :</span>
+            <span class="text-slate-700 font-semibold">Filtre actif :</span>
             <span
                 class="rounded-full bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-3 py-1 font-semibold text-white"
                 >{{ activeFilterLabel }}</span
             >
             <button
                 type="button"
-                class="font-semibold text-slate-500 underline"
+                class="font-semibold text-base text-slate-600 underline hover:text-slate-800 transition"
                 @click="store.resetFilter()"
             >
                 Réinitialiser filtre
@@ -94,10 +95,10 @@
             v-if="showNoResults"
             class="mt-4 rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm"
         >
-            <p class="text-sm font-semibold text-slate-800">
+            <p class="text-base font-semibold text-slate-800">
                 Aucune entrée trouvée avec ce filtre.
             </p>
-            <p class="mt-1 text-sm text-slate-500">
+            <p class="mt-1 text-base text-slate-600">
                 Réinitialise le filtre pour afficher tout l'historique.
             </p>
             <BaseButton class="mt-4" @click="resetFilter">
@@ -109,10 +110,13 @@
             v-else-if="!hasEntries"
             class="mt-4 rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm"
         >
-            <p class="text-sm font-semibold text-slate-800">
+            <p class="text-base font-semibold text-slate-800">
                 Aucune entrée enregistrée pour le moment.
             </p>
-            <BaseButton class="mt-4" @click="router.push({ name: 'journal-assistant' })">
+            <BaseButton
+                class="mt-4"
+                @click="router.push({ name: 'journal-assistant' })"
+            >
                 Ajouter une entrée
             </BaseButton>
         </div>
@@ -139,6 +143,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
+import Typography from "@/components/ui/Typography.vue";
 import { useRoute, useRouter } from "vue-router";
 import FilterModal from "@/components/journal-entries/FilterModal.vue";
 import CarteEntreeHistorique from "@/components/journal-entries/EntryHistoryCard.vue";
@@ -183,14 +188,15 @@ const showNoResults = computed(
 
 // Decide which color to use for the notice banner (from the URL query)
 const noticeTone = computed(() => {
-    if (route.query.notice === "saved")    return "success";
+    if (route.query.notice === "saved") return "success";
     if (route.query.notice === "canceled") return "warning";
     return "";
 });
 
 // Get the notice banner text based on the URL query
 const noticeMessage = computed(() => {
-    if (route.query.notice === "saved")    return "Modifications enregistrées avec succès.";
+    if (route.query.notice === "saved")
+        return "Modifications enregistrées avec succès.";
     if (route.query.notice === "canceled") return "Modifications annulées.";
     return "";
 });
@@ -209,13 +215,13 @@ const resetFilter = () => {
 
 // Start a deletion request — store the ID and open the confirmation dialog
 const requestDeletion = (id) => {
-    pendingDeleteId.value   = id;
+    pendingDeleteId.value = id;
     showDeleteConfirm.value = true;
 };
 
 // Cancel the deletion and close the dialog
 const cancelDeletion = () => {
-    pendingDeleteId.value   = null;
+    pendingDeleteId.value = null;
     showDeleteConfirm.value = false;
     notifications.actionCancelled();
 };
@@ -228,11 +234,12 @@ const confirmDeletion = async () => {
         await store.supprimerEntree(pendingDeleteId.value);
         notifications.itemDeleted();
     } catch (error) {
-        const message = error?.response?.data?.message || "Erreur lors de la suppression.";
+        const message =
+            error?.response?.data?.message || "Erreur lors de la suppression.";
         notifications.error(message);
     } finally {
         // Always close the dialog when done
-        pendingDeleteId.value   = null;
+        pendingDeleteId.value = null;
         showDeleteConfirm.value = false;
     }
 };

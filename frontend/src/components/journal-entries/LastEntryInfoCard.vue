@@ -1,11 +1,20 @@
 ﻿<template>
-    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+    <div
+        class="rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:border-blue-500 hover:shadow-md"
+    >
         <!-- Header -->
-        <h3 class="text-base font-bold text-slate-900 mb-1">📋 Autres informations</h3>
-        <p class="text-sm text-slate-500 mb-3 leading-tight">Indicateurs complémentaires associés à votre dernière entrée.</p>
+        <Typography tag="h3" variant="h3-style" class="mb-1">
+            📋 Autres informations
+        </Typography>
+        <Typography tag="p" variant="paragraph" class="mb-3">
+            Indicateurs complémentaires associés à votre dernière entrée.
+        </Typography>
 
         <!-- Contenu -->
-        <div v-if="!entree" class="flex items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+        <div
+            v-if="!entree"
+            class="flex items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500"
+        >
             Aucune donnée
         </div>
 
@@ -14,37 +23,51 @@
             <div class="flex items-center justify-between py-0.5">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">💧</span>
-                    <span class="text-sm text-slate-600">Hydratation</span>
+                    <span class="text-base font-medium text-slate-700"
+                        >Hydratation</span
+                    >
                 </div>
-                <span class="text-sm font-semibold text-slate-900">{{ entree.hydration }} L</span>
+                <span class="text-base font-semibold text-slate-900"
+                    >{{ entree.hydration }} L</span
+                >
             </div>
 
             <!-- Repas -->
             <div class="flex items-center justify-between py-0.5">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">🍽️</span>
-                    <span class="text-sm text-slate-600">Repas</span>
+                    <span class="text-base font-medium text-slate-700"
+                        >Repas</span
+                    >
                 </div>
-                <span class="text-sm font-semibold text-slate-900">{{ formatMeals(entree) }}</span>
+                <span class="text-base font-semibold text-slate-900">{{
+                    formatMeals(entree)
+                }}</span>
             </div>
 
             <!-- Activité -->
             <div class="flex items-center justify-between py-0.5">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">🏃</span>
-                    <span class="text-sm text-slate-600">Activité</span>
+                    <span class="text-base font-medium text-slate-700"
+                        >Activité</span
+                    >
                 </div>
-                <span class="text-sm font-semibold text-slate-900">{{ formatActivity(entree) }}</span>
+                <span class="text-base font-semibold text-slate-900">{{
+                    formatActivity(entree)
+                }}</span>
             </div>
 
             <!-- Intensité -->
             <div class="flex items-center justify-between py-0.5">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">💪</span>
-                    <span class="text-sm text-slate-600">Intensité</span>
+                    <span class="text-base font-medium text-slate-700"
+                        >Intensité</span
+                    >
                 </div>
-                <span 
-                    class="text-sm font-semibold px-2 py-0.5 rounded-full border"
+                <span
+                    class="text-base font-semibold px-2 py-0.5 rounded-full border"
                     :class="intensityBadgeClass(entree.intensity)"
                 >
                     {{ formatIntensity(entree.intensity) }}
@@ -55,28 +78,38 @@
             <div class="flex items-center justify-between py-0.5">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">🚬</span>
-                    <span class="text-sm text-slate-600">Tabac</span>
+                    <span class="text-base font-medium text-slate-700"
+                        >Tabac</span
+                    >
                 </div>
-                <span class="text-sm font-semibold text-slate-900">{{ formatTobacco(entree) }}</span>
+                <span class="text-base font-semibold text-slate-900">{{
+                    formatTobacco(entree)
+                }}</span>
             </div>
 
             <!-- Alcool -->
             <div class="flex items-center justify-between py-0.5">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">🍷</span>
-                    <span class="text-sm text-slate-600">Alcool</span>
+                    <span class="text-base font-medium text-slate-700"
+                        >Alcool</span
+                    >
                 </div>
-                <span class="text-sm font-semibold text-slate-900">{{ formatAlcohol(entree) }}</span>
+                <span class="text-base font-semibold text-slate-900">{{
+                    formatAlcohol(entree)
+                }}</span>
             </div>
 
             <!-- Apport en sucre -->
             <div class="flex items-center justify-between py-0.5">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">🍬</span>
-                    <span class="text-sm text-slate-600">Apport en sucre</span>
+                    <span class="text-base font-medium text-slate-700"
+                        >Apport en sucre</span
+                    >
                 </div>
-                <span 
-                    class="text-sm font-semibold px-2 py-0.5 rounded-full border"
+                <span
+                    class="text-base font-semibold px-2 py-0.5 rounded-full border"
                     :class="sugarBadgeClass(entree.sugar)"
                 >
                     {{ formatSugar(entree.sugar) }}
@@ -88,6 +121,7 @@
 
 <script setup>
 import { computed } from "vue";
+import Typography from "@/components/ui/Typography.vue";
 
 const props = defineProps({
     derniereEntree: { type: Object, default: null },

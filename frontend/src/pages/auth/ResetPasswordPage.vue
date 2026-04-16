@@ -41,23 +41,21 @@
                     </svg>
                 </div>
                 <div>
-                    <h1
-                        class="text-4xl font-extrabold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent"
-                    >
+                    <Typography tag="h1" variant="h1-style">
                         HealthFlow
-                    </h1>
+                    </Typography>
                 </div>
             </div>
 
             <!-- Content -->
             <div v-if="!resetOk">
-                <h2 class="text-2xl font-bold text-gray-900">
+                <Typography tag="h2" variant="h2-style">
                     Réinitialiser votre mot de passe
-                </h2>
-                <p class="mt-2 text-sm text-gray-600">
+                </Typography>
+                <Typography tag="p" variant="paragraph" class="mt-2">
                     Entrez votre nouveau mot de passe pour réinitialiser l'accès
                     à votre compte.
-                </p>
+                </Typography>
             </div>
 
             <!-- Form -->

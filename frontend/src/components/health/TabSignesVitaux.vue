@@ -4,18 +4,16 @@
         class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
     >
         <div>
-            <h2
-                class="text-[clamp(1.75rem,1.4rem+0.9vw,2.2rem)] font-extrabold leading-tight text-black"
-            >
+            <Typography tag="h4" variant="h2-style">
                 Derniers signes vitaux
-            </h2>
-            <p class="mt-2 text-[15px] leading-7 text-black">
+            </Typography>
+            <Typography tag="p" variant="paragraph" class="mt-2 text-slate-700">
                 {{
                     latestVitalMeasuredAtLabel
                         ? `Dernière entrée du ${latestVitalMeasuredAtLabel}`
                         : "Aucune mesure enregistrée pour le moment."
                 }}
-            </p>
+            </Typography>
         </div>
     </div>
 
@@ -34,8 +32,8 @@
         >
             <template #value>
                 <span class="text-[36px] font-bold leading-none text-slate-900">
-                    {{ draft.heartRate || '--' }}
-                    <span class="text-[14px] font-medium text-slate-400 ml-2"
+                    {{ draft.heartRate || "--" }}
+                    <span class="text-[18px] font-semibold text-slate-700 ml-1"
                         >bpm</span
                     >
                 </span>
@@ -70,8 +68,8 @@
         >
             <template #value>
                 <span class="text-[36px] font-bold leading-none text-slate-900">
-                    {{ draft.oxygen || '--' }}
-                    <span class="text-[14px] font-medium text-slate-400 ml-2"
+                    {{ draft.oxygen || "--" }}
+                    <span class="text-[22px] font-semibold text-slate-700 ml-1"
                         >%</span
                     >
                 </span>
@@ -118,11 +116,9 @@
         <div
             class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
         >
-            <h2
-                class="text-[clamp(1.75rem,1.4rem+0.9vw,2.2rem)] font-extrabold leading-tight text-black"
-            >
+            <Typography tag="h2" variant="h4-style">
                 Historique des mesures
-            </h2>
+            </Typography>
             <button
                 v-if="filtresActifs"
                 type="button"
@@ -134,45 +130,49 @@
         </div>
 
         <div class="mt-8 grid gap-4 lg:grid-cols-2">
-            <div>
-                <label
-                    class="mb-3 block text-[14px] font-semibold text-slate-800"
-                    >Filtrer par date</label
-                >
-                <div class="relative">
-                    <input
-                        v-model="filterDate"
-                        type="date"
-                        class="h-12 w-full rounded-2xl border border-slate-300 bg-white pl-5 pr-12 text-[16px] text-slate-900 outline-none focus:border-purple-500"
-                    />
-                    <!-- Calendar icon (inline SVG — no render function needed) -->
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"
+            <div class="grid gap-4">
+                <div>
+                    <label
+                        class="mb-3 block text-[14px] font-semibold text-slate-800"
+                        >Filtrer par date</label
                     >
-                        <path
-                            d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
+                    <div class="relative">
+                        <input
+                            v-model="filterDate"
+                            type="date"
+                            class="h-12 w-full rounded-2xl border border-slate-300 bg-white pl-5 pr-12 text-[16px] text-slate-900 outline-none focus:border-purple-500"
                         />
-                    </svg>
+                        <!-- Calendar icon (inline SVG — no render function needed) -->
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"
+                        >
+                            <path
+                                d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
+                            />
+                        </svg>
+                    </div>
                 </div>
             </div>
-            <div>
-                <label
-                    class="mb-3 block text-[14px] font-semibold text-slate-800"
-                    >Filtrer par type</label
-                >
-                <select
-                    v-model="filterType"
-                    class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-5 text-[16px] text-slate-900 outline-none focus:border-purple-500"
-                >
-                    <option value="all">Tous les signes</option>
-                    <option value="heart">Rythme cardiaque</option>
-                    <option value="pressure">Tension artérielle</option>
-                    <option value="oxygen">Saturation O₂</option>
-                </select>
+            <div class="grid gap-4">
+                <div>
+                    <label
+                        class="mb-3 block text-[14px] font-semibold text-slate-800"
+                        >Filtrer par type</label
+                    >
+                    <select
+                        v-model="filterType"
+                        class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-5 text-[16px] text-slate-900 outline-none focus:border-purple-500"
+                    >
+                        <option value="all">Tous les signes</option>
+                        <option value="heart">Rythme cardiaque</option>
+                        <option value="pressure">Tension artérielle</option>
+                        <option value="oxygen">Saturation O₂</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -234,24 +234,22 @@
         v-if="showModal"
         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-sm p-4"
     >
-        <div class="w-full max-w-[470px] rounded-3xl bg-white p-7 shadow-2xl">
-            <div class="mb-4 flex items-center justify-between">
+        <div class="w-full max-w-[520px] rounded-3xl bg-white p-8 shadow-2xl">
+            <div class="mb-6 flex items-center justify-between">
                 <div>
-                    <h3
-                        class="text-[24px] font-semibold leading-none text-slate-900"
-                    >
+                    <Typography tag="h2" variant="h2-style">
                         {{ modalTitle }}
-                    </h3>
+                    </Typography>
                     <p
                         v-if="isEditingLatest"
-                        class="mt-2 text-[14px] leading-6 text-black"
+                        class="mt-2 text-sm font-medium text-slate-600"
                     >
                         Seule la dernière entrée peut être modifiée.
                     </p>
                 </div>
                 <button
                     type="button"
-                    class="text-slate-500 hover:text-slate-700"
+                    class="text-slate-400 hover:text-slate-700 transition"
                     @click="showModal = false"
                 >
                     <!-- Close icon (inline SVG — no render function needed) -->
@@ -267,7 +265,7 @@
                 </button>
             </div>
 
-            <div class="space-y-4">
+            <div class="space-y-6">
                 <!-- Rythme cardiaque -->
                 <ModalField
                     label="Rythme cardiaque (bpm)"
@@ -282,7 +280,7 @@
                         max="260"
                         placeholder="72"
                         :disabled="form.skipHeartRate"
-                        class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60"
+                        class="h-12 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-base font-medium outline-none focus:border-blue-500 disabled:opacity-60 transition"
                     />
                 </ModalField>
 
@@ -293,7 +291,7 @@
                     :skip-label="'Je n\'ai pas mesuré aujourd\'hui'"
                     v-model:skip="form.skipPressure"
                 >
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
                             <input
                                 v-model="form.systolic"
@@ -302,9 +300,9 @@
                                 max="300"
                                 placeholder="120"
                                 :disabled="form.skipPressure"
-                                class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60"
+                                class="h-12 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-base font-medium outline-none focus:border-blue-500 disabled:opacity-60 transition"
                             />
-                            <p class="mt-1 text-[14px] text-black">
+                            <p class="mt-2 text-sm font-medium text-slate-700">
                                 Systolique
                             </p>
                         </div>
@@ -316,10 +314,10 @@
                                 max="220"
                                 placeholder="80"
                                 :disabled="form.skipPressure"
-                                class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60"
+                                class="h-12 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-base font-medium outline-none focus:border-blue-500 disabled:opacity-60 transition"
                             />
                             <p
-                                class="mt-1 text-right text-[14px] text-black"
+                                class="mt-2 text-right text-sm font-medium text-slate-700"
                             >
                                 Diastolique
                             </p>
@@ -342,38 +340,38 @@
                         step="1"
                         placeholder="98"
                         :disabled="form.skipOxygen"
-                        class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:opacity-60"
+                        class="h-12 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-base font-medium outline-none focus:border-blue-500 disabled:opacity-60 transition"
                     />
                 </ModalField>
 
                 <!-- Date -->
                 <div>
                     <label
-                        class="mb-2 block text-[18px] font-semibold text-slate-700"
+                        class="mb-3 block text-base font-semibold text-slate-800"
                         >Date</label
                     >
                     <input
                         v-model="form.date"
                         type="date"
                         :disabled="isEditingLatest"
-                        class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] outline-none disabled:cursor-not-allowed disabled:opacity-70"
+                        class="h-12 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-base font-medium outline-none focus:border-blue-500 disabled:cursor-not-allowed disabled:opacity-70 transition"
                     />
                     <p
                         v-if="isEditingLatest"
-                        class="mt-2 text-[14px] leading-6 text-black"
+                        class="mt-2 text-sm font-medium text-slate-600"
                     >
                         La date reste verrouillée pour mettre à jour uniquement
                         la dernière mesure.
                     </p>
                 </div>
 
-                <p v-if="formError" class="text-sm font-medium text-rose-600">
+                <p v-if="formError" class="text-sm font-semibold text-rose-600">
                     {{ formError }}
                 </p>
 
                 <button
                     type="button"
-                    class="mt-2 h-11 w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-[16px] font-semibold text-white hover:from-emerald-500 hover:to-emerald-600"
+                    class="mt-2 h-12 w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-base font-semibold text-white shadow-sm hover:from-emerald-500 hover:to-emerald-600 transition hover:shadow-md"
                     @click="enregistrerMesure"
                 >
                     {{
@@ -396,6 +394,7 @@ import BloodPressureCard from "./BloodPressureCard.vue";
 import VitalCard from "./VitalCard.vue";
 import HistoryCard from "./HistoryCard.vue";
 import ModalField from "./ModalField.vue";
+import Typography from "@/components/ui/Typography.vue";
 
 // ─── Métadonnées des signes vitaux (couleurs, icônes, labels) ─────────────────
 const VITAL_META = {
@@ -537,22 +536,28 @@ const historiqueFiltre = computed(() => {
         .filter(Boolean)
         .reverse();
 
-    return filterDate.value
-        ? rows.filter((r) => r.dateKey === filterDate.value)
-        : rows;
+    // Filtrer par date
+    if (filterDate.value) {
+        return rows.filter((r) => r.dateKey === filterDate.value);
+    }
+    return rows;
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function today() {
-    return new Date().toISOString().slice(0, 10);
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
 }
 function isoDate(v) {
     return v ? String(v).slice(0, 10) : today();
 }
-// Format YYYY-MM-DD → YYYY-MM-DD 00:00:00 for the API
+// Format YYYY-MM-DD → YYYY-MM-DD 12:00:00 for the API (midi local pour éviter décalage timezone)
 function toDatetime(dateStr) {
     const d = dateStr ? String(dateStr).slice(0, 10) : today();
-    return `${d} 00:00:00`;
+    return `${d} 12:00:00`;
 }
 function toNumber(v) {
     if (v === null || v === undefined || v === "") return null;
@@ -568,14 +573,16 @@ function formatDate(iso) {
     return iso ? new Date(`${iso}T00:00:00`).toLocaleDateString("fr-FR") : "";
 }
 function formatLongDate(iso) {
-    return iso
-        ? new Date(`${iso}T00:00:00`).toLocaleDateString("fr-FR", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-          })
-        : "";
+    if (!iso) return "";
+    const date = new Date(`${iso}T00:00:00`);
+    const formatted = date.toLocaleDateString("fr-FR", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+    });
+    // Capitalize first letter (weekday)
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 function showType(type) {
     return filterType.value === "all" || filterType.value === type;
@@ -699,9 +706,7 @@ async function enregistrerDepuisCartes() {
         return;
     }
     if ((systolic === null) !== (diastolic === null)) {
-        notifications.warning(
-            "Veuillez remplir les deux champs de tension.",
-        );
+        notifications.warning("Veuillez remplir les deux champs de tension.");
         return;
     }
 

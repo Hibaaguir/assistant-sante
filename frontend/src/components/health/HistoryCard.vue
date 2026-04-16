@@ -3,7 +3,10 @@
         HistoryCard — compact display of a single vital sign from history.
         Used inside the "Historique des mesures" section of TabSignesVitaux.
     -->
-    <article class="rounded-xl border px-4 py-3" :class="[border, bg]">
+    <article
+        class="rounded-xl border-2 border-blue-300 px-4 py-3 transition-all duration-300 hover:border-blue-400 hover:shadow-md"
+        :class="[bg]"
+    >
         <div class="flex items-center gap-3">
             <!-- Icon rendered from an SVG string (set via VITAL_META) -->
             <div
@@ -23,7 +26,12 @@
                     class="mt-2 text-[20px] font-semibold leading-none text-slate-900"
                 >
                     {{ value }}
-                    <span class="text-[18px] font-medium text-slate-700">
+                    <span
+                        :class="[
+                            unit === '%' ? 'text-[20px]' : 'text-[17px]',
+                            'font-semibold text-slate-700',
+                        ]"
+                    >
                         {{ unit }}
                     </span>
                 </p>
@@ -42,13 +50,13 @@
 <script setup>
 // Props spread from VITAL_META plus the measured value
 defineProps({
-    label: String,            // Display name (ex: "Rythme cardiaque")
-    accent: String,           // Accent color (not used in template)
-    bg: String,               // Tailwind background class
-    border: String,           // Tailwind border class
-    iconBg: String,           // Tailwind class for icon container
-    icon: String,             // Raw SVG string for the icon
-    value: [String, Number],  // The measured value to display
-    unit: String,             // Unit label (ex: "bpm", "mmHg")
+    label: String, // Display name (ex: "Rythme cardiaque")
+    accent: String, // Accent color (not used in template)
+    bg: String, // Tailwind background class
+    border: String, // Tailwind border class
+    iconBg: String, // Tailwind class for icon container
+    icon: String, // Raw SVG string for the icon
+    value: [String, Number], // The measured value to display
+    unit: String, // Unit label (ex: "bpm", "mmHg")
 });
 </script>

@@ -3,31 +3,46 @@
         <!-- Filtres -->
         <div
             v-if="showLabsFilters"
-            class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+            class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
         >
-            <div class="grid gap-3 md:grid-cols-3">
+            <div class="flex items-center justify-between mb-4">
+                <div></div>
+                <button
+                    v-if="filters.type || filters.date"
+                    type="button"
+                    class="inline-flex h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-[14px] font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                    @click="reinitialiserFiltres"
+                >
+                    Réinitialiser filtres
+                </button>
+            </div>
+            <div class="grid gap-4 lg:grid-cols-2">
                 <div v-for="filter in filterFields" :key="filter.key">
                     <label
-                        class="mb-1 block text-[12px] font-semibold text-slate-600"
+                        class="mb-3 block text-[14px] font-semibold text-slate-800"
                         >{{ filter.label }}</label
                     >
-                    <component
-                        :is="filter.tag ?? 'input'"
+                    <select
+                        v-if="filter.tag === 'select'"
                         v-model="filters[filter.key]"
                         v-bind="filter.attrs"
-                        class="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-[13px] text-slate-800 outline-none focus:border-purple-500"
+                        class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-5 text-[16px] text-slate-900 outline-none focus:border-purple-500"
                     >
-                        <template v-if="filter.tag === 'select'">
-                            <option value="">Tous</option>
-                            <option
-                                v-for="opt in labTypeOptions"
-                                :key="opt"
-                                :value="opt"
-                            >
-                                {{ opt }}
-                            </option>
-                        </template>
-                    </component>
+                        <option value="">Tous</option>
+                        <option
+                            v-for="opt in labTypeOptions"
+                            :key="opt"
+                            :value="opt"
+                        >
+                            {{ opt }}
+                        </option>
+                    </select>
+                    <input
+                        v-else
+                        v-model="filters[filter.key]"
+                        v-bind="filter.attrs"
+                        class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-5 text-[16px] text-slate-900 outline-none focus:border-purple-500"
+                    />
                 </div>
             </div>
         </div>
@@ -41,11 +56,13 @@
             <div class="flex items-center justify-between">
                 <div>
                     <div class="flex items-center gap-3">
-                        <h3
-                            class="text-[16px] font-semibold leading-none text-slate-900"
+                        <Typography
+                            tag="h3"
+                            variant="h5-style"
+                            class="text-slate-900"
                         >
                             {{ item.name }}
-                        </h3>
+                        </Typography>
                         <StatusBadge :status="item.status" />
                     </div>
                     <div class="mt-2 flex items-center gap-4 text-slate-900">
@@ -53,7 +70,7 @@
                             {{ item.value }} {{ item.unit }}
                         </p>
                         <span
-                            class="inline-flex items-center gap-2 text-[12px] text-slate-600"
+                            class="inline-flex items-center gap-2 text-base font-medium text-slate-700"
                         >
                             <CalendarIcon />
                             {{ item.date }}
@@ -94,11 +111,9 @@
     >
         <div class="w-full max-w-[520px] rounded-3xl bg-white p-8 shadow-2xl">
             <div class="mb-5 flex items-center justify-between">
-                <h3
-                    class="text-[34px] font-semibold leading-none text-slate-900"
-                >
+                <Typography tag="h3" variant="h3-style">
                     {{ modalTitle }}
-                </h3>
+                </Typography>
                 <button
                     type="button"
                     class="text-slate-500 hover:text-slate-700"
@@ -112,12 +127,13 @@
                 <!-- Type d'analyse -->
                 <div>
                     <label
-                        class="mb-2 block text-[13px] font-semibold text-slate-700"
-                        >Type d'analyse <span class="text-rose-600">*</span></label
+                        class="mb-3 block text-base font-semibold text-slate-800"
+                        >Type d'analyse
+                        <span class="text-rose-600">*</span></label
                     >
                     <select
                         v-model="form.category"
-                        class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] text-slate-800 outline-none focus:border-purple-500"
+                        class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-base font-medium text-slate-800 outline-none focus:border-blue-500 transition"
                         @change="onCategoryChange"
                     >
                         <option value="">Sélectionnez</option>
@@ -132,31 +148,31 @@
                 </div>
 
                 <!-- Résultats -->
-                <div class="space-y-3">
+                <div class="space-y-4">
                     <div
                         v-for="(row, index) in form.results"
                         :key="index"
-                        class="rounded-2xl border border-slate-200 bg-slate-50 p-3"
+                        class="rounded-2xl border border-slate-200 bg-slate-50 p-5"
                     >
-                        <div class="mb-2 flex items-center justify-between">
+                        <div class="mb-3 flex items-center justify-between">
                             <div>
                                 <p
-                                    class="text-[13px] font-semibold text-slate-700"
+                                    class="text-base font-semibold text-slate-800"
                                 >
                                     Résultat {{ index + 1 }}
                                 </p>
                                 <p
                                     v-if="expandedIndex !== index"
-                                    class="mt-1 text-xs text-slate-500"
+                                    class="mt-2 text-sm font-medium text-slate-600"
                                 >
                                     {{ summarizeRow(row) }}
                                 </p>
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-3">
                                 <button
                                     v-if="expandedIndex !== index"
                                     type="button"
-                                    class="text-xs font-semibold text-purple-600 hover:text-purple-700"
+                                    class="text-sm font-semibold text-purple-600 hover:text-purple-800 transition"
                                     @click="expandedIndex = index"
                                 >
                                     Modifier
@@ -164,7 +180,7 @@
                                 <button
                                     v-if="!editingId && form.results.length > 1"
                                     type="button"
-                                    class="text-xs font-semibold text-rose-600 hover:text-rose-700"
+                                    class="text-sm font-semibold text-rose-600 hover:text-rose-800 transition"
                                     @click="removeRow(index)"
                                 >
                                     Supprimer
@@ -172,16 +188,17 @@
                             </div>
                         </div>
 
-                        <div v-if="expandedIndex === index" class="space-y-3">
+                        <div v-if="expandedIndex === index" class="space-y-4">
                             <div>
                                 <label
-                                    class="mb-2 block text-[13px] font-semibold text-slate-700"
-                                    >Nom du résultat <span class="text-rose-600">*</span></label
+                                    class="mb-3 block text-base font-semibold text-slate-800"
+                                    >Nom du résultat
+                                    <span class="text-rose-600">*</span></label
                                 >
                                 <select
                                     v-model="row.result"
                                     :disabled="!form.category"
-                                    class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] text-slate-800 outline-none focus:border-purple-500 disabled:opacity-60"
+                                    class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-base font-medium text-slate-800 outline-none focus:border-blue-500 transition disabled:opacity-60"
                                     @change="onResultChange(index)"
                                 >
                                     <option value="">Sélectionnez</option>
@@ -194,29 +211,35 @@
                                     </option>
                                 </select>
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label
-                                        class="mb-2 block text-[13px] font-semibold text-slate-700"
-                                        >Valeur <span class="text-rose-600">*</span></label
+                                        class="mb-3 block text-base font-semibold text-slate-800"
+                                        >Valeur
+                                        <span class="text-rose-600"
+                                            >*</span
+                                        ></label
                                     >
                                     <input
                                         v-model="row.value"
                                         type="text"
                                         placeholder="5.2"
-                                        class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] outline-none focus:border-purple-500"
+                                        class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-base font-medium outline-none focus:border-blue-500 transition"
                                     />
                                 </div>
                                 <div>
                                     <label
-                                        class="mb-2 block text-[13px] font-semibold text-slate-700"
-                                        >Unité <span class="text-rose-600">*</span></label
+                                        class="mb-3 block text-base font-semibold text-slate-800"
+                                        >Unité
+                                        <span class="text-rose-600"
+                                            >*</span
+                                        ></label
                                     >
                                     <input
                                         v-model="row.unit"
                                         type="text"
                                         placeholder="mmol/L"
-                                        class="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-[15px] outline-none focus:border-purple-500"
+                                        class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-base font-medium outline-none focus:border-blue-500 transition"
                                     />
                                 </div>
                             </div>
@@ -226,7 +249,7 @@
                     <button
                         v-if="!editingId"
                         type="button"
-                        class="h-10 rounded-xl border border-slate-300 px-4 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
+                        class="h-11 rounded-xl border border-slate-300 px-4 text-base font-semibold text-slate-700 hover:bg-slate-100 transition"
                         @click="addRow"
                     >
                         + Ajouter un autre résultat
@@ -236,23 +259,23 @@
                 <!-- Date -->
                 <div>
                     <label
-                        class="mb-2 block text-[13px] font-semibold text-slate-700"
+                        class="mb-3 block text-base font-semibold text-slate-800"
                         >Date <span class="text-rose-600">*</span></label
                     >
                     <input
                         v-model="form.date"
                         type="date"
-                        class="h-11 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[15px] outline-none focus:border-purple-500"
+                        class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-base font-medium outline-none focus:border-blue-500 transition"
                     />
                 </div>
 
-                <p v-if="formError" class="text-sm font-medium text-rose-600">
+                <p v-if="formError" class="text-sm font-semibold text-rose-600">
                     {{ formError }}
                 </p>
 
                 <button
                     type="button"
-                    class="mt-2 h-11 w-full rounded-2xl bg-emerald-600 text-[20px] font-semibold leading-none text-white hover:bg-emerald-700"
+                    class="mt-2 h-12 w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-base font-semibold text-white shadow-sm hover:from-emerald-500 hover:to-emerald-600 transition hover:shadow-md"
                     @click="saveAnalysis"
                 >
                     {{ modalSubmitLabel }}
@@ -278,6 +301,7 @@ import { computed, reactive, ref } from "vue";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
 import DialogueConfirmation from "@/components/ui/ConfirmationDialog.vue";
+import Typography from "@/components/ui/Typography.vue";
 
 // ─── Icônes inline légères ────────────────────────────────────────────────────
 const CalendarIcon = {
@@ -381,42 +405,38 @@ const CATALOG = {
 // ─── État ─────────────────────────────────────────────────────────────────────
 const showAnalysisModal = ref(false);
 const showDeleteConfirm = ref(false);
-const showLabsFilters = ref(false);
+const showLabsFilters = ref(true);
 const editingId = ref(null);
 const expandedIndex = ref(0);
 const formError = ref("");
 const pendingDelete = ref(null);
 
-const filters = reactive({ type: "", date: "", query: "" });
+const filters = reactive({ type: "", date: "" });
 const form = reactive({ category: "", results: [emptyRow()], date: today() });
 
 // ─── Config filtres (évite la répétition dans le template) ───────────────────
 const filterFields = [
     { key: "type", label: "Type", tag: "select", attrs: {} },
     { key: "date", label: "Date", attrs: { type: "date" } },
-    {
-        key: "query",
-        label: "Recherche",
-        attrs: { type: "text", placeholder: "Ex: CRP, TSH…" },
-    },
 ];
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
 const categoryOptions = Object.keys(CATALOG);
 const resultOptions = computed(() => CATALOG[form.category] ?? []);
 const labTypeOptions = computed(() => [
-    ...new Set(props.analyses.map((a) => a.type).filter(Boolean)),
+    ...new Set(
+        props.analyses.map((a) => (a.type ?? "").trim()).filter(Boolean),
+    ),
 ]);
 
 const filteredAnalyses = computed(() => {
-    const q = filters.query.toLowerCase();
     return props.analyses.filter((a) => {
-        const matchType = !filters.type || a.type === filters.type;
-        const matchDate =
-            !filters.date || isoDate(a.analysisDate) === filters.date;
-        const matchQuery =
-            !q || `${a.name} ${a.value} ${a.unit}`.toLowerCase().includes(q);
-        return matchType && matchDate && matchQuery;
+        const aType = (a.type ?? "").trim();
+        const filterType = (filters.type ?? "").trim();
+        const matchType = !filterType || aType === filterType;
+        const dateResult = isoDate(a.analysisDate);
+        const matchDate = !filters.date || dateResult === filters.date;
+        return matchType && matchDate;
     });
 });
 
@@ -435,10 +455,19 @@ const deleteMessage = computed(() => {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function today() {
-    return new Date().toISOString().slice(0, 10);
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
 }
 function isoDate(v) {
     return v ? String(v).slice(0, 10) : today();
+}
+// Format YYYY-MM-DD → YYYY-MM-DD 12:00:00 for the API (midi local pour éviter décalage timezone)
+function toDatetime(dateStr) {
+    const d = dateStr ? String(dateStr).slice(0, 10) : today();
+    return `${d} 12:00:00`;
 }
 function toNumber(v) {
     const n = Number(v);
@@ -538,7 +567,8 @@ async function saveAnalysis() {
                 rows.map((p) => api.post("/health-data/labs", p)),
             );
             notifications.itemAdded();
-            Object.assign(filters, { type: "", date: "", query: "" });
+            filters.type = "";
+            filters.date = "";
         }
         editingId.value = null;
         resetForm();
@@ -598,9 +628,13 @@ function ouvrirModalAjout() {
     resetForm();
     showAnalysisModal.value = true;
 }
+function reinitialiserFiltres() {
+    filters.type = "";
+    filters.date = "";
+}
 function basculerFiltres() {
     showLabsFilters.value = !showLabsFilters.value;
 }
 
-defineExpose({ ouvrirModalAjout, basculerFiltres });
+defineExpose({ ouvrirModalAjout, reinitialiserFiltres, basculerFiltres });
 </script>

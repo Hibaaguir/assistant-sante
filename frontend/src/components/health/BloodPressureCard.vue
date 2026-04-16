@@ -1,10 +1,9 @@
 <template>
     <article
         :class="[
-            'min-h-[162px] rounded-2xl border px-6 py-6 transition',
-            border,
+            'min-h-[162px] rounded-2xl border-2 border-blue-300 px-6 py-6 transition-all duration-300 hover:border-blue-400 hover:shadow-lg',
             bg,
-            canEdit ? 'cursor-pointer hover:shadow-md' : '',
+            canEdit ? 'cursor-pointer' : '',
         ]"
     >
         <!-- Header: Icon + Status -->
@@ -60,7 +59,7 @@
                     @keydown.escape="cancelEdit"
                 />
 
-                <span class="text-[14px] font-medium text-slate-400 ml-2">{{
+                <span class="text-[18px] font-semibold text-slate-700 ml-1">{{
                     unit
                 }}</span>
             </template>
@@ -71,14 +70,18 @@
                     class="text-[36px] font-bold leading-none text-slate-900"
                     :class="canEdit ? 'cursor-pointer' : ''"
                     @click="canEdit && focusSystolic()"
-                >{{ systolic !== '' ? Number(systolic) : '--' }}</span>
-                <span class="text-[36px] font-bold leading-none text-slate-500">/</span>
+                    >{{ systolic !== "" ? Number(systolic) : "--" }}</span
+                >
+                <span class="text-[36px] font-bold leading-none text-slate-500"
+                    >/</span
+                >
                 <span
                     class="text-[36px] font-bold leading-none text-slate-900"
                     :class="canEdit ? 'cursor-pointer' : ''"
                     @click="canEdit && focusDiastolic()"
-                >{{ diastolic !== '' ? Number(diastolic) : '--' }}</span>
-                <span class="text-[14px] font-medium text-slate-400 ml-2">{{
+                    >{{ diastolic !== "" ? Number(diastolic) : "--" }}</span
+                >
+                <span class="text-[16px] font-semibold text-slate-700 ml-1">{{
                     unit
                 }}</span>
             </template>

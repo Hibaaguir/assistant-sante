@@ -27,9 +27,9 @@
         v-if="showTreatmentHistory"
         class="mt-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
     >
-        <h2 class="text-[26px] font-bold leading-none text-slate-900">
+        <Typography tag="h2" variant="h3-style">
             Historique des prises
-        </h2>
+        </Typography>
 
         <div class="mt-6 grid gap-4 lg:grid-cols-3">
             <article
@@ -117,51 +117,103 @@
         </div>
 
         <div class="mt-6 space-y-3">
-
-            <p v-if="!treatmentHistoryRows.length" class="py-6 text-center text-sm text-slate-400">
+            <p
+                v-if="!treatmentHistoryRows.length"
+                class="py-6 text-center text-sm text-slate-400"
+            >
                 Aucun historique disponible pour ces filtres.
             </p>
 
-            <div v-for="day in treatmentHistoryRows" :key="day.dateKey"
+            <div
+                v-for="day in treatmentHistoryRows"
+                :key="day.dateKey"
                 class="rounded-2xl border bg-white p-5 shadow-sm"
-                :class="day.isComplete ? 'border-emerald-200' : 'border-slate-200'">
-
+                :class="
+                    day.isComplete ? 'border-emerald-200' : 'border-slate-200'
+                "
+            >
                 <!-- Date + badge -->
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="font-bold text-slate-800 capitalize">{{ formaterDateHistoriqueTraitement(day.dateKey) }}</p>
-                        <p class="mt-0.5 text-sm text-slate-400">{{ day.taken }}/{{ day.total }} prises effectuées</p>
+                        <p class="font-bold text-slate-800 capitalize">
+                            {{ formaterDateHistoriqueTraitement(day.dateKey) }}
+                        </p>
+                        <p class="mt-0.5 text-sm text-slate-400">
+                            {{ day.taken }}/{{ day.total }} prises effectuées
+                        </p>
                     </div>
-                    <span class="rounded-full px-3 py-1 text-sm font-semibold"
-                        :class="day.isComplete ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'">
-                        {{ day.isComplete ? '✓ Complet' : `${day.taken}/${day.total}` }}
+                    <span
+                        class="rounded-full px-3 py-1 text-sm font-semibold"
+                        :class="
+                            day.isComplete
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'bg-slate-100 text-slate-500'
+                        "
+                    >
+                        {{
+                            day.isComplete
+                                ? "✓ Complet"
+                                : `${day.taken}/${day.total}`
+                        }}
                     </span>
                 </div>
 
                 <!-- Médicaments -->
                 <div class="mt-4 space-y-2">
-                    <div v-for="med in day.meds" :key="med.id"
-                        class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-4 py-3">
-
+                    <div
+                        v-for="med in day.meds"
+                        :key="med.id"
+                        class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-4 py-3"
+                    >
                         <div>
-                            <p class="font-semibold text-slate-800">{{ med.name }}</p>
+                            <p class="font-semibold text-slate-800">
+                                {{ med.name }}
+                            </p>
                             <p class="text-sm text-slate-400">{{ med.dose }}</p>
                         </div>
 
                         <div class="flex gap-2">
-                            <button v-for="i in obtenirIndexPrises(day.dateKey, getMedFull(med.id))" :key="i"
+                            <button
+                                v-for="i in obtenirIndexPrises(
+                                    day.dateKey,
+                                    getMedFull(med.id),
+                                )"
+                                :key="i"
                                 type="button"
                                 class="inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm font-medium transition"
-                                :class="estPriseCochee(day.dateKey, med.id, i)
-                                    ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
-                                    : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'"
-                                @click="basculerPrise(day.dateKey, getMedFull(med.id), i)">
-                                <span class="inline-flex h-5 w-5 items-center justify-center rounded border"
-                                    :class="estPriseCochee(day.dateKey, med.id, i)
-                                        ? 'border-emerald-500 bg-emerald-500 text-white'
-                                        : 'border-slate-300 bg-white'">
-                                    <svg viewBox="0 0 24 24" class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="3.5">
-                                        <path d="m5 13 4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                                :class="
+                                    estPriseCochee(day.dateKey, med.id, i)
+                                        ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
+                                        : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                                "
+                                @click="
+                                    basculerPrise(
+                                        day.dateKey,
+                                        getMedFull(med.id),
+                                        i,
+                                    )
+                                "
+                            >
+                                <span
+                                    class="inline-flex h-5 w-5 items-center justify-center rounded border"
+                                    :class="
+                                        estPriseCochee(day.dateKey, med.id, i)
+                                            ? 'border-emerald-500 bg-emerald-500 text-white'
+                                            : 'border-slate-300 bg-white'
+                                    "
+                                >
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        class="h-3 w-3"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="3.5"
+                                    >
+                                        <path
+                                            d="m5 13 4 4L19 7"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
                                     </svg>
                                 </span>
                                 Prise {{ i }}
@@ -177,12 +229,12 @@
         <section
             class="mt-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
         >
-            <h2 class="text-[24px] font-bold leading-none text-slate-900">
+            <Typography tag="h2" variant="h3-style">
                 Calendrier des traitements
-            </h2>
-            <p class="mt-3 text-[12px] font-normal text-slate-600">
+            </Typography>
+            <Typography tag="p" variant="paragraph">
                 Cliquez sur une journée pour gérer vos prises
-            </p>
+            </Typography>
 
             <div class="mt-6 grid grid-cols-7 gap-2.5">
                 <div
@@ -191,7 +243,7 @@
                     class="text-center"
                 >
                     <p
-                        class="mb-2 text-[12px] font-normal leading-none text-slate-600"
+                        class="mb-2 text-[14px] font-semibold leading-none text-slate-800"
                     >
                         {{ day.shortLabel }}
                     </p>
@@ -263,10 +315,10 @@
                     >
                         {{ med.name }}
                     </p>
-                    <p class="mt-2 text-[12px] font-normal text-slate-700">
+                    <p class="mt-2 text-[13px] font-medium text-slate-800">
                         {{ med.dose }} - {{ med.freq }}
                     </p>
-                    <p class="mt-1 text-[12px] font-normal text-slate-500">
+                    <p class="mt-1 text-[13px] font-medium text-slate-700">
                         {{ med.note }}
                     </p>
                 </article>
@@ -466,6 +518,7 @@
 import { computed, ref } from "vue";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
+import Typography from "@/components/ui/Typography.vue";
 
 const MAX_DAILY_DOSES = 12;
 const MAX_MONTHLY_FREQUENCY = 31;

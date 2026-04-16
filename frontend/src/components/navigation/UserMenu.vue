@@ -34,12 +34,10 @@
                 class="absolute right-0 mt-2 w-56 rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden z-50"
             >
                 <!-- En-tête utilisateur -->
-                <div
-                    class="bg-gradient-to-r from-purple-50 to-purple-50 px-6 py-5 border-b border-gray-100"
-                >
+                <div class="bg-white px-6 py-5 border-b border-gray-100">
                     <div class="flex items-center gap-3">
                         <div
-                            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-white overflow-hidden"
+                            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white overflow-hidden"
                         >
                             <AvatarImg
                                 v-if="authStore.profilePhoto"
@@ -49,12 +47,19 @@
                             <UserIcon v-else class="h-6 w-6" />
                         </div>
                         <div class="min-w-0 flex-1">
-                            <p
-                                class="text-sm font-semibold text-gray-900 truncate"
+                            <Typography
+                                tag="p"
+                                variant="h5-style"
+                                class="text-black font-bold truncate"
                             >
                                 {{ authStore.userName }}
-                            </p>
-                            <p class="text-xs text-gray-600">{{ roleLabel }}</p>
+                            </Typography>
+                            <Typography
+                                tag="p"
+                                variant="paragraph"
+                                class="text-gray-600 mt-0.5"
+                                >{{ roleLabel }}</Typography
+                            >
                         </div>
                     </div>
                 </div>
@@ -63,12 +68,12 @@
                 <div class="py-2">
                     <button
                         type="button"
-                        class="w-full px-6 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2.5"
+                        class="w-full px-6 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3 whitespace-nowrap"
                         @click="ouvrirModalProfil"
                     >
                         <svg
                             viewBox="0 0 24 24"
-                            class="h-4 w-4 text-gray-400"
+                            class="h-5 w-5 text-gray-400 flex-shrink-0"
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
@@ -77,7 +82,9 @@
                         >
                             <path d="m16 3 5 5-11 11H5v-5L16 3z" />
                         </svg>
-                        Modifier mon profil
+                        <span class="font-bold text-[15px] text-gray-800"
+                            >Modifier mon profil</span
+                        >
                     </button>
                 </div>
             </div>
@@ -95,6 +102,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import Typography from "@/components/ui/Typography.vue";
 import ModificationProfilModal from "@/components/profile/EditProfileModal.vue";
 import AvatarImg from "@/components/navigation/AvatarImg.vue";
 import UserIcon from "@/components/navigation/UserIcon.vue";

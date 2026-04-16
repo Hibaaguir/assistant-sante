@@ -1,12 +1,10 @@
 <template>
     <div class="space-y-10">
         <div class="text-center max-w-2xl mx-auto">
-            <h2 class="text-4xl font-extrabold text-slate-900 mb-4">
-                Suivi médical
-            </h2>
-            <p class="text-gray-500">
+            <Typography tag="h2" variant="h1-style"> Suivi médical </Typography>
+            <Typography tag="p" variant="paragraph">
                 Invite ton medecin a suivre ton evolution en toute securite
-            </p>
+            </Typography>
         </div>
 
         <div class="space-y-8">
@@ -183,6 +181,7 @@
 */
 
 import { computed } from "vue";
+import Typography from "@/components/ui/Typography.vue";
 
 const props = defineProps({
     form: { type: Object, required: true },

@@ -6,8 +6,8 @@
         - The parent controls editing state; we just emit events
     -->
     <article
-        class="min-h-[162px] rounded-2xl border px-6 py-6 cursor-pointer transition"
-        :class="[border, bg, canEdit ? 'hover:shadow-md' : '']"
+        class="min-h-[162px] rounded-2xl border-2 border-blue-300 px-6 py-6 cursor-pointer transition-all duration-300 hover:border-blue-400 hover:shadow-lg"
+        :class="[bg, canEdit ? '' : '']"
     >
         <!-- Top row: icon on the left, status badge on the right -->
         <div class="flex items-start justify-between">
@@ -56,16 +56,16 @@ import { ref, watch } from "vue";
 
 // Props coming from the parent (spread from VITAL_META + extra props)
 const props = defineProps({
-    label: String,               // Display name (ex: "Rythme cardiaque")
-    accent: String,              // Accent color hex (not used in template directly)
-    bg: String,                  // Tailwind background class
-    border: String,              // Tailwind border class
-    iconBg: String,              // Tailwind class for icon container
-    icon: String,                // Raw SVG string for the icon
+    label: String, // Display name (ex: "Rythme cardiaque")
+    accent: String, // Accent color hex (not used in template directly)
+    bg: String, // Tailwind background class
+    border: String, // Tailwind border class
+    iconBg: String, // Tailwind class for icon container
+    icon: String, // Raw SVG string for the icon
     displayValue: [String, Number], // Current value from the parent's draft
-    unit: String,                // Unit label (ex: "bpm", "%")
-    canEdit: Boolean,            // Whether inline editing is allowed
-    isEditing: Boolean,          // Whether this card is currently in edit mode
+    unit: String, // Unit label (ex: "bpm", "%")
+    canEdit: Boolean, // Whether inline editing is allowed
+    isEditing: Boolean, // Whether this card is currently in edit mode
 });
 
 // Events this component can emit to the parent

@@ -1,20 +1,25 @@
 <template>
     <div>
-        <label :for="id" class="block text-sm font-semibold text-purple-900">{{
-            label
-        }}</label>
-        <div class="relative mt-2">
+        <Typography
+            tag="label"
+            :for="id"
+            variant="h5-style"
+            class="text-slate-900"
+        >
+            {{ label }}
+        </Typography>
+        <div class="relative mt-3">
             <input
                 :id="id"
                 :value="modelValue"
                 :type="visible ? 'text' : 'password'"
                 placeholder="••••••••"
-                class="h-12 w-full rounded-xl border border-purple-200 bg-purple-50 px-4 text-sm transition placeholder:text-purple-400 focus:border-purple-500 focus:bg-white focus:outline-none"
+                class="h-12 w-full rounded-xl border-2 border-blue-200 bg-white px-4 text-[15px] transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-300"
                 @input="$emit('update:modelValue', $event.target.value)"
             />
             <button
                 type="button"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 hover:text-purple-600"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-600 transition"
                 @click="$emit('update:visible', !visible)"
             >
                 <!-- Open eye -->
@@ -45,11 +50,15 @@
                 </svg>
             </button>
         </div>
-        <p v-if="error" class="mt-2 text-xs text-rose-600">{{ error }}</p>
+        <p v-if="error" class="mt-2 text-sm text-rose-600 font-medium">
+            {{ error }}
+        </p>
     </div>
 </template>
 
 <script setup>
+import Typography from "@/components/ui/Typography.vue";
+
 defineProps({
     id: { type: String, required: true },
     label: { type: String, required: true },

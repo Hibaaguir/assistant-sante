@@ -5,19 +5,31 @@
   Data comes from GET /journal → entry.hydration (numeric, liters).
 -->
 <template>
-    <section class="mt-5 overflow-hidden rounded-2xl border border-blue-100 shadow-sm">
+    <section
+        class="mt-5 overflow-hidden rounded-2xl border-2 border-blue-300 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400"
+    >
         <!-- Blue gradient header -->
         <div class="bg-gradient-to-r from-blue-500 to-cyan-400 px-5 py-4">
-            <h2 class="text-xl font-bold text-white">Hydratation hebdomadaire</h2>
-            <p class="mt-0.5 text-sm text-blue-100">Objectif : {{ GOAL }} L / jour</p>
+            <Typography tag="h2" variant="h2-style" class="text-white">
+                Hydratation hebdomadaire
+            </Typography>
+            <p class="mt-0.5 text-sm text-blue-100">
+                Objectif : {{ GOAL }} L / jour
+            </p>
         </div>
 
         <div class="bg-white p-4">
-            <div v-if="loading" class="flex h-48 items-center justify-center text-slate-400">
+            <div
+                v-if="loading"
+                class="flex h-48 items-center justify-center text-slate-400"
+            >
                 Chargement...
             </div>
 
-            <div v-else-if="noData" class="flex h-48 items-center justify-center text-slate-400">
+            <div
+                v-else-if="noData"
+                class="flex h-48 items-center justify-center text-slate-400"
+            >
                 Aucune donnée d'hydratation cette semaine.
             </div>
 
@@ -31,11 +43,14 @@
                         v-for="day in weekDays"
                         :key="day.date"
                         class="rounded-full px-3 py-1 text-xs font-medium"
-                        :class="day.value >= GOAL
-                            ? 'bg-cyan-100 text-cyan-700'
-                            : 'bg-slate-100 text-slate-500'"
+                        :class="
+                            day.value >= GOAL
+                                ? 'bg-cyan-100 text-cyan-700'
+                                : 'bg-slate-100 text-slate-500'
+                        "
                     >
-                        {{ day.label }} · {{ day.value > 0 ? day.value + ' L' : '—' }}
+                        {{ day.label }} ·
+                        {{ day.value > 0 ? day.value + " L" : "—" }}
                     </span>
                 </div>
             </template>
@@ -45,6 +60,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import Typography from "@/components/ui/Typography.vue";
 import {
     Chart,
     BarController,
@@ -57,14 +73,22 @@ import api from "@/services/api";
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
-const GOAL         = 2;   // liters per day
-const DAY_LABELS   = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const GOAL = 2; // liters per day
+const DAY_LABELS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+const DAYS_OF_WEEK = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+];
 
 const canvasRef = ref(null);
-const loading   = ref(true);
-const noData    = ref(false);
-const weekDays  = ref([]);
+const loading = ref(true);
+const noData = ref(false);
+const weekDays = ref([]);
 let chartInstance = null;
 
 function getLast7Days() {
@@ -86,15 +110,17 @@ async function load() {
         }
     }
 
-    const dates  = getLast7Days();
-    const values = dates.map(d => byDate[d] ?? 0);
+    const dates = getLast7Days();
+    const values = dates.map((d) => byDate[d] ?? 0);
 
     weekDays.value = dates.map((d, i) => {
         // Use T12:00:00 to avoid UTC midnight being interpreted as the previous day in local timezone
-        const jsDay = new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" });
-        const idx   = DAYS_OF_WEEK.indexOf(jsDay);
+        const jsDay = new Date(d + "T12:00:00").toLocaleDateString("en-US", {
+            weekday: "long",
+        });
+        const idx = DAYS_OF_WEEK.indexOf(jsDay);
         return {
-            date:  d,
+            date: d,
             label: idx >= 0 ? DAY_LABELS[idx] : d.slice(5),
             value: values[i],
         };
@@ -102,7 +128,7 @@ async function load() {
 
     loading.value = false;
 
-    if (values.every(v => v === 0)) {
+    if (values.every((v) => v === 0)) {
         noData.value = true;
         return;
     }
@@ -112,16 +138,18 @@ async function load() {
     chartInstance = new Chart(canvasRef.value, {
         type: "bar",
         data: {
-            labels: weekDays.value.map(d => d.label),
+            labels: weekDays.value.map((d) => d.label),
             datasets: [
                 {
                     label: "Hydratation (L)",
                     data: values,
-                    backgroundColor: values.map(v =>
-                        v >= GOAL ? "rgba(6,182,212,0.75)" : "rgba(6,182,212,0.3)"
+                    backgroundColor: values.map((v) =>
+                        v >= GOAL
+                            ? "rgba(6,182,212,0.75)"
+                            : "rgba(6,182,212,0.3)",
                     ),
-                    borderColor: values.map(v =>
-                        v >= GOAL ? "#0891b2" : "#67e8f9"
+                    borderColor: values.map((v) =>
+                        v >= GOAL ? "#0891b2" : "#67e8f9",
                     ),
                     borderWidth: 1.5,
                     borderRadius: 6,
@@ -134,37 +162,61 @@ async function load() {
                 y: {
                     beginAtZero: true,
                     max: Math.max(GOAL + 1, ...values) + 0.5,
-                    ticks: { callback: v => v + " L" },
-                    grid: { color: "#f1f5f9" },
+                    ticks: {
+                        callback: (v) => v + " L",
+                        font: { size: 12, weight: "500" },
+                        color: "#475569",
+                    },
+                    grid: { color: "#e2e8f0", drawBorder: true },
                 },
-                x: { grid: { display: false } },
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        font: { size: 12, weight: "500" },
+                        color: "#475569",
+                    },
+                },
             },
             plugins: {
-                legend: { display: false },
+                legend: {
+                    position: "top",
+                    labels: {
+                        font: { size: 13, weight: "bold" },
+                        padding: 12,
+                        boxWidth: 18,
+                        color: "#334155",
+                    },
+                },
                 tooltip: {
+                    backgroundColor: "rgba(0, 0, 0, 0.8)",
+                    titleFont: { size: 13, weight: "bold" },
+                    bodyFont: { size: 12 },
+                    padding: 12,
                     callbacks: {
-                        label: ctx => ` ${ctx.parsed.y} L`,
+                        label: (ctx) => ` ${ctx.parsed.y} L`,
                     },
                 },
                 // Inline goal line annotation via afterDraw plugin
             },
         },
-        plugins: [{
-            id: "goalLine",
-            afterDraw(chart) {
-                const { ctx, chartArea, scales } = chart;
-                const y = scales.y.getPixelForValue(GOAL);
-                ctx.save();
-                ctx.beginPath();
-                ctx.setLineDash([6, 4]);
-                ctx.strokeStyle = "#149bd7";
-                ctx.lineWidth   = 1.5;
-                ctx.moveTo(chartArea.left,  y);
-                ctx.lineTo(chartArea.right, y);
-                ctx.stroke();
-                ctx.restore();
+        plugins: [
+            {
+                id: "goalLine",
+                afterDraw(chart) {
+                    const { ctx, chartArea, scales } = chart;
+                    const y = scales.y.getPixelForValue(GOAL);
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.setLineDash([6, 4]);
+                    ctx.strokeStyle = "#149bd7";
+                    ctx.lineWidth = 1.5;
+                    ctx.moveTo(chartArea.left, y);
+                    ctx.lineTo(chartArea.right, y);
+                    ctx.stroke();
+                    ctx.restore();
+                },
             },
-        }],
+        ],
     });
 }
 

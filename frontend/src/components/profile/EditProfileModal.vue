@@ -6,7 +6,7 @@
                 class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm"
             >
                 <div
-                    class="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
+                    class="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-8 shadow-xl"
                 >
                     <!-- Fermer -->
                     <button
@@ -31,18 +31,16 @@
 
                     <!-- En-tête -->
                     <div class="mb-6">
-                        <h2
-                            class="text-[24px] font-semibold leading-none text-slate-900"
-                        >
+                        <Typography tag="h2" variant="h2-style">
                             Modification du profil
-                        </h2>
-                        <p class="mt-2 text-sm text-slate-600">
+                        </Typography>
+                        <Typography tag="p" variant="paragraph" class="mt-2">
                             Mettez à jour vos informations personnelles
-                        </p>
+                        </Typography>
                     </div>
 
                     <!-- Tabs -->
-                    <div class="mb-6 flex gap-2 border-b border-slate-200">
+                    <div class="mb-6 flex gap-3 border-b border-slate-200">
                         <button
                             v-for="tab in TABS"
                             :key="tab.id"
@@ -50,12 +48,14 @@
                             class="pb-3 font-semibold transition"
                             :class="
                                 activeTab === tab.id
-                                    ? 'border-b-2 border-purple-600 text-purple-600'
+                                    ? 'border-b-2 border-blue-600 text-blue-600'
                                     : 'text-slate-600 hover:text-slate-900'
                             "
                             @click="activeTab = tab.id"
                         >
-                            {{ tab.label }}
+                            <Typography tag="span" variant="h5-style">
+                                {{ tab.label }}
+                            </Typography>
                         </button>
                     </div>
 
@@ -65,20 +65,22 @@
                         <div v-if="activeTab === 'name'" class="space-y-4">
                             <!-- Photo -->
                             <div>
-                                <p
-                                    class="block text-sm font-semibold text-slate-700"
+                                <Typography
+                                    tag="p"
+                                    variant="h5-style"
+                                    class="text-slate-900"
                                 >
                                     Photo de profil
-                                </p>
-                                <div class="mt-2 flex items-center gap-4">
+                                </Typography>
+                                <div class="mt-3 flex items-center gap-4">
                                     <div
-                                        class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-white"
+                                        class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white"
                                     >
                                         <img
                                             v-if="photoPreview"
                                             :src="photoPreview"
                                             alt="Photo de profil"
-                                            class="h-16 w-16 rounded-full object-cover"
+                                            class="h-20 w-20 rounded-full object-cover"
                                         />
                                         <UserIcon v-else class="h-8 w-8" />
                                     </div>
@@ -92,7 +94,7 @@
                                         />
                                         <button
                                             type="button"
-                                            class="inline-flex h-10 items-center rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                                            class="inline-flex h-12 items-center rounded-xl border-2 border-blue-300 bg-white px-4 text-[15px] font-semibold text-blue-600 transition hover:bg-blue-50 hover:border-blue-400 disabled:opacity-50"
                                             :disabled="loading.photo"
                                             @click="openPhotoSelector"
                                         >
@@ -105,7 +107,7 @@
                                         <button
                                             v-if="photoPreview"
                                             type="button"
-                                            class="inline-flex h-10 items-center rounded-xl border border-rose-200 px-3 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"
+                                            class="inline-flex h-12 items-center rounded-xl border-2 border-rose-200 bg-white px-4 text-[15px] font-semibold text-rose-600 transition hover:bg-rose-50 hover:border-rose-300 disabled:opacity-50"
                                             :disabled="loading.photo"
                                             @click="deletePhoto"
                                         >
@@ -115,7 +117,7 @@
                                 </div>
                                 <p
                                     v-if="errors.photo"
-                                    class="mt-2 text-xs text-rose-600"
+                                    class="mt-2 text-sm text-rose-600 font-medium"
                                 >
                                     {{ errors.photo }}
                                 </p>
@@ -123,30 +125,30 @@
 
                             <!-- Nom -->
                             <div>
-                                <label
+                                <Typography
+                                    tag="label"
+                                    variant="h5-style"
                                     for="name"
-                                    class="block text-sm font-semibold text-slate-700"
-                                    >Nom d'utilisateur</label
+                                    class="text-slate-900"
                                 >
+                                    Nom d'utilisateur
+                                </Typography>
                                 <input
                                     id="name"
                                     v-model="form.name"
                                     type="text"
                                     placeholder="Votre nom complet"
-                                    class="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm transition placeholder:text-slate-400 focus:border-purple-500 focus:bg-white focus:outline-none"
+                                    class="mt-3 h-12 w-full rounded-xl border-2 border-blue-200 bg-white px-4 text-[15px] transition placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-300"
                                 />
                                 <p
                                     v-if="errors.name"
-                                    class="mt-2 text-xs text-rose-600"
+                                    class="mt-2 text-sm text-rose-600 font-medium"
                                 >
                                     {{ errors.name }}
                                 </p>
                             </div>
 
-                            <SubmitButton
-                                :loading="loading.name"
-                                :disabled="form.name === originalName"
-                            >
+                            <SubmitButton :loading="loading.name">
                                 {{
                                     loading.name
                                         ? "Enregistrement..."
@@ -212,6 +214,7 @@ import { useNotificationsStore } from "@/stores/notifications";
 import UserIcon from "@/components/navigation/UserIcon.vue";
 import PasswordField from "@/components/profile/PasswordField.vue";
 import SubmitButton from "@/components/profile/SubmitButton.vue";
+import Typography from "@/components/ui/Typography.vue";
 
 defineProps({
     isOpen: { type: Boolean, default: false },

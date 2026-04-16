@@ -6,11 +6,17 @@
   Données : GET /health-data/treatment-checks?days=N.
 -->
 <template>
-    <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <section
+        class="mt-5 rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400"
+    >
         <div class="mb-4 flex items-center justify-between">
             <div>
-                <h2 class="text-2xl font-semibold text-slate-900">Distribution des traitements</h2>
-                <p class="mt-0.5 text-sm text-slate-400">Prises quotidiennes par médicament</p>
+                <h2 class="text-2xl font-semibold text-slate-900">
+                    Distribution des traitements
+                </h2>
+                <p class="mt-0.5 text-sm text-slate-700">
+                    Prises quotidiennes par médicament
+                </p>
             </div>
             <div class="flex gap-2">
                 <button
@@ -18,20 +24,28 @@
                     :key="f.days"
                     @click="changeFilter(f.days)"
                     class="rounded-lg border px-3 py-1.5 text-sm font-medium transition"
-                    :class="days === f.days
-                        ? 'border-purple-500 bg-purple-50 text-purple-700'
-                        : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'"
+                    :class="
+                        days === f.days
+                            ? 'border-purple-500 bg-purple-50 text-purple-700'
+                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                    "
                 >
                     {{ f.label }}
                 </button>
             </div>
         </div>
 
-        <div v-if="loading" class="flex h-56 items-center justify-center text-slate-400">
+        <div
+            v-if="loading"
+            class="flex h-56 items-center justify-center text-slate-700"
+        >
             Chargement...
         </div>
 
-        <div v-else-if="noData" class="flex h-56 items-center justify-center text-slate-400">
+        <div
+            v-else-if="noData"
+            class="flex h-56 items-center justify-center text-slate-700"
+        >
             Aucune donnée de traitement sur cette période.
         </div>
 
@@ -39,12 +53,18 @@
             <canvas ref="canvasRef" class="max-h-56"></canvas>
 
             <!-- Legend -->
-            <div class="mt-3 flex items-center gap-5 text-sm text-slate-600">
+            <div class="mt-3 flex items-center gap-5 text-sm text-slate-700">
                 <span class="flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-3 rounded-full bg-emerald-500"></span> Pris
+                    <span
+                        class="inline-block h-3 w-3 rounded-full bg-emerald-500"
+                    ></span>
+                    Pris
                 </span>
                 <span class="flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-3 rounded-full bg-rose-400"></span> Non pris
+                    <span
+                        class="inline-block h-3 w-3 rounded-full bg-rose-400"
+                    ></span>
+                    Non pris
                 </span>
             </div>
         </template>
@@ -65,19 +85,27 @@ import {
 } from "chart.js";
 import api from "@/services/api";
 
-Chart.register(LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler);
+Chart.register(
+    LineController,
+    LineElement,
+    PointElement,
+    CategoryScale,
+    LinearScale,
+    Tooltip,
+    Filler,
+);
 
 const filters = [
-    { label: "Par semaine", days: 7  },
-    { label: "Par mois",    days: 30 },
+    { label: "Par semaine", days: 7 },
+    { label: "Par mois", days: 30 },
 ];
 
 const canvasRef = ref(null);
-const loading   = ref(true);
-const noData    = ref(false);
-const days      = ref(30);
-let   allChecks = [];
-let   chartInstance = null;
+const loading = ref(true);
+const noData = ref(false);
+const days = ref(30);
+let allChecks = [];
+let chartInstance = null;
 
 // Build an array of ISO date strings for the last N days
 function buildDateRange(n) {
@@ -89,7 +117,20 @@ function buildDateRange(n) {
 }
 
 // Short label: "14 avr"
-const MONTHS = ["jan","fév","mar","avr","mai","jun","jul","aoû","sep","oct","nov","déc"];
+const MONTHS = [
+    "jan",
+    "fév",
+    "mar",
+    "avr",
+    "mai",
+    "jun",
+    "jul",
+    "aoû",
+    "sep",
+    "oct",
+    "nov",
+    "déc",
+];
 function shortLabel(iso) {
     const d = new Date(iso);
     return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
@@ -105,7 +146,7 @@ async function buildChart() {
         return d.toISOString().slice(0, 10);
     })();
 
-    const filtered = allChecks.filter(c => c.check_date >= cutoff);
+    const filtered = allChecks.filter((c) => c.check_date >= cutoff);
 
     if (!filtered.length) {
         noData.value = true;
@@ -121,10 +162,10 @@ async function buildChart() {
         c.taken ? byDate[dt].taken.push(name) : byDate[dt].missed.push(name);
     }
 
-    const dates      = buildDateRange(days.value);
-    const takenData  = dates.map(d => byDate[d]?.taken.length  ?? 0);
-    const missedData = dates.map(d => byDate[d]?.missed.length ?? 0);
-    const labels     = dates.map(shortLabel);
+    const dates = buildDateRange(days.value);
+    const takenData = dates.map((d) => byDate[d]?.taken.length ?? 0);
+    const missedData = dates.map((d) => byDate[d]?.missed.length ?? 0);
+    const labels = dates.map(shortLabel);
 
     await nextTick();
 
@@ -136,24 +177,30 @@ async function buildChart() {
                 {
                     label: "Pris",
                     data: takenData,
-                    borderColor: "#10b981",
-                    backgroundColor: "rgba(16,185,129,0.08)",
-                    pointBackgroundColor: "#10b981",
+                    borderColor: "#059669",
+                    backgroundColor: "rgba(5, 150, 105, 0.12)",
+                    pointBackgroundColor: "#059669",
+                    pointBorderColor: "#fff",
+                    pointBorderWidth: 2,
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    borderWidth: 3,
                 },
                 {
                     label: "Non pris",
                     data: missedData,
-                    borderColor: "#f43f5e",
-                    backgroundColor: "rgba(244,63,94,0.06)",
-                    pointBackgroundColor: "#f43f5e",
+                    borderColor: "#dc2626",
+                    backgroundColor: "rgba(220, 38, 38, 0.1)",
+                    pointBackgroundColor: "#dc2626",
+                    pointBorderColor: "#fff",
+                    pointBorderWidth: 2,
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    borderWidth: 3,
                 },
             ],
         },
@@ -161,17 +208,30 @@ async function buildChart() {
             responsive: true,
             interaction: { mode: "index", intersect: false },
             plugins: {
-                legend: { display: false },
+                legend: {
+                    position: "top",
+                    labels: {
+                        font: { size: 14, weight: "bold" },
+                        padding: 14,
+                        boxWidth: 22,
+                        color: "#1f2937",
+                    },
+                },
                 tooltip: {
+                    backgroundColor: "rgba(0, 0, 0, 0.9)",
+                    titleFont: { size: 15, weight: "bold" },
+                    bodyFont: { size: 13 },
+                    padding: 14,
                     callbacks: {
                         // Show medication names for each status on that day
                         afterLabel(ctx) {
                             const date = dates[ctx.dataIndex];
-                            const day  = byDate[date];
+                            const day = byDate[date];
                             if (!day) return "";
-                            const list = ctx.dataset.label === "Pris"
-                                ? day.taken
-                                : day.missed;
+                            const list =
+                                ctx.dataset.label === "Pris"
+                                    ? day.taken
+                                    : day.missed;
                             return list.length
                                 ? "  · " + list.join("\n  · ")
                                 : "";
@@ -182,12 +242,20 @@ async function buildChart() {
             scales: {
                 x: {
                     grid: { display: false },
-                    ticks: { maxRotation: 45, font: { size: 11 } },
+                    ticks: {
+                        maxRotation: 45,
+                        font: { size: 12, weight: "500" },
+                        color: "#475569",
+                    },
                 },
                 y: {
                     beginAtZero: true,
-                    ticks: { stepSize: 1 },
-                    grid: { color: "#f1f5f9" },
+                    ticks: {
+                        stepSize: 1,
+                        font: { size: 12, weight: "500" },
+                        color: "#475569",
+                    },
+                    grid: { color: "#e2e8f0", drawBorder: true },
                 },
             },
         },
@@ -197,9 +265,9 @@ async function buildChart() {
 async function load() {
     loading.value = true;
     const { data: res } = await api.get("/health-data/treatment-checks", {
-        params: { days: 90 },   // fetch 90 days once, slice locally on filter change
+        params: { days: 90 }, // fetch 90 days once, slice locally on filter change
     });
-    allChecks     = res?.data ?? [];
+    allChecks = res?.data ?? [];
     loading.value = false;
     await buildChart();
 }

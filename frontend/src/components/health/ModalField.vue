@@ -5,7 +5,7 @@
     -->
     <div>
         <!-- Field label (ex: "Rythme cardiaque (bpm)") -->
-        <label class="mb-2 block text-[18px] font-semibold text-slate-700">
+        <label class="mb-3 block text-base font-semibold text-slate-800">
             {{ label }}
         </label>
 
@@ -14,11 +14,11 @@
 
         <!-- "Not measured today" checkbox — hides/disables the input when checked -->
         <label
-            class="mt-2 inline-flex items-center gap-2 text-[14px] text-slate-600"
+            class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-700 transition"
         >
             <input
                 type="checkbox"
-                class="h-4 w-4 rounded border-slate-400"
+                class="h-5 w-5 rounded border-slate-400 accent-blue-500"
                 :checked="skip"
                 @change="$emit('update:skip', $event.target.checked)"
             />
@@ -30,8 +30,8 @@
 <script setup>
 // Props
 defineProps({
-    label: String,     // The field title shown above the input
-    skip: Boolean,     // Whether the "not measured" checkbox is checked
+    label: String, // The field title shown above the input
+    skip: Boolean, // Whether the "not measured" checkbox is checked
     skipLabel: String, // Text for the checkbox (ex: "Je n'ai pas mesuré aujourd'hui")
 });
 

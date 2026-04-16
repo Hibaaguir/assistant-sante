@@ -65,20 +65,18 @@
                     data-anime
                     class="translate-y-6 opacity-0 transition-all duration-700"
                 >
-                    <h1
-                        class="m-0 text-[clamp(2rem,4vw,3.25rem)] font-extrabold leading-[1.1]"
-                    >
+                    <Typography tag="h1" variant="primary">
                         Prenez le contrôle de votre
                         <span
                             class="bg-gradient-to-r from-[#149bd7] to-[#d946ef] bg-clip-text text-transparent"
                             >santé</span
                         >
-                    </h1>
-                    <p class="mt-4 max-w-[56ch] leading-7 text-slate-600">
+                    </Typography>
+                    <Typography tag="p" variant="paragraph">
                         Votre assistant personnel de santé et bien-être conçu
                         pour vous aider à suivre, comprendre et améliorer votre
                         santé au fil du temps.
-                    </p>
+                    </Typography>
                     <div class="mt-6 flex flex-wrap gap-3">
                         <RouterLink
                             :to="{ name: 'register' }"
@@ -111,11 +109,9 @@
             <!-- Features -->
             <section id="features" class="py-16">
                 <div class="mx-auto w-[92%] max-w-[1120px]">
-                    <h2
-                        class="m-0 text-[clamp(1.8rem,3.5vw,2.75rem)] font-extrabold leading-tight text-slate-900"
-                    >
+                    <Typography tag="h2" variant="h2-style" class="m-0">
                         Suivi santé complet
-                    </h2>
+                    </Typography>
                     <p class="mt-3 max-w-[60ch] text-slate-600">
                         Tout ce dont vous avez besoin pour surveiller et
                         améliorer votre bien-être.
@@ -168,9 +164,7 @@
                         :style="{ transitionDelay: `${80 + index * 120}ms` }"
                     >
                         <!-- Title with optional highlight -->
-                        <h2
-                            class="m-0 text-[clamp(1.8rem,3.5vw,2.75rem)] font-extrabold leading-tight text-slate-900"
-                        >
+                        <Typography tag="h2" variant="h2-style" class="m-0">
                             {{ section.titreAvant }}
                             <span
                                 v-if="section.titreAccent"
@@ -178,7 +172,7 @@
                                 >{{ section.titreAccent }}</span
                             >
                             {{ section.titreApres }}
-                        </h2>
+                        </Typography>
 
                         <p class="my-4 leading-7 text-slate-600">
                             {{ section.texte }}
@@ -201,11 +195,9 @@
                     data-anime
                     class="mx-auto w-[92%] max-w-[1120px] translate-y-6 text-center opacity-0 transition-all duration-700"
                 >
-                    <h2
-                        class="m-0 text-[clamp(1.8rem,3.5vw,2.75rem)] font-extrabold leading-tight"
-                    >
+                    <Typography tag="h2" variant="h2-style" class="m-0">
                         Commencez votre parcours santé aujourd'hui
-                    </h2>
+                    </Typography>
                     <p
                         class="mx-auto mt-4 max-w-[60ch] leading-7 text-violet-50"
                     >
@@ -267,6 +259,7 @@
 import { onBeforeUnmount, onMounted } from "vue";
 import FeatureCard from "@/components/home/FeatureCard.vue";
 import FeaturesSection from "@/components/home/FeaturesSection.vue";
+import Typography from "@/components/ui/Typography.vue";
 import {
     homeFeatures,
     homeNavigationLinks,

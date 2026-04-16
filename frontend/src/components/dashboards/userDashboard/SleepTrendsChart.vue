@@ -1,13 +1,18 @@
 <template>
-    <section class="mt-5 overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
-        <div class="flex items-start justify-between gap-3 px-4 pt-4 pb-3 sm:px-5">
+    <section
+        class="mt-5 overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm"
+    >
+        <div
+            class="flex items-start justify-between gap-3 px-4 pt-4 pb-3 sm:px-5"
+        >
             <div>
-                <h2 class="text-3xl font-bold leading-none text-slate-800">
-                    <span class="mr-1">🌙</span>Sommeil — {{ selectedMonthName }}
-                </h2>
-                <p class="mt-2 text-base font-medium text-slate-400">
+                <Typography tag="h2" variant="h2-style">
+                    <span class="mr-1">🌙</span>Sommeil —
+                    {{ selectedMonthName }}
+                </Typography>
+                <Typography tag="p" variant="paragraph" class="mt-2">
                     Moyenne par semaine · Objectif 8 h / nuit
-                </p>
+                </Typography>
             </div>
 
             <div class="relative shrink-0">
@@ -29,7 +34,10 @@
         </div>
 
         <div class="border-t border-slate-200 px-2 pt-3 pb-4 sm:px-4">
-            <div v-if="loading" class="flex h-56 items-center justify-center text-sm text-slate-400">
+            <div
+                v-if="loading"
+                class="flex h-56 items-center justify-center text-sm text-slate-700"
+            >
                 Chargement...
             </div>
 
@@ -42,9 +50,10 @@
                     <span
                         v-for="(w, i) in weekData"
                         :key="i"
-                        class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500"
+                        class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700"
                     >
-                        Sem {{ i + 1 }} · {{ w.avg !== null ? `${w.avg} h` : "—" }}
+                        Sem {{ i + 1 }} ·
+                        {{ w.avg !== null ? `${w.avg} h` : "—" }}
                     </span>
                 </div>
             </template>
@@ -54,6 +63,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import Typography from "@/components/ui/Typography.vue";
 import { Chart, registerables } from "chart.js";
 import api from "@/services/api";
 
@@ -87,7 +97,7 @@ function buildMonths() {
 }
 
 const months = buildMonths();
-const selectedMonth = ref(months[months.length - 1].key);   // current month by default
+const selectedMonth = ref(months[months.length - 1].key); // current month by default
 const selectedMonthName = computed(
     () => months.find((m) => m.key === selectedMonth.value)?.label ?? "",
 );
@@ -144,23 +154,23 @@ async function rebuild() {
                 {
                     label: "Sommeil moyen",
                     data: chartSeries,
-                    borderColor: "#4f46e5",
-                    backgroundColor: "rgba(79, 70, 229, 0.14)",
-                    borderWidth: 2.75,
+                    borderColor: "#4338ca",
+                    backgroundColor: "rgba(67, 56, 202, 0.15)",
+                    borderWidth: 3,
                     pointBackgroundColor: "#ef4444",
-                    pointBorderColor: "#4f46e5",
-                    pointBorderWidth: 2,
-                    pointRadius: 5.5,
-                    pointHoverRadius: 7,
+                    pointBorderColor: "#4338ca",
+                    pointBorderWidth: 2.5,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
                     tension: 0.45,
                     fill: true,
                 },
                 {
                     label: "Objectif 8 h",
                     data: [GOAL, GOAL, GOAL, GOAL, GOAL],
-                    borderColor: "#818cf8",
+                    borderColor: "#6366f1",
                     borderDash: [5, 4],
-                    borderWidth: 2,
+                    borderWidth: 2.5,
                     pointRadius: 0,
                     fill: false,
                 },
@@ -171,16 +181,30 @@ async function rebuild() {
             maintainAspectRatio: false,
             interaction: { mode: "index", intersect: false },
             plugins: {
-                legend: { display: false },
+                legend: {
+                    position: "top",
+                    labels: {
+                        font: { size: 14, weight: "bold" },
+                        padding: 14,
+                        boxWidth: 22,
+                        color: "#1f2937",
+                    },
+                },
                 tooltip: {
                     backgroundColor: "#111827",
                     titleColor: "#f8fafc",
                     bodyColor: "#f8fafc",
+                    titleFont: { size: 15, weight: "bold" },
+                    bodyFont: { size: 13 },
+                    padding: 14,
+                    titleFont: { size: 13, weight: "bold" },
+                    bodyFont: { size: 12 },
+                    padding: 12,
                     callbacks: {
                         label: (ctx) =>
                             ctx.dataset.label === "Objectif 8 h"
                                 ? " Objectif : 8 h / nuit"
-                                : ` Sommeil : ${(weekData.value[ctx.dataIndex]?.avg ?? 0)} h`,
+                                : ` Sommeil : ${weekData.value[ctx.dataIndex]?.avg ?? 0} h`,
                     },
                 },
             },
@@ -198,7 +222,8 @@ async function rebuild() {
                         stepSize: 1,
                         color: "#64748b",
                         font: { size: 12 },
-                        callback: (v) => (v === 11 || v % 2 === 0 ? `${v} h` : ""),
+                        callback: (v) =>
+                            v === 11 || v % 2 === 0 ? `${v} h` : "",
                     },
                     border: { display: false },
                 },

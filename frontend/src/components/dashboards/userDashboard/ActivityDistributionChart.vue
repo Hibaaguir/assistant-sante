@@ -5,57 +5,56 @@
   Data comes from GET /journal → physicalActivities[].
 -->
 <template>
-    <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <section
+        class="mt-5 rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400"
+    >
         <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-2xl font-semibold text-slate-900">
+            <Typography tag="h2" variant="h2-style">
                 Activité physique par type
-            </h2>
+            </Typography>
             <div class="flex gap-2">
                 <button
                     v-for="f in filters"
                     :key="f.days"
                     @click="changeFilter(f.days)"
                     class="rounded-lg border px-3 py-1.5 text-sm font-medium transition"
-                    :class="days === f.days
-                        ? 'border-purple-500 bg-purple-50 text-purple-700'
-                        : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'"
+                    :class="
+                        days === f.days
+                            ? 'border-purple-500 bg-purple-50 text-purple-700'
+                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                    "
                 >
                     {{ f.label }}
                 </button>
             </div>
         </div>
 
-        <div v-if="loading" class="flex h-64 items-center justify-center text-slate-400">
+        <div
+            v-if="loading"
+            class="flex h-64 items-center justify-center text-slate-700"
+        >
             Chargement...
         </div>
 
-        <div v-else-if="noData" class="flex h-64 items-center justify-center text-slate-400">
+        <div
+            v-else-if="noData"
+            class="flex h-64 items-center justify-center text-slate-700"
+        >
             Aucune activité physique sur cette période.
         </div>
 
-        <div v-else class="flex flex-col items-center gap-4 sm:flex-row">
+        <div
+            v-else
+            class="flex flex-col items-center gap-4 sm:flex-row justify-center"
+        >
             <canvas ref="canvasRef" class="max-h-64 max-w-[260px]"></canvas>
-
-            <ul class="w-full space-y-2 text-sm sm:w-auto sm:min-w-[160px]">
-                <li
-                    v-for="(item, i) in summary"
-                    :key="item.label"
-                    class="flex items-center gap-2"
-                >
-                    <span
-                        class="inline-block h-3 w-3 flex-shrink-0 rounded-full"
-                        :style="{ backgroundColor: COLORS[i % COLORS.length] }"
-                    ></span>
-                    <span class="text-slate-700 font-medium">{{ item.label }}</span>
-                    <span class="ml-auto text-slate-500">{{ item.minutes }} min</span>
-                </li>
-            </ul>
         </div>
     </section>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import Typography from "@/components/ui/Typography.vue";
 import {
     Chart,
     DoughnutController,
@@ -68,22 +67,27 @@ import api from "@/services/api";
 Chart.register(DoughnutController, ArcElement, Legend, Tooltip);
 
 const COLORS = [
-    "#6366f1", "#10b981", "#f59e0b",
-    "#f43f5e", "#149bd7", "#8b5cf6",
-    "#14b8a6", "#ec4899",
+    "#6366f1",
+    "#10b981",
+    "#f59e0b",
+    "#f43f5e",
+    "#149bd7",
+    "#8b5cf6",
+    "#14b8a6",
+    "#ec4899",
 ];
 
 const filters = [
-    { label: "Par semaine", days: 7  },
-    { label: "Par mois",    days: 30 },
+    { label: "Par semaine", days: 7 },
+    { label: "Par mois", days: 30 },
 ];
 
 const canvasRef = ref(null);
-const loading   = ref(true);
-const noData    = ref(false);
-const days      = ref(7);
-const summary   = ref([]);
-let allEntries    = [];
+const loading = ref(true);
+const noData = ref(false);
+const days = ref(7);
+const summary = ref([]);
+let allEntries = [];
 let chartInstance = null;
 
 // Compute the ISO date string for N days ago
@@ -99,7 +103,9 @@ function aggregate() {
 
     for (const entry of allEntries) {
         if (!entry.entry_date || entry.entry_date < cutoff) continue;
-        for (const act of entry.physical_activities ?? entry.physicalActivities ?? []) {
+        for (const act of entry.physical_activities ??
+            entry.physicalActivities ??
+            []) {
             const type = act.activity_type || "Autre";
             totals[type] = (totals[type] ?? 0) + (act.duration_minutes ?? 0);
         }
@@ -120,7 +126,7 @@ async function buildChart() {
         return;
     }
 
-    summary.value = labels.map(l => ({ label: l, minutes: totals[l] }));
+    summary.value = labels.map((l) => ({ label: l, minutes: totals[l] }));
 
     await nextTick();
 
@@ -128,19 +134,27 @@ async function buildChart() {
         type: "doughnut",
         data: {
             labels,
-            datasets: [{
-                data: labels.map(l => totals[l]),
-                backgroundColor: COLORS.slice(0, labels.length),
-                borderWidth: 2,
-                borderColor: "#fff",
-            }],
+            datasets: [
+                {
+                    data: labels.map((l) => totals[l]),
+                    backgroundColor: COLORS.slice(0, labels.length),
+                    borderWidth: 2.5,
+                    borderColor: "#fff",
+                },
+            ],
         },
         options: {
             responsive: true,
             cutout: "60%",
             plugins: {
-                legend: { display: false },
+                legend: {
+                    display: false,
+                },
                 tooltip: {
+                    backgroundColor: "rgba(0, 0, 0, 0.9)",
+                    titleFont: { size: 15, weight: "bold" },
+                    bodyFont: { size: 13 },
+                    padding: 14,
                     callbacks: {
                         label: (ctx) => ` ${ctx.parsed} min`,
                     },
@@ -153,7 +167,7 @@ async function buildChart() {
 async function load() {
     loading.value = true;
     const { data: res } = await api.get("/journal");
-    allEntries    = res?.data ?? [];
+    allEntries = res?.data ?? [];
     loading.value = false;
     await buildChart();
 }

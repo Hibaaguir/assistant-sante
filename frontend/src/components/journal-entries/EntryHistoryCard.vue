@@ -1,18 +1,18 @@
 ﻿<template>
     <article
-        class="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+        class="rounded-2xl border-2 border-blue-300 bg-white px-5 py-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-blue-400"
     >
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div
-                class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-600 min-w-0 flex-1"
+                class="flex flex-wrap items-center gap-x-4 gap-y-2 text-base font-medium text-slate-800 min-w-0 flex-1"
             >
                 <!-- Date -->
                 <span
-                    class="inline-flex items-center gap-1.5 font-semibold text-slate-700"
+                    class="inline-flex items-center gap-1.5 font-semibold text-slate-900"
                 >
                     <svg
                         viewBox="0 0 24 24"
-                        class="h-3.5 w-3.5 text-slate-500"
+                        class="h-4 w-4 text-slate-600"
                         fill="none"
                         stroke="currentColor"
                         stroke-width="2"
@@ -26,9 +26,13 @@
                 </span>
 
                 <!-- Champs filtrés -->
-                <span v-for="champ in champsVisibles" :key="champ.label">
-                    {{ champ.label }}:
-                    <b class="text-slate-900">{{ champ.valeur }}</b>
+                <span
+                    v-for="champ in champsVisibles"
+                    :key="champ.label"
+                    class="text-slate-700 font-medium"
+                >
+                    <span class="text-slate-600">{{ champ.label }}:</span>
+                    <b class="text-slate-900 ml-1">{{ champ.valeur }}</b>
                 </span>
             </div>
 
@@ -133,14 +137,23 @@ const CHAMPS = {
         valeur: `${e.activityType} ${e.activityDuration}min`,
     }),
     tobacco: (e) => ({ label: "Tabac", valeur: fmtTabac(e) }),
-    date: (e) => ({ label: "Date", valeur: e.dateIso }),
-    month: (e) => ({ label: "Mois", valeur: fmtMois(e.dateIso) }),
 };
 
 const champsVisibles = computed(() => {
     const e = props.entree;
+
+    // Pour date et mois, afficher tous les champs pertinents (pas juste la date)
+    if (props.filterType === "date" || props.filterType === "month") {
+        return Object.values(CHAMPS)
+            .map((fn) => fn(e))
+            .filter((c) => c && c.valeur);
+    }
+
     if (props.filterType === "all")
-        return Object.values(CHAMPS).map((fn) => fn(e));
+        return Object.values(CHAMPS)
+            .map((fn) => fn(e))
+            .filter((c) => c && c.valeur);
+
     return [CHAMPS[props.filterType]?.call(null, e)].filter(Boolean);
 });
 </script>

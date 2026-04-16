@@ -1,23 +1,44 @@
+<!-- menu -->
 <template>
     <aside
-        class="hidden h-screen w-[300px] shrink-0 flex-col border-r border-slate-100 bg-white lg:sticky lg:top-0 lg:flex"
+        class="hidden h-screen w-[350px] shrink-0 flex-col border-r border-slate-100 bg-white lg:sticky lg:top-0 lg:flex"
     >
         <!-- Logo -->
-        <div class="flex items-center gap-3 px-5 py-5 border-b border-slate-100">
-            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-600">
-                <svg viewBox="0 0 24 24" class="h-6 w-6 text-white" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 21s-6.5-4.5-9-8.5C.7 8.4 3 4 7.3 4c2 0 3.6 1 4.7 2.6C13.1 5 14.7 4 16.7 4 21 4 23.3 8.4 21 12.5 18.5 16.5 12 21 12 21z" />
+        <div
+            class="flex items-center gap-4 px-6 py-8 border-b border-slate-100"
+        >
+            <div
+                class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-blue-600"
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    class="h-8 w-8 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <path
+                        d="M12 21s-6.5-4.5-9-8.5C.7 8.4 3 4 7.3 4c2 0 3.6 1 4.7 2.6C13.1 5 14.7 4 16.7 4 21 4 23.3 8.4 21 12.5 18.5 16.5 12 21 12 21z"
+                    />
                 </svg>
             </div>
             <div>
-                <p class="text-[22px] font-bold leading-none text-slate-900">HealthFlow</p>
-                <p class="mt-1 text-[13px] text-slate-400">Assistant santé</p>
+                <p
+                    class="text-[30px] font-extrabold leading-none text-slate-900"
+                >
+                    HealthFlow
+                </p>
+                <p class="mt-2 text-[22px] font-medium text-slate-500">
+                    Assistant santé
+                </p>
             </div>
         </div>
 
         <!-- Navigation -->
-        <nav class="flex-1 overflow-y-auto px-3 py-4">
-            <p class="mb-2 px-3 text-[12px] font-semibold uppercase tracking-widest text-slate-400">
+        <nav class="flex-1 overflow-y-auto px-4 py-7">
+            <p
+                class="mb-5 px-4 text-[17px] font-bold uppercase tracking-widest text-slate-500"
+            >
                 Menu principal
             </p>
             <ElementNavLaterale
@@ -27,18 +48,24 @@
                 :label="item.label"
                 :icon="item.icon"
                 :active="item.name === active"
+                class="mb-4"
             />
         </nav>
 
         <!-- Footer -->
-        <div class="border-t border-slate-100 px-3 py-4">
-            <p class="px-3 text-[10px] text-slate-300 text-center">© 2024 HealthFlow</p>
-        </div>
+        
+            <Typography tag="h5" variant="secondary" class="text-center" >
+                
+            
+                © 2026 HealthFlow
+            </Typography>
+        
     </aside>
 </template>
 
 <script setup>
 import ElementNavLaterale from "./SidebarLink.vue";
+import Typography from "../ui/Typography.vue";
 
 defineProps({
     active: { type: String, default: "" },
@@ -47,38 +74,56 @@ defineProps({
 const nav = (name, label, icon) => ({ name, label, icon, to: { name } });
 
 const NAV_ITEMS = [
-    nav("dashboard", "Tableau de bord",
+    nav(
+        "dashboard",
+        "Tableau de bord",
         `<svg viewBox="0 0 24 24" class="h-[22px] w-[22px]" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
           <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
-        </svg>`),
+        </svg>`,
+    ),
 
-    nav("health-settings", "Profil santé",
+    nav(
+        "health-settings",
+        "Profil santé",
         `<svg viewBox="0 0 24 24" class="h-[22px] w-[22px]" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 12h4l3-8 4 16 3-8h4"/>
-        </svg>`),
+        </svg>`,
+    ),
 
-    nav("journal", "Journal quotidien",
+    nav(
+        "journal",
+        "Journal quotidien",
         `<svg viewBox="0 0 24 24" class="h-[22px] w-[22px]" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v19H6.5A2.5 2.5 0 0 1 4 18.5z"/>
           <path d="M8 7h8"/>
-        </svg>`),
+        </svg>`,
+    ),
 
-    nav("health-data", "Données de santé",
+    nav(
+        "health-data",
+        "Données de santé",
         `<svg viewBox="0 0 24 24" class="h-[22px] w-[22px]" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 12h4l2-6 4 12 2-6h4"/><circle cx="12" cy="12" r="9"/>
-        </svg>`),
+        </svg>`,
+    ),
 
-    nav("notifications", "Notifications",
+    nav(
+        "notifications",
+        "Notifications",
         `<svg viewBox="0 0 24 24" class="h-[22px] w-[22px]" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>`),
+        </svg>`,
+    ),
 
-    nav("ai-recommendations", "Recommandations IA",
+    nav(
+        "ai-recommendations",
+        "Recommandations IA",
         `<svg viewBox="0 0 24 24" class="h-[22px] w-[22px]" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 3l1.4 2.8L16 7.2l-2.6 1.4L12 11l-1.4-2.4L8 7.2l2.6-1.4z"/>
           <path d="M5 14l.9 1.8L8 16.8l-2.1 1L5 20l-.9-2.2L2 16.8l2.1-1z"/>
           <path d="M19 13l.8 1.6L21 15.4l-1.2.6L19 17.6l-.8-1.6-1.2-.6 1.2-.8z"/>
-        </svg>`),
+        </svg>`,
+    ),
 ];
 </script>

@@ -19,17 +19,22 @@
     ]" />
 -->
 <template>
-    <section class="rounded-2xl border border-[#dbc6f7] bg-[#f6f0fc] p-1 shadow-sm">
-        <div class="grid gap-1" :style="{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }">
+    <section
+        class="rounded-2xl border border-blue-300 bg-transparent p-2 shadow-sm"
+    >
+        <div
+            class="grid gap-2"
+            :style="{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }"
+        >
             <button
                 v-for="tab in tabs"
                 :key="tab.value"
                 type="button"
-                class="h-10 rounded-xl text-[15px] font-semibold transition"
+                class="h-12 rounded-xl text-base font-semibold transition-all duration-300 ease-out"
                 :class="
                     modelValue === tab.value
-                        ? 'bg-purple-200 text-purple-900'
-                        : 'text-slate-600 hover:bg-purple-100/50'
+                        ? 'bg-blue-100 text-blue-700 border-2 border-blue-500 shadow-md hover:shadow-lg'
+                        : 'text-slate-600 border-2 border-transparent hover:bg-blue-50 hover:border-blue-200'
                 "
                 @click="$emit('update:modelValue', tab.value)"
             >

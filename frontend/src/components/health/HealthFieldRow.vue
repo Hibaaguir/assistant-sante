@@ -1,16 +1,16 @@
 <template>
     <div
-        class="flex items-start gap-3 rounded-xl px-2.5 py-2 transition-colors hover:bg-slate-100/70 sm:px-3 sm:py-2.5"
+        class="flex items-start gap-4 rounded-xl px-3 py-3 transition-colors hover:bg-slate-100/70 sm:px-4 sm:py-4"
     >
         <div class="mt-1">
             <IconeSante :name="icon" />
         </div>
-        <div>
-            <dt class="text-[13px] font-normal text-slate-500 sm:text-[14px]">
+        <div class="flex-1">
+            <dt class="text-base font-semibold text-slate-600 sm:text-lg mb-1">
                 {{ label }}
             </dt>
             <dd
-                class="text-[18px] font-medium leading-none text-slate-900 sm:text-[20px]"
+                class="text-lg font-semibold leading-none text-slate-900 sm:text-xl"
             >
                 {{ value }}
             </dd>

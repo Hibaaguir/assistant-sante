@@ -31,22 +31,28 @@ function formatDateLabel(dateIso) {
     if (!dateIso) return "";
     const date = new Date(`${dateIso}T00:00:00`);
     if (Number.isNaN(date.getTime())) return dateIso;
-    return date.toLocaleDateString("en-US", {
+    const formatted = date.toLocaleDateString("fr-FR", {
         weekday: "long",
         day: "numeric",
         month: "long",
     });
+    // Capitalize first letter (weekday name)
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
 function toVue(model) {
     // Physical activity: one record per entry
-    const activities = Array.isArray(model.physical_activities) ? model.physical_activities : [];
+    const activities = Array.isArray(model.physical_activities)
+        ? model.physical_activities
+        : [];
     const activity = activities[0] ?? null;
 
     // Tobacco: one record per type (cigarette / vape)
     const tobaccoList = Array.isArray(model.tobacco) ? model.tobacco : [];
-    const cigaretteEntry = tobaccoList.find((t) => t.tobacco_type === "cigarette") ?? null;
-    const vapeEntry = tobaccoList.find((t) => t.tobacco_type === "vape") ?? null;
+    const cigaretteEntry =
+        tobaccoList.find((t) => t.tobacco_type === "cigarette") ?? null;
+    const vapeEntry =
+        tobaccoList.find((t) => t.tobacco_type === "vape") ?? null;
 
     return {
         id: String(model.id),
@@ -62,7 +68,10 @@ function toVue(model) {
         calories: Number(model.calories ?? 0),
         activityType: activity?.activity_type ?? "",
         activityDuration: Number(activity?.duration_minutes ?? 0),
-        intensity: activity?.intensity === "low" ? "light" : (activity?.intensity ?? "medium"),
+        intensity:
+            activity?.intensity === "low"
+                ? "light"
+                : (activity?.intensity ?? "medium"),
         tobacco: tobaccoList.length > 0,
         alcohol: Boolean(model.alcohol),
         tobaccoTypes: {
@@ -97,7 +106,8 @@ function toPayload(entry) {
         calories: calories ?? calculateCaloriesFromMeals(mealsBruts),
         activity_type: entry.activityType ?? null,
         activity_duration: convertToIntOrNull(entry.activityDuration),
-        intensity: entry.intensity === "light" ? "low" : (entry.intensity ?? "medium"),
+        intensity:
+            entry.intensity === "light" ? "low" : (entry.intensity ?? "medium"),
         tobacco: Boolean(entry.tobacco),
         alcohol: Boolean(entry.alcohol),
         tobacco_types: entry.tobaccoTypes ?? { cigarette: false, vape: false },

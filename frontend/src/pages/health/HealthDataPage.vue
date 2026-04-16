@@ -1,33 +1,23 @@
 <template>
     <div class="w-full px-5 py-4 sm:px-7 bg-white">
-        <header>
-            <h1
-                class="text-[38px] font-bold leading-tight tracking-[-0.01em] text-blue-600"
-            >
-                Données de santé
-            </h1>
-            <p class="mt-2 text-[15px] leading-7 text-black">
-                Suivez vos indicateurs de santé au fil du temps
-            </p>
-        </header>
+        <Typography tag="h1" variant="h1-style"> Données de santé </Typography>
+        <Typography tag="h4" variant="h4-style">
+            Suivez vos indicateurs de santé au fil du temps
+        </Typography>
         <!-- Observations du médecin -->
         <section v-if="doctorLatestObservation" class="mt-4 space-y-3">
-            <h2
-                class="text-[clamp(1.55rem,1.2rem+0.8vw,1.95rem)] font-bold leading-tight text-black"
-            >
+            <Typography tag="h3" variant="h3-style">
                 Observations de votre médecin
-            </h2>
+            </Typography>
             <article
                 class="rounded-2xl border border-slate-200 bg-white px-5 py-4"
             >
-                <p
-                    class="text-[11px] font-semibold uppercase tracking-wide text-blue-600"
-                >
+                <Typography tag="h5" variant="h5-style" class="mb-2">
                     {{ formatObsDate(doctorLatestObservation.date) }}
-                </p>
-                <p class="mt-2 text-[15px] leading-7 text-black">
+                </Typography>
+                <Typography tag="h6" variant="h5-style">
                     {{ doctorLatestObservation.observation }}
-                </p>
+                </Typography>
             </article>
         </section>
 
@@ -36,8 +26,8 @@
             v-model="activeTab"
             class="mt-4"
             :tabs="[
-                { value: 'vitals',     label: 'Signes vitaux' },
-                { value: 'labs',       label: 'Analyse medical' },
+                { value: 'vitals', label: 'Signes vitaux' },
+                { value: 'labs', label: 'Analyse medical' },
                 { value: 'treatments', label: 'Traitements' },
             ]"
         />
@@ -122,6 +112,7 @@ import TabSignesVitaux from "@/components/health/TabSignesVitaux.vue";
 import TabAnalyseBiologique from "@/components/health/TabAnalyseBiologique.vue";
 import TabTraitements from "@/components/health/TabTraitements.vue";
 import { useNotificationsStore } from "@/stores/notifications";
+import Typography from "@/components/ui/Typography.vue";
 import TabBar from "@/components/ui/TabBar.vue";
 
 const vitalsTab = ref(null);

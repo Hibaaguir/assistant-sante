@@ -4,22 +4,20 @@
 -->
 <template>
     <div
-        class="mb-6 rounded-3xl bg-white border border-slate-200 p-6 shadow-sm md:p-8"
+        class="mb-6 rounded-3xl bg-white border-2 border-blue-300 p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400 md:p-8"
     >
         <div class="flex items-center justify-between gap-4">
             <!-- Text content -->
             <div class="flex-1">
-                <p class="text-sm font-medium text-blue-800">
+                <Typography tag="h2" variant="h3-style">
                     {{ currentDate }}
-                </p>
-                <h2
-                    class="mt-3 text-3xl font-bold text-blue-900 md:text-4xl leading-tight"
-                >
+                </Typography>
+                <Typography tag="h1" variant="h3-style" class="mt-3">
                     Bienvenue, {{ userName }} !
-                </h2>
-                <p class="mt-2 text-base font-medium text-blue-800">
+                </Typography>
+                <Typography tag="h2" variant="h3-style" class="mt-2">
                     Continuez à surveiller votre santé au quotidien
-                </p>
+                </Typography>
             </div>
 
             <!-- Illustration -->
@@ -41,6 +39,7 @@
 <script setup>
 import { computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import Typography from "@/components/ui/Typography.vue";
 
 const authStore = useAuthStore();
 

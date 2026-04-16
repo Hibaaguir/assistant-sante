@@ -17,25 +17,18 @@
                 </svg>
             </div>
             <div>
-                <h1
-                    class="text-[42px] font-bold leading-none tracking-[-0.01em] text-blue-600 sm:text-[48px]"
-                >
+                <Typography tag="h1" variant="h1-style">
                     Profil de santé
-                </h1>
-                <p
-                    class="mt-1 text-[12px] font-medium leading-none text-slate-500 sm:text-[13px]"
-                >
+                </Typography>
+                <Typography tag="h3" variant="h4-style">
                     Gérez vos informations de santé
-                </p>
+                </Typography>
             </div>
         </header>
 
-        <div
-            v-if="loading"
-            class="rounded-3xl border border-[#d8e6ff] bg-white/85 p-6 text-sm text-slate-600"
-        >
+        <Typography v-if="loading" tag="h5" variant="secondary">
             Chargement du profil...
-        </div>
+        </Typography>
 
         <div
             v-else-if="loadError"
@@ -47,7 +40,7 @@
         <div v-else class="grid gap-4 lg:grid-cols-2">
             <!-- Section: Informations de base -->
             <section
-                class="min-h-[250px] rounded-[14px] border border-slate-200 bg-white p-4 sm:p-5 relative overflow-hidden"
+                class="min-h-[250px] rounded-[14px] border-2 border-blue-300 bg-white p-4 sm:p-5 relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-blue-400"
             >
                 <div class="mb-5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
@@ -65,11 +58,9 @@
                                 <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" />
                             </svg>
                         </span>
-                        <h2
-                            class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]"
-                        >
+                        <Typography tag="h3" variant="h3-style">
                             Informations de base
-                        </h2>
+                        </Typography>
                     </div>
                     <button
                         v-if="!editing.base"
@@ -118,7 +109,11 @@
                     />
                     <HealthFieldRow
                         label="Poids"
-                        :value="profile.current_weight ? `${profile.current_weight} kg` : '-'"
+                        :value="
+                            profile.current_weight
+                                ? `${profile.current_weight} kg`
+                                : '-'
+                        "
                         icon="weight"
                     />
                 </div>
@@ -141,21 +136,25 @@
                         </p>
                     </div>
                     <div>
-                        <label
-                            class="mb-1 block text-sm font-semibold text-slate-900"
-                            >Nom</label
+                        <Typography
+                            tag="label"
+                            variant="secondary"
+                            class="mb-1 block"
+                            >Nom</Typography
                         >
                         <input
                             :value="user.name || ''"
                             disabled
-                            class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base text-slate-700"
+                            class="h-12 w-full rounded-xl border border-slate-200 bg-slate-100 px-5 text-base text-slate-700 font-medium"
                         />
                     </div>
                     <div class="grid gap-3 md:grid-cols-2">
                         <div>
-                            <label
-                                class="mb-1 block text-sm font-semibold text-slate-900"
-                                >Genre</label
+                            <Typography
+                                tag="label"
+                                variant="secondary"
+                                class="mb-1 block"
+                                >Genre</Typography
                             >
                             <select
                                 v-model="draft.gender"
@@ -177,9 +176,11 @@
                             </p>
                         </div>
                         <div>
-                            <label
-                                class="mb-1 block text-sm font-semibold text-slate-900"
-                                >Taille (cm)</label
+                            <Typography
+                                tag="label"
+                                variant="secondary"
+                                class="mb-1 block"
+                                >Taille (cm)</Typography
                             >
                             <input
                                 v-model="draft.height"
@@ -202,9 +203,11 @@
                         </div>
                     </div>
                     <div>
-                        <label
-                            class="mb-1 block text-sm font-semibold text-slate-900"
-                            >Poids (kg)</label
+                        <Typography
+                            tag="label"
+                            variant="secondary"
+                            class="mb-1 block"
+                            >Poids (kg)</Typography
                         >
                         <input
                             v-model="draft.weight"
@@ -246,7 +249,7 @@
 
             <!-- Section: Santé -->
             <section
-                class="min-h-[250px] rounded-[14px] border border-slate-200 bg-white p-4 sm:p-5 relative overflow-hidden"
+                class="min-h-[250px] rounded-[14px] border-2 border-blue-300 bg-white p-4 sm:p-5 relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-blue-400"
             >
                 <div class="mb-5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
@@ -265,11 +268,9 @@
                                 />
                             </svg>
                         </span>
-                        <h2
-                            class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]"
-                        >
+                        <Typography tag="h3" variant="h3-style">
                             Santé
-                        </h2>
+                        </Typography>
                     </div>
                     <button
                         v-if="!editing.health"
@@ -330,13 +331,15 @@
                         </p>
                     </div>
                     <div>
-                        <label
-                            class="mb-1 block text-sm font-semibold text-slate-900"
-                            >Groupe sanguin</label
+                        <Typography
+                            tag="label"
+                            variant="secondary"
+                            class="mb-1 block"
+                            >Groupe sanguin</Typography
                         >
                         <select
                             v-model="draft.bloodType"
-                            class="h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 text-base"
+                            class="h-12 w-full rounded-xl border border-slate-200 bg-slate-100 px-5 text-base font-medium"
                         >
                             <option value="">-</option>
                             <option value="A+">A+</option>
@@ -350,9 +353,11 @@
                         </select>
                     </div>
                     <div>
-                        <label
-                            class="mb-1 block text-sm font-semibold text-slate-900"
-                            >Objectifs</label
+                        <Typography
+                            tag="label"
+                            variant="secondary"
+                            class="mb-1 block"
+                            >Objectifs</Typography
                         >
                         <div
                             class="rounded-xl border bg-slate-50 p-3"
@@ -387,17 +392,19 @@
                         </p>
                     </div>
                     <div>
-                        <label
-                            class="mb-1 block text-sm font-semibold text-slate-900"
-                            >Allergies</label
+                        <Typography
+                            tag="label"
+                            variant="secondary"
+                            class="mb-1 block"
+                            >Allergies</Typography
                         >
                         <div
-                            class="rounded-xl border border-slate-200 bg-slate-50 p-3"
+                            class="rounded-xl border border-slate-200 bg-slate-50 p-4"
                         >
                             <div class="flex gap-2">
                                 <select
                                     v-model="selectedAllergyOption"
-                                    class="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                                    class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium"
                                     @change="
                                         addSelectedOption(
                                             'allergies',
@@ -425,7 +432,7 @@
                                 <span
                                     v-for="item in draft.allergies"
                                     :key="`allergy-${item}`"
-                                    class="inline-flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs text-purple-800"
+                                    class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-medium text-slate-800"
                                 >
                                     {{ item }}
                                     <button
@@ -460,9 +467,11 @@
                         </div>
                     </div>
                     <div>
-                        <label
-                            class="mb-1 block text-sm font-semibold text-slate-900"
-                            >Maladies chroniques</label
+                        <Typography
+                            tag="label"
+                            variant="secondary"
+                            class="mb-1 block"
+                            >Maladies chroniques</Typography
                         >
                         <div
                             class="rounded-xl border border-slate-200 bg-slate-50 p-3"
@@ -470,7 +479,7 @@
                             <div class="flex gap-2">
                                 <select
                                     v-model="selectedDiseaseOption"
-                                    class="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                                    class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base font-medium"
                                     @change="
                                         addSelectedOption(
                                             'chronicDiseases',
@@ -498,7 +507,7 @@
                                 <span
                                     v-for="item in draft.chronicDiseases"
                                     :key="`disease-${item}`"
-                                    class="inline-flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs text-purple-800"
+                                    class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-medium text-slate-800"
                                 >
                                     {{ item }}
                                     <button
@@ -556,7 +565,7 @@
 
             <!-- Section: Habitudes -->
             <section
-                class="min-h-[250px] rounded-[14px] border border-slate-200 bg-white p-4 sm:p-5 relative overflow-hidden"
+                class="min-h-[250px] rounded-[14px] border-2 border-blue-300 bg-white p-4 sm:p-5 relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-blue-400"
             >
                 <div class="mb-5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
@@ -573,11 +582,9 @@
                                 <path d="M3 12h4l2-6 4 12 2-6h6" />
                             </svg>
                         </span>
-                        <h2
-                            class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]"
-                        >
+                        <Typography tag="h3" variant="h3-style">
                             Habitudes
-                        </h2>
+                        </Typography>
                     </div>
                     <button
                         v-if="!editing.habits"
@@ -625,8 +632,11 @@
                         <div
                             class="flex h-14 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3"
                         >
-                            <label class="text-sm font-semibold text-slate-900"
-                                >Fumeur</label
+                            <Typography
+                                tag="label"
+                                variant="secondary"
+                                class="text-sm font-semibold"
+                                >Fumeur</Typography
                             >
                             <button
                                 type="button"
@@ -647,8 +657,11 @@
                         <div
                             class="flex h-14 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3"
                         >
-                            <label class="text-sm font-semibold text-slate-900"
-                                >Alcool</label
+                            <Typography
+                                tag="label"
+                                variant="secondary"
+                                class="text-sm font-semibold"
+                                >Alcool</Typography
                             >
                             <button
                                 type="button"
@@ -668,15 +681,15 @@
                         </div>
                     </div>
                     <div
-                        class="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4"
+                        class="rounded-xl border border-slate-200 bg-slate-50 p-5 sm:p-6"
                     >
-                        <div class="mb-3 flex items-center justify-between">
-                            <p class="text-sm font-semibold text-slate-900">
+                        <div class="mb-5 flex items-center justify-between">
+                            <Typography tag="h3" variant="h4-style">
                                 Traitements
-                            </p>
+                            </Typography>
                             <button
                                 type="button"
-                                class="h-9 rounded-lg bg-gradient-to-r from-blue-300 to-blue-400 px-3 text-sm font-medium text-white hover:from-blue-400 hover:to-blue-500"
+                                class="h-11 rounded-lg bg-gradient-to-r from-blue-300 to-blue-400 px-4 text-base font-semibold text-white hover:from-blue-400 hover:to-blue-500 transition shadow-sm hover:shadow-md"
                                 @click="openTreatmentEditor()"
                             >
                                 Ajouter
@@ -685,77 +698,195 @@
 
                         <div
                             v-if="showTreatmentEditor"
-                            class="space-y-3 rounded-lg border border-slate-200 bg-white p-3"
+                            class="space-y-4 rounded-lg border border-slate-200 bg-white p-5"
                         >
-                            <div class="grid gap-3 md:grid-cols-2">
+                            <div class="grid gap-4 md:grid-cols-2">
                                 <div>
-                                    <label
-                                        class="mb-1 block text-xs font-medium text-slate-600"
-                                        >Type <span class="text-red-500">*</span></label
+                                    <Typography
+                                        tag="label"
+                                        variant="secondary"
+                                        class="mb-2 block text-sm font-semibold"
+                                        >Type
+                                        <span class="text-red-500"
+                                            >*</span
+                                        ></Typography
                                     >
-                                    <input
-                                        v-model="treatmentDraft.type"
-                                        list="treatment-types"
-                                        class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm"
-                                        placeholder="Type de traitement"
-                                        @input="handleTreatmentTypeInput"
-                                    />
-                                    <datalist id="treatment-types">
-                                        <option
-                                            v-for="type in treatmentTypes"
-                                            :key="type"
-                                            :value="type"
+                                    <button
+                                        type="button"
+                                        class="h-12 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-left text-base text-slate-800 font-medium transition hover:bg-slate-100"
+                                        @click="
+                                            openTreatmentTypeDropdown =
+                                                !openTreatmentTypeDropdown
+                                        "
+                                    >
+                                        {{
+                                            treatmentDraft.type ||
+                                            "Selectionner un type"
+                                        }}
+                                    </button>
+                                    <div
+                                        v-if="openTreatmentTypeDropdown"
+                                        class="mt-3 rounded-xl border border-slate-200 bg-white shadow-sm"
+                                    >
+                                        <div
+                                            class="border-b border-slate-100 p-3"
+                                        >
+                                            <input
+                                                v-model="queryTreatmentTypes"
+                                                class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm"
+                                                placeholder="Rechercher un type..."
+                                            />
+                                        </div>
+                                        <div class="max-h-48 overflow-auto p-2">
+                                            <button
+                                                v-for="type in filteredTreatmentTypes"
+                                                :key="`type-opt-${type}`"
+                                                type="button"
+                                                class="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-800 hover:bg-slate-100"
+                                                @click="
+                                                    selectTreatmentType(type)
+                                                "
+                                            >
+                                                {{ type }}
+                                            </button>
+                                            <p
+                                                v-if="
+                                                    !filteredTreatmentTypes.length
+                                                "
+                                                class="px-3 py-2 text-sm text-slate-500"
+                                            >
+                                                Aucun type disponible.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 flex gap-2">
+                                        <input
+                                            v-model="customTreatmentInputs.type"
+                                            class="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm"
+                                            placeholder="Ajouter un type si absent"
                                         />
-                                    </datalist>
+                                        <button
+                                            type="button"
+                                            class="h-10 rounded-lg bg-gradient-to-r from-blue-300 to-blue-400 px-4 text-sm font-semibold text-white hover:from-blue-400 hover:to-blue-500"
+                                            @click="addCustomTreatmentType"
+                                        >
+                                            Ajouter
+                                        </button>
+                                    </div>
                                 </div>
                                 <div>
-                                    <label
-                                        class="mb-1 block text-xs font-medium text-slate-600"
-                                        >Nom <span class="text-red-500">*</span></label
+                                    <Typography
+                                        tag="label"
+                                        variant="secondary"
+                                        class="mb-2 block text-sm font-semibold"
+                                        >Nom
+                                        <span class="text-red-500"
+                                            >*</span
+                                        ></Typography
                                     >
-                                    <input
-                                        v-model="treatmentDraft.name"
-                                        list="treatment-names"
+                                    <button
+                                        type="button"
                                         :disabled="!treatmentDraft.type"
-                                        class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm disabled:cursor-not-allowed disabled:bg-slate-100"
-                                        :placeholder="
+                                        class="h-12 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-left text-base font-medium text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+                                        @click="toggleTreatmentNameDropdown"
+                                    >
+                                        {{
+                                            treatmentDraft.name ||
+                                            (treatmentDraft.type
+                                                ? "Selectionner un nom"
+                                                : "Selectionnez d'abord un type")
+                                        }}
+                                    </button>
+                                    <div
+                                        v-if="
+                                            openTreatmentNameDropdown &&
                                             treatmentDraft.type
-                                                ? 'Nom du traitement'
-                                                : 'Sélectionnez d\'abord un type'
                                         "
-                                    />
-                                    <datalist id="treatment-names">
-                                        <option
-                                            v-for="name in treatmentNamesForSelectedType"
-                                            :key="name"
-                                            :value="name"
+                                        class="mt-3 rounded-xl border border-slate-200 bg-white shadow-sm"
+                                    >
+                                        <div
+                                            class="border-b border-slate-100 p-3"
+                                        >
+                                            <input
+                                                v-model="queryTreatmentNames"
+                                                class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm"
+                                                placeholder="Rechercher un nom..."
+                                            />
+                                        </div>
+                                        <div class="max-h-48 overflow-auto p-2">
+                                            <button
+                                                v-for="name in filteredTreatmentNames"
+                                                :key="`name-opt-${name}`"
+                                                type="button"
+                                                class="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-800 hover:bg-slate-100"
+                                                @click="
+                                                    selectTreatmentName(name)
+                                                "
+                                            >
+                                                {{ name }}
+                                            </button>
+                                            <p
+                                                v-if="
+                                                    !filteredTreatmentNames.length
+                                                "
+                                                class="px-3 py-2 text-sm text-slate-500"
+                                            >
+                                                Aucun nom disponible pour ce
+                                                type.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 flex gap-2">
+                                        <input
+                                            v-model="customTreatmentInputs.name"
+                                            :disabled="!treatmentDraft.type"
+                                            class="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium disabled:cursor-not-allowed disabled:bg-slate-100"
+                                            placeholder="Ajouter un nom si absent"
                                         />
-                                    </datalist>
+                                        <button
+                                            type="button"
+                                            :disabled="!treatmentDraft.type"
+                                            class="h-10 rounded-lg bg-gradient-to-r from-blue-300 to-blue-400 px-4 text-sm font-semibold text-white hover:from-blue-400 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                                            @click="addCustomTreatmentName"
+                                        >
+                                            Ajouter
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="grid gap-3 md:grid-cols-2">
+                            <div class="grid gap-4 md:grid-cols-2">
                                 <div>
-                                    <label
-                                        class="mb-1 block text-xs font-medium text-slate-600"
-                                        >Dose <span class="text-red-500">*</span></label
+                                    <Typography
+                                        tag="label"
+                                        variant="secondary"
+                                        class="mb-2 block text-sm font-semibold"
+                                        >Dose
+                                        <span class="text-red-500"
+                                            >*</span
+                                        ></Typography
                                     >
                                     <input
                                         v-model="treatmentDraft.dose"
-                                        class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm"
+                                        class="h-12 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-base font-medium"
                                         placeholder="Ex: 500mg"
                                     />
                                 </div>
                                 <div>
-                                    <label
-                                        class="mb-1 block text-xs font-medium text-slate-600"
-                                        >Fréquence <span class="text-red-500">*</span></label
+                                    <Typography
+                                        tag="label"
+                                        variant="secondary"
+                                        class="mb-2 block text-sm font-semibold"
+                                        >Fréquence
+                                        <span class="text-red-500"
+                                            >*</span
+                                        ></Typography
                                     >
-                                    <div class="grid grid-cols-2 gap-2">
+                                    <div class="grid grid-cols-2 gap-3">
                                         <select
                                             v-model="
                                                 treatmentDraft.frequency_unit
                                             "
-                                            class="h-10 rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm"
+                                            class="h-12 rounded-lg border border-slate-200 bg-slate-50 px-4 text-base font-medium"
                                         >
                                             <option value="day">jour</option>
                                             <option value="week">
@@ -769,21 +900,26 @@
                                             "
                                             type="number"
                                             min="1"
-                                            class="h-10 rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm"
+                                            class="h-12 rounded-lg border border-slate-200 bg-slate-50 px-4 text-base font-medium"
                                             placeholder="Nb de prises"
                                         />
                                     </div>
                                 </div>
                             </div>
-                            <div class="grid gap-3 md:grid-cols-2">
+                            <div class="grid gap-4 md:grid-cols-2">
                                 <div>
-                                    <label
-                                        class="mb-1 block text-xs font-medium text-slate-600"
-                                        >Début (JJ/MM/AAAA) <span class="text-red-500">*</span></label
+                                    <Typography
+                                        tag="label"
+                                        variant="secondary"
+                                        class="mb-2 block text-sm font-semibold"
+                                        >Début (JJ/MM/AAAA)
+                                        <span class="text-red-500"
+                                            >*</span
+                                        ></Typography
                                     >
                                     <input
                                         :value="treatmentDraft.start_date"
-                                        class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm"
+                                        class="h-12 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-base font-medium"
                                         maxlength="10"
                                         placeholder="01/03/2026"
                                         @input="
@@ -796,13 +932,18 @@
                                     />
                                 </div>
                                 <div>
-                                    <label
-                                        class="mb-1 block text-xs font-medium text-slate-600"
-                                        >Fin (JJ/MM/AAAA) <span class="text-red-500">*</span></label
+                                    <Typography
+                                        tag="label"
+                                        variant="secondary"
+                                        class="mb-2 block text-sm font-semibold"
+                                        >Fin (JJ/MM/AAAA)
+                                        <span class="text-red-500"
+                                            >*</span
+                                        ></Typography
                                     >
                                     <input
                                         :value="treatmentDraft.end_date"
-                                        class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm"
+                                        class="h-12 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-base font-medium"
                                         maxlength="10"
                                         placeholder="30/03/2026"
                                         @input="
@@ -815,10 +956,10 @@
                                     />
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-2">
+                            <div class="grid grid-cols-2 gap-3">
                                 <button
                                     type="button"
-                                    class="h-10 rounded-lg bg-gradient-to-r from-blue-300 to-blue-400 text-sm font-medium text-white hover:from-blue-400 hover:to-blue-500"
+                                    class="h-12 rounded-lg bg-gradient-to-r from-blue-300 to-blue-400 text-base font-semibold text-white hover:from-blue-400 hover:to-blue-500 transition shadow-sm hover:shadow-md"
                                     @click="saveTreatmentDraft"
                                 >
                                     {{
@@ -829,7 +970,7 @@
                                 </button>
                                 <button
                                     type="button"
-                                    class="h-10 rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-800"
+                                    class="h-12 rounded-lg border border-slate-300 bg-white text-base font-semibold text-slate-800 hover:bg-slate-50 transition"
                                     @click="cancelTreatmentEditWithNotice"
                                 >
                                     Annuler
@@ -839,20 +980,22 @@
 
                         <div
                             v-if="draft.treatments.length"
-                            class="mt-3 space-y-2"
+                            class="mt-4 space-y-3"
                         >
                             <div
                                 v-for="(item, index) in draft.treatments"
                                 :key="`draft-treatment-${index}-${item.type}-${item.name}`"
-                                class="flex items-start justify-between rounded-lg border border-slate-200 bg-white px-3 py-2.5"
+                                class="flex items-start justify-between rounded-lg border border-slate-200 bg-white px-4 py-3"
                             >
                                 <div class="min-w-0">
                                     <p
-                                        class="truncate text-sm font-medium text-slate-900"
+                                        class="truncate text-base font-semibold text-slate-900"
                                     >
                                         {{ item.name || "Traitement" }}
                                     </p>
-                                    <p class="mt-0.5 text-xs text-slate-500">
+                                    <p
+                                        class="mt-1 text-sm text-slate-600 font-medium"
+                                    >
                                         {{ item.type || "-"
                                         }}<span v-if="item.dose">
                                             | {{ item.dose }}</span
@@ -868,17 +1011,17 @@
                                         >
                                     </p>
                                 </div>
-                                <div class="ml-3 flex items-center gap-3">
+                                <div class="ml-4 flex items-center gap-3">
                                     <button
                                         type="button"
-                                        class="text-xs font-medium text-purple-700"
+                                        class="text-sm font-semibold text-purple-700 hover:text-purple-900 transition"
                                         @click="openTreatmentEditor(index)"
                                     >
                                         Modifier
                                     </button>
                                     <button
                                         type="button"
-                                        class="text-xs font-medium text-red-600"
+                                        class="text-sm font-semibold text-red-600 hover:text-red-800 transition"
                                         @click="requestRemoveTreatment(index)"
                                     >
                                         Retirer
@@ -886,7 +1029,7 @@
                                 </div>
                             </div>
                         </div>
-                        <p v-else class="text-xs text-slate-500">
+                        <p v-else class="text-sm text-slate-500 font-medium">
                             Aucun traitement ajouté.
                         </p>
                     </div>
@@ -911,7 +1054,7 @@
 
             <!-- Section: Suivi médecin -->
             <section
-                class="min-h-[250px] rounded-[14px] border border-slate-200 bg-white p-4 sm:p-5"
+                class="min-h-[250px] rounded-[14px] border-2 border-blue-300 bg-white p-4 sm:p-5 relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-blue-400"
             >
                 <div class="mb-5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
@@ -930,11 +1073,9 @@
                                 />
                             </svg>
                         </span>
-                        <h2
-                            class="text-[20px] font-medium leading-none text-slate-900 sm:text-[23px]"
-                        >
+                        <Typography tag="h3" variant="h3-style">
                             Suivi médecin
-                        </h2>
+                        </Typography>
                     </div>
                     <button
                         v-if="!editing.doctor"
@@ -974,9 +1115,11 @@
                     @submit.prevent="saveSection('doctor')"
                 >
                     <div>
-                        <label
-                            class="mb-1 block text-sm font-semibold text-slate-900"
-                            >Partager mon profil avec mon médecin</label
+                        <Typography
+                            tag="label"
+                            variant="secondary"
+                            class="mb-1 block"
+                            >Partager mon profil avec mon médecin</Typography
                         >
                         <select
                             v-model="draft.doctorCanConsult"
@@ -988,9 +1131,11 @@
                         </select>
                     </div>
                     <div>
-                        <label
-                            class="mb-1 block text-sm font-semibold text-slate-900"
-                            >Email du médecin</label
+                        <Typography
+                            tag="label"
+                            variant="secondary"
+                            class="mb-1 block"
+                            >Email du médecin</Typography
                         >
                         <input
                             v-model.trim="draft.doctorEmail"
@@ -1050,91 +1195,129 @@ import { useAuthStore } from "@/stores/auth";
 import api from "@/services/api";
 import HealthFieldRow from "@/components/health/HealthFieldRow.vue";
 import { useNotificationsStore } from "@/stores/notifications";
+import Typography from "@/components/ui/Typography.vue";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
 
 // ─── Stores & Router ──────────────────────────────────────────────────────────
-const router        = useRouter();
-const authStore     = useAuthStore();
+const router = useRouter();
+const authStore = useAuthStore();
 const notifications = useNotificationsStore();
 
 // ─── Page state ───────────────────────────────────────────────────────────────
-const loading          = ref(true);  // true while the page is loading data
-const loadError        = ref("");    // shown when the initial API call fails
-const savingSection    = ref("");    // name of the section currently being saved
-const doctorEmailError = ref("");    // error message for the doctor email field
+const loading = ref(true); // true while the page is loading data
+const loadError = ref(""); // shown when the initial API call fails
+const savingSection = ref(""); // name of the section currently being saved
+const doctorEmailError = ref(""); // error message for the doctor email field
 
 // ─── Profile & user data ──────────────────────────────────────────────────────
 // `profile` holds the health data from the API
 // `user` holds basic account info (name, birth date)
 const profile = reactive({});
-const user    = reactive({ name: "", dateOfBirth: "" });
+const user = reactive({ name: "", dateOfBirth: "" });
 
 // ─── Section edit state ───────────────────────────────────────────────────────
 // editing.X = true means the user has clicked the pencil for that section
-const editing = reactive({ base: false, health: false, habits: false, doctor: false });
+const editing = reactive({
+    base: false,
+    health: false,
+    habits: false,
+    doctor: false,
+});
 
 // ─── Field-level error messages ───────────────────────────────────────────────
 const sectionErrors = reactive({
-    base:   { gender: "", height: "", weight: "", form: [] },
+    base: { gender: "", height: "", weight: "", form: [] },
     health: { goals: "", form: [] },
 });
 
 // ─── Draft (what the user is currently editing) ───────────────────────────────
 // Changes stay here until the user hits "Enregistrer"
 const draft = reactive({
-    gender:          "",
-    height:          "",
-    weight:          "",
-    bloodType:       "",
-    goals:           [],
-    allergies:       [],
+    gender: "",
+    height: "",
+    weight: "",
+    bloodType: "",
+    goals: [],
+    allergies: [],
     chronicDiseases: [],
-    treatments:      [],
-    smoker:          false,
-    alcoholic:       false,
+    treatments: [],
+    smoker: false,
+    alcoholic: false,
     doctorCanConsult: false,
-    doctorEmail:     "",
+    doctorEmail: "",
 });
 
 // ─── Dropdown option lists ────────────────────────────────────────────────────
 const goalOptions = [
-    "Maintenir mon poids", "Perdre du poids", "Avoir plus d'energie",
-    "Mieux dormir", "Reduire mon stress", "Suivre ma sante regulierement",
+    "Maintenir mon poids",
+    "Perdre du poids",
+    "Avoir plus d'energie",
+    "Mieux dormir",
+    "Reduire mon stress",
+    "Suivre ma sante regulierement",
 ];
 
 const allergyOptions = ref([
-    "Pollen", "Acariens", "Poils d'animaux", "Poussiere", "Arachides",
-    "Fruits de mer", "Lait (lactose)", "Oeufs", "Gluten",
-    "Penicilline", "Aspirine", "Piqures d'insectes", "Moisissures",
+    "Pollen",
+    "Acariens",
+    "Poils d'animaux",
+    "Poussiere",
+    "Arachides",
+    "Fruits de mer",
+    "Lait (lactose)",
+    "Oeufs",
+    "Gluten",
+    "Penicilline",
+    "Aspirine",
+    "Piqures d'insectes",
+    "Moisissures",
 ]);
 
 const diseaseOptions = ref([
-    "Diabete", "Hypertension arterielle", "Asthme", "Maladie cardiaque",
-    "Maladie renale chronique", "Maladie thyroidienne", "Arthrite", "Epilepsie",
-    "Migraine chronique", "Maladie pulmonaire chronique", "Cholesterol eleve",
-    "Depression", "Anemie",
+    "Diabete",
+    "Hypertension arterielle",
+    "Asthme",
+    "Maladie cardiaque",
+    "Maladie renale chronique",
+    "Maladie thyroidienne",
+    "Arthrite",
+    "Epilepsie",
+    "Migraine chronique",
+    "Maladie pulmonaire chronique",
+    "Cholesterol eleve",
+    "Depression",
+    "Anemie",
 ]);
 
 // ─── Treatment autocomplete catalog ──────────────────────────────────────────
-const treatmentTypes       = ref([]);    // known treatment types
+const treatmentTypes = ref([]); // known treatment types
 const treatmentNamesByType = reactive({}); // { type: [name1, name2, ...] }
 
 // ─── Multi-select UI state ────────────────────────────────────────────────────
-const customInputs          = reactive({ allergies: "", chronicDiseases: "" });
+const customInputs = reactive({ allergies: "", chronicDiseases: "" });
 const selectedAllergyOption = ref("");
 const selectedDiseaseOption = ref("");
+const customTreatmentInputs = reactive({ type: "", name: "" });
+const openTreatmentTypeDropdown = ref(false);
+const openTreatmentNameDropdown = ref(false);
+const queryTreatmentTypes = ref("");
+const queryTreatmentNames = ref("");
 
 // ─── Treatment editor state ───────────────────────────────────────────────────
-const showTreatmentEditor        = ref(false);
-const editingTreatmentIndex      = ref(-1);   // -1 = new, >= 0 = editing existing
+const showTreatmentEditor = ref(false);
+const editingTreatmentIndex = ref(-1); // -1 = new, >= 0 = editing existing
 const confirmDeleteTreatmentOpen = ref(false);
 const pendingDeleteTreatmentIndex = ref(-1);
 
 // Blank form for the treatment editor
 const treatmentDraft = reactive({
-    type: "", name: "", dose: "",
-    frequency_unit: "day", frequency_count: 1,
-    start_date: "", end_date: "",
+    type: "",
+    name: "",
+    dose: "",
+    frequency_unit: "day",
+    frequency_count: 1,
+    start_date: "",
+    end_date: "",
 });
 
 // ─ Valeurs calculées
@@ -1147,12 +1330,13 @@ const computedAge = computed(() => {
     if (isNaN(dob.getTime())) return "";
 
     const today = new Date();
-    let age     = today.getFullYear() - dob.getFullYear();
+    let age = today.getFullYear() - dob.getFullYear();
 
     // Has the birthday happened yet this year?
     const birthdayPassed =
         today.getMonth() > dob.getMonth() ||
-        (today.getMonth() === dob.getMonth() && today.getDate() >= dob.getDate());
+        (today.getMonth() === dob.getMonth() &&
+            today.getDate() >= dob.getDate());
 
     if (!birthdayPassed) age -= 1;
 
@@ -1163,6 +1347,20 @@ const computedAge = computed(() => {
 const treatmentNamesForSelectedType = computed(() =>
     getTreatmentNamesByType(treatmentDraft.type),
 );
+
+const filteredTreatmentTypes = computed(() => {
+    const q = queryTreatmentTypes.value.trim().toLowerCase();
+    const list = Array.isArray(treatmentTypes.value)
+        ? treatmentTypes.value
+        : [];
+    return q ? list.filter((item) => item.toLowerCase().includes(q)) : list;
+});
+
+const filteredTreatmentNames = computed(() => {
+    const q = queryTreatmentNames.value.trim().toLowerCase();
+    const list = treatmentNamesForSelectedType.value;
+    return q ? list.filter((item) => item.toLowerCase().includes(q)) : list;
+});
 
 // ─ Helpers d'affichage
 
@@ -1189,14 +1387,18 @@ function treatmentsSummary(treatments) {
     const names = treatments
         .map((t) => (t && typeof t === "object" ? t.name || t.type || "" : ""))
         .filter(Boolean);
-    return names.length ? names.join(", ") : `${treatments.length} traitement(s)`;
+    return names.length
+        ? names.join(", ")
+        : `${treatments.length} traitement(s)`;
 }
 
 // ─ Helpers pour les dates
 
 // Auto-format digits as DD/MM/YYYY while the user types
 function formatDateWithSlashes(value) {
-    const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
+    const digits = String(value || "")
+        .replace(/\D/g, "")
+        .slice(0, 8);
     if (digits.length <= 2) return digits;
     if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
     return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
@@ -1209,18 +1411,19 @@ function frenchDateToIso(value) {
     const parts = text.split("/");
     if (parts.length !== 3) return null;
 
-    const day   = Number(parts[0]);
+    const day = Number(parts[0]);
     const month = Number(parts[1]);
-    const year  = Number(parts[2]);
+    const year = Number(parts[2]);
 
     // Vérifier que les parties sont des chiffres valides
     if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
 
     // Vérifier que la date est réelle (ex: 31/02 est impossible)
     const date = new Date(year, month - 1, day);
-    const isValid = date.getFullYear() === year
-        && date.getMonth() === month - 1
-        && date.getDate()  === day;
+    const isValid =
+        date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day;
 
     if (!isValid) return null;
 
@@ -1233,7 +1436,9 @@ function frenchDateToIso(value) {
 // Convert YYYY-MM-DD → DD/MM/YYYY for display in forms
 function isoDateToFrench(value) {
     if (!value) return "";
-    const match = String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const match = String(value)
+        .trim()
+        .match(/^(\d{4})-(\d{2})-(\d{2})/);
     return match ? `${match[3]}/${match[2]}/${match[1]}` : "";
 }
 
@@ -1246,7 +1451,9 @@ function handleTreatmentDateInput(event, key) {
 
 // Trim and collapse extra whitespace from a text value
 function normalizeTreatmentText(value) {
-    return String(value || "").trim().replace(/\s+/g, " ");
+    return String(value || "")
+        .trim()
+        .replace(/\s+/g, " ");
 }
 
 // Add a value to a list ref only if it doesn't already exist (case-insensitive)
@@ -1254,7 +1461,9 @@ function appendUniqueCatalogOption(listRef, value) {
     const text = normalizeTreatmentText(value);
     if (!text) return;
     const textLower = text.toLowerCase();
-    const alreadyExists = listRef.value.some((item) => item.toLowerCase() === textLower);
+    const alreadyExists = listRef.value.some(
+        (item) => item.toLowerCase() === textLower,
+    );
     if (alreadyExists) return;
     listRef.value = [...listRef.value, text].sort((a, b) => a.localeCompare(b));
 }
@@ -1268,7 +1477,8 @@ function ensureTreatmentType(type) {
             a.localeCompare(b, "fr", { sensitivity: "base" }),
         );
     }
-    if (!Array.isArray(treatmentNamesByType[text])) treatmentNamesByType[text] = [];
+    if (!Array.isArray(treatmentNamesByType[text]))
+        treatmentNamesByType[text] = [];
     return text;
 }
 
@@ -1289,10 +1499,13 @@ function mergeTreatmentCatalogEntry(type, name = "") {
 function applyTreatmentCatalog(catalog) {
     const types = Array.isArray(catalog?.types) ? catalog.types : [];
     types.forEach((type) => ensureTreatmentType(type));
-    const namesByType = typeof catalog?.names_by_type === "object" ? catalog.names_by_type : {};
+    const namesByType =
+        typeof catalog?.names_by_type === "object" ? catalog.names_by_type : {};
     Object.entries(namesByType).forEach(([type, names]) => {
         ensureTreatmentType(type);
-        (Array.isArray(names) ? names : []).forEach((name) => mergeTreatmentCatalogEntry(type, name));
+        (Array.isArray(names) ? names : []).forEach((name) =>
+            mergeTreatmentCatalogEntry(type, name),
+        );
     });
 }
 
@@ -1347,8 +1560,9 @@ async function addCustom(key, value) {
     if (!Array.isArray(draft[key])) draft[key] = [];
     if (!draft[key].includes(text)) draft[key] = [...draft[key], text];
     // Keep the dropdown list up to date for future use
-    if (key === "allergies")       appendUniqueCatalogOption(allergyOptions, text);
-    if (key === "chronicDiseases") appendUniqueCatalogOption(diseaseOptions, text);
+    if (key === "allergies") appendUniqueCatalogOption(allergyOptions, text);
+    if (key === "chronicDiseases")
+        appendUniqueCatalogOption(diseaseOptions, text);
     customInputs[key] = "";
 }
 
@@ -1370,6 +1584,8 @@ function handleTreatmentTypeInput() {
     const text = normalizeTreatmentText(treatmentDraft.type);
     if (!text) {
         treatmentDraft.name = "";
+        openTreatmentNameDropdown.value = false;
+        queryTreatmentNames.value = "";
         return;
     }
     treatmentDraft.type = ensureTreatmentType(text);
@@ -1377,20 +1593,70 @@ function handleTreatmentTypeInput() {
     if (treatmentDraft.name && !available.includes(treatmentDraft.name)) {
         treatmentDraft.name = "";
     }
+    queryTreatmentNames.value = "";
+}
+
+function selectTreatmentType(type) {
+    treatmentDraft.type = normalizeTreatmentText(type);
+    handleTreatmentTypeInput();
+    openTreatmentTypeDropdown.value = false;
+    openTreatmentNameDropdown.value = false;
+    queryTreatmentTypes.value = "";
+}
+
+function toggleTreatmentNameDropdown() {
+    if (!treatmentDraft.type) return;
+    openTreatmentNameDropdown.value = !openTreatmentNameDropdown.value;
+}
+
+function selectTreatmentName(name) {
+    treatmentDraft.name = normalizeTreatmentText(name);
+    openTreatmentNameDropdown.value = false;
+    queryTreatmentNames.value = "";
+}
+
+function addCustomTreatmentType() {
+    const text = normalizeTreatmentText(customTreatmentInputs.type);
+    if (!text) return;
+    treatmentDraft.type = ensureTreatmentType(text);
+    customTreatmentInputs.type = "";
+    handleTreatmentTypeInput();
+    openTreatmentTypeDropdown.value = false;
+}
+
+function addCustomTreatmentName() {
+    const name = normalizeTreatmentText(customTreatmentInputs.name);
+    const type = normalizeTreatmentText(treatmentDraft.type);
+    if (!type || !name) return;
+    mergeTreatmentCatalogEntry(type, name);
+    treatmentDraft.name = name;
+    customTreatmentInputs.name = "";
+    openTreatmentNameDropdown.value = false;
+    queryTreatmentNames.value = "";
 }
 
 // Clear all treatment editor fields
 function resetTreatmentDraft() {
     Object.assign(treatmentDraft, {
-        type: "", name: "", dose: "",
-        frequency_unit: "day", frequency_count: 1,
-        start_date: "", end_date: "",
+        type: "",
+        name: "",
+        dose: "",
+        frequency_unit: "day",
+        frequency_count: 1,
+        start_date: "",
+        end_date: "",
     });
+    customTreatmentInputs.type = "";
+    customTreatmentInputs.name = "";
+    openTreatmentTypeDropdown.value = false;
+    openTreatmentNameDropdown.value = false;
+    queryTreatmentTypes.value = "";
+    queryTreatmentNames.value = "";
 }
 
 // Open the treatment editor — pre-fill if editing an existing one
 function openTreatmentEditor(index = -1) {
-    showTreatmentEditor.value   = true;
+    showTreatmentEditor.value = true;
     editingTreatmentIndex.value = index;
 
     // No valid index → blank form for a new treatment
@@ -1401,19 +1667,19 @@ function openTreatmentEditor(index = -1) {
 
     // Pre-fill with the existing treatment's data
     const item = draft.treatments[index];
-    treatmentDraft.type            = item.type            || "";
-    treatmentDraft.name            = item.name            || "";
-    treatmentDraft.dose            = item.dose            || "";
-    treatmentDraft.frequency_unit  = item.frequency_unit  || "day";
+    treatmentDraft.type = item.type || "";
+    treatmentDraft.name = item.name || "";
+    treatmentDraft.dose = item.dose || "";
+    treatmentDraft.frequency_unit = item.frequency_unit || "day";
     treatmentDraft.frequency_count = Number(item.frequency_count ?? 1);
-    treatmentDraft.start_date      = item.start_date      || "";
-    treatmentDraft.end_date        = item.end_date        || "";
+    treatmentDraft.start_date = item.start_date || "";
+    treatmentDraft.end_date = item.end_date || "";
     handleTreatmentTypeInput();
 }
 
 // Close the editor and reset all its fields
 function cancelTreatmentEdit() {
-    showTreatmentEditor.value   = false;
+    showTreatmentEditor.value = false;
     editingTreatmentIndex.value = -1;
     resetTreatmentDraft();
 }
@@ -1432,31 +1698,45 @@ async function saveTreatmentDraft() {
     const frequencyUnit = normalizeTreatmentText(treatmentDraft.frequency_unit);
     const frequencyCount = Number(treatmentDraft.frequency_count);
 
-    if (!type || !name || !dose || !frequencyUnit || !Number.isFinite(frequencyCount) || frequencyCount < 1) {
-        notifications.warning("Tous les champs du traitement sont obligatoires.");
+    if (
+        !type ||
+        !name ||
+        !dose ||
+        !frequencyUnit ||
+        !Number.isFinite(frequencyCount) ||
+        frequencyCount < 1
+    ) {
+        notifications.warning(
+            "Tous les champs du traitement sont obligatoires.",
+        );
         return;
     }
 
     // Both dates are required and must be valid
     const isoStart = frenchDateToIso(treatmentDraft.start_date);
-    const isoEnd   = frenchDateToIso(treatmentDraft.end_date);
+    const isoEnd = frenchDateToIso(treatmentDraft.end_date);
     if (!isoStart || !isoEnd) {
-        notifications.warning("Veuillez renseigner les dates de début et fin du traitement (format: JJ/MM/AAAA).");
+        notifications.warning(
+            "Veuillez renseigner les dates de début et fin du traitement (format: JJ/MM/AAAA).",
+        );
         return;
     }
     if (isoEnd <= isoStart) {
-        notifications.warning("La date de fin doit être après la date de début.");
+        notifications.warning(
+            "La date de fin doit être après la date de début.",
+        );
         return;
     }
 
     // Build the treatment object (dates stay in DD/MM/YYYY for the draft)
     const treatment = {
-        type, name,
+        type,
+        name,
         dose,
-        frequency_unit:  frequencyUnit,
+        frequency_unit: frequencyUnit,
         frequency_count: Math.round(frequencyCount),
-        start_date:      treatmentDraft.start_date,
-        end_date:        treatmentDraft.end_date,
+        start_date: treatmentDraft.start_date,
+        end_date: treatmentDraft.end_date,
     };
 
     if (!Array.isArray(draft.treatments)) draft.treatments = [];
@@ -1476,12 +1756,14 @@ async function saveTreatmentDraft() {
     try {
         await persistTreatmentCatalogEntry(type, name);
     } catch {
-        notifications.warning("Traitement ajoute au profil local, mais la mise a jour du catalogue partage a echoue.");
+        notifications.warning(
+            "Traitement ajoute au profil local, mais la mise a jour du catalogue partage a echoue.",
+        );
     }
 
     cancelTreatmentEdit();
     if (isUpdate) notifications.itemUpdated();
-    else          notifications.itemAdded();
+    else notifications.itemAdded();
 }
 
 // Remove a treatment from the draft list by index
@@ -1494,12 +1776,12 @@ function removeTreatment(index) {
 // Ask the user to confirm before deleting a treatment
 function requestRemoveTreatment(index) {
     pendingDeleteTreatmentIndex.value = index;
-    confirmDeleteTreatmentOpen.value  = true;
+    confirmDeleteTreatmentOpen.value = true;
 }
 
 // User cancelled the delete dialog
 function cancelRemoveTreatment() {
-    confirmDeleteTreatmentOpen.value  = false;
+    confirmDeleteTreatmentOpen.value = false;
     pendingDeleteTreatmentIndex.value = -1;
     notifications.actionCancelled();
 }
@@ -1507,9 +1789,12 @@ function cancelRemoveTreatment() {
 // User confirmed the delete — remove the treatment
 function confirmRemoveTreatment() {
     const index = pendingDeleteTreatmentIndex.value;
-    confirmDeleteTreatmentOpen.value  = false;
+    confirmDeleteTreatmentOpen.value = false;
     pendingDeleteTreatmentIndex.value = -1;
-    const isValid = index >= 0 && Array.isArray(draft.treatments) && index < draft.treatments.length;
+    const isValid =
+        index >= 0 &&
+        Array.isArray(draft.treatments) &&
+        index < draft.treatments.length;
     if (!isValid) return;
     removeTreatment(index);
 }
@@ -1528,7 +1813,8 @@ function validateDoctorEmail() {
         return false;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        doctorEmailError.value = "Format invalide: utilisez un email de type nom@domaine.com.";
+        doctorEmailError.value =
+            "Format invalide: utilisez un email de type nom@domaine.com.";
         return false;
     }
     doctorEmailError.value = "";
@@ -1539,51 +1825,63 @@ function validateDoctorEmail() {
 
 function syncDraftFromProfile() {
     // Basic info
-    draft.gender    = profile.gender      || "";
-    draft.height    = profile.height      ?? "";
-    draft.weight    = profile.current_weight ?? "";
-    draft.bloodType = profile.blood_type  || "";
+    draft.gender = profile.gender || "";
+    draft.height = profile.height ?? "";
+    draft.weight = profile.current_weight ?? "";
+    draft.bloodType = profile.blood_type || "";
 
     // Health lists
-    draft.goals           = normalizeList(profile.goals);
-    draft.allergies       = normalizeList(profile.allergies);
+    draft.goals = normalizeList(profile.goals);
+    draft.allergies = normalizeList(profile.allergies);
     draft.chronicDiseases = normalizeList(profile.chronic_diseases);
 
     // Add the user's existing items to the dropdowns for future use
-    draft.allergies.forEach((item)       => appendUniqueCatalogOption(allergyOptions, item));
-    draft.chronicDiseases.forEach((item) => appendUniqueCatalogOption(diseaseOptions, item));
+    draft.allergies.forEach((item) =>
+        appendUniqueCatalogOption(allergyOptions, item),
+    );
+    draft.chronicDiseases.forEach((item) =>
+        appendUniqueCatalogOption(diseaseOptions, item),
+    );
 
     // Treatments — convert dates from YYYY-MM-DD (API) to DD/MM/YYYY (form)
-    draft.treatments = (Array.isArray(profile.treatments) ? profile.treatments : []).map((t) => ({
-        type:            t.type            || "",
-        name:            t.name            || "",
-        dose:            t.dose            || null,
-        frequency_unit:  t.frequency_unit  || "day",
+    draft.treatments = (
+        Array.isArray(profile.treatments) ? profile.treatments : []
+    ).map((t) => ({
+        type: t.type || "",
+        name: t.name || "",
+        dose: t.dose || null,
+        frequency_unit: t.frequency_unit || "day",
         frequency_count: t.frequency_count || 1,
-        start_date:      isoDateToFrench(t.start_date) || "",
-        end_date:        isoDateToFrench(t.end_date)   || "",
+        start_date: isoDateToFrench(t.start_date) || "",
+        end_date: isoDateToFrench(t.end_date) || "",
     }));
 
     // Register treatments in the autocomplete catalog
     draft.treatments.forEach((item) => {
         const type = normalizeTreatmentText(item.type || "");
         const name = normalizeTreatmentText(item.name || "");
-        if (type)        ensureTreatmentType(type);
+        if (type) ensureTreatmentType(type);
         if (type && name) mergeTreatmentCatalogEntry(type, name);
     });
 
     // Habits & doctor sharing
-    draft.smoker           = Boolean(profile.smoker);
-    draft.alcoholic        = Boolean(profile.alcoholic);
+    draft.smoker = Boolean(profile.smoker);
+    draft.alcoholic = Boolean(profile.alcoholic);
     draft.doctorCanConsult = Boolean(profile.doctor_invited);
-    draft.doctorEmail      = profile.doctor_email || "";
+    draft.doctorEmail = profile.doctor_email || "";
 
     // Reset all temporary UI state
-    doctorEmailError.value        = "";
-    customInputs.allergies        = "";
-    customInputs.chronicDiseases  = "";
-    selectedAllergyOption.value   = "";
-    selectedDiseaseOption.value   = "";
+    doctorEmailError.value = "";
+    customInputs.allergies = "";
+    customInputs.chronicDiseases = "";
+    selectedAllergyOption.value = "";
+    selectedDiseaseOption.value = "";
+    customTreatmentInputs.type = "";
+    customTreatmentInputs.name = "";
+    openTreatmentTypeDropdown.value = false;
+    openTreatmentNameDropdown.value = false;
+    queryTreatmentTypes.value = "";
+    queryTreatmentNames.value = "";
     cancelTreatmentEdit();
 }
 
@@ -1618,11 +1916,11 @@ function clearSectionErrors(section = null) {
         sectionErrors.base.gender = "";
         sectionErrors.base.height = "";
         sectionErrors.base.weight = "";
-        sectionErrors.base.form   = [];
+        sectionErrors.base.form = [];
     }
     if (section === null || section === "health") {
         sectionErrors.health.goals = "";
-        sectionErrors.health.form  = [];
+        sectionErrors.health.form = [];
     }
 }
 
@@ -1639,7 +1937,8 @@ function validateBaseSection() {
     } else {
         const height = Number(draft.height);
         if (height < 80 || height > 250) {
-            sectionErrors.base.height = "La taille doit etre une valeur entre 80 et 250 cm.";
+            sectionErrors.base.height =
+                "La taille doit etre une valeur entre 80 et 250 cm.";
         }
     }
 
@@ -1648,18 +1947,24 @@ function validateBaseSection() {
     } else {
         const weight = Number(draft.weight);
         if (weight < 35 || weight > 250) {
-            sectionErrors.base.weight = "Le poids doit etre une valeur entre 35 et 250 kg.";
+            sectionErrors.base.weight =
+                "Le poids doit etre une valeur entre 35 et 250 kg.";
         }
     }
 
-    return !sectionErrors.base.gender && !sectionErrors.base.height && !sectionErrors.base.weight;
+    return (
+        !sectionErrors.base.gender &&
+        !sectionErrors.base.height &&
+        !sectionErrors.base.weight
+    );
 }
 
 // Validate the "Santé" section — at least one goal must be selected
 function validateHealthSection() {
     clearSectionErrors("health");
     if (!draft.goals.length) {
-        sectionErrors.health.goals = "Veuillez selectionner au moins un objectif.";
+        sectionErrors.health.goals =
+            "Veuillez selectionner au moins un objectif.";
     }
     return !sectionErrors.health.goals;
 }
@@ -1687,12 +1992,16 @@ function validateTreatmentsSection() {
             !endDateIso;
 
         if (hasMissingField) {
-            notifications.warning("Tous les champs du traitement sont obligatoires.");
+            notifications.warning(
+                "Tous les champs du traitement sont obligatoires.",
+            );
             return false;
         }
 
         if (endDateIso <= startDateIso) {
-            notifications.warning("La date de fin doit être après la date de début.");
+            notifications.warning(
+                "La date de fin doit être après la date de début.",
+            );
             return false;
         }
     }
@@ -1705,13 +2014,13 @@ function validateTreatmentsSection() {
 // Convert a single treatment from draft format to the API format
 function buildTreatmentForApi(t) {
     return {
-        type:            t?.type            ?? null,
-        name:            t?.name            ?? null,
-        dose:            t?.dose            ?? null,
-        frequency_unit:  t?.frequency_unit  ?? null,
+        type: t?.type ?? null,
+        name: t?.name ?? null,
+        dose: t?.dose ?? null,
+        frequency_unit: t?.frequency_unit ?? null,
         frequency_count: t?.frequency_count ? Number(t.frequency_count) : null,
-        start_date:      frenchDateToIso(t?.start_date) ?? null,  // DD/MM/YYYY → YYYY-MM-DD
-        end_date:        frenchDateToIso(t?.end_date)   ?? null,
+        start_date: frenchDateToIso(t?.start_date) ?? null, // DD/MM/YYYY → YYYY-MM-DD
+        end_date: frenchDateToIso(t?.end_date) ?? null,
     };
 }
 
@@ -1719,18 +2028,22 @@ function buildTreatmentForApi(t) {
 function buildPayload() {
     const sharingWithDoctor = Boolean(draft.doctorCanConsult);
     return {
-        gender:           String(draft.gender || "").toLowerCase().trim(),
-        height:           draft.height === "" ? null : Number(draft.height),
-        current_weight:   draft.weight === "" ? null : Number(draft.weight),
-        blood_type:       draft.bloodType  || null,
-        goals:            normalizeList(draft.goals),
-        allergies:        normalizeList(draft.allergies),
+        gender: String(draft.gender || "")
+            .toLowerCase()
+            .trim(),
+        height: draft.height === "" ? null : Number(draft.height),
+        current_weight: draft.weight === "" ? null : Number(draft.weight),
+        blood_type: draft.bloodType || null,
+        goals: normalizeList(draft.goals),
+        allergies: normalizeList(draft.allergies),
         chronic_diseases: normalizeList(draft.chronicDiseases),
-        treatments:       (draft.treatments ?? []).map(buildTreatmentForApi).filter((t) => t.type),
-        smoker:           Boolean(draft.smoker),
-        alcoholic:        Boolean(draft.alcoholic),
-        doctor_invited:   sharingWithDoctor,
-        doctor_email:     sharingWithDoctor ? draft.doctorEmail || null : null,
+        treatments: (draft.treatments ?? [])
+            .map(buildTreatmentForApi)
+            .filter((t) => t.type),
+        smoker: Boolean(draft.smoker),
+        alcoholic: Boolean(draft.alcoholic),
+        doctor_invited: sharingWithDoctor,
+        doctor_email: sharingWithDoctor ? draft.doctorEmail || null : null,
     };
 }
 
@@ -1746,15 +2059,18 @@ function handleValidationErrors(section, backendErrors) {
         messages.push(sectionErrors.base.gender);
     }
     if (backendErrors.height) {
-        sectionErrors.base.height = "La taille doit etre une valeur entre 80 et 250 cm.";
+        sectionErrors.base.height =
+            "La taille doit etre une valeur entre 80 et 250 cm.";
         messages.push(sectionErrors.base.height);
     }
     if (backendErrors.current_weight) {
-        sectionErrors.base.weight = "Le poids doit etre une valeur entre 35 et 250 kg.";
+        sectionErrors.base.weight =
+            "Le poids doit etre une valeur entre 35 et 250 kg.";
         messages.push(sectionErrors.base.weight);
     }
     if (backendErrors.goals) {
-        sectionErrors.health.goals = "Veuillez selectionner au moins un objectif.";
+        sectionErrors.health.goals =
+            "Veuillez selectionner au moins un objectif.";
         messages.push(sectionErrors.health.goals);
     }
 
@@ -1764,11 +2080,17 @@ function handleValidationErrors(section, backendErrors) {
         : Object.values(backendErrors).flat().filter(Boolean).map(String);
 
     if (sectionErrors[section]) {
-        sectionErrors[section].form = finalMessages.length ? finalMessages : ["Validation invalide."];
+        sectionErrors[section].form = finalMessages.length
+            ? finalMessages
+            : ["Validation invalide."];
     }
 
     // If errors belong to a different section than the one currently open, switch to it
-    const hasBaseErrors   = Boolean(sectionErrors.base.gender || sectionErrors.base.height || sectionErrors.base.weight);
+    const hasBaseErrors = Boolean(
+        sectionErrors.base.gender ||
+        sectionErrors.base.height ||
+        sectionErrors.base.weight,
+    );
     const hasHealthErrors = Boolean(sectionErrors.health.goals);
     if (hasBaseErrors && !editing.base) {
         resetEditFlags();
@@ -1786,10 +2108,16 @@ function handleValidationErrors(section, backendErrors) {
 // Validate and save the given section to the API
 async function saveSection(section) {
     // Run the appropriate validation first
-    if (section === "base"   && !validateBaseSection())   { notifications.warning("Veuillez corriger les champs en erreur."); return; }
-    if (section === "health" && !validateHealthSection())  { notifications.warning("Veuillez corriger les champs en erreur."); return; }
+    if (section === "base" && !validateBaseSection()) {
+        notifications.warning("Veuillez corriger les champs en erreur.");
+        return;
+    }
+    if (section === "health" && !validateHealthSection()) {
+        notifications.warning("Veuillez corriger les champs en erreur.");
+        return;
+    }
     if (section === "habits" && !validateTreatmentsSection()) return;
-    if (section === "doctor" && !validateDoctorEmail())    return;
+    if (section === "doctor" && !validateDoctorEmail()) return;
 
     savingSection.value = section;
     clearSectionErrors(section);
@@ -1799,8 +2127,8 @@ async function saveSection(section) {
 
         // Update the local profile with fresh data from the server
         Object.assign(profile, response?.data?.data || {});
-        const apiUser    = response?.data?.user || {};
-        user.name        = apiUser.name          || user.name;
+        const apiUser = response?.data?.user || {};
+        user.name = apiUser.name || user.name;
         user.dateOfBirth = apiUser.date_of_birth || user.dateOfBirth;
 
         authStore.setHealthProfile(true);
@@ -1821,9 +2149,14 @@ async function saveSection(section) {
             const errors = err.response.data.errors;
 
             // Special case: doctor email error from the server
-            if (section === "doctor" && (errors?.doctor_email || errors?.medecin_email)) {
+            if (
+                section === "doctor" &&
+                (errors?.doctor_email || errors?.medecin_email)
+            ) {
                 const emailError = errors.doctor_email || errors.medecin_email;
-                doctorEmailError.value = Array.isArray(emailError) ? emailError[0] : "Email medecin invalide.";
+                doctorEmailError.value = Array.isArray(emailError)
+                    ? emailError[0]
+                    : "Email medecin invalide.";
                 notifications.warning(doctorEmailError.value);
                 return;
             }
@@ -1850,8 +2183,8 @@ onMounted(async () => {
         const response = await api.get("/health-profile");
         Object.assign(profile, response?.data?.data || {});
 
-        const apiUser    = response?.data?.user || {};
-        user.name        = apiUser.name          || "";
+        const apiUser = response?.data?.user || {};
+        user.name = apiUser.name || "";
         user.dateOfBirth = apiUser.date_of_birth || "";
 
         authStore.setHealthProfile(Boolean(response?.data?.data));

@@ -58,7 +58,9 @@
                                 </div>
                             </div>
                             <h1 class="text-3xl font-bold text-gray-900 mb-3">
-                                Créer un compte
+                                <Typography tag="h1" variant="h1-style">
+                                    Créer un compte
+                                </Typography>
                             </h1>
                             <p class="text-xs text-gray-500">
                                 Commencez votre parcours santé
@@ -271,6 +273,7 @@ import { computed, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/services/api";
 import { useAuthStore } from "@/stores/auth";
+import Typography from "@/components/ui/Typography.vue";
 
 // ─── Sous-composant champ formulaire ─────────────────────────────────────────
 const FormField = {
@@ -468,8 +471,9 @@ async function soumettre() {
             if (!errors.date_naissance)
                 errors.date_naissance = first(data.errors.birth_date);
             errors.password = first(data.errors.password);
-            errors.password_confirmation =
-                first(data.errors.password_confirmation);
+            errors.password_confirmation = first(
+                data.errors.password_confirmation,
+            );
             serverMessage.value =
                 data?.message || "Veuillez corriger les erreurs du formulaire.";
             return;

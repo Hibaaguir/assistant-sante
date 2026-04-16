@@ -4,11 +4,16 @@
 -->
 <template>
     <section
-        class="mt-5 rounded-2xl border border-slate-200 bg-white shadow-sm"
+        class="mt-5 rounded-2xl border-2 border-blue-300 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400"
     >
-        <div v-if="loading" class="px-4 py-3 text-sm text-slate-600">
+        <Typography
+            v-if="loading"
+            tag="h4"
+            variant="secondary"
+            class="px-4 py-3 text-sm text-slate-700"
+        >
             Chargement des notifications...
-        </div>
+        </Typography>
 
         <div
             v-else-if="error"
@@ -23,14 +28,12 @@
                 class="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-4"
             >
                 <div>
-                    <h2
-                        class="text-[24px] font-bold leading-none text-slate-900"
-                    >
+                    <Typography tag="h2" variant="h2-style">
                         Rappels de médicaments
-                    </h2>
-                    <p class="mt-1.5 text-base font-medium text-slate-600">
+                    </Typography>
+                    <Typography tag="h3" variant="default" class="mt-1.5">
                         Rappels quotidiens et doses oubliées détectées
-                    </p>
+                    </Typography>
                 </div>
                 <button
                     type="button"
@@ -61,24 +64,25 @@
                                 <span class="text-base">
                                     {{ n.kind === "missed" ? "⚠️" : "💊" }}
                                 </span>
-                                <p
-                                    class="text-sm font-bold"
-                                    :class="
-                                        n.kind === 'missed'
-                                            ? 'text-red-800'
-                                            : 'text-purple-900'
-                                    "
-                                >
-                                    {{ n.kind === "missed" ? "Traitement oublié" : "Rappel de traitement" }}
-                                </p>
+                                <Typography tag="h3" variant="mauve">
+                                    {{
+                                        n.kind === "missed"
+                                            ? "Traitement oublié"
+                                            : "Rappel de traitement"
+                                    }}
+                                </Typography>
                             </div>
                             <!-- Message -->
-                            <p class="mt-1 text-xs text-slate-600">
+                            <Typography
+                                tag="h4"
+                                variant="h4-style"
+                                class="mt-1.5"
+                            >
                                 {{ n.message }}
-                            </p>
-                            <p class="mt-2 text-[11px] text-slate-400">
+                            </Typography>
+                            <Typography tag="h4" variant="default">
                                 {{ formatDate(n.created_at) }}
-                            </p>
+                            </Typography>
                         </div>
                     </div>
                 </li>
@@ -88,12 +92,12 @@
         <template v-else>
             <!-- Empty state -->
             <div class="px-4 py-8 text-center">
-                <p class="text-sm font-semibold text-slate-800">
+                <Typography tag="h2" variant="h2-style">
                     Aucune notification pour le moment
-                </p>
-                <p class="mt-1 text-xs text-slate-500">
+                </Typography>
+                <Typography tag="h3" variant="secondary">
                     Toutes vos notifications ont été lues
-                </p>
+                </Typography>
             </div>
         </template>
     </section>
@@ -104,6 +108,7 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/services/api";
 import { useAuthStore } from "@/stores/auth";
+import Typography from "@/components/ui/Typography.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();

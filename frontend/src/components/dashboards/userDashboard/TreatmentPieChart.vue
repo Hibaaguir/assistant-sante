@@ -4,16 +4,24 @@
   Uses Chart.js. Data comes from /health-data/overview (treatment_medicines).
 -->
 <template>
-    <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <section
+        class="mt-5 rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400"
+    >
         <h2 class="mb-4 text-2xl font-semibold text-slate-900">
             Traitements par type
         </h2>
 
-        <div v-if="loading" class="flex h-64 items-center justify-center text-slate-400">
+        <div
+            v-if="loading"
+            class="flex h-64 items-center justify-center text-slate-700"
+        >
             Chargement...
         </div>
 
-        <div v-else-if="noData" class="flex h-64 items-center justify-center text-slate-400">
+        <div
+            v-else-if="noData"
+            class="flex h-64 items-center justify-center text-slate-700"
+        >
             Aucun traitement actif trouvé.
         </div>
 
@@ -23,13 +31,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
-import {
-    Chart,
-    PieController,
-    ArcElement,
-    Legend,
-    Tooltip,
-} from "chart.js";
+import { Chart, PieController, ArcElement, Legend, Tooltip } from "chart.js";
 import api from "@/services/api";
 
 // Register only what we need
@@ -42,8 +44,12 @@ let chartInstance = null;
 
 // Colors for the pie slices
 const COLORS = [
-    "#6366f1", "#f43f5e", "#10b981",
-    "#f59e0b", "#149bd7", "#8b5cf6",
+    "#6366f1",
+    "#f43f5e",
+    "#10b981",
+    "#f59e0b",
+    "#149bd7",
+    "#8b5cf6",
 ];
 
 async function loadChart() {
@@ -85,8 +91,22 @@ async function loadChart() {
         options: {
             responsive: true,
             plugins: {
-                legend: { position: "right" },
-                tooltip: { enabled: true },
+                legend: {
+                    position: "bottom",
+                    labels: {
+                        font: { size: 14, weight: "bold" },
+                        padding: 16,
+                        boxWidth: 22,
+                        color: "#1f2937",
+                    },
+                },
+                tooltip: {
+                    backgroundColor: "rgba(0, 0, 0, 0.9)",
+                    titleFont: { size: 15, weight: "bold" },
+                    bodyFont: { size: 13 },
+                    padding: 14,
+                    enabled: true,
+                },
             },
         },
     });

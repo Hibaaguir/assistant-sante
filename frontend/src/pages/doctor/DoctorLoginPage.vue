@@ -10,14 +10,10 @@
                 >
                     Espace Médecin
                 </p>
-                <h1
-                    class="text-4xl font-extrabold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent sm:text-5xl"
-                >
-                    Connexion
-                </h1>
-                <p class="mt-2 text-sm leading-6 text-slate-600">
+                <Typography tag="h1" variant="h1-style"> Connexion </Typography>
+                <Typography tag="p" variant="paragraph" class="mt-2">
                     Connectez-vous avec votre email et mot de passe.
-                </p>
+                </Typography>
 
                 <!-- Formulaire de connexion -->
                 <form @submit.prevent="handleSubmit" class="mt-8 space-y-4">
@@ -115,6 +111,7 @@
 </template>
 
 <script setup>
+import Typography from "@/components/ui/Typography.vue";
 import api from "@/services/api";
 import { computed, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -192,10 +189,12 @@ async function handleSubmit() {
             // Erreurs de validation du formulaire
             errors.email = data.errors.email?.[0] ?? "";
             errors.password = data.errors.password?.[0] ?? "";
-            serverMessage.value = "Veuillez corriger les erreurs du formulaire.";
+            serverMessage.value =
+                "Veuillez corriger les erreurs du formulaire.";
         } else {
             // Erreur générale (mauvais identifiants, serveur, etc.)
-            serverMessage.value = data?.message || "Erreur lors de la connexion.";
+            serverMessage.value =
+                data?.message || "Erreur lors de la connexion.";
         }
     } finally {
         isLoading.value = false;

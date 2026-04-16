@@ -1,35 +1,36 @@
 <template>
-    <div class="w-full p-4 sm:p-6 lg:p-8 bg-white">
+    <div class="w-full bg-white">
+        <!-- Main centered container -->
+        <!-- max-w-5.3xl largeur taille -->
         <div
-            class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+            class="mx-auto max-w-5.2xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10"
         >
-            <h2
-                class="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl"
-            >
-                Nouvelle entrée
-            </h2>
-            <p class="mt-2 text-sm text-slate-600 sm:text-base">
-                Renseignez vos indicateurs quotidiens pour un suivi simple,
-                clair et régulier.
-            </p>
-        </div>
-        <div
-            class="mt-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6"
-        >
+            <!-- Header Section -->
+            <div class="mb-12">
+                <Typography tag="h3" variant="h3-style" class="mt-2">
+                    Renseignez vos indicateurs quotidiens pour un suivi simple,
+                    clair et régulier.
+                </Typography>
+            </div>
+
+            <!-- Main Content Container -->
+
             <IndicateurEtapes :current="step" :steps="steps" />
 
             <div class="mt-6 space-y-6">
                 <!-- Step 1: Body & energy -->
-                <div v-if="step === 1" class="space-y-6">
+                <div v-if="step === 1" class="space-y-5">
                     <div
-                        class="rounded-2xl border border-violet-200 bg-violet-50/50 p-4 sm:p-5"
+                        class="mx-auto px-6 rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
                     >
-                        <div class="space-y-2">
+                        <div class="space-y-3">
                             <div
-                                class="flex items-center justify-between text-xl font-semibold"
+                                class="flex items-center justify-between text-base font-bold text-slate-800"
                             >
                                 <span>Sommeil</span>
-                                <span>{{ form.sleep }}h</span>
+                                <span class="text-blue-700"
+                                    >{{ form.sleep }}h</span
+                                >
                             </div>
                             <input
                                 v-model.number="form.sleep"
@@ -47,14 +48,16 @@
                     </div>
 
                     <div
-                        class="rounded-2xl border border-rose-200 bg-rose-50/50 p-4 sm:p-5"
+                        class="mx-auto px-6 rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
                     >
-                        <div class="space-y-2">
+                        <div class="space-y-3">
                             <div
-                                class="flex items-center justify-between text-xl font-semibold"
+                                class="flex items-center justify-between text-base font-bold text-slate-800"
                             >
                                 <span>Niveau de stress</span>
-                                <span>{{ form.stress }}/10</span>
+                                <span class="text-blue-700"
+                                    >{{ form.stress }}/10</span
+                                >
                             </div>
                             <input
                                 v-model.number="form.stress"
@@ -72,17 +75,19 @@
                     </div>
 
                     <div
-                        class="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 sm:p-5"
+                        class="mx-auto px-6 rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
                     >
-                        <div class="space-y-2">
+                        <div class="space-y-3">
                             <div
-                                class="flex items-center justify-between text-xl font-semibold"
+                                class="flex items-center justify-between text-base font-bold text-slate-800"
                             >
                                 <span>Niveau d'énergie</span>
-                                <span>{{ STATIC_ENERGY }}/10</span>
+                                <span class="text-blue-700"
+                                    >{{ STATIC_ENERGY }}/10</span
+                                >
                             </div>
                             <div
-                                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-600"
+                                class="rounded-xl border border-blue-300 bg-white px-4 py-3 text-sm text-slate-600"
                             >
                                 Valeur statique temporaire (prediction IA a
                                 venir)
@@ -90,14 +95,14 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Step 2: Nutrition -->
                 <div v-else-if="step === 2" class="space-y-6">
                     <div
-                        class="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4 sm:p-5"
+                        class="rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
                     >
-                        <p class="text-xl font-semibold">Repas d'aujourd'hui</p>
-                        <p class="mt-1 text-sm text-slate-500">
+                        <p class="text-lg font-bold text-slate-900">
+                            Repas d'aujourd'hui
+                        </p>
+                        <p class="mt-1 text-base font-medium text-slate-600">
                             Les repas ajoutes ci-dessous seront enregistres dans
                             votre journal du jour.
                         </p>
@@ -108,11 +113,11 @@
                                 v-for="item in meals"
                                 :key="item.id"
                                 type="button"
-                                class="rounded-xl border px-4 py-3 text-sm font-semibold"
+                                class="rounded-xl border px-4 py-3 text-base font-semibold"
                                 :class="
                                     form.selectedMeal === item.id
-                                        ? 'border-violet-500 bg-violet-50 text-violet-700'
-                                        : 'border-slate-300 bg-white text-slate-700'
+                                        ? 'border-blue-300 bg-white text-violet-700'
+                                        : 'border-blue-300 bg-white text-slate-700'
                                 "
                                 @click="form.selectedMeal = item.id"
                             >
@@ -123,10 +128,10 @@
 
                         <div
                             v-if="form.selectedMeal"
-                            class="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-3"
+                            class="mt-4 rounded-xl border-2 border-blue-300 bg-white p-3"
                         >
                             <div
-                                class="mb-2 flex items-center justify-between text-sm font-semibold"
+                                class="mb-2 flex items-center justify-between text-base font-semibold"
                             >
                                 <span>Ajouter : {{ selectedMealLabel }}</span>
                                 <button
@@ -139,19 +144,19 @@
                             <input
                                 v-model="mealDraft.label"
                                 type="text"
-                                class="w-full rounded-lg border border-violet-300 px-3 py-2 text-sm"
+                                class="w-full rounded-lg border border-blue-300 px-3 py-2 text-base"
                                 placeholder="Ex: Oeufs + pain complet"
                             />
                             <input
                                 v-model.number="mealDraft.calories"
                                 type="number"
                                 min="0"
-                                class="mt-2 w-full rounded-lg border border-violet-300 px-3 py-2 text-sm"
+                                class="mt-2 w-full rounded-lg border border-blue-300 px-3 py-2 text-base"
                                 placeholder="Calories (optionnel)"
                             />
                             <button
                                 type="button"
-                                class="mt-3 w-full rounded-lg bg-gradient-to-r from-[#149bd7] to-[#7c3aed] py-2 text-sm font-semibold text-white disabled:opacity-50"
+                                class="mt-3 w-full rounded-lg bg-gradient-to-r from-[#149bd7] to-[#7c3aed] py-2 text-base font-semibold text-white disabled:opacity-50"
                                 :disabled="!mealDraft.label.trim()"
                                 @click="addMeal"
                             >
@@ -160,16 +165,16 @@
                         </div>
 
                         <div
-                            class="mt-4 rounded-xl border border-slate-300 bg-white p-3"
+                            class="mt-4 rounded-xl border-2 border-blue-300 bg-white p-4"
                         >
-                            <p class="text-sm font-semibold text-slate-700">
-                                Repas ajoutes ({{ form.meals.length }})
+                            <p class="text-base font-bold text-slate-900">
+                                Repas ajoutés ({{ form.meals.length }})
                             </p>
                             <ul v-if="form.meals.length" class="mt-2 space-y-2">
                                 <li
                                     v-for="(meal, index) in form.meals"
                                     :key="`${meal.type}-${meal.label}-${index}`"
-                                    class="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                                    class="flex items-center justify-between rounded-lg border border-blue-300 px-3 py-2 text-base"
                                 >
                                     <span class="text-slate-700">
                                         <strong>{{
@@ -187,18 +192,18 @@
                                     </span>
                                     <button
                                         type="button"
-                                        class="text-xs font-semibold text-rose-400 hover:text-rose-500"
+                                        class="text-sm font-semibold text-rose-400 hover:text-rose-500"
                                         @click="deleteMeal(index)"
                                     >
                                         Supprimer
                                     </button>
                                 </li>
                             </ul>
-                            <p v-else class="mt-2 text-sm text-slate-500">
+                            <p v-else class="mt-2 text-base text-slate-500">
                                 Aucun repas ajoute pour le moment.
                             </p>
                             <div
-                                class="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800"
+                                class="mt-3 rounded-lg border-2 border-green-300 bg-white px-3 py-2 text-base font-semibold text-slate-800"
                             >
                                 Total calories: {{ mealsCaloriesTotal }} kcal
                             </div>
@@ -206,25 +211,27 @@
                     </div>
 
                     <div
-                        class="rounded-2xl border border-orange-200 bg-orange-50/40 p-4 sm:p-5"
+                        class="rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
                     >
-                        <p class="text-xl font-semibold">Caféine (tasses)</p>
+                        <p class="text-lg font-bold text-slate-900">
+                            Caféine (tasses)
+                        </p>
                         <div class="mt-3 flex items-center gap-2">
                             <div
-                                class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
+                                class="inline-flex items-center rounded-lg border border-blue-300 bg-white px-3 py-2 text-base font-semibold text-slate-700"
                             >
                                 {{ form.caffeine }} tasse(s)
                             </div>
                             <button
                                 type="button"
-                                class="rounded-lg bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-400"
+                                class="rounded-lg bg-slate-300 px-4 py-2 text-base font-semibold text-slate-700 hover:bg-slate-400"
                                 @click="adjustCaffeine(-1)"
                             >
                                 -
                             </button>
                             <button
                                 type="button"
-                                class="rounded-lg bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-2 text-sm font-semibold text-white"
+                                class="rounded-lg bg-blue-500 px-4 py-2 text-base font-semibold text-white hover:bg-blue-600"
                                 @click="adjustCaffeine(1)"
                             >
                                 +
@@ -233,21 +240,23 @@
                     </div>
 
                     <div
-                        class="rounded-2xl border border-sky-200 bg-sky-50/40 p-4 sm:p-5"
+                        class="rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
                     >
-                        <p class="text-xl font-semibold">Hydratation</p>
+                        <p class="text-lg font-bold text-slate-900">
+                            Hydratation
+                        </p>
                         <div class="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
                             <div
-                                class="rounded-xl border border-sky-300 bg-sky-50 p-3"
+                                class="rounded-xl border border-blue-300 bg-white p-3"
                             >
                                 <div class="flex items-start justify-between">
                                     <div>
                                         <p
-                                            class="text-sm font-semibold text-slate-800"
+                                            class="text-base font-semibold text-slate-800"
                                         >
                                             Verre
                                         </p>
-                                        <p class="text-xs text-slate-500">
+                                        <p class="text-sm text-slate-500">
                                             0.5L par unité
                                         </p>
                                     </div>
@@ -270,7 +279,7 @@
                                 >
                                     <button
                                         type="button"
-                                        class="h-7 w-7 rounded-md border bg-slate-100 text-sm text-slate-500"
+                                        class="h-7 w-7 rounded-md border border-blue-300 bg-slate-100 text-base text-slate-500"
                                         @click="adjustCups(-1)"
                                     >
                                         -
@@ -280,7 +289,7 @@
                                     }}</span>
                                     <button
                                         type="button"
-                                        class="h-7 w-7 rounded-md bg-indigo-600 text-sm font-semibold text-white"
+                                        class="h-7 w-7 rounded-md bg-blue-500 text-base font-semibold text-white hover:bg-blue-600"
                                         @click="adjustCups(1)"
                                     >
                                         +
@@ -289,16 +298,16 @@
                             </div>
 
                             <div
-                                class="rounded-xl border border-cyan-300 bg-cyan-50 p-3"
+                                class="rounded-xl border border-blue-300 bg-white p-3"
                             >
                                 <div class="flex items-start justify-between">
                                     <div>
                                         <p
-                                            class="text-sm font-semibold text-slate-800"
+                                            class="text-base font-semibold text-slate-800"
                                         >
                                             Bouteille
                                         </p>
-                                        <p class="text-xs text-slate-500">
+                                        <p class="text-sm text-slate-500">
                                             1.5L par unité
                                         </p>
                                     </div>
@@ -319,7 +328,7 @@
                                 >
                                     <button
                                         type="button"
-                                        class="h-7 w-7 rounded-md border bg-slate-100 text-sm text-slate-500"
+                                        class="h-7 w-7 rounded-md border border-blue-300 bg-slate-100 text-base text-slate-500"
                                         @click="adjustBottles(-1)"
                                     >
                                         -
@@ -329,7 +338,7 @@
                                     }}</span>
                                     <button
                                         type="button"
-                                        class="h-7 w-7 rounded-md bg-cyan-600 text-sm font-semibold text-white"
+                                        class="h-7 w-7 rounded-md bg-blue-500 text-base font-semibold text-white hover:bg-blue-600"
                                         @click="adjustBottles(1)"
                                     >
                                         +
@@ -343,24 +352,25 @@
                                 type="number"
                                 step="0.1"
                                 min="0"
-                                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                                class="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm"
                                 placeholder="Autre quantité (en litres)"
                             />
                         </div>
                         <div
-                            class="mt-2 rounded-lg bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-3 py-2 text-sm font-semibold text-white"
+                            class="mt-3 inline-flex rounded-lg border-2 border-violet-400 bg-white px-4 py-2 text-sm font-semibold text-violet-700"
                         >
-                            <div class="flex items-center justify-between">
-                                <span>Total</span>
-                                <span>{{ hydrationTotal.toFixed(1) }} L</span>
-                            </div>
+                            <span
+                                >Total: {{ hydrationTotal.toFixed(1) }} L</span
+                            >
                         </div>
                     </div>
 
                     <div
-                        class="rounded-2xl border border-pink-200 bg-pink-50/40 p-4 sm:p-5"
+                        class="rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
                     >
-                        <p class="text-xl font-semibold">Apport en sucre</p>
+                        <p class="text-lg font-bold text-slate-900">
+                            Apport en sucre
+                        </p>
                         <div
                             class="mt-3 inline-flex min-w-[160px] flex-col rounded-xl border px-3 py-2 text-left"
                             :class="sugarBadgeClasses"
@@ -378,15 +388,17 @@
                 <!-- Step 3: Habits & sport -->
                 <div v-else class="space-y-6">
                     <div
-                        class="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-4 sm:p-5"
+                        class="rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
                     >
-                        <label class="text-xl font-semibold" for="activity"
+                        <label
+                            class="text-lg font-bold text-slate-900"
+                            for="activity"
                             >Type d'activité</label
                         >
                         <select
                             id="activity"
                             v-model="form.activityType"
-                            class="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm"
+                            class="mt-2 w-full rounded-lg border border-blue-300 bg-white px-3 py-3 text-sm"
                             @change="handleActivitySelection"
                         >
                             <option disabled value="">
@@ -440,9 +452,12 @@
                     </div>
 
                     <div
-                        class="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4 sm:p-5"
+                        class="rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
                     >
-                        <label class="text-xl font-semibold" for="duration">
+                        <label
+                            class="text-lg font-bold text-slate-900"
+                            for="duration"
+                        >
                             Durée (minutes)
                             <span
                                 v-if="isDurationRequired"
@@ -455,11 +470,11 @@
                             v-model.number="form.activityDuration"
                             type="number"
                             min="0"
-                            class="mt-2 w-full rounded-lg border bg-white px-3 py-3 text-sm"
+                            class="mt-2 w-full rounded-lg border border-blue-300 bg-white px-3 py-3 text-sm"
                             :class="
                                 submitAttempted && activityErrors.duration
                                     ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
-                                    : 'border-slate-300'
+                                    : 'border-blue-300'
                             "
                         />
                         <p
@@ -471,10 +486,12 @@
                     </div>
 
                     <div
-                        class="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5"
+                        class="space-y-4 rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
                     >
                         <div>
-                            <p class="text-xl font-semibold">Intensité</p>
+                            <p class="text-lg font-bold text-slate-900">
+                                Intensité
+                            </p>
                             <div class="mt-3 grid grid-cols-3 gap-2">
                                 <button
                                     v-for="value in intensityOptions"
@@ -483,8 +500,10 @@
                                     class="rounded-xl border py-3 text-sm font-semibold"
                                     :class="
                                         form.intensity === value
-                                            ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                                            : 'border-slate-300 bg-white'
+                                            ? value === 'high'
+                                                ? 'border-green-300 bg-white text-green-700'
+                                                : 'border-blue-300 bg-white text-blue-700'
+                                            : 'border-blue-300 bg-white text-slate-700'
                                     "
                                     @click="form.intensity = value"
                                 >
@@ -493,14 +512,14 @@
                             </div>
                         </div>
 
-                        <p class="text-xl font-semibold">Habitude</p>
+                        <p class="text-lg font-bold text-slate-900">Habitude</p>
 
                         <div
-                            class="rounded-xl bg-slate-100 p-4 ring-1 ring-slate-200"
+                            class="rounded-xl bg-white p-4 ring-1 ring-blue-300"
                         >
                             <button
                                 type="button"
-                                class="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
+                                class="flex w-full items-center justify-between text-base font-semibold text-slate-700"
                                 @click="toggleTobacco"
                             >
                                 <span>Tabac</span>
@@ -508,7 +527,7 @@
                                     class="relative h-6 w-10 rounded-full transition-colors"
                                     :class="
                                         form.tobacco
-                                            ? 'bg-pink-600'
+                                            ? 'bg-blue-600'
                                             : 'bg-slate-300'
                                     "
                                     aria-hidden="true"
@@ -527,18 +546,18 @@
                             <div v-if="form.tobacco" class="mt-4 space-y-3">
                                 <div>
                                     <label
-                                        class="text-xs font-semibold text-slate-700"
+                                        class="text-base font-semibold text-slate-700"
                                     >
                                         Type <span class="text-red-500">*</span>
                                     </label>
                                     <div class="mt-2 flex flex-wrap gap-2">
                                         <button
                                             type="button"
-                                            class="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors"
+                                            class="rounded-lg border px-3 py-2 text-base font-semibold transition-colors"
                                             :class="
                                                 form.tobaccoTypes.cigarette
                                                     ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
-                                                    : 'border-slate-300 bg-white text-slate-700'
+                                                    : 'border-blue-300 bg-white text-slate-700'
                                             "
                                             @click="
                                                 toggleTobaccoType('cigarette')
@@ -548,11 +567,11 @@
                                         </button>
                                         <button
                                             type="button"
-                                            class="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors"
+                                            class="rounded-lg border px-3 py-2 text-base font-semibold transition-colors"
                                             :class="
                                                 form.tobaccoTypes.vape
                                                     ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
-                                                    : 'border-slate-300 bg-white text-slate-700'
+                                                    : 'border-blue-300 bg-white text-slate-700'
                                             "
                                             @click="toggleTobaccoType('vape')"
                                         >
@@ -572,7 +591,7 @@
 
                                 <div v-if="form.tobaccoTypes.cigarette">
                                     <label
-                                        class="text-xs font-semibold text-slate-700"
+                                        class="text-base font-semibold text-slate-700"
                                     >
                                         Nombre de cigarettes par jour
                                         <span class="text-red-500">*</span>
@@ -582,7 +601,7 @@
                                         type="number"
                                         min="0"
                                         placeholder="Ex: 5"
-                                        class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                        class="mt-1 w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-base text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
                                     />
                                     <p
                                         v-if="
@@ -601,7 +620,7 @@
                                 >
                                     <div>
                                         <label
-                                            class="text-xs font-semibold text-slate-700"
+                                            class="text-base font-semibold text-slate-700"
                                         >
                                             Nombre de taffes prise par jour
                                             <span class="text-red-500">*</span>
@@ -611,7 +630,7 @@
                                             type="number"
                                             min="0"
                                             placeholder="Ex: 3"
-                                            class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                            class="mt-1 w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
                                         />
                                         <p
                                             v-if="
@@ -628,11 +647,11 @@
                         </div>
 
                         <div
-                            class="rounded-xl bg-slate-100 p-4 ring-1 ring-slate-200"
+                            class="rounded-xl bg-white p-4 ring-1 ring-blue-300"
                         >
                             <button
                                 type="button"
-                                class="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
+                                class="flex w-full items-center justify-between text-base font-semibold text-slate-700"
                                 @click="toggleAlcohol"
                             >
                                 <span
@@ -647,7 +666,7 @@
                                     class="relative h-6 w-10 rounded-full transition-colors"
                                     :class="
                                         form.alcohol
-                                            ? 'bg-pink-600'
+                                            ? 'bg-blue-600'
                                             : 'bg-slate-300'
                                     "
                                     aria-hidden="true"
@@ -665,7 +684,7 @@
 
                             <div v-if="form.alcohol" class="mt-4">
                                 <label
-                                    class="text-xs font-semibold text-slate-700"
+                                    class="text-base font-semibold text-slate-700"
                                 >
                                     Nombre de verres par jour
                                     <span class="text-red-500">*</span>
@@ -675,7 +694,7 @@
                                     type="number"
                                     min="0"
                                     placeholder="Ex: 2"
-                                    class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
+                                    class="mt-1 w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-base text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
                                 />
                                 <p
                                     v-if="
@@ -691,13 +710,13 @@
                 </div>
             </div>
 
-            <div class="mt-6 flex items-center justify-between gap-3">
+            <div class="mt-12 flex items-center justify-between gap-3">
                 <button
                     type="button"
                     class="rounded-xl border px-5 py-3 text-sm font-semibold transition-colors"
                     :class="
                         step === 1
-                            ? 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                            ? 'border-blue-300 bg-white text-slate-700 hover:bg-slate-50'
                             : 'border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100'
                     "
                     @click="goBack"
@@ -707,7 +726,7 @@
                 <button
                     v-if="step < 3"
                     type="button"
-                    class="rounded-xl bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
+                    class="rounded-xl border px-6 py-3 text-sm font-semibold transition-colors border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
                     @click="goNext"
                 >
                     Suivant ›
@@ -723,7 +742,7 @@
                         </button>
                         <button
                             type="button"
-                            class="rounded-xl bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
+                            class="rounded-xl border px-6 py-3 text-sm font-semibold transition-colors border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
                             @click="save"
                         >
                             ✓ Enregistrer les modifications
@@ -732,31 +751,34 @@
                     <button
                         v-else
                         type="button"
-                        class="rounded-xl bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/20"
+                        class="rounded-xl border px-6 py-3 text-sm font-semibold transition-colors border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
                         @click="save"
                     >
                         ✓ Enregistrer la journée
                     </button>
                 </template>
-            </div>
-            <p
-                v-if="saveError"
-                class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-            >
-                {{ saveError }}
-            </p>
 
-            <ConfirmationDialog
-                :open="confirmDeleteMealOpen"
-                title="Confirmer la suppression"
-                message="Voulez-vous supprimer ce repas ?"
-                confirm-label="Supprimer"
-                cancel-label="Annuler"
-                @confirm="confirmDeleteMeal"
-                @cancel="cancelDeleteMeal"
-            />
+                <p
+                    v-if="saveError"
+                    class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                >
+                    {{ saveError }}
+                </p>
+
+                <ConfirmationDialog
+                    :open="confirmDeleteMealOpen"
+                    title="Confirmer la suppression"
+                    message="Voulez-vous supprimer ce repas ?"
+                    confirm-label="Supprimer"
+                    cancel-label="Annuler"
+                    @confirm="confirmDeleteMeal"
+                    @cancel="cancelDeleteMeal"
+                />
+            </div>
         </div>
+        <!-- End of main centered container -->
     </div>
+    <!-- End of outer wrapper -->
 </template>
 
 <script setup>
@@ -766,6 +788,7 @@ import IndicateurEtapes from "@/components/journal-entries/StepIndicator.vue";
 import { useJournalStore } from "@/stores/journal";
 import { useNotificationsStore } from "@/stores/notifications";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
+import Typography from "@/components/ui/Typography.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -857,11 +880,13 @@ const mealsCaloriesTotal = computed(() =>
 
 // CSS classes for the sugar badge, based on the selected sugar level
 const SUGAR_BADGE = {
-    high:   "border-rose-300 bg-rose-100 text-rose-800",
+    high: "border-rose-300 bg-rose-100 text-rose-800",
     medium: "border-amber-300 bg-amber-100 text-amber-800",
-    low:    "border-emerald-300 bg-emerald-100 text-emerald-800",
+    low: "border-emerald-300 bg-emerald-100 text-emerald-800",
 };
-const sugarBadgeClasses = computed(() => SUGAR_BADGE[form.sugar] ?? SUGAR_BADGE.low);
+const sugarBadgeClasses = computed(
+    () => SUGAR_BADGE[form.sugar] ?? SUGAR_BADGE.low,
+);
 
 // Check tobacco fields — returns an object with error messages (null = no error)
 const tobaccoErrors = computed(() => {
@@ -889,7 +914,9 @@ const tobaccoErrors = computed(() => {
 });
 
 // True when any tobacco error exists
-const hasTobaccoErrors = computed(() => Object.values(tobaccoErrors.value).some(Boolean));
+const hasTobaccoErrors = computed(() =>
+    Object.values(tobaccoErrors.value).some(Boolean),
+);
 
 // True when an activity is selected (makes the duration field required)
 const isDurationRequired = computed(() => Boolean(form.activityType));
@@ -908,7 +935,9 @@ const activityErrors = computed(() => {
 });
 
 // True when any activity error exists
-const hasActivityErrors = computed(() => Object.values(activityErrors.value).some(Boolean));
+const hasActivityErrors = computed(() =>
+    Object.values(activityErrors.value).some(Boolean),
+);
 
 // Check alcohol fields — quantity is required if alcohol is enabled
 const alcoholErrors = computed(() => {
@@ -924,7 +953,9 @@ const alcoholErrors = computed(() => {
 });
 
 // True when any alcohol error exists
-const hasAlcoholErrors = computed(() => Object.values(alcoholErrors.value).some(Boolean));
+const hasAlcoholErrors = computed(() =>
+    Object.values(alcoholErrors.value).some(Boolean),
+);
 
 onMounted(async () => {
     // Load all journal entries from the server
@@ -946,28 +977,28 @@ onMounted(async () => {
     if (!entry) return;
 
     // Pre-fill the form with the existing entry data
-    form.sleep            = Number(entry.sleep ?? 7);
-    form.stress           = Number(entry.stress ?? 5);
-    form.energy           = STATIC_ENERGY;
-    form.sugar            = entry.sugar ?? "low";
-    form.caffeine         = Number(entry.caffeine ?? 0);
-    form.activityType     = entry.activityType ?? "";
+    form.sleep = Number(entry.sleep ?? 7);
+    form.stress = Number(entry.stress ?? 5);
+    form.energy = STATIC_ENERGY;
+    form.sugar = entry.sugar ?? "low";
+    form.caffeine = Number(entry.caffeine ?? 0);
+    form.activityType = entry.activityType ?? "";
     form.activityDuration = Number(entry.activityDuration ?? 0);
-    form.intensity        = entry.intensity ?? "medium";
-    form.tobacco          = Boolean(entry.tobacco);
-    form.alcohol          = Boolean(entry.alcohol);
-    form.tobaccoTypes     = entry.tobaccoTypes ?? { cigarette: false, vape: false };
+    form.intensity = entry.intensity ?? "medium";
+    form.tobacco = Boolean(entry.tobacco);
+    form.alcohol = Boolean(entry.alcohol);
+    form.tobaccoTypes = entry.tobaccoTypes ?? { cigarette: false, vape: false };
     form.cigarettesPerDay = entry.cigarettesPerDay ?? null;
-    form.vapeLiquidMl     = entry.vapeLiquidMl ?? null;
-    form.alcoholDrinks    = entry.alcoholDrinks ?? null;
-    form.cupCount         = 0;
-    form.bottleCount      = 0;
-    form.customHydration  = Number(entry.hydration ?? 0);
+    form.vapeLiquidMl = entry.vapeLiquidMl ?? null;
+    form.alcoholDrinks = entry.alcoholDrinks ?? null;
+    form.cupCount = 0;
+    form.bottleCount = 0;
+    form.customHydration = Number(entry.hydration ?? 0);
 
     // The API may return different field names — normalize them to type/label
     form.meals = (entry.meals ?? []).map((m) => ({
-        type:     m.type     || m.meal_type    || "",
-        label:    m.label    || m.description  || "",
+        type: m.type || m.meal_type || "",
+        label: m.label || m.description || "",
         calories: m.calories ?? null,
     }));
 });
@@ -1091,27 +1122,33 @@ const cancelEdit = async () => {
 // Build the data object to send to the API
 function buildPayload() {
     return {
-        sleep:            Number(form.sleep),
-        stress:           Number(form.stress),
-        energy:           STATIC_ENERGY,
-        sugar:            form.sugar,
-        caffeine:         Number(form.caffeine),
-        hydration:        Number(hydrationTotal.value.toFixed(1)),
-        meals:            [...form.meals],
-        calories:         mealsCaloriesTotal.value,
-        activityType:     form.activityType || "Marche",
+        sleep: Number(form.sleep),
+        stress: Number(form.stress),
+        energy: STATIC_ENERGY,
+        sugar: form.sugar,
+        caffeine: Number(form.caffeine),
+        hydration: Number(hydrationTotal.value.toFixed(1)),
+        meals: [...form.meals],
+        calories: mealsCaloriesTotal.value,
+        activityType: form.activityType || "Marche",
         activityDuration: Number(form.activityDuration) || 0,
-        intensity:        form.intensity,
-        tobacco:          form.tobacco,
-        alcohol:          form.alcohol,
+        intensity: form.intensity,
+        tobacco: form.tobacco,
+        alcohol: form.alcohol,
         tobaccoTypes: {
             // Only keep tobacco type if tobacco is actually enabled
             cigarette: form.tobacco && form.tobaccoTypes.cigarette,
-            vape:      form.tobacco && form.tobaccoTypes.vape,
+            vape: form.tobacco && form.tobaccoTypes.vape,
         },
-        cigarettesPerDay: form.tobacco && form.tobaccoTypes.cigarette ? Number(form.cigarettesPerDay) : null,
-        vapeLiquidMl:     form.tobacco && form.tobaccoTypes.vape      ? Number(form.vapeLiquidMl)     : null,
-        alcoholDrinks:    form.alcohol                                 ? Number(form.alcoholDrinks)    : 0,
+        cigarettesPerDay:
+            form.tobacco && form.tobaccoTypes.cigarette
+                ? Number(form.cigarettesPerDay)
+                : null,
+        vapeLiquidMl:
+            form.tobacco && form.tobaccoTypes.vape
+                ? Number(form.vapeLiquidMl)
+                : null,
+        alcoholDrinks: form.alcohol ? Number(form.alcoholDrinks) : 0,
     };
 }
 
@@ -1122,7 +1159,9 @@ function getApiError(error) {
     if (status === 422) {
         // Server returned validation errors — show the first one
         const firstError = Object.values(error.response.data.errors || {})[0];
-        return Array.isArray(firstError) ? firstError[0] : "Validation invalide.";
+        return Array.isArray(firstError)
+            ? firstError[0]
+            : "Validation invalide.";
     }
 
     if (status === 401) {
@@ -1137,7 +1176,12 @@ const save = async () => {
     submitAttempted.value = true;
 
     // Stop if the user has not filled required fields
-    if (hasActivityErrors.value || hasTobaccoErrors.value || hasAlcoholErrors.value) return;
+    if (
+        hasActivityErrors.value ||
+        hasTobaccoErrors.value ||
+        hasAlcoholErrors.value
+    )
+        return;
 
     saveError.value = "";
 
@@ -1147,7 +1191,10 @@ const save = async () => {
         if (isEditMode.value) {
             // Update an existing entry
             await store.mettreAJourEntree(editEntryId.value, payload);
-            router.push({ name: "journal-history", query: { notice: "saved" } });
+            router.push({
+                name: "journal-history",
+                query: { notice: "saved" },
+            });
         } else {
             // Create a new entry
             await store.ajouterEntree(payload);

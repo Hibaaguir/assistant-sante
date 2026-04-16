@@ -54,7 +54,9 @@
                                 </div>
                             </div>
                             <h1 class="text-3xl font-bold text-gray-900 mb-3">
-                                Connexion
+                                <Typography tag="h1" variant="h1-style">
+                                    Connexion
+                                </Typography>
                             </h1>
                             <p class="text-sm text-gray-600">
                                 Accédez à votre compte HealthFlow
@@ -247,6 +249,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import api from "@/services/api";
 import FormField from "./FormField.vue";
+import Typography from "@/components/ui/Typography.vue";
 
 const route = useRoute();
 const router = useRouter();

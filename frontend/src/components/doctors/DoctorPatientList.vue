@@ -90,11 +90,9 @@
                     <div class="min-w-0 flex-1">
                         <!-- Name + status -->
                         <div class="flex items-center gap-3">
-                            <h3
-                                class="text-[24px] font-extrabold text-slate-900"
-                            >
+                            <Typography tag="h3" variant="h3-style">
                                 {{ patient.name }}
-                            </h3>
+                            </Typography>
                             <span
                                 class="h-3 w-3 rounded-full shrink-0"
                                 :style="{ backgroundColor: patient.dotColor }"
@@ -173,6 +171,7 @@
 
 <script setup>
 import { computed, ref } from "vue";
+import Typography from "@/components/ui/Typography.vue";
 import {
     IconAlert,
     IconClock,

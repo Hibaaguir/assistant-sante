@@ -24,14 +24,12 @@
             </div>
 
             <div class="mt-7 text-center">
-                <h1
-                    class="text-5xl font-extrabold tracking-[-0.03em] bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent sm:text-6xl"
-                >
+                <Typography tag="h1" variant="h1-style">
                     Espace Médecin
-                </h1>
-                <p class="mt-3 text-lg text-[#50607d]">
+                </Typography>
+                <Typography tag="p" variant="paragraph" class="mt-3">
                     Créez votre compte professionnel
-                </p>
+                </Typography>
             </div>
 
             <div

@@ -6,14 +6,12 @@
         >
             <div class="mx-auto max-w-5xl px-4 py-6 sm:px-6">
                 <div class="mb-6 text-center">
-                    <h1
-                        class="mb-2 text-3xl font-extrabold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent"
-                    >
+                    <Typography tag="h1" variant="h1-style" class="mb-2">
                         Création de ton profil santé
-                    </h1>
-                    <p class="text-sm text-gray-500">
+                    </Typography>
+                    <Typography tag="p" variant="paragraph">
                         Quelques minutes pour personnaliser ton expérience
-                    </p>
+                    </Typography>
                 </div>
 
                 <!-- Stepper -->
@@ -177,6 +175,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
+import Typography from "@/components/ui/Typography.vue";
 import api from "@/services/api";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
@@ -262,8 +261,9 @@ watch(
 
 // Return the CSS classes for a step circle (completed / active / inactive)
 function stepClass(n) {
-    if (currentStep.value > n)  return "bg-purple-500 text-white";
-    if (currentStep.value === n) return "bg-purple-500 text-white ring-4 ring-purple-100";
+    if (currentStep.value > n) return "bg-purple-500 text-white";
+    if (currentStep.value === n)
+        return "bg-purple-500 text-white ring-4 ring-purple-100";
     return "bg-slate-200 text-slate-500";
 }
 
@@ -286,18 +286,16 @@ function extractApiError(errors) {
     if (!errors || typeof errors !== "object") return "Validation invalide.";
 
     // Flatten all error arrays into a single list of messages
-    const messages = Object.values(errors)
-        .flat()
-        .filter(Boolean);
+    const messages = Object.values(errors).flat().filter(Boolean);
 
     return messages.join(" ") || "Validation invalide.";
 }
 
 // Clear all step 1 error messages
 function clearStep1Errors() {
-    step1Errors.sexe      = "";
-    step1Errors.taille    = "";
-    step1Errors.poids     = "";
+    step1Errors.sexe = "";
+    step1Errors.taille = "";
+    step1Errors.poids = "";
     step1Errors.objectifs = "";
 }
 
@@ -358,7 +356,8 @@ function validateStep2() {
 
 // Validate step 3: if doctor sharing is enabled, email is required and must be valid
 function validateStep3() {
-    const doctorSharingEnabled = form.consulte_medecin && form.medecin_peut_consulter;
+    const doctorSharingEnabled =
+        form.consulte_medecin && form.medecin_peut_consulter;
 
     if (!doctorSharingEnabled) return true;
 
@@ -401,9 +400,9 @@ function toIsoDate(frDate) {
     const match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (!match) return null;
 
-    const day   = Number(match[1]);
+    const day = Number(match[1]);
     const month = Number(match[2]);
-    const year  = Number(match[3]);
+    const year = Number(match[3]);
 
     // Double-check the date is real (e.g. rejects 31/02/2024)
     const date = new Date(year, month - 1, day);
@@ -420,14 +419,14 @@ function toIsoDate(frDate) {
 // Convert a single treatment object into the format expected by the API
 function buildTreatment(t) {
     return {
-        type:            t?.type            ?? null,
-        name:            t?.name            ?? null,
-        dose:            t?.dose            ?? null,
-        frequency_unit:  t?.frequency_unit  ?? null,
+        type: t?.type ?? null,
+        name: t?.name ?? null,
+        dose: t?.dose ?? null,
+        frequency_unit: t?.frequency_unit ?? null,
         frequency_count: normalizeFrequency(t?.frequency_count),
-        start_date:      toIsoDate(t?.start_date) ?? null,
-        end_date:        toIsoDate(t?.end_date)   ?? null,
-        duration:        t?.duration        ?? null,
+        start_date: toIsoDate(t?.start_date) ?? null,
+        end_date: toIsoDate(t?.end_date) ?? null,
+        duration: t?.duration ?? null,
     };
 }
 
@@ -439,18 +438,20 @@ function buildPayload() {
         : [];
 
     return {
-        gender:          String(form.sexe || "").toLowerCase().trim(),
-        height:          form.taille,
-        current_weight:  form.poids,
-        blood_type:      form.groupe_sanguin,
-        goals:           normalizeArray(form.objectifs),
-        allergies:       normalizeArray(form.allergies),
+        gender: String(form.sexe || "")
+            .toLowerCase()
+            .trim(),
+        height: form.taille,
+        current_weight: form.poids,
+        blood_type: form.groupe_sanguin,
+        goals: normalizeArray(form.objectifs),
+        allergies: normalizeArray(form.allergies),
         chronic_diseases: normalizeArray(form.maladies_chroniques),
         treatments,
-        smoker:          form.fumeur,
-        alcoholic:       form.alcool,
-        doctor_invited:  form.medecin_peut_consulter,
-        doctor_email:    form.medecin_peut_consulter ? form.medecin_email : null,
+        smoker: form.fumeur,
+        alcoholic: form.alcool,
+        doctor_invited: form.medecin_peut_consulter,
+        doctor_email: form.medecin_peut_consulter ? form.medecin_email : null,
     };
 }
 
@@ -459,10 +460,10 @@ async function enregistrer() {
     if (!validateStep3()) return;
 
     // Clear previous messages
-    stepError.value   = "";
-    saveError.value   = "";
+    stepError.value = "";
+    saveError.value = "";
     saveSuccess.value = "";
-    saving.value      = true;
+    saving.value = true;
 
     try {
         await api.post("/health-profile", buildPayload());
@@ -516,26 +517,30 @@ onMounted(async () => {
         if (!profile) return;
 
         // Profile is already complete — go straight to the settings page
-        const isComplete = profile.gender && profile.height && profile.current_weight && profile.blood_type;
+        const isComplete =
+            profile.gender &&
+            profile.height &&
+            profile.current_weight &&
+            profile.blood_type;
         if (isComplete) {
             router.replace({ name: "health-settings" });
             return;
         }
 
         // Pre-fill the form with whatever was already saved
-        form.sexe                = profile.gender        || "";
-        form.taille              = profile.height        || "";
-        form.poids               = profile.current_weight || "";
-        form.groupe_sanguin      = profile.blood_type    || "";
-        form.objectifs           = profile.goals         || [];
-        form.allergies           = profile.allergies     || [];
+        form.sexe = profile.gender || "";
+        form.taille = profile.height || "";
+        form.poids = profile.current_weight || "";
+        form.groupe_sanguin = profile.blood_type || "";
+        form.objectifs = profile.goals || [];
+        form.allergies = profile.allergies || [];
         form.maladies_chroniques = profile.chronic_diseases || [];
-        form.traitements         = profile.treatments    || [];
-        form.fumeur              = profile.smoker        || false;
-        form.alcool              = profile.alcoholic     || false;
-        form.consulte_medecin    = profile.doctor_invited || false;
+        form.traitements = profile.treatments || [];
+        form.fumeur = profile.smoker || false;
+        form.alcool = profile.alcoholic || false;
+        form.consulte_medecin = profile.doctor_invited || false;
         form.medecin_peut_consulter = profile.doctor_invited || false;
-        form.medecin_email       = profile.doctor_email  || "";
+        form.medecin_email = profile.doctor_email || "";
     } catch (err) {
         // Session expired — redirect to login
         if (err.response?.status === 401) {

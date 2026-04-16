@@ -1,13 +1,13 @@
 <template>
     <div class="space-y-10">
         <div class="text-center max-w-2xl mx-auto">
-            <h2 class="text-4xl font-extrabold text-slate-900 mb-4">
+            <Typography tag="h2" variant="h1-style">
                 Informations de santé
-            </h2>
-            <p class="text-gray-500 text-sm sm:text-base">
+            </Typography>
+            <Typography tag="p" variant="paragraph">
                 Ces informations nous aident a personnaliser tes recommandations
                 et a mieux suivre ton evolution
-            </p>
+            </Typography>
         </div>
 
         <div class="space-y-8">
@@ -759,6 +759,7 @@
 
 import { computed, reactive, ref, onMounted } from "vue";
 import axios from "axios";
+import Typography from "@/components/ui/Typography.vue";
 
 const props = defineProps({
     form: { type: Object, required: true },
@@ -801,7 +802,6 @@ const diseaseOptions = [
     "Anemie",
 ];
 
-
 // Types chargés depuis la DB via l'API
 const treatmentTypes = ref([]);
 // Noms chargés depuis la DB au moment où l'utilisateur choisit un type
@@ -810,7 +810,7 @@ const treatmentNamesByType = reactive({});
 onMounted(async () => {
     try {
         const res = await axios.get("/api/treatment-catalogs/medication-types");
-        treatmentTypes.value = res.data.filter(x => x && x.trim() !== "");
+        treatmentTypes.value = res.data.filter((x) => x && x.trim() !== "");
     } catch (e) {
         treatmentTypes.value = [];
     }
@@ -920,12 +920,19 @@ async function selectTreatmentType(value) {
     openTreatmentNames.value = false;
     openTreatmentTypes.value = false;
 
-    if (!Array.isArray(treatmentNamesByType[value]) || treatmentNamesByType[value].length === 0) {
+    if (
+        !Array.isArray(treatmentNamesByType[value]) ||
+        treatmentNamesByType[value].length === 0
+    ) {
         try {
-            const res = await axios.get("/api/treatment-catalogs/medication-names", { params: { type: value } });
+            const res = await axios.get(
+                "/api/treatment-catalogs/medication-names",
+                { params: { type: value } },
+            );
             treatmentNamesByType[value] = res.data;
         } catch (e) {
-            if (!Array.isArray(treatmentNamesByType[value])) treatmentNamesByType[value] = [];
+            if (!Array.isArray(treatmentNamesByType[value]))
+                treatmentNamesByType[value] = [];
         }
     }
 }
@@ -1037,7 +1044,8 @@ function validateTreatment() {
     }
 
     if (!String(treatment.frequency_unit || "").trim()) {
-        treatmentErrors.frequency_unit = "L'unité de fréquence est obligatoire.";
+        treatmentErrors.frequency_unit =
+            "L'unité de fréquence est obligatoire.";
         isValid = false;
     }
 
