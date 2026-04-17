@@ -168,9 +168,19 @@ function toDate(rawDate) {
         return isValid ? date : null;
     }
 
-    // Keep only YYYY-MM-DD when API returns datetime values.
-    const isoDay = text.includes("T") ? text.slice(0, 10) : text;
-    const isoMatch = isoDay.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    // If the string contains a time component, parse the full datetime and
+    // extract the local calendar date to avoid UTC-offset day shifts.
+    if (text.includes("T")) {
+        const parsed = new Date(text);
+        if (Number.isNaN(parsed.getTime())) return null;
+        return new Date(
+            parsed.getFullYear(),
+            parsed.getMonth(),
+            parsed.getDate(),
+        );
+    }
+
+    const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (isoMatch) {
         const year = Number(isoMatch[1]);
         const month = Number(isoMatch[2]);

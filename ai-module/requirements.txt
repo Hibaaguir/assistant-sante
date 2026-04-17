@@ -1,0 +1,16 @@
+# AI Module dependencies
+
+# Database
+mysql-connector-python>=8.3.0
+python-dotenv>=1.0.0
+
+# Data processing
+pandas>=2.2.0
+numpy>=1.26.0
+
+# AI Pipeline — Groq (free tier)
+groq>=0.9.0
+
+# LangGraph workflow
+langgraph>=0.2.0
+typing_extensions>=4.9.0

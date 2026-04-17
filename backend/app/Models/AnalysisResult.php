@@ -19,7 +19,7 @@ class AnalysisResult extends Model
     ];
 
     protected $casts = [
-        'analysis_date' => 'date',
+        'analysis_date' => 'date:Y-m-d',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

@@ -222,7 +222,7 @@ class HealthDataController extends Controller
             $parts = explode('__dose_', $check['medication_key'], 2);
             $treatmentId = (int) $parts[0];
 
-            if (!$user->treatments()->where('id', $treatmentId)->exists()) {
+            if (!$user->treatments()->where('treatments.id', $treatmentId)->exists()) {
                 continue;
             }
 
