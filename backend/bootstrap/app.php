@@ -27,5 +27,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Gérer les exceptions d'authentification pour l'API
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Unauthorized',
+                    'error' => 'Authentication required'
+                ], 401);
+            }
+        });
     })->create();

@@ -3,32 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invitation medecin</title>
+    <title>Invitation médecin - Assistant Santé</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #f0f4f8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif; color: #1a202c; }
+        .container { max-width: 600px; margin: 0 auto; padding: 24px 12px; }
+        .card { background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+        .header { padding: 48px 32px; background: linear-gradient(135deg, #0D47A1 0%, #00897B 100%); color: #ffffff; text-align: center; }
+        .header-badge { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.9; margin: 0 0 12px; font-weight: 600; }
+        .header-title { font-size: 32px; line-height: 1.3; margin: 0; font-weight: 700; }
+        .content { padding: 48px 32px; }
+        .greeting { font-size: 16px; line-height: 1.6; margin: 0 0 20px; color: #2d3748; }
+        .message { font-size: 16px; line-height: 1.7; margin: 0 0 24px; color: #3a4958; }
+        .message strong { color: #0D47A1; font-weight: 600; }
+        .accent-box { background-color: #e8f4f8; border-left: 4px solid #00897B; padding: 20px; border-radius: 6px; margin: 24px 0; font-size: 15px; line-height: 1.6; color: #294e5f; }
+        .cta-button { display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #00897B 0%, #0D47A1 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; border-radius: 8px; margin: 32px 0; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(13, 71, 161, 0.3); }
+        .footer { padding: 24px 32px; background-color: #f9fafb; border-top: 1px solid #e2e8f0; font-size: 13px; color: #718096; text-align: center; line-height: 1.6; }
+    </style>
 </head>
-<body style="margin:0;padding:0;background-color:#f8fafc;font-family:Arial,sans-serif;color:#0f172a;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f8fafc;padding:24px 12px;">
-        <tr>
-            <td align="center">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background-color:#ffffff;border-radius:16px;overflow:hidden;">
-                    <tr>
-                        <td style="padding:32px 32px 16px;background:linear-gradient(135deg,#0f766e,#1d4ed8);color:#ffffff;">
-                            <p style="margin:0 0 8px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.9;">Assistant Sante</p>
-                            <h1 style="margin:0;font-size:28px;line-height:1.2;">Vous avez ete invite par un patient a suivre ses donnees de sante.</h1>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding:32px;">
-                            <p style="margin:0 0 16px;font-size:16px;line-height:1.7;">Bonjour,</p>
-                            <p style="margin:0 0 16px;font-size:16px;line-height:1.7;"><strong>{{ $patientName }}</strong> vous a invite a acceder a ses donnees de sante dans Assistant Sante.</p>
-                            <p style="margin:0 0 24px;font-size:16px;line-height:1.7;">Connectez-vous a l'application ou creez votre compte avec cette adresse email, puis ouvrez la section <strong>Invitations de patients</strong> dans votre tableau de bord medecin pour accepter ou refuser.</p>
-                            <p style="margin:0 0 28px;">
-                                <a href="{{ $applicationUrl }}" style="display:inline-block;padding:14px 24px;border-radius:999px;background-color:#0f172a;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">Acceder a l'application</a>
-                            </p>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <p class="header-badge">Assistant Santé</p>
+                <h1 class="header-title">Invitation médicale sécurisée</h1>
+            </div>
+            <div class="content">
+                <p class="greeting">Bonjour,</p>
+                <p class="message"><strong>{{ $patientName }}</strong> vous a invité à accéder à ses données de santé dans <strong>Assistant Santé</strong>.</p>
+                <div class="accent-box">
+                    <strong style="color: #0D47A1;">Étapes à suivre :</strong><br>
+                    1. Connectez-vous ou créez un compte avec cette adresse email<br>
+                    2. Accédez à votre tableau de bord médecin<br>
+                    3. Ouvrez la section "Invitations de patients"<br>
+                    4. Acceptez ou refusez l'invitation
+                </div>
+                <p style="text-align: center; margin: 0;">
+                    <a href="{{ $applicationUrl }}" class="cta-button">Accéder à l'application</a>
+                </p>
+            </div>
+            <div class="footer">
+                <p style="margin: 0; color: #718096;">Cet email a été envoyé en toute sécurité. Assistant Santé protège vos données avec les normes les plus élevées.</p>
+                <p style="margin: 8px 0 0; color: #a0aec0; font-size: 12px;">© 2026 Assistant Santé – Plateforme de gestion médicale</p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

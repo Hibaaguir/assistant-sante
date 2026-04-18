@@ -50,7 +50,7 @@
                             <Typography
                                 tag="p"
                                 variant="h5-style"
-                                class="text-black font-bold truncate"
+                                class="text-black font-bold truncate text-[12px]"
                             >
                                 {{ authStore.userName }}
                             </Typography>

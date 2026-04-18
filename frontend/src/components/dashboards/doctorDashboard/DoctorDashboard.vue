@@ -14,7 +14,7 @@
 
         <header>
             <h1
-                class="text-[38px] font-bold leading-tight tracking-[-0.03em] bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent sm:text-[44px]"
+                class="text-[38px] font-bold leading-tight tracking-[-0.03em] text-black sm:text-[44px]"
             >
                 Espace Médecin
             </h1>

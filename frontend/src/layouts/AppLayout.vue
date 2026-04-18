@@ -15,11 +15,7 @@
                 class="sticky top-0 z-30 border-b border-slate-200 bg-white px-4 py-3 shadow-sm sm:px-6 lg:px-8"
             >
                 <div class="flex w-full items-center justify-end gap-3">
-                    <button
-                        type="button"
-                        class="inline-flex h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 text-[15px] font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
-                        @click="logout"
-                    >
+                    <BaseButton type="button" variant="outline" @click="logout">
                         <svg
                             viewBox="0 0 24 24"
                             class="h-4 w-4"
@@ -35,7 +31,7 @@
                             <path d="M21 12H9" />
                         </svg>
                         Déconnexion
-                    </button>
+                    </BaseButton>
                     <MenuUtilisateur />
                 </div>
             </div>
@@ -51,6 +47,7 @@ import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import BarreLateraleApp from "@/components/navigation/AppSidebar.vue";
 import MenuUtilisateur from "@/components/navigation/UserMenu.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 const route = useRoute();
 const authStore = useAuthStore();

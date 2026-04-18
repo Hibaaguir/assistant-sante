@@ -16,12 +16,8 @@
                     >
                         Journal Quotidien HealthFlow
                     </span>
-                    <Typography tag="h2" variant="primary">
-                        Suivez votre journée en<br />
-                        <span
-                            class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600"
-                            >toute simplicité</span
-                        >
+                    <Typography tag="h1" variant="h1-style" class="text-black">
+                        Suivez votre journée en toute simplicité
                     </Typography>
                     <Typography tag="p" variant="paragraph">
                         Une interface structurée pour consigner vos indicateurs
@@ -29,8 +25,9 @@
                         physique et habitudes de vie.
                     </Typography>
                     <div class="flex flex-wrap gap-4 items-center">
-                        <button
-                            class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-indigo-300 transition hover:brightness-110 hover:shadow-xl"
+                        <BaseButton
+                            variant="add"
+                            size="lg"
                             @click="router.push({ name: 'journal-assistant' })"
                         >
                             <svg
@@ -44,13 +41,14 @@
                                 <path d="M12 5v14M5 12h14" />
                             </svg>
                             Ajouter une entrée
-                        </button>
-                        <button
-                            class="inline-flex items-center gap-2 rounded-xl border-2 border-slate-300 bg-white px-6 py-3 text-base font-semibold text-slate-700 hover:bg-slate-100 transition hover:border-slate-400"
+                        </BaseButton>
+                        <BaseButton
+                            variant="secondary"
+                            size="lg"
                             @click="router.push({ name: 'journal-history' })"
                         >
                             Voir l'historique
-                        </button>
+                        </BaseButton>
                     </div>
                 </div>
                 <img
@@ -170,6 +168,7 @@ import { useRouter } from "vue-router";
 import CarteInfosDerniereEntree from "@/components/journal-entries/LastEntryInfoCard.vue";
 import { useJournalStore } from "@/stores/journal";
 import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 const router = useRouter();
 const store = useJournalStore();

@@ -4,14 +4,15 @@
     >
         <div class="w-full max-w-lg space-y-6">
             <!-- Back Button -->
-            <button
+            <BaseButton
                 type="button"
-                class="flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900"
+                variant="outline"
+                size="sm"
                 @click="$router.push({ name: 'login' })"
             >
                 <svg
                     viewBox="0 0 24 24"
-                    class="h-4 w-4"
+                    class="h-4 w-4 inline mr-1"
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2.5"
@@ -23,7 +24,7 @@
                     />
                 </svg>
                 Retour à la connexion
-            </button>
+            </BaseButton>
 
             <!-- Header -->
             <div class="flex items-center gap-2">
@@ -94,9 +95,10 @@
                             placeholder="••••••••"
                             class="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm placeholder:text-gray-400 focus:border-purple-500 focus:bg-white focus:outline-none"
                         />
-                        <button
+                        <BaseButton
                             type="button"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            variant="outline"
+                            size="sm"
                             @click="showPassword.new = !showPassword.new"
                         >
                             <svg
@@ -125,7 +127,7 @@
                                 />
                                 <line x1="1" y1="1" x2="23" y2="23" />
                             </svg>
-                        </button>
+                        </BaseButton>
                     </div>
                     <p
                         v-if="errors.password"
@@ -151,9 +153,10 @@
                             placeholder="••••••••"
                             class="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm placeholder:text-gray-400 focus:border-purple-500 focus:bg-white focus:outline-none"
                         />
-                        <button
+                        <BaseButton
                             type="button"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            variant="outline"
+                            size="sm"
                             @click="
                                 showPassword.confirmation =
                                     !showPassword.confirmation
@@ -185,7 +188,7 @@
                                 />
                                 <line x1="1" y1="1" x2="23" y2="23" />
                             </svg>
-                        </button>
+                        </BaseButton>
                     </div>
                     <p
                         v-if="errors.passwordConfirmation"
@@ -195,17 +198,19 @@
                     </p>
                 </div>
 
-                <button
+                <BaseButton
                     type="submit"
+                    variant="primary"
+                    size="lg"
                     :disabled="loading"
-                    class="h-12 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-purple-700 font-semibold text-white transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+                    class="w-full"
                 >
                     {{
                         loading
                             ? "Réinitialisation en cours..."
                             : "Réinitialiser mon mot de passe"
                     }}
-                </button>
+                </BaseButton>
             </form>
 
             <!-- Success Message -->
@@ -243,13 +248,15 @@
                             </div>
                         </div>
                     </div>
-                    <button
+                    <BaseButton
                         type="button"
-                        class="h-12 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-purple-700 font-semibold text-white transition hover:shadow-lg"
+                        variant="primary"
+                        size="lg"
+                        class="w-full"
                         @click="$router.push({ name: 'login' })"
                     >
                         Aller à la connexion
-                    </button>
+                    </BaseButton>
                 </div>
             </Transition>
 
@@ -280,6 +287,8 @@ import { reactive, ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
+import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 const router = useRouter();
 const route = useRoute();

@@ -1,13 +1,13 @@
 <template>
     <div
-        class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
+        class="rounded-2xl border-2 border-blue-500 bg-white p-6 shadow-sm transition hover:shadow-md"
     >
         <div class="flex items-start justify-between">
             <div>
-                <p class="text-sm font-medium text-slate-600">
+                <p class="text-lg font-semibold text-black">
                     {{ label }}
                 </p>
-                <p class="mt-2 text-4xl font-bold text-slate-900">
+                <p class="mt-2 text-4xl font-bold text-black">
                     {{ value }}
                 </p>
             </div>

@@ -8,10 +8,10 @@
         <!-- Retour -->
         <button
             type="button"
-            class="inline-flex items-center gap-2 text-[14px] font-medium text-[#2454ff]"
+            class="inline-flex items-center gap-2 text-[17px] font-semibold text-[#2454ff]"
             @click="$emit('back')"
         >
-            <IconArrowLeft class="h-[16px] w-[16px]" />
+            <IconArrowLeft class="h-[18px] w-[18px]" />
             Retour à la liste des patients
         </button>
 
@@ -26,15 +26,9 @@
 
             <div>
                 <div class="flex items-center gap-3">
-                    <h2
-                        class="text-[28px] font-bold leading-none text-[#031a46]"
-                    >
+                    <h2 class="text-[24px] font-bold leading-none text-black">
                         {{ patient.name }}
                     </h2>
-                    <span
-                        class="h-[13px] w-[13px] rounded-full"
-                        :style="{ backgroundColor: patient.dotColor }"
-                    />
                 </div>
 
                 <div
@@ -77,14 +71,15 @@
                 placeholder="Rédigez votre observation médicale…"
             />
             <div class="mt-3 flex items-center gap-3">
-                <button
+                <BaseButton
                     type="button"
-                    class="btn-primary"
+                    variant="primary"
+                    size="md"
                     :disabled="obsSaving"
                     @click="saveObservation"
                 >
                     {{ obsSaving ? "Enregistrement…" : "Enregistrer" }}
-                </button>
+                </BaseButton>
                 <span
                     v-if="obsMsg"
                     class="text-[13px]"
@@ -101,7 +96,7 @@
             >
                 <div class="flex items-center justify-between gap-3">
                     <p
-                        class="text-[12px] font-semibold uppercase tracking-wide text-[#7b8eab]"
+                        class="text-[14px] font-semibold uppercase tracking-wide text-black"
                     >
                         {{
                             showObservationHistory
@@ -112,14 +107,17 @@
                     <button
                         v-if="hasMoreObservations"
                         type="button"
-                        class="text-[13px] font-semibold text-[#3f57c4] transition hover:text-[#2f44ad]"
-                        @click="showObservationHistory = !showObservationHistory"
+                        class="text-[17px] font-semibold text-[#2454ff] transition hover:text-[#1a3fa8]"
+                        @click="
+                            showObservationHistory = !showObservationHistory
+                        "
                     >
                         {{
                             showObservationHistory
                                 ? "Masquer l'historique"
                                 : "Consulter l'historique complet"
                         }}
+                        →
                     </button>
                 </div>
                 <div
@@ -127,10 +125,10 @@
                     :key="obs.isoDate"
                     class="rounded-[14px] border border-[#e4ebf8] bg-[#f5f8ff] px-4 py-3"
                 >
-                    <p class="text-[12px] font-semibold text-[#3f57c4]">
+                    <p class="text-[14px] font-semibold text-[#3f57c4]">
                         {{ obs.date }}
                     </p>
-                    <p class="mt-1 text-[14px] leading-5 text-[#2d3f5e]">
+                    <p class="mt-1 text-[15px] leading-5 text-[#2d3f5e]">
                         {{ obs.observation }}
                     </p>
                 </div>
@@ -138,19 +136,17 @@
         </div>
 
         <!-- Onglets -->
-        <nav
-            class="mt-6 rounded-[18px] border border-[#d4d9e1] bg-white p-[10px] shadow-[0_1px_4px_rgba(15,23,42,0.05)]"
-        >
-            <div class="flex flex-wrap gap-2">
+        <nav class="border-b-2 border-slate-200 bg-transparent">
+            <div class="flex gap-0">
                 <button
                     v-for="tab in TABS"
                     :key="tab.key"
                     type="button"
-                    class="inline-flex h-[50px] items-center gap-2 rounded-[14px] px-5 text-[15px] font-semibold transition"
+                    class="flex-1 px-4 py-3 text-center font-bold text-lg transition-all inline-flex items-center justify-center gap-2"
                     :class="
                         activeTab === tab.key
-                            ? 'bg-[#3f49f4] text-white shadow-[0_10px_18px_rgba(63,73,244,0.22)]'
-                            : 'text-[#384860]'
+                            ? 'border-b-4 border-blue-500 text-blue-900 bg-blue-50'
+                            : 'border-b-4 border-transparent text-black hover:bg-gray-50'
                     "
                     @click="activeTab = tab.key"
                 >
@@ -199,7 +195,7 @@
                         class="rounded-[16px] border px-5 py-4"
                         :class="card.class"
                     >
-                        <p class="text-[14px] text-[#455572]">
+                        <p class="text-[14px] text-[#2d3f5e]">
                             {{ card.label }}
                         </p>
                         <p class="mt-2 text-[18px] font-bold text-[#061a45]">
@@ -252,7 +248,7 @@
                     >
                 </div>
                 <div
-                    class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-[15px] text-[#455572]"
+                    class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-[15px] text-[#2d3f5e]"
                 >
                     <span class="text-[20px] font-bold text-[#061a45]">{{
                         a.value
@@ -281,7 +277,7 @@
                         <h3 class="text-[22px] font-extrabold text-slate-900">
                             Historique des prises
                         </h3>
-                        <p class="mt-1 text-[14px] text-[#5b6b84]">
+                        <p class="mt-1 text-[14px] text-[#3f4d66]">
                             Historique réel des traitements pris par le patient,
                             avec 7 derniers jours affichés par défaut.
                         </p>
@@ -308,7 +304,7 @@
                             <h4 class="text-[17px] font-bold text-[#10254f]">
                                 Filtrer l'historique des traitements
                             </h4>
-                            <p class="mt-1 text-[14px] text-[#60708b]">
+                            <p class="mt-1 text-[14px] text-[#3f4d66]">
                                 Affinez l'affichage par date, traitement ou
                                 statut d'observance.
                             </p>
@@ -382,7 +378,7 @@
                                 >
                                     {{ longDate(day.dateKey) }}
                                 </h4>
-                                <p class="mt-1 text-[14px] text-[#60708b]">
+                                <p class="mt-1 text-[14px] text-[#3f4d66]">
                                     {{ day.taken }}/{{ day.total }} prises
                                     effectuées
                                 </p>
@@ -419,7 +415,7 @@
                                             {{ med.name }}
                                         </p>
                                         <p
-                                            class="mt-1 text-[13px] text-[#63758d]"
+                                            class="mt-1 text-[13px] text-[#3f4d66]"
                                         >
                                             {{ med.dose }}
                                         </p>
@@ -460,7 +456,7 @@
                     <p class="text-[15px] font-semibold text-[#10254f]">
                         Aucun historique de prise disponible.
                     </p>
-                    <p class="mt-2 text-[13px] text-[#697892]">
+                    <p class="mt-2 text-[13px] text-[#3f4d66]">
                         Essayez une autre date, un autre traitement ou un autre
                         filtre d'observance.
                     </p>
@@ -481,6 +477,7 @@ import {
     IconLink,
     IconWave,
 } from "@/components/doctors/DoctorIcons.js";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 const IconeCalendrier = IconCalendar;
 const IconeCoeur = IconHeart;

@@ -17,7 +17,7 @@
                 </svg>
             </div>
             <div>
-                <Typography tag="h1" variant="h1-style">
+                <Typography tag="h1" variant="h1-style" class="text-black">
                     Profil de santé
                 </Typography>
                 <Typography tag="h3" variant="h4-style">
@@ -62,22 +62,23 @@
                             Informations de base
                         </Typography>
                     </div>
-                    <button
+                    <BaseButton
                         v-if="!editing.base"
                         type="button"
-                        class="text-slate-800 transition-colors hover:text-slate-900"
+                        variant="outline"
+                        size="sm"
                         @click="startEdit('base')"
                     >
                         <svg
                             viewBox="0 0 24 24"
-                            class="h-6 w-6"
+                            class="h-5 w-5"
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
                         >
                             <path d="m16 3 5 5-11 11H5v-5L16 3z" />
                         </svg>
-                    </button>
+                    </BaseButton>
                 </div>
 
                 <div v-if="!editing.base" class="space-y-2">
@@ -229,20 +230,22 @@
                         </p>
                     </div>
                     <div class="grid gap-3 md:grid-cols-2">
-                        <button
+                        <BaseButton
                             type="submit"
+                            variant="save"
+                            size="md"
                             :disabled="savingSection === 'base'"
-                            class="h-11 rounded-xl bg-gradient-to-r from-emerald-300 to-emerald-400 px-5 text-sm font-bold text-emerald-900 disabled:opacity-60 hover:shadow-lg transition-shadow"
                         >
                             Enregistrer
-                        </button>
-                        <button
+                        </BaseButton>
+                        <BaseButton
                             type="button"
-                            class="h-11 rounded-xl border border-orange-300 bg-orange-100 px-5 text-sm font-semibold text-orange-800"
+                            variant="cancel"
+                            size="md"
                             @click="cancelEdit('base')"
                         >
                             Annuler
-                        </button>
+                        </BaseButton>
                     </div>
                 </form>
             </section>
@@ -272,22 +275,23 @@
                             Santé
                         </Typography>
                     </div>
-                    <button
+                    <BaseButton
                         v-if="!editing.health"
                         type="button"
-                        class="text-slate-800 transition-colors hover:text-slate-900"
+                        variant="outline"
+                        size="sm"
                         @click="startEdit('health')"
                     >
                         <svg
                             viewBox="0 0 24 24"
-                            class="h-6 w-6"
+                            class="h-5 w-5"
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
                         >
                             <path d="m16 3 5 5-11 11H5v-5L16 3z" />
                         </svg>
-                    </button>
+                    </BaseButton>
                 </div>
 
                 <div v-if="!editing.health" class="space-y-2">
@@ -368,20 +372,20 @@
                             "
                         >
                             <div class="flex flex-wrap gap-2">
-                                <button
+                                <BaseButton
                                     v-for="goal in goalOptions"
                                     :key="goal"
                                     type="button"
-                                    class="rounded-lg border px-3 py-1.5 text-sm"
-                                    :class="
+                                    :variant="
                                         isSelected('goals', goal)
-                                            ? 'border-slate-300 bg-slate-100 text-slate-700'
-                                            : 'border-slate-200 bg-white text-slate-700'
+                                            ? 'secondary'
+                                            : 'outline'
                                     "
+                                    size="sm"
                                     @click="toggleSelected('goals', goal)"
                                 >
                                     {{ goal }}
-                                </button>
+                                </BaseButton>
                             </div>
                         </div>
                         <p
@@ -437,12 +441,9 @@
                                     {{ item }}
                                     <button
                                         type="button"
-                                        @click="
-                                            toggleSelected('allergies', item)
-                                        "
-                                    >
-                                        x
-                                    </button>
+                                        class="flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-sm font-bold text-red-500 hover:bg-red-200 transition-colors"
+                                        @click="toggleSelected('allergies', item)"
+                                    >×</button>
                                 </span>
                             </div>
                             <div class="mt-3 flex gap-2">
@@ -451,9 +452,10 @@
                                     class="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm"
                                     placeholder="Ajouter une allergie si absente..."
                                 />
-                                <button
+                                <BaseButton
                                     type="button"
-                                    class="h-10 rounded-lg bg-gradient-to-r from-blue-300 to-blue-400 px-3 text-sm font-medium text-white hover:from-blue-400 hover:to-blue-500"
+                                    variant="add"
+                                    size="sm"
                                     @click="
                                         addCustom(
                                             'allergies',
@@ -462,7 +464,7 @@
                                     "
                                 >
                                     Ajouter
-                                </button>
+                                </BaseButton>
                             </div>
                         </div>
                     </div>
@@ -512,15 +514,9 @@
                                     {{ item }}
                                     <button
                                         type="button"
-                                        @click="
-                                            toggleSelected(
-                                                'chronicDiseases',
-                                                item,
-                                            )
-                                        "
-                                    >
-                                        x
-                                    </button>
+                                        class="flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-sm font-bold text-red-500 hover:bg-red-200 transition-colors"
+                                        @click="toggleSelected('chronicDiseases', item)"
+                                    >×</button>
                                 </span>
                             </div>
                             <div class="mt-3 flex gap-2">
@@ -529,9 +525,10 @@
                                     class="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm"
                                     placeholder="Ajouter une maladie si absente..."
                                 />
-                                <button
+                                <BaseButton
                                     type="button"
-                                    class="h-10 rounded-lg bg-gradient-to-r from-blue-300 to-blue-400 px-3 text-sm font-medium text-white hover:from-blue-400 hover:to-blue-500"
+                                    variant="add"
+                                    size="sm"
                                     @click="
                                         addCustom(
                                             'chronicDiseases',
@@ -540,25 +537,27 @@
                                     "
                                 >
                                     Ajouter
-                                </button>
+                                </BaseButton>
                             </div>
                         </div>
                     </div>
                     <div class="grid gap-3 md:grid-cols-2">
-                        <button
+                        <BaseButton
                             type="submit"
+                            variant="save"
+                            size="md"
                             :disabled="savingSection === 'health'"
-                            class="h-11 rounded-xl bg-gradient-to-r from-emerald-300 to-emerald-400 px-5 text-sm font-bold text-emerald-900 disabled:opacity-60 hover:shadow-lg transition-shadow"
                         >
                             Enregistrer
-                        </button>
-                        <button
+                        </BaseButton>
+                        <BaseButton
                             type="button"
-                            class="h-11 rounded-xl border border-orange-300 bg-orange-100 px-5 text-sm font-semibold text-orange-800"
+                            variant="cancel"
+                            size="md"
                             @click="cancelEdit('health')"
                         >
                             Annuler
-                        </button>
+                        </BaseButton>
                     </div>
                 </form>
             </section>
@@ -586,22 +585,23 @@
                             Habitudes
                         </Typography>
                     </div>
-                    <button
+                    <BaseButton
                         v-if="!editing.habits"
                         type="button"
-                        class="text-slate-800 transition-colors hover:text-slate-900"
+                        variant="outline"
+                        size="sm"
                         @click="startEdit('habits')"
                     >
                         <svg
                             viewBox="0 0 24 24"
-                            class="h-6 w-6"
+                            class="h-5 w-5"
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
                         >
                             <path d="m16 3 5 5-11 11H5v-5L16 3z" />
                         </svg>
-                    </button>
+                    </BaseButton>
                 </div>
 
                 <div v-if="!editing.habits" class="space-y-2">
@@ -687,13 +687,14 @@
                             <Typography tag="h3" variant="h4-style">
                                 Traitements
                             </Typography>
-                            <button
+                            <BaseButton
                                 type="button"
-                                class="h-11 rounded-lg bg-gradient-to-r from-blue-300 to-blue-400 px-4 text-base font-semibold text-white hover:from-blue-400 hover:to-blue-500 transition shadow-sm hover:shadow-md"
+                                variant="add"
+                                size="md"
                                 @click="openTreatmentEditor()"
                             >
                                 Ajouter
-                            </button>
+                            </BaseButton>
                         </div>
 
                         <div
@@ -765,13 +766,14 @@
                                             class="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm"
                                             placeholder="Ajouter un type si absent"
                                         />
-                                        <button
+                                        <BaseButton
                                             type="button"
-                                            class="h-10 rounded-lg bg-gradient-to-r from-blue-300 to-blue-400 px-4 text-sm font-semibold text-white hover:from-blue-400 hover:to-blue-500"
+                                            variant="add"
+                                            size="sm"
                                             @click="addCustomTreatmentType"
                                         >
                                             Ajouter
-                                        </button>
+                                        </BaseButton>
                                     </div>
                                 </div>
                                 <div>
@@ -843,14 +845,15 @@
                                             class="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium disabled:cursor-not-allowed disabled:bg-slate-100"
                                             placeholder="Ajouter un nom si absent"
                                         />
-                                        <button
+                                        <BaseButton
                                             type="button"
                                             :disabled="!treatmentDraft.type"
-                                            class="h-10 rounded-lg bg-gradient-to-r from-blue-300 to-blue-400 px-4 text-sm font-semibold text-white hover:from-blue-400 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                                            variant="add"
+                                            size="sm"
                                             @click="addCustomTreatmentName"
                                         >
                                             Ajouter
-                                        </button>
+                                        </BaseButton>
                                     </div>
                                 </div>
                             </div>
@@ -957,9 +960,10 @@
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-3">
-                                <button
+                                <BaseButton
                                     type="button"
-                                    class="h-12 rounded-lg bg-gradient-to-r from-blue-300 to-blue-400 text-base font-semibold text-white hover:from-blue-400 hover:to-blue-500 transition shadow-sm hover:shadow-md"
+                                    variant="primary"
+                                    size="md"
                                     @click="saveTreatmentDraft"
                                 >
                                     {{
@@ -967,14 +971,15 @@
                                             ? "Mettre à jour"
                                             : "Ajouter"
                                     }}
-                                </button>
-                                <button
+                                </BaseButton>
+                                <BaseButton
                                     type="button"
-                                    class="h-12 rounded-lg border border-slate-300 bg-white text-base font-semibold text-slate-800 hover:bg-slate-50 transition"
+                                    variant="outline"
+                                    size="md"
                                     @click="cancelTreatmentEditWithNotice"
                                 >
                                     Annuler
-                                </button>
+                                </BaseButton>
                             </div>
                         </div>
 
@@ -1012,20 +1017,22 @@
                                     </p>
                                 </div>
                                 <div class="ml-4 flex items-center gap-3">
-                                    <button
+                                    <BaseButton
                                         type="button"
-                                        class="text-sm font-semibold text-purple-700 hover:text-purple-900 transition"
+                                        variant="update"
+                                        size="sm"
                                         @click="openTreatmentEditor(index)"
                                     >
                                         Modifier
-                                    </button>
-                                    <button
+                                    </BaseButton>
+                                    <BaseButton
                                         type="button"
-                                        class="text-sm font-semibold text-red-600 hover:text-red-800 transition"
+                                        variant="delete"
+                                        size="sm"
                                         @click="requestRemoveTreatment(index)"
                                     >
                                         Retirer
-                                    </button>
+                                    </BaseButton>
                                 </div>
                             </div>
                         </div>
@@ -1034,20 +1041,22 @@
                         </p>
                     </div>
                     <div class="grid gap-3 md:grid-cols-2">
-                        <button
+                        <BaseButton
                             type="submit"
+                            variant="save"
+                            size="md"
                             :disabled="savingSection === 'habits'"
-                            class="h-11 rounded-xl bg-gradient-to-r from-emerald-300 to-emerald-400 px-5 text-sm font-bold text-emerald-900 disabled:opacity-60 hover:shadow-lg transition-shadow"
                         >
                             Enregistrer
-                        </button>
-                        <button
+                        </BaseButton>
+                        <BaseButton
                             type="button"
-                            class="h-11 rounded-xl border border-orange-300 bg-orange-100 px-5 text-sm font-semibold text-orange-800"
+                            variant="cancel"
+                            size="md"
                             @click="cancelEdit('habits')"
                         >
                             Annuler
-                        </button>
+                        </BaseButton>
                     </div>
                 </form>
             </section>
@@ -1077,22 +1086,23 @@
                             Suivi médecin
                         </Typography>
                     </div>
-                    <button
+                    <BaseButton
                         v-if="!editing.doctor"
                         type="button"
-                        class="text-slate-800 transition-colors hover:text-slate-900"
+                        variant="outline"
+                        size="sm"
                         @click="startEdit('doctor')"
                     >
                         <svg
                             viewBox="0 0 24 24"
-                            class="h-6 w-6"
+                            class="h-5 w-5"
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
                         >
                             <path d="m16 3 5 5-11 11H5v-5L16 3z" />
                         </svg>
-                    </button>
+                    </BaseButton>
                 </div>
 
                 <div v-if="!editing.doctor" class="space-y-2">
@@ -1157,20 +1167,22 @@
                         </p>
                     </div>
                     <div class="grid gap-3 md:grid-cols-2">
-                        <button
+                        <BaseButton
                             type="submit"
+                            variant="save"
+                            size="md"
                             :disabled="savingSection === 'doctor'"
-                            class="h-11 rounded-xl bg-gradient-to-r from-emerald-300 to-emerald-400 px-5 text-sm font-bold text-emerald-900 disabled:opacity-60 hover:shadow-lg transition-shadow"
                         >
                             Enregistrer
-                        </button>
-                        <button
+                        </BaseButton>
+                        <BaseButton
                             type="button"
-                            class="h-11 rounded-xl border border-orange-300 bg-orange-100 px-5 text-sm font-semibold text-orange-800"
+                            variant="cancel"
+                            size="md"
                             @click="cancelEdit('doctor')"
                         >
                             Annuler
-                        </button>
+                        </BaseButton>
                     </div>
                 </form>
             </section>
@@ -1196,6 +1208,7 @@ import api from "@/services/api";
 import HealthFieldRow from "@/components/health/HealthFieldRow.vue";
 import { useNotificationsStore } from "@/stores/notifications";
 import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
 
 // ─── Stores & Router ──────────────────────────────────────────────────────────

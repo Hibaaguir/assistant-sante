@@ -11,7 +11,7 @@
                 <h2 class="text-[25px] font-bold leading-none text-[#041c49]">
                     Invitations de patients
                 </h2>
-                <p class="mt-2 text-[15px] font-medium text-[#5a6881]">
+                <p class="mt-2 text-[15px] font-medium text-[#3f4d66]">
                     {{ invitations.length }} invitation{{
                         invitations.length !== 1 ? "s" : ""
                     }}
@@ -66,36 +66,32 @@
                                 >{{ tag }}</span
                             >
                         </div>
-
-                        <button
-                            type="button"
-                            class="mt-5 inline-flex items-center gap-2 text-[14px] font-semibold text-[#4a45ff]"
-                        >
-                            <IconChevronDown class="size-4" />
-                            Voir le message du patient
-                        </button>
                     </div>
                 </div>
 
                 <div
                     class="grid md:grid-cols-2 gap-3 border-t border-[#e7ebf2] bg-[#fafbfc] px-6 py-4"
                 >
-                    <button
+                    <BaseButton
                         type="button"
+                        variant="success"
+                        size="lg"
                         :disabled="actionInvitationId === inv.id"
-                        class="inline-flex h-[46px] items-center justify-center gap-2 rounded-[15px] bg-[#06af46] px-6 text-[16px] font-bold text-white shadow-[0_8px_16px_rgba(6,175,70,0.22)] disabled:opacity-60"
                         @click="$emit('accept-invitation', inv.id)"
                     >
-                        <IconCheckCircle class="size-[18px]" /> Accepter
-                    </button>
-                    <button
+                        <IconCheckCircle class="size-[18px]" />
+                        Accepter
+                    </BaseButton>
+                    <BaseButton
                         type="button"
+                        variant="outline"
+                        size="lg"
                         :disabled="actionInvitationId === inv.id"
-                        class="inline-flex h-[46px] items-center justify-center gap-2 rounded-[15px] border border-[#c8d0dc] bg-white px-6 text-[16px] font-semibold text-[#243657] disabled:opacity-60"
                         @click="$emit('reject-invitation', inv.id)"
                     >
-                        <IconCloseCircle class="size-[18px]" /> Refuser
-                    </button>
+                        <IconCloseCircle class="size-[18px]" />
+                        Refuser
+                    </BaseButton>
                 </div>
             </article>
 
@@ -107,7 +103,7 @@
 
         <!-- Invitations traitées -->
         <div class="mt-8">
-            <h3 class="text-[17px] font-bold text-[#041c49]">
+            <h3 class="text-[20px] font-bold text-[#041c49]">
                 Invitations traitées
             </h3>
 
@@ -124,16 +120,16 @@
                             <IconCheckCircle class="size-[18px]" />
                         </div>
                         <div>
-                            <p class="text-[15px] font-bold text-[#031a46]">
+                            <p class="text-[17px] font-bold text-[#031a46]">
                                 {{ inv.name }}
                             </p>
-                            <p class="mt-1 text-[14px] text-[#41506b]">
+                            <p class="mt-1 text-[15px] text-[#41506b]">
                                 {{ inv.email }}
                             </p>
                         </div>
                     </div>
                     <span
-                        class="inline-flex h-[34px] items-center rounded-[12px] bg-[#eef8f1] px-4 text-[14px] font-semibold text-[#0a9f43]"
+                        class="inline-flex h-[34px] items-center rounded-[12px] bg-[#eef8f1] px-4 text-[15px] font-semibold text-[#0a9f43]"
                     >
                         Acceptée
                     </span>
@@ -159,6 +155,7 @@ import {
     IconSmallUser,
     IconCloseCircle,
 } from "@/components/doctors/DoctorIcons.js";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 // Sous-composants locaux légers
 const InfoItem = {

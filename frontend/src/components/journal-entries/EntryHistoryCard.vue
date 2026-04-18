@@ -38,9 +38,10 @@
 
             <!-- Actions -->
             <div class="flex items-center gap-2">
-                <button
+                <BaseButton
                     type="button"
-                    class="rounded-lg border border-orange-300 bg-orange-100 p-1.5 text-orange-800 transition-colors hover:bg-orange-200"
+                    variant="outline"
+                    size="sm"
                     @click="$emit('edit')"
                 >
                     <svg
@@ -51,15 +52,15 @@
                         stroke-width="2"
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                        aria-hidden="true"
                     >
                         <path d="M12 20h9" />
                         <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
                     </svg>
-                </button>
-                <button
+                </BaseButton>
+                <BaseButton
                     type="button"
-                    class="rounded-lg border border-red-300 bg-red-50 p-1.5 text-red-700 transition-colors hover:bg-red-100"
+                    variant="danger"
+                    size="sm"
                     @click="$emit('request-delete')"
                 >
                     <svg
@@ -70,13 +71,12 @@
                         stroke-width="2"
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                        aria-hidden="true"
                     >
                         <path d="M3 6h18" />
                         <path d="M8 6V4h8v2" />
                         <path d="M19 6l-1 14H6L5 6" />
                     </svg>
-                </button>
+                </BaseButton>
             </div>
         </div>
     </article>
@@ -84,6 +84,7 @@
 
 <script setup>
 import { computed } from "vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 const props = defineProps({
     entree: { type: Object, required: true },

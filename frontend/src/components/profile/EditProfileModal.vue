@@ -17,7 +17,7 @@
                     >
                         <svg
                             viewBox="0 0 24 24"
-                            class="h-5 w-5"
+                            class="h-7 w-7"
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2.2"
@@ -92,9 +92,10 @@
                                             class="hidden"
                                             @change="selectPhoto"
                                         />
-                                        <button
+                                        <BaseButton
                                             type="button"
-                                            class="inline-flex h-12 items-center rounded-xl border-2 border-blue-300 bg-white px-4 text-[15px] font-semibold text-blue-600 transition hover:bg-blue-50 hover:border-blue-400 disabled:opacity-50"
+                                            variant="primary"
+                                            size="md"
                                             :disabled="loading.photo"
                                             @click="openPhotoSelector"
                                         >
@@ -103,16 +104,17 @@
                                                     ? "Modifier la photo"
                                                     : "Ajouter une photo"
                                             }}
-                                        </button>
-                                        <button
+                                        </BaseButton>
+                                        <BaseButton
                                             v-if="photoPreview"
                                             type="button"
-                                            class="inline-flex h-12 items-center rounded-xl border-2 border-rose-200 bg-white px-4 text-[15px] font-semibold text-rose-600 transition hover:bg-rose-50 hover:border-rose-300 disabled:opacity-50"
+                                            variant="danger"
+                                            size="md"
                                             :disabled="loading.photo"
                                             @click="deletePhoto"
                                         >
                                             Supprimer
-                                        </button>
+                                        </BaseButton>
                                     </div>
                                 </div>
                                 <p
@@ -129,7 +131,7 @@
                                     tag="label"
                                     variant="h5-style"
                                     for="name"
-                                    class="text-slate-900"
+                                    class="text-slate-900 text-[14px]"
                                 >
                                     Nom d'utilisateur
                                 </Typography>
@@ -215,6 +217,7 @@ import UserIcon from "@/components/navigation/UserIcon.vue";
 import PasswordField from "@/components/profile/PasswordField.vue";
 import SubmitButton from "@/components/profile/SubmitButton.vue";
 import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 defineProps({
     isOpen: { type: Boolean, default: false },

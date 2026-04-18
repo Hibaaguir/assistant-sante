@@ -14,12 +14,12 @@
                 :value="modelValue"
                 :type="visible ? 'text' : 'password'"
                 placeholder="••••••••"
-                class="h-12 w-full rounded-xl border-2 border-blue-200 bg-white px-4 text-[15px] transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-300"
+                class="h-12 w-full rounded-xl border-2 border-blue-200 bg-white px-4 pr-14 text-[15px] transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-300"
                 @input="$emit('update:modelValue', $event.target.value)"
             />
             <button
                 type="button"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-600 transition"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
                 @click="$emit('update:visible', !visible)"
             >
                 <!-- Open eye -->
@@ -58,6 +58,7 @@
 
 <script setup>
 import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 defineProps({
     id: { type: String, required: true },

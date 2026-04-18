@@ -10,51 +10,39 @@
                 @click.self="$emit('cancel')"
             >
                 <div
-                    class="w-full max-w-[470px] rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+                    class="w-full max-w-[470px] rounded-2xl border-2 border-red-400 bg-white p-6 shadow-2xl"
                 >
-                    <div class="flex items-start gap-3">
-                        <div
-                            class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-red-100 flex-shrink-0"
-                            aria-hidden="true"
+                    <div class="hidden" aria-hidden="true"></div>
+                    <div class="min-w-0 flex-1">
+                        <h3
+                            id="modal-title"
+                            class="text-[28px] font-bold text-red-600"
                         >
-                            <svg
-                                viewBox="0 0 24 24"
-                                class="h-5 w-5 text-red-600"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
-                            </svg>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h3
-                                id="modal-title"
-                                class="text-[28px] font-bold text-slate-900"
-                            >
-                                Êtes-vous sûr?
-                            </h3>
-                            <p class="mt-1 text-[14px] text-slate-600">
-                                Cette action ne peut pas être annulée. Elle supprimera définitivement le compte utilisateur.
-                            </p>
-                        </div>
+                            Êtes-vous sûr?
+                        </h3>
+                        <p class="mt-1 text-base text-black">
+                            Cette action ne peut pas être annulée. Elle
+                            supprimera définitivement le compte utilisateur.
+                        </p>
                     </div>
 
                     <div class="mt-5 flex items-center justify-end gap-2.5">
-                        <button
+                        <BaseButton
                             type="button"
-                            class="h-10 rounded-xl border border-slate-300 bg-white px-4 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-50"
+                            variant="cancel"
+                            size="lg"
                             @click="$emit('cancel')"
                         >
                             Annuler
-                        </button>
-                        <button
+                        </BaseButton>
+                        <BaseButton
                             type="button"
-                            class="h-10 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 px-4 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(249,115,22,0.3)] transition hover:from-orange-600 hover:to-red-600"
+                            variant="delete"
+                            size="lg"
                             @click="$emit('confirm')"
                         >
                             Supprimer
-                        </button>
+                        </BaseButton>
                     </div>
                 </div>
             </div>
@@ -63,6 +51,8 @@
 </template>
 
 <script setup>
+import BaseButton from "@/components/ui/BaseButton.vue";
+
 defineProps({
     open: { type: Boolean, default: false },
 });

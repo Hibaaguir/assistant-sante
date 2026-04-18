@@ -315,17 +315,17 @@ import {
 } from "@/services/admin";
 
 // ─── State ────────────────────────────────────────────────────────────────────
-const users         = ref([]);
-const loadingList   = ref(false);
-const errorMessage  = ref("");
-const successMessage= ref("");
+const users = ref([]);
+const loadingList = ref(false);
+const errorMessage = ref("");
+const successMessage = ref("");
 const deletionMessage = ref("");
-const searchText    = ref("");
-const showFilters   = ref(true);
-const filterType    = ref("Tous");
-const filterStatus  = ref("Tous");
-const deleteModalOpen  = ref(false);
-const userIdToDelete   = ref(null);
+const searchText = ref("");
+const showFilters = ref(true);
+const filterType = ref("Tous");
+const filterStatus = ref("Tous");
+const deleteModalOpen = ref(false);
+const userIdToDelete = ref(null);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -354,10 +354,10 @@ function errorMessageFrom(err) {
 
 // Count users by category for the stats cards at the top
 const statistics = computed(() => ({
-    total:    users.value.length,
+    total: users.value.length,
     patients: users.value.filter((u) => u.type === "Patient").length,
-    doctors:  users.value.filter((u) => isDoctor(u)).length,
-    active:   users.value.filter((u) => isActive(u)).length,
+    doctors: users.value.filter((u) => isDoctor(u)).length,
+    active: users.value.filter((u) => isActive(u)).length,
 }));
 
 const statsCards = computed(() => [
@@ -427,7 +427,7 @@ const filteredUsers = computed(() => {
 // Load the full user list from the API.
 // Returns true on success, false on failure (does NOT clear the list on failure).
 async function loadUsers() {
-    loadingList.value  = true;
+    loadingList.value = true;
     errorMessage.value = "";
     try {
         users.value = await listAdminUsers();
@@ -448,9 +448,9 @@ async function loadUsers() {
 async function toggleStatus(u) {
     const newStatus = isActive(u) ? "Inactive" : "Active";
     const oldStatus = u.status; // keep the old status in case we need to undo
-    const userName  = u.name;
+    const userName = u.name;
 
-    errorMessage.value  = "";
+    errorMessage.value = "";
     successMessage.value = "";
 
     // Immediately update the UI before the API responds (optimistic update)
@@ -460,11 +460,14 @@ async function toggleStatus(u) {
         await toggleUserStatus(u.id, newStatus);
 
         // Show a success message, then hide it after 4 seconds
-        successMessage.value = newStatus === "Active"
-            ? `${userName} a été activé avec succès.`
-            : `${userName} a été désactivé avec succès.`;
+        successMessage.value =
+            newStatus === "Active"
+                ? `${userName} a été activé avec succès.`
+                : `${userName} a été désactivé avec succès.`;
 
-        setTimeout(() => { successMessage.value = ""; }, 4000);
+        setTimeout(() => {
+            successMessage.value = "";
+        }, 4000);
 
         // Refresh the list silently to sync with the server.
         // If the refresh fails, revert the optimistic status change.
@@ -484,31 +487,34 @@ async function toggleStatus(u) {
 // Open the delete confirmation modal for a user
 function openDeleteModal(u) {
     if (!u?.id) {
-        errorMessage.value = "Erreur : impossible d'identifier cet utilisateur.";
+        errorMessage.value =
+            "Erreur : impossible d'identifier cet utilisateur.";
         return;
     }
-    userIdToDelete.value  = u.id;
+    userIdToDelete.value = u.id;
     deleteModalOpen.value = true;
 }
 
 // Close the delete modal and reset related state (called on cancel)
 function closeDeleteModal() {
     deleteModalOpen.value = false;
-    userIdToDelete.value  = null;
-    errorMessage.value    = "";
-    successMessage.value  = "Suppression annulée.";
-    setTimeout(() => { successMessage.value = ""; }, 3000);
+    userIdToDelete.value = null;
+    errorMessage.value = "";
+    successMessage.value = "Suppression annulée.";
+    setTimeout(() => {
+        successMessage.value = "";
+    }, 3000);
 }
 
 // Reset modal state without showing the "cancelled" message (used during actual deletion)
 function resetDeleteModal() {
     deleteModalOpen.value = false;
-    userIdToDelete.value  = null;
+    userIdToDelete.value = null;
 }
 
 // Delete the selected user after confirmation
 async function confirmDeletion() {
-    errorMessage.value   = "";
+    errorMessage.value = "";
     successMessage.value = "";
     deletionMessage.value = "";
 
@@ -518,10 +524,10 @@ async function confirmDeletion() {
         return;
     }
 
-    const idToDelete  = userIdToDelete.value;
-    const index       = users.value.findIndex((u) => u.id === idToDelete);
+    const idToDelete = userIdToDelete.value;
+    const index = users.value.findIndex((u) => u.id === idToDelete);
     const deletedUser = users.value[index] ?? null;
-    const userName    = deletedUser?.name || "Utilisateur";
+    const userName = deletedUser?.name || "Utilisateur";
 
     // Close the modal immediately — do NOT call closeDeleteModal() here as it
     // shows a misleading "Suppression annulée." message during an actual deletion.
@@ -535,15 +541,19 @@ async function confirmDeletion() {
 
         // Show success message, then hide it after 4 seconds
         deletionMessage.value = `${userName} a été supprimé avec succès.`;
-        setTimeout(() => { deletionMessage.value = ""; }, 4000);
+        setTimeout(() => {
+            deletionMessage.value = "";
+        }, 4000);
 
         // Refresh the list silently; restore the user if the refresh itself fails
         loadUsers().catch(() => {
-            if (deletedUser && index !== -1) users.value.splice(index, 0, deletedUser);
+            if (deletedUser && index !== -1)
+                users.value.splice(index, 0, deletedUser);
         });
     } catch (err) {
         // API call failed — put the user back in the list
-        if (deletedUser && index !== -1) users.value.splice(index, 0, deletedUser);
+        if (deletedUser && index !== -1)
+            users.value.splice(index, 0, deletedUser);
         errorMessage.value =
             errorMessageFrom(err) ??
             "La suppression a échoué. Veuillez réessayer.";

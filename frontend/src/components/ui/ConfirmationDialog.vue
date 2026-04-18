@@ -10,39 +10,51 @@
                 @click.self="$emit('cancel')"
             >
                 <div
-                    class="w-full max-w-[470px] rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+                    :class="[
+                        'w-full max-w-[470px] rounded-2xl bg-white p-6 shadow-2xl',
+                        isDanger
+                            ? 'border-2 border-red-400'
+                            : 'border border-slate-200',
+                    ]"
                 >
                     <div class="flex items-start gap-3">
                         <div class="hidden" aria-hidden="true"></div>
                         <div class="min-w-0 flex-1">
                             <h3
                                 :id="titleId"
-                                class="text-[28px] font-bold text-purple-600"
+                                :class="[
+                                    'text-[28px] font-bold',
+                                    isDanger
+                                        ? 'text-red-600'
+                                        : 'text-purple-600',
+                                ]"
                             >
                                 {{ title }}
                             </h3>
-                            <p class="mt-1 text-[14px] text-slate-600">
+                            <p class="mt-1 text-base text-black">
                                 {{ message }}
                             </p>
                         </div>
                     </div>
 
                     <div class="mt-5 flex items-center justify-end gap-2.5">
-                        <button
+                        <BaseButton
                             type="button"
-                            class="h-10 rounded-xl border border-slate-300 bg-white px-4 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-50"
+                            variant="cancel"
+                            size="lg"
                             @click="$emit('cancel')"
                         >
                             {{ cancelLabel }}
-                        </button>
-                        <button
+                        </BaseButton>
+                        <BaseButton
                             ref="confirmBtn"
                             type="button"
-                            class="h-10 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 px-4 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(249,115,22,0.3)] transition hover:from-orange-600 hover:to-red-600"
+                            :variant="isDanger ? 'delete' : 'secondary'"
+                            size="lg"
                             @click="$emit('confirm')"
                         >
                             {{ confirmLabel }}
-                        </button>
+                        </BaseButton>
                     </div>
                 </div>
             </div>
@@ -51,10 +63,12 @@
 </template>
 
 <script setup>
+import BaseButton from "./BaseButton.vue";
 import { nextTick, ref, watch } from "vue";
 
 const props = defineProps({
     open: { type: Boolean, default: false },
+    isDanger: { type: Boolean, default: true },
     title: { type: String, default: "Confirmer la suppression" },
     message: {
         type: String,

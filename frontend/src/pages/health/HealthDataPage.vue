@@ -5,19 +5,37 @@
             Suivez vos indicateurs de santé au fil du temps
         </Typography>
         <!-- Observations du médecin -->
-        <section v-if="doctorLatestObservation" class="mt-4 space-y-3">
-            <Typography tag="h3" variant="h3-style">
+        <section v-if="doctorLatestObservation" class="mt-8">
+            <Typography tag="h3" variant="h3-style" class="mb-4 text-slate-900">
                 Observations de votre médecin
             </Typography>
             <article
-                class="rounded-2xl border border-slate-200 bg-white px-5 py-4"
+                class="rounded-2xl border-2 border-blue-200 bg-white p-6 shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-md"
             >
-                <Typography tag="h5" variant="h5-style" class="mb-2">
-                    {{ formatObsDate(doctorLatestObservation.date) }}
-                </Typography>
-                <Typography tag="h6" variant="h5-style">
-                    {{ doctorLatestObservation.observation }}
-                </Typography>
+                <div class="space-y-4">
+                    <!-- Date -->
+                    <div class="flex items-center gap-3 pb-4 border-b border-slate-200">
+                        <svg
+                            viewBox="0 0 24 24"
+                            class="h-5 w-5 text-blue-600 flex-shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                        <span class="text-[13px] font-semibold uppercase tracking-wide text-slate-700">
+                            {{ formatObsDate(doctorLatestObservation.date) }}
+                        </span>
+                    </div>
+                    <!-- Observation text -->
+                    <Typography tag="p" variant="paragraph" class="text-[15px] leading-relaxed text-slate-800 font-medium">
+                        {{ doctorLatestObservation.observation }}
+                    </Typography>
+                </div>
             </article>
         </section>
 
@@ -33,15 +51,16 @@
         />
 
         <div v-if="showAddButton" class="mt-4 flex justify-end gap-2">
-            <button
+            <BaseButton
                 v-if="activeTab === 'labs'"
                 type="button"
-                class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                variant="outline"
+                size="sm"
                 @click="labsTab?.basculerFiltres()"
             >
                 <svg
                     viewBox="0 0 24 24"
-                    class="h-4 w-4"
+                    class="h-4 w-4 inline mr-1"
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
@@ -50,16 +69,17 @@
                     <path d="M3 5h18M7 12h10M10 19h4" stroke-linecap="round" />
                 </svg>
                 Filtrer
-            </button>
+            </BaseButton>
 
-            <button
+            <BaseButton
                 type="button"
-                class="inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-teal-700 px-4 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(13,148,136,0.22)] hover:shadow-[0_8px_16px_rgba(13,148,136,0.32)]"
+                variant="add"
+                size="md"
                 @click="openAddModal"
             >
                 <svg
                     viewBox="0 0 24 24"
-                    class="h-4 w-4"
+                    class="h-5 w-5"
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
@@ -68,7 +88,7 @@
                     <path d="M12 5v14M5 12h14" stroke-linecap="round" />
                 </svg>
                 {{ addButtonLabel }}
-            </button>
+            </BaseButton>
         </div>
 
         <TabSignesVitaux
@@ -114,6 +134,7 @@ import TabTraitements from "@/components/health/TabTraitements.vue";
 import { useNotificationsStore } from "@/stores/notifications";
 import Typography from "@/components/ui/Typography.vue";
 import TabBar from "@/components/ui/TabBar.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 const vitalsTab = ref(null);
 const labsTab = ref(null);

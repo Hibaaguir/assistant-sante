@@ -53,20 +53,23 @@
 
             <!-- Actions -->
             <div class="mt-4 flex gap-2">
-                <button
+                <BaseButton
                     type="button"
-                    class="flex-1 rounded-xl bg-gradient-to-r from-[#149bd7] to-[#7c3aed] py-2 text-base font-semibold text-white"
+                    variant="primary"
+                    size="md"
+                    class="flex-1"
                     @click="$emit('apply', model)"
                 >
                     Appliquer
-                </button>
-                <button
+                </BaseButton>
+                <BaseButton
                     type="button"
-                    class="rounded-xl bg-slate-100 px-4 py-2 text-base font-semibold text-slate-500"
+                    variant="outline"
+                    size="md"
                     @click="$emit('reset')"
                 >
                     Réinitialiser
-                </button>
+                </BaseButton>
             </div>
         </div>
     </div>
@@ -77,6 +80,7 @@ import { reactive, watch } from "vue";
 import Typography from "@/components/ui/Typography.vue";
 import RadioDot from "@/components/ui/RadioDot.vue";
 import DatePicker from "@/components/journal-entries/DatePicker.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 const props = defineProps({
     open: { type: Boolean, default: false },

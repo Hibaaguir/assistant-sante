@@ -4,9 +4,10 @@
     >
         <div class="w-full max-w-lg space-y-6">
             <!-- Back Button -->
-            <button
+            <BaseButton
                 type="button"
-                class="flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900"
+                variant="outline"
+                size="sm"
                 @click="$router.push({ name: 'login' })"
             >
                 <svg
@@ -23,7 +24,7 @@
                     />
                 </svg>
                 Retour à la connexion
-            </button>
+            </BaseButton>
 
             <!-- Header -->
             <div class="flex items-center gap-2">
@@ -72,13 +73,15 @@
                     </p>
                 </div>
 
-                <button
+                <BaseButton
                     type="submit"
+                    variant="primary"
+                    size="lg"
                     :disabled="loading"
-                    class="h-12 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-purple-700 font-semibold text-white transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+                    class="w-full"
                 >
                     {{ loading ? "Envoi en cours..." : "Envoyer le lien" }}
-                </button>
+                </BaseButton>
             </form>
 
             <!-- Success Message -->
@@ -119,6 +122,7 @@ import Typography from "@/components/ui/Typography.vue";
 import { useRouter } from "vue-router";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 const router = useRouter();
 const notifications = useNotificationsStore();

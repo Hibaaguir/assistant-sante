@@ -1,49 +1,66 @@
 <template>
     <div
-        class="min-h-screen bg-gradient-to-br from-purple-200 via-purple-200 to-purple-300 flex items-center justify-center px-4 py-8"
+        class="min-h-screen bg-gradient-to-br from-blue-50 via-blue-50 to-blue-100 flex items-center justify-center px-4 py-8"
     >
-        <div class="w-full max-w-6xl">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                <!-- Colonne gauche - Illustration & Texte -->
+        <div class="w-full max-w-7xl">
+            <div
+                class="grid grid-cols-1 lg:grid-cols-2 gap-0 items-stretch rounded-[32px] overflow-hidden shadow-2xl bg-white"
+            >
+                <!-- Colonne gauche - Illustration & Texte avec gradient bleu -->
                 <div
-                    class="hidden lg:flex flex-col items-center justify-center text-slate-50 px-8 py-16"
+                    class="hidden lg:flex flex-col items-center justify-center bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white px-8 py-20 relative overflow-hidden"
                 >
-                    <div class="mb-10 relative">
-                        <div
-                            class="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-purple-600/10 rounded-3xl blur-2xl scale-105"
-                        ></div>
-                        <img
-                            src="https://img.freepik.com/vecteurs-premium/appeler-medecin-ambulance-main-tenir-telephone-mobile-coeur-rouge-ligne-rythme-cardiaque-cardiogramme-ecran-document-assurance-maladie-signe-croise-accord-medical-rapport-diagnostic-clinique_284092-711.jpg?semt=ais_hybrid&w=600&q=85"
-                            alt="Illustration médicale"
-                            class="relative w-72 h-80 object-cover rounded-3xl shadow-2xl border border-white/10"
-                            loading="lazy"
-                        />
-                    </div>
-                    <div class="text-center space-y-4 max-w-md">
-                        <h2
-                            class="text-5xl font-extrabold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent"
-                        >
-                            HealthFlow
-                        </h2>
-                        <p class="text-base leading-relaxed text-white/85">
-                            Votre plateforme de santé numérique. Accédez à vos
-                            données de santé et gérez votre bien-être
-                            facilement.
-                        </p>
+                    <!-- Background decorative elements -->
+                    <div
+                        class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"
+                    ></div>
+                    <div
+                        class="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"
+                    ></div>
+
+                    <div class="relative z-10 text-center space-y-8">
+                        <!-- Icon/Illustration -->
+                        <div class="flex justify-center mb-4">
+                            <div
+                                class="w-24 h-24 rounded-2xl bg-white/15 backdrop-blur-lg flex items-center justify-center border border-white/20"
+                            >
+                                <svg
+                                    class="w-12 h-12 text-white"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Title -->
+                        <div class="space-y-4 max-w-sm">
+                            <h2 class="text-5xl font-extrabold">HealthFlow</h2>
+                            <p class="text-base leading-relaxed text-white/90">
+                                Votre plateforme de santé numérique. Accédez à
+                                vos données de santé et gérez votre bien-être
+                                facilement.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Colonne droite - Formulaire -->
-                <div class="w-full max-w-md mx-auto">
-                    <div class="bg-white rounded-3xl shadow-2xl p-8 lg:p-10">
-                        <!-- Logo -->
-                        <div class="text-center mb-6">
+                <div
+                    class="w-full flex items-center justify-center p-8 lg:p-12"
+                >
+                    <div class="w-full max-w-md">
+                        <!-- Logo mobile -->
+                        <div class="lg:hidden text-center mb-8">
                             <div class="flex justify-center mb-3">
                                 <div
-                                    class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center"
+                                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center"
                                 >
                                     <svg
-                                        class="w-5 h-5 text-white"
+                                        class="w-6 h-6 text-white"
                                         fill="currentColor"
                                         viewBox="0 0 24 24"
                                     >
@@ -53,7 +70,13 @@
                                     </svg>
                                 </div>
                             </div>
-                            <h1 class="text-3xl font-bold text-gray-900 mb-3">
+                        </div>
+
+                        <!-- Header -->
+                        <div class="text-center mb-8">
+                            <h1
+                                class="text-3xl lg:text-4xl font-bold text-gray-900 mb-2"
+                            >
                                 <Typography tag="h1" variant="h1-style">
                                     Connexion
                                 </Typography>
@@ -66,10 +89,10 @@
                         <!-- Server message -->
                         <div
                             v-if="serverMessage"
-                            class="rounded-lg border px-4 py-3 text-sm mb-6"
+                            class="rounded-xl border px-4 py-3 text-sm mb-6 backdrop-blur-sm"
                             :class="
                                 messageType === 'success'
-                                    ? 'border-purple-200 bg-purple-50 text-purple-700'
+                                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                                     : 'border-red-200 bg-red-50 text-red-700'
                             "
                         >
@@ -96,11 +119,11 @@
                                     type="email"
                                     placeholder="votre@email.com"
                                     autocomplete="email"
-                                    class="w-full h-12 pl-12 pr-4 rounded-xl border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-colors"
+                                    class="w-full h-12 pl-12 pr-4 rounded-xl border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200"
                                     :class="
                                         errors.email
-                                            ? 'border-red-300 focus:border-red-500 focus:bg-white'
-                                            : 'border-gray-200 focus:border-purple-500 focus:bg-white'
+                                            ? 'border-red-300 focus:border-red-500 focus:bg-white focus:ring-2 focus:ring-red-200'
+                                            : 'border-gray-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100'
                                     "
                                 />
                             </FormField>
@@ -126,17 +149,17 @@
                                         "
                                         placeholder="••••••••"
                                         autocomplete="current-password"
-                                        class="w-full h-12 pl-12 pr-12 rounded-xl border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-colors"
+                                        class="w-full h-12 pl-12 pr-12 rounded-xl border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200"
                                         :class="
                                             errors.password
-                                                ? 'border-red-300 focus:border-red-500 focus:bg-white'
-                                                : 'border-gray-200 focus:border-purple-500 focus:bg-white'
+                                                ? 'border-red-300 focus:border-red-500 focus:bg-white focus:ring-2 focus:ring-red-200'
+                                                : 'border-gray-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100'
                                         "
                                     />
                                     <button
                                         type="button"
-                                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                                         @click="showPassword = !showPassword"
+                                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
                                     >
                                         <svg
                                             v-if="!showPassword"
@@ -177,60 +200,43 @@
                             </FormField>
 
                             <!-- Forgot password -->
-                            <div class="flex items-center justify-end pt-2">
+                            <div class="flex items-center justify-end pt-1">
                                 <button
                                     type="button"
-                                    class="text-sm text-purple-600 hover:text-purple-700 font-semibold transition cursor-pointer"
                                     @click="
                                         $router.push({
                                             name: 'forgot-password',
                                         })
                                     "
+                                    class="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
                                 >
                                     Mot de passe oublié ?
                                 </button>
                             </div>
 
-                            <!-- Soumettre -->
-                            <button
+                            <!-- Submit Button -->
+                            <BaseButton
                                 type="submit"
+                                variant="primary"
+                                size="lg"
+                                fullWidth
                                 :disabled="loading"
-                                class="w-full h-12 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+                                :loading="loading"
+                                class="mt-6"
                             >
                                 {{
                                     loading
                                         ? "Connexion en cours..."
                                         : "Se connecter"
                                 }}
-                            </button>
+                            </BaseButton>
 
-                            <!-- Google -->
-                            <button
-                                type="button"
-                                class="w-full h-12 rounded-xl border border-gray-200 hover:border-gray-300 bg-white text-gray-700 font-medium text-base transition-colors flex items-center justify-center gap-2"
-                            >
-                                <svg class="w-5 h-5" viewBox="0 0 24 24">
-                                    <text
-                                        x="50%"
-                                        y="50%"
-                                        dominant-baseline="middle"
-                                        text-anchor="middle"
-                                        font-size="10"
-                                        fill="currentColor"
-                                        font-weight="bold"
-                                    >
-                                        G
-                                    </text>
-                                </svg>
-                                Continuer avec Google
-                            </button>
-
-                            <!-- Inscription -->
+                            <!-- Sign up link -->
                             <p class="text-center text-sm text-gray-600 pt-4">
                                 Pas encore de compte ?
                                 <RouterLink
                                     :to="{ name: 'register' }"
-                                    class="text-purple-600 font-semibold hover:text-purple-700 transition-colors"
+                                    class="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
                                 >
                                     Créer un compte
                                 </RouterLink>
@@ -250,6 +256,7 @@ import { useAuthStore } from "@/stores/auth";
 import api from "@/services/api";
 import FormField from "./FormField.vue";
 import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 const route = useRoute();
 const router = useRouter();

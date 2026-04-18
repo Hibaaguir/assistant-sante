@@ -10,12 +10,11 @@
             >
                 <div class="flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-[15px] font-medium text-[#455572]">
+                        <p class="text-lg font-semibold text-black">
                             {{ card.label }}
                         </p>
                         <p
-                            class="mt-4 text-[18px] font-semibold leading-none"
-                            :class="card.valueClass"
+                            class="mt-4 text-4xl font-bold leading-none text-black"
                         >
                             {{ card.value }}
                         </p>
@@ -90,13 +89,13 @@
                     <div class="min-w-0 flex-1">
                         <!-- Name + status -->
                         <div class="flex items-center gap-3">
-                            <Typography tag="h3" variant="h3-style">
+                            <Typography
+                                tag="h3"
+                                variant="h3-style"
+                                class="text-[18px]"
+                            >
                                 {{ patient.name }}
                             </Typography>
-                            <span
-                                class="h-3 w-3 rounded-full shrink-0"
-                                :style="{ backgroundColor: patient.dotColor }"
-                            />
                         </div>
 
                         <!-- Quick info -->
@@ -172,6 +171,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import {
     IconAlert,
     IconClock,
@@ -229,7 +229,7 @@ const STAT_CONFIG = [
         key: "total",
         label: "Total patients",
         valueClass: "text-[#031a46]",
-        borderClass: "border-[#d7dce3]",
+        borderClass: "border-2 border-blue-500",
         icon: IconUserOutline,
         iconWrapClass: "bg-[#dbe9ff]",
         iconClass: "text-[#1454ff]",
@@ -275,13 +275,12 @@ const activeTab = ref("all");
 
 // ── Computed ──────────────────────────────────────────────────────────────────
 const statisticsCards = computed(() => {
-    const counts = PATIENT_TABS.reduce((acc, tab) => {
-        acc[tab.key] =
-            tab.key === "all"
-                ? props.patients.length
-                : props.patients.filter((p) => p.status === tab.key).length;
-        return acc;
-    }, {});
+    const counts = {
+        total: props.patients.length,
+        critical: props.patients.filter((p) => p.status === "critical").length,
+        watch: props.patients.filter((p) => p.status === "watch").length,
+        stable: props.patients.filter((p) => p.status === "stable").length,
+    };
 
     return STAT_CONFIG.map((cfg) => ({ ...cfg, value: counts[cfg.key] }));
 });

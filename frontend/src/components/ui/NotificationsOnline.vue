@@ -24,9 +24,10 @@
                 >
                     {{ toast.message }}
                 </p>
-                <button
+                <BaseButton
                     type="button"
-                    class="shrink-0 text-slate-400 hover:text-slate-600"
+                    variant="outline"
+                    size=\"sm"
                     aria-label="Fermer la notification"
                     @click="notifications.remove(toast.id)"
                 >
@@ -39,7 +40,7 @@
                     >
                         <path d="m6 6 12 12M18 6 6 18" stroke-linecap="round" />
                     </svg>
-                </button>
+                </BaseButton>
             </div>
         </article>
     </TransitionGroup>
@@ -47,6 +48,7 @@
 
 <script setup>
 import { useNotificationsStore } from "@/stores/notifications";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 const notifications = useNotificationsStore();
 

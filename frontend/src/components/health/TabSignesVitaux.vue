@@ -86,26 +86,28 @@
             Cliquez sur une valeur pour la modifier directement dans la carte.
         </p>
         <div class="flex items-center gap-2">
-            <button
+            <BaseButton
                 v-if="editionModifiee"
                 type="button"
-                class="inline-flex h-11 items-center justify-center rounded-2xl border border-slate-300 bg-slate-50 px-4 text-[14px] font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100"
+                variant="cancel"
+                size="sm"
                 @click="reinitialiserEdition"
             >
                 Annuler
-            </button>
-            <button
+            </BaseButton>
+            <BaseButton
                 type="button"
-                class="inline-flex h-11 items-center justify-center rounded-2xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-4 text-[14px] font-semibold text-white shadow-[0_8px_16px_rgba(16,185,129,0.22)] disabled:cursor-not-allowed disabled:opacity-50"
+                variant="save"
+                size="md"
                 :disabled="!editionModifiee || enregistrementEnCours"
                 @click="enregistrerDepuisCartes"
             >
                 {{
                     enregistrementEnCours
                         ? "Enregistrement..."
-                        : "Enregistrer la dernière entrée"
+                        : "Enregistrer la derniére entrée"
                 }}
-            </button>
+            </BaseButton>
         </div>
     </div>
 
@@ -119,14 +121,15 @@
             <Typography tag="h2" variant="h4-style">
                 Historique des mesures
             </Typography>
-            <button
+            <BaseButton
                 v-if="filtresActifs"
                 type="button"
-                class="inline-flex h-11 items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 text-[14px] font-semibold text-slate-700 shadow-sm transition hover:border-purple-300 hover:text-purple-700"
+                variant="outline"
+                size="md"
                 @click="reinitialiserFiltres"
             >
                 Réinitialiser
-            </button>
+            </BaseButton>
         </div>
 
         <div class="mt-8 grid gap-4 lg:grid-cols-2">
@@ -247,9 +250,10 @@
                         Seule la dernière entrée peut être modifiée.
                     </p>
                 </div>
-                <button
+                <BaseButton
                     type="button"
-                    class="text-slate-400 hover:text-slate-700 transition"
+                    variant="outline"
+                    size="sm"
                     @click="showModal = false"
                 >
                     <!-- Close icon (inline SVG — no render function needed) -->
@@ -262,7 +266,7 @@
                     >
                         <path d="m6 6 12 12M18 6 6 18" />
                     </svg>
-                </button>
+                </BaseButton>
             </div>
 
             <div class="space-y-6">
@@ -369,9 +373,11 @@
                     {{ formError }}
                 </p>
 
-                <button
+                <BaseButton
                     type="button"
-                    class="mt-2 h-12 w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-base font-semibold text-white shadow-sm hover:from-emerald-500 hover:to-emerald-600 transition hover:shadow-md"
+                    variant="save"
+                    size="lg"
+                    class="w-full mt-2"
                     @click="enregistrerMesure"
                 >
                     {{
@@ -379,7 +385,7 @@
                             ? "Enregistrer les modifications"
                             : "Enregistrer"
                     }}
-                </button>
+                </BaseButton>
             </div>
         </div>
     </div>
@@ -395,6 +401,7 @@ import VitalCard from "./VitalCard.vue";
 import HistoryCard from "./HistoryCard.vue";
 import ModalField from "./ModalField.vue";
 import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 // ─── Métadonnées des signes vitaux (couleurs, icônes, labels) ─────────────────
 const VITAL_META = {

@@ -149,24 +149,26 @@
 
                 <!-- Navigation -->
                 <div class="flex justify-end">
-                    <button
+                    <BaseButton
                         v-if="currentStep < TOTAL_STEPS"
                         type="button"
-                        class="h-12 rounded-xl bg-purple-500 px-8 text-white hover:bg-purple-600 disabled:cursor-not-allowed disabled:opacity-50"
+                        variant="primary"
+                        size="lg"
                         :disabled="saving"
                         @click="goNext"
                     >
                         Continuer
-                    </button>
-                    <button
+                    </BaseButton>
+                    <BaseButton
                         v-else
-                        type="button"
-                        class="h-12 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 px-8 text-white hover:from-purple-600 hover:to-purple-700 disabled:opacity-50"
+                        type="submit"
+                        variant="success"
+                        size="lg"
                         :disabled="saving"
                         @click="enregistrer"
                     >
                         {{ saving ? "Enregistrement..." : "Terminer" }}
-                    </button>
+                    </BaseButton>
                 </div>
             </template>
         </main>
@@ -179,6 +181,7 @@ import Typography from "@/components/ui/Typography.vue";
 import api from "@/services/api";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import Etape1 from "./HealthProfileStep1.vue";
 import Etape2 from "./HealthProfileStep2.vue";
 import Etape3 from "./HealthProfileStep3.vue";

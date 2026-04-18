@@ -10,20 +10,16 @@
         <div class="mb-6 flex flex-wrap items-center gap-3">
             <!-- Filtre type -->
             <div class="flex gap-2">
-                <button
+                <BaseButton
                     v-for="f in TYPE_FILTERS"
                     :key="f.value"
                     type="button"
-                    class="h-11 rounded-full px-5 text-base font-bold transition"
-                    :class="
-                        filterType === f.value
-                            ? 'bg-blue-600 text-white shadow-sm'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    "
+                    variant="outline"
+                    size="md"
                     @click="filterType = f.value"
                 >
                     {{ f.label }}
-                </button>
+                </BaseButton>
             </div>
 
             <!-- Filtre date -->
@@ -42,7 +38,12 @@
         </div>
 
         <!-- Contenu -->
-        <Typography tag="h3" variant="secondary"  v-if="loading" class="py-16 text-center text-sm text-slate-400">
+        <Typography
+            tag="h3"
+            variant="secondary"
+            v-if="loading"
+            class="py-16 text-center text-sm text-slate-400"
+        >
             Chargement...
         </Typography>
 
@@ -135,6 +136,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/services/api";
 import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter();

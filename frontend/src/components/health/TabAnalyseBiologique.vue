@@ -7,14 +7,15 @@
         >
             <div class="flex items-center justify-between mb-4">
                 <div></div>
-                <button
+                <BaseButton
                     v-if="filters.type || filters.date"
                     type="button"
-                    class="inline-flex h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-[14px] font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                    variant="outline"
+                    size="md"
                     @click="reinitialiserFiltres"
                 >
                     Réinitialiser filtres
-                </button>
+                </BaseButton>
             </div>
             <div class="grid gap-4 lg:grid-cols-2">
                 <div v-for="filter in filterFields" :key="filter.key">
@@ -78,20 +79,22 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button
+                    <BaseButton
                         type="button"
-                        class="rounded-lg border border-slate-300 px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
+                        variant="update"
+                        size="sm"
                         @click="ouvrirEditionAnalyse(item)"
                     >
                         Modifier
-                    </button>
-                    <button
+                    </BaseButton>
+                    <BaseButton
                         type="button"
-                        class="rounded-lg border border-rose-200 px-3 py-1.5 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
+                        variant="delete"
+                        size="sm"
                         @click="supprimerAnalyse(item)"
                     >
                         Supprimer
-                    </button>
+                    </BaseButton>
                 </div>
             </div>
         </article>
@@ -114,13 +117,14 @@
                 <Typography tag="h3" variant="h3-style">
                     {{ modalTitle }}
                 </Typography>
-                <button
+                <BaseButton
                     type="button"
-                    class="text-slate-500 hover:text-slate-700"
+                    variant="outline"
+                    size="sm"
                     @click="showAnalysisModal = false"
                 >
                     <CloseIcon />
-                </button>
+                </BaseButton>
             </div>
 
             <div class="space-y-4">
@@ -169,22 +173,24 @@
                                 </p>
                             </div>
                             <div class="flex items-center gap-3">
-                                <button
+                                <BaseButton
                                     v-if="expandedIndex !== index"
                                     type="button"
-                                    class="text-sm font-semibold text-purple-600 hover:text-purple-800 transition"
+                                    variant="update"
+                                    size="sm"
                                     @click="expandedIndex = index"
                                 >
                                     Modifier
-                                </button>
-                                <button
+                                </BaseButton>
+                                <BaseButton
                                     v-if="!editingId && form.results.length > 1"
                                     type="button"
-                                    class="text-sm font-semibold text-rose-600 hover:text-rose-800 transition"
+                                    variant="delete"
+                                    size="sm"
                                     @click="removeRow(index)"
                                 >
                                     Supprimer
-                                </button>
+                                </BaseButton>
                             </div>
                         </div>
 
@@ -246,14 +252,15 @@
                         </div>
                     </div>
 
-                    <button
+                    <BaseButton
                         v-if="!editingId"
                         type="button"
-                        class="h-11 rounded-xl border border-slate-300 px-4 text-base font-semibold text-slate-700 hover:bg-slate-100 transition"
+                        variant="add"
+                        size="md"
                         @click="addRow"
                     >
                         + Ajouter un autre résultat
-                    </button>
+                    </BaseButton>
                 </div>
 
                 <!-- Date -->
@@ -273,13 +280,15 @@
                     {{ formError }}
                 </p>
 
-                <button
+                <BaseButton
                     type="button"
-                    class="mt-2 h-12 w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-base font-semibold text-white shadow-sm hover:from-emerald-500 hover:to-emerald-600 transition hover:shadow-md"
+                    variant="save"
+                    size="lg"
+                    class="w-full mt-2"
                     @click="saveAnalysis"
                 >
                     {{ modalSubmitLabel }}
-                </button>
+                </BaseButton>
             </div>
         </div>
     </div>
@@ -302,6 +311,7 @@ import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
 import DialogueConfirmation from "@/components/ui/ConfirmationDialog.vue";
 import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 // ─── Icônes inline légères ────────────────────────────────────────────────────
 const CalendarIcon = {

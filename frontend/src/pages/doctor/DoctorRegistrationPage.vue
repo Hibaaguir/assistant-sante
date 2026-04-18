@@ -297,64 +297,6 @@
                                 </svg>
                             </button>
                         </div>
-                        <div
-                            v-if="form.password"
-                            class="mt-3 rounded-[12px] bg-purple-50 p-3 text-[13px]"
-                        >
-                            <p class="mb-2 font-medium text-purple-900">
-                                Critères du mot de passe :
-                            </p>
-                            <div class="space-y-1">
-                                <div
-                                    :class="
-                                        form.password.length >= 8
-                                            ? 'text-green-700'
-                                            : 'text-gray-600'
-                                    "
-                                >
-                                    <span
-                                        :class="
-                                            form.password.length >= 8
-                                                ? '✓'
-                                                : '○'
-                                        "
-                                    ></span>
-                                    Au moins 8 caractères
-                                </div>
-                                <div
-                                    :class="
-                                        /[a-zA-Z]/.test(form.password)
-                                            ? 'text-green-700'
-                                            : 'text-gray-600'
-                                    "
-                                >
-                                    <span
-                                        :class="
-                                            /[a-zA-Z]/.test(form.password)
-                                                ? '✓'
-                                                : '○'
-                                        "
-                                    ></span>
-                                    Contient des lettres
-                                </div>
-                                <div
-                                    :class="
-                                        /[0-9]/.test(form.password)
-                                            ? 'text-green-700'
-                                            : 'text-gray-600'
-                                    "
-                                >
-                                    <span
-                                        :class="
-                                            /[0-9]/.test(form.password)
-                                                ? '✓'
-                                                : '○'
-                                        "
-                                    ></span>
-                                    Contient des chiffres
-                                </div>
-                            </div>
-                        </div>
                         <p
                             v-if="errors.password"
                             class="mt-2 text-sm text-red-600"

@@ -103,14 +103,15 @@
                     <span
                         v-for="item in form.allergies"
                         :key="`allergy-chip-${item}`"
-                        class="inline-flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-1 text-sm text-orange-700"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 px-3 py-1 text-sm text-orange-700"
                     >
                         {{ item }}
                         <button
                             type="button"
+                            class="flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-sm font-bold text-red-500 hover:bg-red-200 transition-colors"
                             @click="removeSelected('allergies', item)"
                         >
-                            x
+                            ×
                         </button>
                     </span>
                 </div>
@@ -170,14 +171,15 @@
                                 addCustom('allergies', customAllergy)
                             "
                         />
-                        <button
+                        <BaseButton
                             type="button"
-                            class="h-11 rounded-lg bg-purple-400 px-4 text-white font-semibold text-sm disabled:opacity-50"
+                            variant="primary"
+                            size="sm"
                             :disabled="!customAllergy.trim()"
                             @click="addCustom('allergies', customAllergy)"
                         >
                             Ajouter
-                        </button>
+                        </BaseButton>
                     </div>
                 </div>
             </section>
@@ -287,16 +289,17 @@
                                 addCustom('maladies_chroniques', customDisease)
                             "
                         />
-                        <button
+                        <BaseButton
                             type="button"
-                            class="h-11 rounded-lg bg-purple-400 px-4 text-white font-semibold text-sm disabled:opacity-50"
+                            variant="primary"
+                            size="sm"
                             :disabled="!customDisease.trim()"
                             @click="
                                 addCustom('maladies_chroniques', customDisease)
                             "
                         >
                             Ajouter
-                        </button>
+                        </BaseButton>
                     </div>
                 </div>
             </section>
@@ -335,13 +338,14 @@
                 </div>
 
                 <div v-if="!showTreatmentForm">
-                    <button
+                    <BaseButton
                         type="button"
-                        class="bg-white hover:bg-purple-50 border-2 border-purple-200 hover:border-purple-300 rounded-xl h-12 gap-2 px-4 text-sm font-semibold"
+                        variant="outline"
+                        size="md"
                         @click="showTreatmentForm = true"
                     >
                         + Ajouter un traitement
-                    </button>
+                    </BaseButton>
                 </div>
 
                 <div
@@ -760,6 +764,7 @@
 import { computed, reactive, ref, onMounted } from "vue";
 import axios from "axios";
 import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 const props = defineProps({
     form: { type: Object, required: true },

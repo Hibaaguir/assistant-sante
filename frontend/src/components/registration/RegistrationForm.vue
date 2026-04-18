@@ -4,50 +4,67 @@
 -->
 <template>
     <div
-        class="min-h-screen bg-gradient-to-br from-purple-200 via-purple-200 to-purple-300 flex items-center justify-center px-4 py-8"
+        class="min-h-screen bg-gradient-to-br from-blue-50 via-blue-50 to-blue-100 flex items-center justify-center px-4 py-8"
     >
-        <div class="w-full max-w-6xl">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                <!-- Colonne gauche - Illustration & Texte -->
+        <div class="w-full max-w-7xl">
+            <div
+                class="grid grid-cols-1 lg:grid-cols-2 gap-0 items-stretch rounded-[32px] overflow-hidden shadow-2xl bg-white"
+            >
+                <!-- Colonne gauche - Illustration & Texte avec gradient bleu -->
                 <div
-                    class="hidden lg:flex flex-col items-center justify-center text-slate-50 px-8 py-16"
+                    class="hidden lg:flex flex-col items-center justify-center bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white px-8 py-20 relative overflow-hidden"
                 >
-                    <div class="mb-10 relative">
-                        <div
-                            class="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-purple-600/10 rounded-3xl blur-2xl scale-105"
-                        ></div>
-                        <img
-                            src="https://img.freepik.com/vecteurs-premium/appeler-medecin-ambulance-main-tenir-telephone-mobile-coeur-rouge-ligne-rythme-cardiaque-cardiogramme-ecran-document-assurance-maladie-signe-croise-accord-medical-rapport-diagnostic-clinique_284092-711.jpg?semt=ais_hybrid&w=600&q=85"
-                            alt="Illustration médicale"
-                            class="relative w-72 h-80 object-cover rounded-3xl shadow-2xl border border-white/10"
-                            loading="lazy"
-                        />
-                    </div>
-                    <div class="text-center space-y-4 max-w-md">
-                        <h2
-                            class="text-5xl font-extrabold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent"
-                        >
-                            HealthFlow
-                        </h2>
-                        <p class="text-base leading-relaxed text-white/85">
-                            Votre plateforme de santé numérique. Créez un compte
-                            et commencez votre parcours wellbeing dès
-                            aujourd'hui.
-                        </p>
+                    <!-- Background decorative elements -->
+                    <div
+                        class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"
+                    ></div>
+                    <div
+                        class="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"
+                    ></div>
+
+                    <div class="relative z-10 text-center space-y-8">
+                        <!-- Icon/Illustration -->
+                        <div class="flex justify-center mb-4">
+                            <div
+                                class="w-24 h-24 rounded-2xl bg-white/15 backdrop-blur-lg flex items-center justify-center border border-white/20"
+                            >
+                                <svg
+                                    class="w-12 h-12 text-white"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Title -->
+                        <div class="space-y-4 max-w-sm">
+                            <h2 class="text-5xl font-extrabold">HealthFlow</h2>
+                            <p class="text-base leading-relaxed text-white/90">
+                                Votre plateforme de santé numérique. Créez un
+                                compte et commencez votre parcours wellbeing dès
+                                aujourd'hui.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Colonne droite - Formulaire -->
-                <div class="w-full max-w-lg mx-auto">
-                    <div class="bg-white rounded-3xl shadow-2xl p-6 lg:p-8">
-                        <!-- Logo -->
-                        <div class="text-center mb-6">
+                <div
+                    class="w-full flex items-center justify-center p-8 lg:p-12"
+                >
+                    <div class="w-full max-w-md">
+                        <!-- Logo mobile -->
+                        <div class="lg:hidden text-center mb-8">
                             <div class="flex justify-center mb-3">
                                 <div
-                                    class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center"
+                                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center"
                                 >
                                     <svg
-                                        class="w-5 h-5 text-white"
+                                        class="w-6 h-6 text-white"
                                         fill="currentColor"
                                         viewBox="0 0 24 24"
                                     >
@@ -57,12 +74,18 @@
                                     </svg>
                                 </div>
                             </div>
-                            <h1 class="text-3xl font-bold text-gray-900 mb-3">
+                        </div>
+
+                        <!-- Header -->
+                        <div class="text-center mb-8">
+                            <h1
+                                class="text-3xl lg:text-4xl font-bold text-gray-900 mb-2"
+                            >
                                 <Typography tag="h1" variant="h1-style">
                                     Créer un compte
                                 </Typography>
                             </h1>
-                            <p class="text-xs text-gray-500">
+                            <p class="text-sm text-gray-600">
                                 Commencez votre parcours santé
                             </p>
                         </div>
@@ -70,17 +93,17 @@
                         <!-- Message serveur -->
                         <div
                             v-if="serverMessage"
-                            class="mb-6 rounded-lg border px-4 py-3 text-sm"
+                            class="mb-6 rounded-xl border px-4 py-3 text-sm backdrop-blur-sm"
                             :class="
                                 messageType === 'success'
-                                    ? 'border-purple-200 bg-purple-50 text-purple-700'
+                                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                                     : 'border-red-200 bg-red-50 text-red-700'
                             "
                         >
                             {{ serverMessage }}
                         </div>
 
-                        <form @submit.prevent="soumettre" class="space-y-3">
+                        <form @submit.prevent="soumettre" class="space-y-4">
                             <!-- Nom -->
                             <FormField label="Nom complet" :error="errors.name">
                                 <template #icon>
@@ -166,14 +189,59 @@
                                         d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                                     />
                                 </template>
-                                <input
-                                    v-model="form.password"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    autocomplete="new-password"
-                                    v-bind="inputProps('password')"
-                                    @input="errors.password = ''"
-                                />
+                                <div class="relative">
+                                    <input
+                                        v-model="form.password"
+                                        :type="
+                                            showPassword ? 'text' : 'password'
+                                        "
+                                        placeholder="••••••••"
+                                        autocomplete="new-password"
+                                        v-bind="inputProps('password')"
+                                        @input="errors.password = ''"
+                                        class="pr-12"
+                                    />
+                                    <button
+                                        type="button"
+                                        @click="showPassword = !showPassword"
+                                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
+                                    >
+                                        <svg
+                                            v-if="!showPassword"
+                                            class="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                            />
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                            />
+                                        </svg>
+                                        <svg
+                                            v-else
+                                            class="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-4.753 4.753m4.753-4.753L3 3m9.621 9.621L3 21m12.621-12.621l4.243-4.243m0 0a9 9 0 10-12.728 12.728m12.728-12.728L21 3"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                             </FormField>
 
                             <!-- Critères mot de passe -->
@@ -184,8 +252,8 @@
                                     class="text-xs transition-colors"
                                     :class="
                                         r.ok
-                                            ? 'font-medium text-purple-600'
-                                            : 'text-gray-400'
+                                            ? 'font-medium text-blue-600'
+                                            : 'text-gray-600'
                                     "
                                 >
                                     {{ r.label }}
@@ -205,14 +273,68 @@
                                         d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                                     />
                                 </template>
-                                <input
-                                    v-model="form.password_confirmation"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    autocomplete="new-password"
-                                    v-bind="inputProps('password_confirmation')"
-                                    @input="errors.password_confirmation = ''"
-                                />
+                                <div class="relative">
+                                    <input
+                                        v-model="form.password_confirmation"
+                                        :type="
+                                            showPasswordConfirm
+                                                ? 'text'
+                                                : 'password'
+                                        "
+                                        placeholder="••••••••"
+                                        autocomplete="new-password"
+                                        v-bind="
+                                            inputProps('password_confirmation')
+                                        "
+                                        @input="
+                                            errors.password_confirmation = ''
+                                        "
+                                        class="pr-12"
+                                    />
+                                    <button
+                                        type="button"
+                                        @click="
+                                            showPasswordConfirm =
+                                                !showPasswordConfirm
+                                        "
+                                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
+                                    >
+                                        <svg
+                                            v-if="!showPasswordConfirm"
+                                            class="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                            />
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                            />
+                                        </svg>
+                                        <svg
+                                            v-else
+                                            class="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-4.753 4.753m4.753-4.753L3 3m9.621 9.621L3 21m12.621-12.621l4.243-4.243m0 0a9 9 0 10-12.728 12.728m12.728-12.728L21 3"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                             </FormField>
 
                             <!-- CGU -->
@@ -221,41 +343,45 @@
                             >
                                 <input
                                     type="checkbox"
-                                    class="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                    class="mt-1 h-5 w-5 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                 />
-                                <span class="text-xs text-gray-600">
+                                <span class="text-sm text-gray-700">
                                     J'accepte les
                                     <a
                                         href="#"
-                                        class="font-semibold text-purple-600 hover:text-purple-700"
+                                        class="font-semibold text-blue-600 hover:text-blue-700"
                                         >conditions</a
                                     >
                                     et
                                     <a
                                         href="#"
-                                        class="font-semibold text-purple-600 hover:text-purple-700"
+                                        class="font-semibold text-blue-600 hover:text-blue-700"
                                         >la confidentialité</a
                                     >
                                 </span>
                             </label>
 
                             <!-- Soumettre -->
-                            <button
+                            <BaseButton
                                 type="submit"
+                                variant="primary"
+                                size="lg"
+                                fullWidth
                                 :disabled="loading"
-                                class="w-full h-11 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                                :loading="loading"
+                                class="mt-6"
                             >
                                 {{
                                     loading ? "Création..." : "Créer un compte"
                                 }}
-                            </button>
+                            </BaseButton>
 
                             <!-- Connexion -->
-                            <p class="text-center text-xs text-gray-500 pt-2">
+                            <p class="text-center text-sm text-gray-600 pt-4">
                                 Vous avez déjà un compte ?
                                 <RouterLink
                                     :to="{ name: 'login' }"
-                                    class="text-purple-600 font-semibold hover:text-purple-700 transition-colors"
+                                    class="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
                                 >
                                     Se connecter
                                 </RouterLink>
@@ -274,13 +400,14 @@ import { useRouter } from "vue-router";
 import api from "@/services/api";
 import { useAuthStore } from "@/stores/auth";
 import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 // ─── Sous-composant champ formulaire ─────────────────────────────────────────
 const FormField = {
     props: ["label", "error"],
     template: `
     <div>
-      <label class="mb-2 block text-sm font-medium text-gray-700">{{ label }}</label>
+      <label class="mb-2 block text-base font-semibold text-gray-800">{{ label }}</label>
       <div class="relative">
         <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <slot name="icon" />
@@ -312,14 +439,16 @@ const errors = reactive({
 const loading = ref(false);
 const serverMessage = ref("");
 const messageType = ref("success");
+const showPassword = ref(false);
+const showPasswordConfirm = ref(false);
 
 // ─── Classes input dynamiques ─────────────────────────────────────────────────
 const inputProps = (field) => ({
     class: [
-        "w-full h-12 pl-12 pr-4 rounded-lg border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-colors",
+        "w-full h-12 pl-12 pr-4 rounded-xl border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200",
         errors[field]
-            ? "border-red-300 focus:border-red-500 focus:bg-white"
-            : "border-gray-200 focus:border-purple-500 focus:bg-white",
+            ? "border-red-300 focus:border-red-500 focus:bg-white focus:ring-2 focus:ring-red-200"
+            : "border-gray-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100",
     ],
 });
 

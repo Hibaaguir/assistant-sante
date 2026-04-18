@@ -67,8 +67,7 @@ defineProps({
     &.h1-style {
         font-size: 3rem;
         font-weight: 800;
-        color: blue;
-
+        color: #004e89;
         @media (max-width: 768px) {
             font-size: 2.4rem;
         }

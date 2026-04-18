@@ -95,29 +95,28 @@
                         </div>
                     </div>
                 </div>
-                <div v-else-if="step === 2" class="space-y-6">
+                <div v-else-if="step === 2" class="space-y-4">
                     <div
-                        class="rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
+                        class="rounded-xl border border-blue-200 bg-white p-3 sm:p-4"
                     >
-                        <p class="text-lg font-bold text-slate-900">
+                        <p class="text-sm font-semibold text-slate-900">
                             Repas d'aujourd'hui
                         </p>
-                        <p class="mt-1 text-base font-medium text-slate-600">
-                            Les repas ajoutes ci-dessous seront enregistres dans
-                            votre journal du jour.
+                        <p class="mt-0.5 text-xs text-slate-500">
+                            Les repas ajoutés seront enregistrés dans votre journal du jour.
                         </p>
                         <div
-                            class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+                            class="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-4"
                         >
                             <button
                                 v-for="item in meals"
                                 :key="item.id"
                                 type="button"
-                                class="rounded-xl border px-4 py-3 text-base font-semibold"
+                                class="rounded-xl border px-4 py-2 text-sm font-semibold transition-colors"
                                 :class="
                                     form.selectedMeal === item.id
-                                        ? 'border-blue-300 bg-white text-violet-700'
-                                        : 'border-blue-300 bg-white text-slate-700'
+                                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                        : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'
                                 "
                                 @click="form.selectedMeal = item.id"
                             >
@@ -128,14 +127,15 @@
 
                         <div
                             v-if="form.selectedMeal"
-                            class="mt-4 rounded-xl border-2 border-blue-300 bg-white p-3"
+                            class="mt-3 rounded-xl border border-blue-200 bg-slate-50 p-3"
                         >
                             <div
-                                class="mb-2 flex items-center justify-between text-base font-semibold"
+                                class="mb-2 flex items-center justify-between text-sm font-semibold"
                             >
                                 <span>Ajouter : {{ selectedMealLabel }}</span>
                                 <button
                                     type="button"
+                                    class="flex h-7 w-7 items-center justify-center rounded-full bg-red-100 text-lg font-bold text-red-600 hover:bg-red-200 transition-colors"
                                     @click="form.selectedMeal = ''"
                                 >
                                     ×
@@ -144,19 +144,19 @@
                             <input
                                 v-model="mealDraft.label"
                                 type="text"
-                                class="w-full rounded-lg border border-blue-300 px-3 py-2 text-base"
+                                class="w-full rounded-lg border border-blue-200 px-3 py-1.5 text-sm"
                                 placeholder="Ex: Oeufs + pain complet"
                             />
                             <input
                                 v-model.number="mealDraft.calories"
                                 type="number"
                                 min="0"
-                                class="mt-2 w-full rounded-lg border border-blue-300 px-3 py-2 text-base"
+                                class="mt-1.5 w-full rounded-lg border border-blue-200 px-3 py-1.5 text-sm"
                                 placeholder="Calories (optionnel)"
                             />
                             <button
                                 type="button"
-                                class="mt-3 w-full rounded-lg bg-gradient-to-r from-[#149bd7] to-[#7c3aed] py-2 text-base font-semibold text-white disabled:opacity-50"
+                                class="mt-3 w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
                                 :disabled="!mealDraft.label.trim()"
                                 @click="addMeal"
                             >
@@ -165,16 +165,16 @@
                         </div>
 
                         <div
-                            class="mt-4 rounded-xl border-2 border-blue-300 bg-white p-4"
+                            class="mt-3 rounded-xl border border-blue-200 bg-white p-3"
                         >
-                            <p class="text-base font-bold text-slate-900">
+                            <p class="text-sm font-semibold text-slate-900">
                                 Repas ajoutés ({{ form.meals.length }})
                             </p>
-                            <ul v-if="form.meals.length" class="mt-2 space-y-2">
+                            <ul v-if="form.meals.length" class="mt-2 space-y-1.5">
                                 <li
                                     v-for="(meal, index) in form.meals"
                                     :key="`${meal.type}-${meal.label}-${index}`"
-                                    class="flex items-center justify-between rounded-lg border border-blue-300 px-3 py-2 text-base"
+                                    class="flex items-center justify-between rounded-lg border border-blue-200 px-3 py-1.5 text-sm"
                                 >
                                     <span class="text-slate-700">
                                         <strong>{{
@@ -190,73 +190,76 @@
                                             ({{ meal.calories }} kcal)</span
                                         >
                                     </span>
-                                    <button
+                                    <BaseButton
                                         type="button"
-                                        class="text-sm font-semibold text-rose-400 hover:text-rose-500"
+                                        variant="delete"
+                                        size="sm"
                                         @click="deleteMeal(index)"
                                     >
                                         Supprimer
-                                    </button>
+                                    </BaseButton>
                                 </li>
                             </ul>
-                            <p v-else class="mt-2 text-base text-slate-500">
-                                Aucun repas ajoute pour le moment.
+                            <p v-else class="mt-2 text-xs text-slate-400">
+                                Aucun repas ajouté pour le moment.
                             </p>
                             <div
-                                class="mt-3 rounded-lg border-2 border-green-300 bg-white px-3 py-2 text-base font-semibold text-slate-800"
+                                class="mt-2 rounded-lg border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-800"
                             >
-                                Total calories: {{ mealsCaloriesTotal }} kcal
+                                Total calories : {{ mealsCaloriesTotal }} kcal
                             </div>
                         </div>
                     </div>
 
                     <div
-                        class="rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
+                        class="rounded-xl border border-blue-200 bg-white p-3 sm:p-4"
                     >
-                        <p class="text-lg font-bold text-slate-900">
+                        <p class="text-sm font-semibold text-slate-900">
                             Caféine (tasses)
                         </p>
-                        <div class="mt-3 flex items-center gap-2">
+                        <div class="mt-2 flex items-center gap-2">
                             <div
                                 class="inline-flex items-center rounded-lg border border-blue-300 bg-white px-3 py-2 text-base font-semibold text-slate-700"
                             >
                                 {{ form.caffeine }} tasse(s)
                             </div>
-                            <button
+                            <BaseButton
                                 type="button"
-                                class="rounded-lg bg-slate-300 px-4 py-2 text-base font-semibold text-slate-700 hover:bg-slate-400"
+                                variant="secondary"
+                                size="sm"
                                 @click="adjustCaffeine(-1)"
                             >
                                 -
-                            </button>
-                            <button
+                            </BaseButton>
+                            <BaseButton
                                 type="button"
-                                class="rounded-lg bg-blue-500 px-4 py-2 text-base font-semibold text-white hover:bg-blue-600"
+                                variant="outline"
+                                size="sm"
                                 @click="adjustCaffeine(1)"
                             >
                                 +
-                            </button>
+                            </BaseButton>
                         </div>
                     </div>
 
                     <div
-                        class="rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
+                        class="rounded-xl border border-blue-200 bg-white p-3 sm:p-4"
                     >
-                        <p class="text-lg font-bold text-slate-900">
+                        <p class="text-sm font-semibold text-slate-900">
                             Hydratation
                         </p>
-                        <div class="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
+                        <div class="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
                             <div
-                                class="rounded-xl border border-blue-300 bg-white p-3"
+                                class="rounded-lg border border-blue-200 bg-white p-2.5"
                             >
                                 <div class="flex items-start justify-between">
                                     <div>
                                         <p
-                                            class="text-base font-semibold text-slate-800"
+                                            class="text-sm font-semibold text-slate-800"
                                         >
                                             Verre
                                         </p>
-                                        <p class="text-sm text-slate-500">
+                                        <p class="text-xs text-slate-500">
                                             0.5L par unité
                                         </p>
                                     </div>
@@ -277,37 +280,39 @@
                                 <div
                                     class="mt-3 flex items-center justify-between"
                                 >
-                                    <button
+                                    <BaseButton
                                         type="button"
-                                        class="h-7 w-7 rounded-md border border-blue-300 bg-slate-100 text-base text-slate-500"
+                                        variant="secondary"
+                                        size="sm"
                                         @click="adjustCups(-1)"
                                     >
                                         -
-                                    </button>
+                                    </BaseButton>
                                     <span class="text-lg font-bold">{{
                                         form.cupCount
                                     }}</span>
-                                    <button
+                                    <BaseButton
                                         type="button"
-                                        class="h-7 w-7 rounded-md bg-blue-500 text-base font-semibold text-white hover:bg-blue-600"
+                                        variant="outline"
+                                        size="sm"
                                         @click="adjustCups(1)"
                                     >
                                         +
-                                    </button>
+                                    </BaseButton>
                                 </div>
                             </div>
 
                             <div
-                                class="rounded-xl border border-blue-300 bg-white p-3"
+                                class="rounded-lg border border-blue-200 bg-white p-2.5"
                             >
                                 <div class="flex items-start justify-between">
                                     <div>
                                         <p
-                                            class="text-base font-semibold text-slate-800"
+                                            class="text-sm font-semibold text-slate-800"
                                         >
                                             Bouteille
                                         </p>
-                                        <p class="text-sm text-slate-500">
+                                        <p class="text-xs text-slate-500">
                                             1.5L par unité
                                         </p>
                                     </div>
@@ -326,23 +331,25 @@
                                 <div
                                     class="mt-3 flex items-center justify-between"
                                 >
-                                    <button
+                                    <BaseButton
                                         type="button"
-                                        class="h-7 w-7 rounded-md border border-blue-300 bg-slate-100 text-base text-slate-500"
+                                        variant="secondary"
+                                        size="sm"
                                         @click="adjustBottles(-1)"
                                     >
                                         -
-                                    </button>
+                                    </BaseButton>
                                     <span class="text-lg font-bold">{{
                                         form.bottleCount
                                     }}</span>
-                                    <button
+                                    <BaseButton
                                         type="button"
-                                        class="h-7 w-7 rounded-md bg-blue-500 text-base font-semibold text-white hover:bg-blue-600"
+                                        variant="outline"
+                                        size="sm"
                                         @click="adjustBottles(1)"
                                     >
                                         +
-                                    </button>
+                                    </BaseButton>
                                 </div>
                             </div>
                         </div>
@@ -366,9 +373,9 @@
                     </div>
 
                     <div
-                        class="rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
+                        class="rounded-xl border border-blue-200 bg-white p-3 sm:p-4"
                     >
-                        <p class="text-lg font-bold text-slate-900">
+                        <p class="text-sm font-semibold text-slate-900">
                             Apport en sucre
                         </p>
                         <div
@@ -424,13 +431,14 @@
                                 <p class="text-sm font-semibold text-slate-700">
                                     Nouvelle activité
                                 </p>
-                                <button
+                                <BaseButton
                                     type="button"
-                                    class="text-sm font-semibold text-slate-500 hover:text-slate-700"
+                                    variant="text"
+                                    size="sm"
                                     @click="cancelNewActivity"
                                 >
                                     ×
-                                </button>
+                                </BaseButton>
                             </div>
                             <div class="flex items-center gap-2">
                                 <input
@@ -439,14 +447,15 @@
                                     class="w-full rounded-lg border border-purple-300 bg-white px-3 py-2 text-sm"
                                     placeholder="Nom de l'activité"
                                 />
-                                <button
+                                <BaseButton
                                     type="button"
-                                    class="rounded-lg bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                                    variant="save"
+                                    size="sm"
                                     :disabled="!newActivityName.trim()"
                                     @click="addNewActivity"
                                 >
                                     Valider
-                                </button>
+                                </BaseButton>
                             </div>
                         </div>
                     </div>
@@ -493,22 +502,22 @@
                                 Intensité
                             </p>
                             <div class="mt-3 grid grid-cols-3 gap-2">
-                                <button
+                                <BaseButton
                                     v-for="value in intensityOptions"
                                     :key="`intensity-${value}`"
                                     type="button"
-                                    class="rounded-xl border py-3 text-sm font-semibold"
-                                    :class="
+                                    :variant="
                                         form.intensity === value
                                             ? value === 'high'
-                                                ? 'border-green-300 bg-white text-green-700'
-                                                : 'border-blue-300 bg-white text-blue-700'
-                                            : 'border-blue-300 bg-white text-slate-700'
+                                                ? 'success'
+                                                : 'outline'
+                                            : 'secondary'
                                     "
+                                    size="sm"
                                     @click="form.intensity = value"
                                 >
                                     {{ intensityLabels[value] }}
-                                </button>
+                                </BaseButton>
                             </div>
                         </div>
 
@@ -551,32 +560,22 @@
                                         Type <span class="text-red-500">*</span>
                                     </label>
                                     <div class="mt-2 flex flex-wrap gap-2">
-                                        <button
+                                        <BaseButton
                                             type="button"
-                                            class="rounded-lg border px-3 py-2 text-base font-semibold transition-colors"
-                                            :class="
-                                                form.tobaccoTypes.cigarette
-                                                    ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
-                                                    : 'border-blue-300 bg-white text-slate-700'
-                                            "
-                                            @click="
-                                                toggleTobaccoType('cigarette')
-                                            "
+                                            :variant="form.tobaccoTypes.cigarette ? 'outline' : 'secondary'"
+                                            size="sm"
+                                            @click="toggleTobaccoType('cigarette')"
                                         >
                                             Cigarette
-                                        </button>
-                                        <button
+                                        </BaseButton>
+                                        <BaseButton
                                             type="button"
-                                            class="rounded-lg border px-3 py-2 text-base font-semibold transition-colors"
-                                            :class="
-                                                form.tobaccoTypes.vape
-                                                    ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
-                                                    : 'border-blue-300 bg-white text-slate-700'
-                                            "
+                                            :variant="form.tobaccoTypes.vape ? 'outline' : 'secondary'"
+                                            size="sm"
                                             @click="toggleTobaccoType('vape')"
                                         >
                                             Vape
-                                        </button>
+                                        </BaseButton>
                                     </div>
                                     <p
                                         v-if="
@@ -711,51 +710,60 @@
             </div>
 
             <div class="mt-12 flex items-center justify-between gap-3">
-                <button
+                <BaseButton
+                    v-if="step === 1"
                     type="button"
-                    class="rounded-xl border px-5 py-3 text-sm font-semibold transition-colors"
-                    :class="
-                        step === 1
-                            ? 'border-blue-300 bg-white text-slate-700 hover:bg-slate-50'
-                            : 'border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100'
-                    "
+                    variant="back"
+                    size="md"
                     @click="goBack"
                 >
-                    {{ step === 1 ? "‹ Retour" : "‹ Précédent" }}
-                </button>
+                    ‹ Retour
+                </BaseButton>
                 <button
+                    v-else
+                    type="button"
+                    class="rounded-xl border border-purple-300 bg-purple-50 px-5 py-3 text-sm font-semibold text-purple-700 transition-colors hover:bg-purple-100"
+                    @click="goBack"
+                >
+                    ‹ Précédent
+                </button>
+                <BaseButton
                     v-if="step < 3"
                     type="button"
-                    class="rounded-xl border px-6 py-3 text-sm font-semibold transition-colors border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+                    variant="save"
+                    size="md"
                     @click="goNext"
                 >
                     Suivant ›
-                </button>
+                </BaseButton>
                 <template v-else>
                     <div v-if="isEditMode" class="flex items-center gap-2">
-                        <button
+                        <BaseButton
                             type="button"
-                            class="rounded-xl border border-amber-300 bg-amber-50 px-6 py-3 text-sm font-semibold text-amber-700 transition-colors hover:bg-amber-100"
+                            variant="cancel"
+                            size="md"
                             @click="cancelEdit"
                         >
                             Annuler les modifications
-                        </button>
-                        <button
+                        </BaseButton>
+                        <BaseButton
                             type="button"
-                            class="rounded-xl border px-6 py-3 text-sm font-semibold transition-colors border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+                            variant="save"
+                            size="md"
                             @click="save"
                         >
                             ✓ Enregistrer les modifications
-                        </button>
+                        </BaseButton>
                     </div>
-                    <button
+                    <BaseButton
                         v-else
                         type="button"
-                        class="rounded-xl border px-6 py-3 text-sm font-semibold transition-colors border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+                        variant="save"
+                        size="md"
                         @click="save"
                     >
                         ✓ Enregistrer la journée
-                    </button>
+                    </BaseButton>
                 </template>
 
                 <p
@@ -789,6 +797,7 @@ import { useJournalStore } from "@/stores/journal";
 import { useNotificationsStore } from "@/stores/notifications";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
 import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 const route = useRoute();
 const router = useRouter();

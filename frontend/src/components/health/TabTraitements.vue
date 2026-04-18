@@ -1,8 +1,10 @@
 <template>
     <section class="mt-4 flex justify-end">
-        <button
+        <BaseButton
             type="button"
-            class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+            variant="outline"
+            size="md"
+            class="text-black"
             @click="showTreatmentHistory = !showTreatmentHistory"
         >
             <svg
@@ -20,7 +22,7 @@
             {{
                 showTreatmentHistory ? "Masquer historique" : "Voir historique"
             }}
-        </button>
+        </BaseButton>
     </section>
 
     <section
@@ -35,13 +37,15 @@
             <article
                 class="rounded-2xl border border-orange-300 bg-orange-100 p-4"
             >
-                <p class="text-[13px] text-orange-800">Taux d'observance</p>
+                <p class="text-[14px] font-semibold text-black">
+                    Taux d'observance
+                </p>
                 <p
-                    class="mt-1 text-[24px] font-semibold leading-none text-slate-900"
+                    class="mt-1 text-[28px] font-semibold leading-none text-black"
                 >
                     {{ treatmentHistoryStats.observance }}%
                 </p>
-                <p class="mt-2 text-[12px] text-slate-600">
+                <p class="mt-2 text-[14px] font-medium text-black">
                     {{ treatmentHistoryStats.completeDays }}/{{
                         treatmentHistoryStats.totalDays
                     }}
@@ -51,68 +55,66 @@
             <article
                 class="rounded-2xl border border-[#a8cdfb] bg-[#ebf6fe] p-4"
             >
-                <p class="text-[13px] text-[#149bd7]">Prises totales</p>
+                <p class="text-[14px] font-semibold text-black">
+                    Prises totales
+                </p>
                 <p
-                    class="mt-1 text-[24px] font-semibold leading-none text-slate-900"
+                    class="mt-1 text-[28px] font-semibold leading-none text-black"
                 >
                     {{ treatmentHistoryStats.totalTaken }}
                 </p>
-                <p class="mt-2 text-[12px] text-slate-600">
+                <p class="mt-2 text-[14px] font-medium text-black">
                     {{ treatmentHistoryStats.periodSubtitle }}
                 </p>
             </article>
             <article
                 class="rounded-2xl border border-[#dbc6f7] bg-[#f6f0fc] p-4"
             >
-                <p class="text-[13px] text-[#8a2cff]">Médicaments actifs</p>
+                <p class="text-[14px] font-semibold text-black">
+                    Médicaments actifs
+                </p>
                 <p
-                    class="mt-1 text-[24px] font-semibold leading-none text-slate-900"
+                    class="mt-1 text-[28px] font-semibold leading-none text-black"
                 >
                     {{ treatmentHistoryStats.activeMedicines }}
                 </p>
-                <p class="mt-2 text-[12px] text-slate-600">
+                <p class="mt-2 text-[14px] font-medium text-black">
                     Traitements en cours
                 </p>
             </article>
         </div>
 
         <div class="mt-6">
-            <p class="text-[14px] font-semibold text-slate-800">Période</p>
+            <p class="text-[15px] font-semibold text-black">Période</p>
             <div class="mt-3 flex flex-wrap gap-2">
-                <button
+                <BaseButton
                     v-for="period in treatmentHistoryPeriods"
                     :key="period.value"
                     type="button"
-                    class="h-9 rounded-full px-4 text-[13px] font-semibold transition"
-                    :class="
-                        treatmentHistoryPeriod === period.value
-                            ? 'bg-gradient-to-r from-purple-600 to-purple-600 text-white shadow-[0_6px_14px_rgba(147,51,234,0.32)]'
-                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    "
+                    variant="outline"
+                    size="sm"
+                    class="text-black"
                     @click="treatmentHistoryPeriod = period.value"
                 >
                     {{ period.label }}
-                </button>
+                </BaseButton>
             </div>
         </div>
 
         <div class="mt-5">
-            <p class="text-[14px] font-semibold text-slate-800">Traitements</p>
+            <p class="text-[15px] font-semibold text-black">Traitements</p>
             <div class="mt-3 flex flex-wrap gap-2">
-                <button
+                <BaseButton
                     v-for="med in treatmentHistoryMedicineOptions"
                     :key="med.id"
                     type="button"
-                    class="h-9 rounded-full px-4 text-[13px] font-semibold transition"
-                    :class="
-                        selectedTreatmentHistoryMed === med.id
-                            ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-[0_6px_14px_rgba(99,102,241,0.32)]'
-                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    "
+                    variant="outline"
+                    size="sm"
+                    class="text-black"
                     @click="selectedTreatmentHistoryMed = med.id"
                 >
                     {{ med.name }}
-                </button>
+                </BaseButton>
             </div>
         </div>
 
@@ -127,7 +129,7 @@
             <div
                 v-for="day in treatmentHistoryRows"
                 :key="day.dateKey"
-                class="rounded-2xl border bg-white p-5 shadow-sm"
+                class="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm"
                 :class="
                     day.isComplete ? 'border-emerald-200' : 'border-slate-200'
                 "
@@ -135,10 +137,12 @@
                 <!-- Date + badge -->
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="font-bold text-slate-800 capitalize">
+                        <p
+                            class="text-[19px] font-semibold leading-none text-blue-900 capitalize"
+                        >
                             {{ formaterDateHistoriqueTraitement(day.dateKey) }}
                         </p>
-                        <p class="mt-0.5 text-sm text-slate-400">
+                        <p class="mt-2 text-[13px] font-medium text-slate-800">
                             {{ day.taken }}/{{ day.total }} prises effectuées
                         </p>
                     </div>
@@ -159,33 +163,40 @@
                 </div>
 
                 <!-- Médicaments -->
-                <div class="mt-4 space-y-2">
+                <div class="mt-3 space-y-3">
                     <div
                         v-for="med in day.meds"
                         :key="med.id"
-                        class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-4 py-3"
+                        class="rounded-xl border-2 border-slate-200 bg-slate-50 p-4 flex items-center justify-between gap-4"
                     >
                         <div>
-                            <p class="font-semibold text-slate-800">
+                            <p
+                                class="text-[19px] font-semibold leading-none text-slate-900"
+                            >
                                 {{ med.name }}
                             </p>
-                            <p class="text-sm text-slate-400">{{ med.dose }}</p>
+                            <p
+                                class="mt-2 text-[13px] font-medium text-slate-800"
+                            >
+                                {{ med.dose }}
+                            </p>
                         </div>
 
                         <div class="flex gap-2">
-                            <button
+                            <BaseButton
                                 v-for="i in obtenirIndexPrises(
                                     day.dateKey,
                                     getMedFull(med.id),
                                 )"
                                 :key="i"
                                 type="button"
-                                class="inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm font-medium transition"
-                                :class="
+                                :variant="
                                     estPriseCochee(day.dateKey, med.id, i)
-                                        ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
-                                        : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                                        ? 'success'
+                                        : 'outline'
                                 "
+                                size="sm"
+                                class="text-black"
                                 @click="
                                     basculerPrise(
                                         day.dateKey,
@@ -217,7 +228,7 @@
                                     </svg>
                                 </span>
                                 Prise {{ i }}
-                            </button>
+                            </BaseButton>
                         </div>
                     </div>
                 </div>
@@ -249,20 +260,17 @@
                     </p>
                     <button
                         type="button"
-                        class="h-[92px] w-full rounded-xl border px-2 pb-2 pt-2 transition"
                         :disabled="Boolean(day.isFuture)"
-                        :class="
-                            day.isFuture
-                                ? 'cursor-not-allowed border-slate-200 bg-slate-100 opacity-60'
-                                : estJourComplet(day.key)
-                                  ? 'border-[#08a84a] bg-[#cfddd6]'
-                                  : 'border-slate-300 bg-slate-50 hover:bg-slate-100'
-                        "
                         @click="ouvrirJourTraitement(day)"
+                        :class="[
+                            'w-full rounded-xl border-2 px-2 py-3 transition shadow-sm font-bold',
+                            estJourComplet(day.key)
+                                ? 'border-green-500 bg-gradient-to-r from-green-100 to-green-200 text-green-900 hover:shadow-md'
+                                : 'border-gray-300 bg-white text-slate-900 hover:border-gray-400',
+                            'disabled:cursor-not-allowed disabled:opacity-50',
+                        ]"
                     >
-                        <p
-                            class="text-[32px] font-medium leading-none text-slate-900"
-                        >
+                        <p class="text-[32px] font-medium leading-none">
                             {{ day.day }}
                         </p>
                         <div class="mt-2 flex justify-center">
@@ -270,7 +278,7 @@
                                 class="inline-flex h-6 w-6 items-center justify-center rounded-full border"
                                 :class="
                                     estJourComplet(day.key)
-                                        ? 'border-[#08a84a] bg-[#08a84a] text-white'
+                                        ? 'border-green-500 bg-green-500 text-white'
                                         : 'border-slate-300 bg-white text-transparent'
                                 "
                             >
@@ -339,9 +347,10 @@
                 >
                     {{ selectedTreatmentDay.fullLabel }}
                 </h3>
-                <button
+                <BaseButton
                     type="button"
-                    class="text-slate-500 hover:text-slate-700"
+                    variant="outline"
+                    size="sm"
                     @click="showTreatmentModal = false"
                 >
                     <svg
@@ -353,7 +362,7 @@
                     >
                         <path d="m6 6 12 12M18 6 6 18" />
                     </svg>
-                </button>
+                </BaseButton>
             </div>
 
             <p class="text-[14px] text-slate-600">
@@ -436,23 +445,23 @@
                         "
                         class="mt-3 flex flex-wrap gap-2"
                     >
-                        <button
+                        <BaseButton
                             v-for="doseIndex in obtenirIndexPrises(
                                 selectedTreatmentDay.key,
                                 med,
                             )"
                             :key="`${med.id}-dose-${doseIndex}`"
                             type="button"
-                            class="inline-flex h-10 items-center gap-2 rounded-xl border px-3.5 text-[14px] font-semibold transition"
-                            :class="
+                            :variant="
                                 estPriseCochee(
                                     selectedTreatmentDay.key,
                                     med.id,
                                     doseIndex,
                                 )
-                                    ? 'border-[#08a84a] bg-white text-slate-700'
-                                    : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                                    ? 'success'
+                                    : 'outline'
                             "
+                            size="sm"
                             @click="
                                 basculerPrise(
                                     selectedTreatmentDay.key,
@@ -462,20 +471,17 @@
                             "
                         >
                             <span
-                                class="inline-flex h-5 w-5 items-center justify-center rounded-[4px] border"
-                                :class="
+                                v-if="
                                     estPriseCochee(
                                         selectedTreatmentDay.key,
                                         med.id,
                                         doseIndex,
                                     )
-                                        ? 'border-[#08a84a] bg-[#08a84a] text-white'
-                                        : 'border-slate-400 bg-white text-transparent'
                                 "
                             >
                                 <svg
                                     viewBox="0 0 24 24"
-                                    class="h-3.5 w-3.5"
+                                    class="inline h-3.5 w-3.5 mr-1"
                                     fill="none"
                                     stroke="currentColor"
                                     stroke-width="3"
@@ -488,7 +494,7 @@
                                 </svg>
                             </span>
                             <span>Prise {{ doseIndex }}</span>
-                        </button>
+                        </BaseButton>
                     </div>
                     <p v-else class="mt-3 text-[13px] text-slate-500">
                         Aucune prise prévue pour ce jour.
@@ -503,13 +509,14 @@
                 dans la page Profil Santé.
             </p>
 
-            <button
+            <BaseButton
                 type="button"
-                class="mt-7 h-12 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-purple-600 text-[16px] font-semibold leading-none text-white"
+                variant="outline"
+                fullWidth
                 @click="showTreatmentModal = false"
             >
                 Fermer
-            </button>
+            </BaseButton>
         </div>
     </div>
 </template>
@@ -519,6 +526,7 @@ import { computed, ref } from "vue";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
 import Typography from "@/components/ui/Typography.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 const MAX_DAILY_DOSES = 12;
 const MAX_MONTHLY_FREQUENCY = 31;

@@ -22,13 +22,13 @@
     justify-content: center;
     width: 48px;
     height: 48px;
-    background-color: #bacef5;
-    border-radius: 50%;
+    background-color: rgb(243, 242, 242);
+    border-radius: 70%;
 }
 
 .user-icon {
     width: 20px;
     height: 20px;
-    color: #3b3b3d;
+    color: #4c4cbc;
 }
 </style>

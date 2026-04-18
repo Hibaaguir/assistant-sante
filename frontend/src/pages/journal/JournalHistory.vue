@@ -65,13 +65,13 @@
                 class="rounded-full bg-gradient-to-r from-[#149bd7] to-[#7c3aed] px-3 py-1 font-semibold text-white"
                 >{{ activeFilterLabel }}</span
             >
-            <button
+            <BaseButton
                 type="button"
-                class="font-semibold text-base text-slate-600 underline hover:text-slate-800 transition"
+                variant="outline"
                 @click="store.resetFilter()"
             >
                 Réinitialiser filtre
-            </button>
+            </BaseButton>
         </div>
 
         <div class="space-y-3">
