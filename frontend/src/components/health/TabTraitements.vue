@@ -33,54 +33,36 @@
             Historique des prises
         </Typography>
 
-        <div class="mt-6 grid gap-4 lg:grid-cols-3">
+        <div class="mt-6 grid gap-4 md:grid-cols-3">
             <article
-                class="rounded-2xl border border-orange-300 bg-orange-100 p-4"
+                v-for="card in treatmentHistoryCards"
+                :key="card.key"
+                class="rounded-[18px] border bg-white px-5 py-6 shadow-[0_1px_3px_rgba(15,23,42,0.05)]"
+                :class="card.borderClass"
             >
-                <p class="text-[14px] font-semibold text-black">
-                    Taux d'observance
-                </p>
-                <p
-                    class="mt-1 text-[28px] font-semibold leading-none text-black"
-                >
-                    {{ treatmentHistoryStats.observance }}%
-                </p>
-                <p class="mt-2 text-[14px] font-medium text-black">
-                    {{ treatmentHistoryStats.completeDays }}/{{
-                        treatmentHistoryStats.totalDays
-                    }}
-                    jours complets
-                </p>
-            </article>
-            <article
-                class="rounded-2xl border border-[#a8cdfb] bg-[#ebf6fe] p-4"
-            >
-                <p class="text-[14px] font-semibold text-black">
-                    Prises totales
-                </p>
-                <p
-                    class="mt-1 text-[28px] font-semibold leading-none text-black"
-                >
-                    {{ treatmentHistoryStats.totalTaken }}
-                </p>
-                <p class="mt-2 text-[14px] font-medium text-black">
-                    {{ treatmentHistoryStats.periodSubtitle }}
-                </p>
-            </article>
-            <article
-                class="rounded-2xl border border-[#dbc6f7] bg-[#f6f0fc] p-4"
-            >
-                <p class="text-[14px] font-semibold text-black">
-                    Médicaments actifs
-                </p>
-                <p
-                    class="mt-1 text-[28px] font-semibold leading-none text-black"
-                >
-                    {{ treatmentHistoryStats.activeMedicines }}
-                </p>
-                <p class="mt-2 text-[14px] font-medium text-black">
-                    Traitements en cours
-                </p>
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-lg font-semibold text-black">
+                            {{ card.label }}
+                        </p>
+                        <p class="mt-4 text-4xl font-bold leading-none text-black">
+                            {{ card.value }}
+                        </p>
+                        <p class="mt-2 text-[14px] font-medium text-black">
+                            {{ card.subtitle }}
+                        </p>
+                    </div>
+                    <div
+                        class="grid place-items-center h-12 w-12 shrink-0 rounded-[15px]"
+                        :class="card.iconWrapClass"
+                    >
+                        <component
+                            :is="card.icon"
+                            class="size-6"
+                            :class="card.iconClass"
+                        />
+                    </div>
+                </div>
             </article>
         </div>
 
@@ -312,11 +294,11 @@
             >
                 Aucun traitement actif dans votre profil santé.
             </p>
-            <div v-else class="mt-3 space-y-4">
+            <div v-else class="mt-3 flex flex-wrap gap-4">
                 <article
                     v-for="med in treatmentMedicines"
                     :key="med.id"
-                    class="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm"
+                    class="rounded-2xl border border-slate-200 bg-white px-7 py-6 shadow-sm min-w-[200px] flex-1 basis-48 max-w-xs cursor-pointer select-none transition-all duration-150 active:scale-95 active:shadow-inner hover:shadow-md hover:border-blue-300"
                 >
                     <p
                         class="text-[19px] font-semibold leading-none text-slate-900"
@@ -527,6 +509,11 @@ import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
 import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import {
+    IconCalendar,
+    IconCheckCircle,
+    IconPill,
+} from "@/components/doctors/DoctorIcons.js";
 
 const MAX_DAILY_DOSES = 12;
 const MAX_MONTHLY_FREQUENCY = 31;
@@ -554,6 +541,33 @@ const treatmentHistoryPeriods = [
     { value: "7", label: "7 derniers jours" },
     { value: "30", label: "30 derniers jours" },
     { value: "all", label: "Tout l'historique" },
+];
+
+const TREATMENT_HISTORY_CARD_CONFIG = [
+    {
+        key: "observance",
+        label: "Taux d'observance",
+        borderClass: "border-[#f3b8bb]",
+        icon: IconCheckCircle,
+        iconWrapClass: "bg-[#fee3e5]",
+        iconClass: "text-[#ff1f2d]",
+    },
+    {
+        key: "totalTaken",
+        label: "Prises totales",
+        borderClass: "border-[#f0cb58]",
+        icon: IconCalendar,
+        iconWrapClass: "bg-[#fff0c8]",
+        iconClass: "text-[#ef7a00]",
+    },
+    {
+        key: "activeMedicines",
+        label: "Médicaments actifs",
+        borderClass: "border-[#b5e6c6]",
+        icon: IconPill,
+        iconWrapClass: "bg-[#d2f3de]",
+        iconClass: "text-[#07b33f]",
+    },
 ];
 
 const selectedTreatmentDay = computed(
@@ -641,6 +655,34 @@ const treatmentHistoryStats = computed(() => {
         periodSubtitle,
         activeMedicines: props.treatmentMedicines.length,
     };
+});
+
+const treatmentHistoryCards = computed(() => {
+    const stats = treatmentHistoryStats.value;
+
+    return TREATMENT_HISTORY_CARD_CONFIG.map((card) => {
+        if (card.key === "observance") {
+            return {
+                ...card,
+                value: `${stats.observance}%`,
+                subtitle: `${stats.completeDays}/${stats.totalDays} jours complets`,
+            };
+        }
+
+        if (card.key === "totalTaken") {
+            return {
+                ...card,
+                value: stats.totalTaken,
+                subtitle: stats.periodSubtitle,
+            };
+        }
+
+        return {
+            ...card,
+            value: stats.activeMedicines,
+            subtitle: "Traitements en cours",
+        };
+    });
 });
 
 // Cette fonction formate la date pour l'historique des prises (sans annee).

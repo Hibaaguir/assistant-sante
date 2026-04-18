@@ -538,7 +538,7 @@
                             v-model.trim="treatment.dose"
                             type="text"
                             placeholder="Ex: 500mg, 1 comprime..."
-                            class="h-12 rounded-lg w-full border bg-slate-50 px-4 outline-none placeholder:text-sm focus:border-blue-400"
+                            class="h-10 rounded-lg w-full border bg-slate-50 px-4 text-sm outline-none placeholder:text-sm focus:border-blue-400"
                             :class="
                                 treatmentErrors.dose
                                     ? 'border-red-300'
@@ -563,8 +563,7 @@
                             <div class="relative">
                                 <select
                                     v-model="treatment.frequency_unit"
-                                    class="h-11 rounded-lg w-full border px-4 pr-9 bg-white outline-none focus:border-blue-400 text-base font-medium text-gray-800 appearance-none cursor-pointer"
-                                    style="font-size: 1rem"
+                                    class="h-10 rounded-lg w-full border px-4 pr-9 bg-white outline-none focus:border-blue-400 text-sm font-medium text-gray-800 appearance-none cursor-pointer"
                                     :class="
                                         treatmentErrors.frequency_unit
                                             ? 'border-red-300'
@@ -632,7 +631,7 @@
                             type="text"
                             placeholder="Ex: 01/03/2026"
                             maxlength="10"
-                            class="h-12 rounded-lg w-full border bg-slate-50 px-4 outline-none placeholder:text-sm focus:border-blue-400"
+                            class="h-10 rounded-lg w-full border bg-slate-50 px-4 text-sm outline-none placeholder:text-sm focus:border-blue-400"
                             :class="
                                 treatmentErrors.start_date
                                     ? 'border-red-300'

@@ -143,6 +143,37 @@ export const IconDrop = createIcon([
     ["path", { d: "M14.5 13.5a2.5 2.5 0 0 1-5 0" }],
 ]);
 
+export const IconFlask = createIcon([
+    ["path", { d: "M10 3v4l-5 8a3 3 0 0 0 2.6 4.5h8.8A3 3 0 0 0 19 15l-5-8V3" }],
+    ["path", { d: "M8 12h8" }],
+]);
+
+export const IconLeaf = createIcon([
+    ["path", { d: "M18.5 3.5c-6 .5-10.2 2.8-12.5 6.8-1.6 2.8-1.6 5.9-.2 8.7 2.8.2 5.1-.7 7-2.5 3-2.9 4.2-7.5 5.7-13Z" }],
+    ["path", { d: "M7 14c2.7-1.5 5.1-3.8 7-6.7" }],
+]);
+
+export const IconRun = createIcon([
+    ["circle", { cx: "14", cy: "5", r: "1.5" }],
+    ["path", { d: "M9 11l3-2 2.5 2 1.5 4.5" }],
+    ["path", { d: "M12 9 11 6l3-1.5L17 6" }],
+    ["path", { d: "M8 20l2.5-5" }],
+    ["path", { d: "M14.5 13.5 20 16" }],
+]);
+
+export const IconSmoke = createIcon([
+    ["path", { d: "M3 14h12" }],
+    ["path", { d: "M15 14h3a2 2 0 1 1 0 4H3" }],
+    ["path", { d: "M19 14v4" }],
+    ["path", { d: "M22 14v4" }],
+]);
+
+export const IconWineGlass = createIcon([
+    ["path", { d: "M7 3h10v3a5 5 0 0 1-10 0V3Z" }],
+    ["path", { d: "M12 11v8" }],
+    ["path", { d: "M9 20h6" }],
+]);
+
 export const IconLink = createIcon([
     ["path", { d: "M10 13a5 5 0 0 1 0-7l1.5-1.5a5 5 0 0 1 7 7L17 13" }],
     ["path", { d: "M14 11a5 5 0 0 1 0 7l-1.5 1.5a5 5 0 1 1-7-7L7 11" }],
@@ -155,13 +186,38 @@ export const IconArrowLeft = createIcon([
     ["path", { d: "M21 12H9" }],
 ]);
 
+export const IconChartBars = createIcon([
+    ["path", { d: "M4 20V9" }],
+    ["path", { d: "M10 20V5" }],
+    ["path", { d: "M16 20v-7" }],
+    ["path", { d: "M22 20V8" }],
+]);
+
 export const IconCheckCircle = createIcon([
     ["circle", { cx: "12", cy: "12", r: "9" }],
     ["path", { d: "m8.5 12 2.3 2.4 4.7-5" }],
+]);
+
+export const IconPill = createIcon([
+    [
+        "path",
+        {
+            d: "M7.5 7.5a4.95 4.95 0 0 1 7 0l2 2a4.95 4.95 0 1 1-7 7l-2-2a4.95 4.95 0 0 1 0-7Z",
+        },
+    ],
+    ["path", { d: "m9 15 6-6" }],
 ]);
 
 export const IconCloseCircle = createIcon([
     ["circle", { cx: "12", cy: "12", r: "9" }],
     ["path", { d: "m9.5 9.5 5 5" }],
     ["path", { d: "m14.5 9.5-5 5" }],
+]);
+
+export const IconClipboardList = createIcon([
+    ["path", { d: "M9 4h6" }],
+    ["path", { d: "M8 3h8a1 1 0 0 1 1 1v16H7V4a1 1 0 0 1 1-1Z" }],
+    ["path", { d: "M10 9h4" }],
+    ["path", { d: "M10 13h4" }],
+    ["path", { d: "M10 17h4" }],
 ]);

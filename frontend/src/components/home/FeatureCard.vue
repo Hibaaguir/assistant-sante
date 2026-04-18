@@ -1,8 +1,8 @@
 <template>
     <article
         data-anime
-        class="translate-y-6 opacity-0 transition-all duration-700 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_4px_16px_rgba(15,23,42,0.06)]"
-        :style="{ transitionDelay: `${index * 80}ms` }"
+        class="translate-y-6 opacity-0 transition-all duration-700 flex flex-col gap-4 rounded-2xl border-2 bg-white p-6 shadow-[0_4px_16px_rgba(15,23,42,0.06)]"
+        :style="{ transitionDelay: `${index * 80}ms`, borderColor: fonctionnalite.accent }"
     >
         <div
             class="inline-flex h-11 w-11 items-center justify-center rounded-[14px]"

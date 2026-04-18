@@ -38,6 +38,7 @@
                                 min="0"
                                 max="12"
                                 class="range-base"
+                                :style="getRangeFillStyle(form.sleep, 12)"
                             />
                             <div
                                 class="flex justify-between text-sm text-slate-500"
@@ -65,6 +66,7 @@
                                 min="0"
                                 max="10"
                                 class="range-base"
+                                :style="getRangeFillStyle(form.stress, 10)"
                             />
                             <div
                                 class="flex justify-between text-sm text-slate-500"
@@ -122,7 +124,18 @@
                             </div>
                             <input v-model="mealDraft.label" type="text" class="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-blue-400" placeholder="Ex: Oeufs + pain complet" />
                             <input v-model.number="mealDraft.calories" type="number" min="0" class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-blue-400" placeholder="Calories (optionnel)" />
-                            <button type="button" class="mt-2 w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors" :disabled="!mealDraft.label.trim()" @click="addMeal">Ajouter</button>
+                            <div class="mt-3 flex justify-end">
+                                <BaseButton
+                                    type="button"
+                                    variant="add"
+                                    size="md"
+                                    class-name="min-w-40 border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                                    :disabled="!mealDraft.label.trim()"
+                                    @click="addMeal"
+                                >
+                                    Ajouter
+                                </BaseButton>
+                            </div>
                         </div>
 
                         <div v-if="form.meals.length" class="mt-3 border-t border-slate-100 pt-3">
@@ -593,6 +606,21 @@ const mealsCaloriesTotal = computed(() =>
     }, 0),
 );
 
+// Build a filled-track gradient for range inputs (left side = light blue fill)
+const getRangeFillStyle = (value, max) => {
+    const numericMax = Number(max);
+    const safeMax = Number.isFinite(numericMax) && numericMax > 0 ? numericMax : 1;
+    const numericValue = Number(value);
+    const clampedValue = Number.isFinite(numericValue)
+        ? Math.min(Math.max(numericValue, 0), safeMax)
+        : 0;
+    const percent = (clampedValue / safeMax) * 100;
+
+    return {
+        background: `linear-gradient(90deg, #4338ca ${percent}%, #c7d2fe ${percent}%)`,
+    };
+};
+
 // CSS classes for the sugar badge, based on the selected sugar level
 const SUGAR_BADGE = {
     high: "border-rose-300 bg-rose-100 text-rose-800",
@@ -931,12 +959,12 @@ const save = async () => {
     height: 8px;
     border-radius: 999px;
     cursor: pointer;
-    background: #dbeafe;
+    background: linear-gradient(90deg, #4338ca 0%, #c7d2fe 0%);
 }
 .range-base::-webkit-slider-runnable-track {
     height: 8px;
     border-radius: 999px;
-    background: linear-gradient(90deg, #bfdbfe 0%, #ddd6fe 100%);
+    background: transparent;
 }
 .range-base::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -955,7 +983,13 @@ const save = async () => {
     height: 8px;
     border: none;
     border-radius: 999px;
-    background: linear-gradient(90deg, #bfdbfe 0%, #ddd6fe 100%);
+    background: #c7d2fe;
+}
+.range-base::-moz-range-progress {
+    height: 8px;
+    border: none;
+    border-radius: 999px;
+    background: #4338ca;
 }
 .range-base::-moz-range-thumb {
     width: 20px;
