@@ -17,7 +17,7 @@
             <!-- Gender icon (SVG paths are passed as an array from parent) -->
             <svg
                 class="h-8 w-8"
-                :class="selected ? 'text-purple-500' : 'text-gray-400'"
+                :class="selected ? 'text-blue-500' : 'text-gray-400'"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -33,7 +33,7 @@
             <!-- Label text (ex: "Homme" or "Femme") -->
             <span
                 class="font-medium"
-                :class="selected ? 'text-purple-700' : 'text-gray-700'"
+                :class="selected ? 'text-blue-700' : 'text-gray-700'"
             >
                 {{ label }}
             </span>
@@ -60,7 +60,7 @@ defineEmits(["select"]);
 const cardClass = computed(() => {
     if (props.selected) {
         // Selected: purple border and light purple background
-        return "border-purple-400 bg-purple-50/50 shadow-sm";
+        return "border-blue-400 bg-blue-50/50 shadow-sm";
     }
     if (props.hasError) {
         // Error state: red border

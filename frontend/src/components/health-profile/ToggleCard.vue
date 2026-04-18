@@ -18,7 +18,7 @@
 
             <!-- Background track (gray when off, purple when on) -->
             <div
-                class="h-8 w-14 rounded-full bg-gray-300 transition-colors peer-checked:bg-purple-400"
+                class="h-8 w-14 rounded-full bg-gray-300 transition-colors peer-checked:bg-blue-400"
             ></div>
 
             <!-- Sliding knob (moves right when checked) -->

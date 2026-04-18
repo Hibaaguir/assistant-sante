@@ -75,7 +75,7 @@
                             :min="field.min"
                             :max="field.max"
                             :placeholder="field.placeholder"
-                            class="h-14 w-full rounded-xl border-2 px-4 text-lg outline-none focus:border-purple-400"
+                            class="h-14 w-full rounded-xl border-2 px-4 text-lg outline-none focus:border-blue-400"
                             :class="
                                 props.showErrors && errors[field.key]
                                     ? 'border-red-300'
@@ -187,13 +187,13 @@ const GOALS = [
     {
         value: "Maintenir mon poids",
         label: "Bien-être général",
-        color: "bg-purple-50 text-purple-600 border-purple-200",
+        color: "bg-blue-50 text-blue-600 border-blue-200",
         icon: "M5 13a7 7 0 0 0 14 0M8 8h.01M16 8h.01",
     },
     {
         value: "Perdre du poids",
         label: "Suivi et évolution du poids",
-        color: "bg-purple-50 text-purple-600 border-purple-200",
+        color: "bg-blue-50 text-blue-600 border-blue-200",
         icon: "M4 7h16M7 12h10M10 17h4",
     },
     {
@@ -211,7 +211,7 @@ const GOALS = [
     {
         value: "Reduire mon stress",
         label: "Réduire le stress",
-        color: "bg-purple-50 text-purple-500 border-purple-200",
+        color: "bg-blue-50 text-blue-500 border-blue-200",
         icon: "M12 2a7 7 0 0 0-7 7c0 2.4 1.4 4.4 3.5 5.6V17a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-2.4A6.5 6.5 0 0 0 19 9a7 7 0 0 0-7-7z",
     },
     {

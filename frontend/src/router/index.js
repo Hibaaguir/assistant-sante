@@ -15,6 +15,7 @@ import HealthDataPage from "@/pages/health/HealthDataPage.vue";
 import DashboardPage from "@/pages/userDashboard/DashboardPage.vue";
 import DoctorRegistrationPage from "@/pages/doctor/DoctorRegistrationPage.vue";
 import PlaceholderPage from "@/pages/PlaceholderPage.vue";
+import AiRecommendationsPage from "@/pages/ai/AiRecommendationsPage.vue";
 import PublicHomePage from "@/pages/home/PublicHomePage.vue";
 import NotificationsPage from "@/pages/notifications/NotificationsPage.vue";
 
@@ -93,8 +94,7 @@ const routes = [
             {
                 path: "ai",
                 name: "ai-recommendations",
-                component: PlaceholderPage,
-                props: { title: "Recommandations IA" },
+                component: AiRecommendationsPage,
             },
             {
                 path: "notifications",

@@ -6,7 +6,7 @@
         - The parent controls editing state; we just emit events
     -->
     <article
-        class="min-h-[162px] rounded-2xl border-2 border-blue-300 px-6 py-6 cursor-pointer transition-all duration-300 hover:border-blue-400 hover:shadow-lg"
+        class="min-h-[162px] rounded-2xl border-2 border-slate-200 px-6 py-6 cursor-pointer transition-all duration-300 hover:border-slate-300 hover:shadow-lg"
         :class="[bg, canEdit ? '' : '']"
     >
         <!-- Top row: icon on the left, status badge on the right -->

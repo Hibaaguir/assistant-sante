@@ -33,7 +33,7 @@
 
                 <select
                     v-model="form.groupe_sanguin"
-                    class="h-14 text-base rounded-xl border-2 border-gray-300 max-w-md w-full bg-white px-4 outline-none focus:border-purple-400"
+                    class="h-14 text-base rounded-xl border-2 border-gray-300 max-w-md w-full bg-white px-4 outline-none focus:border-blue-400"
                 >
                     <option value="">Selectionner votre groupe sanguin</option>
                     <option
@@ -145,7 +145,7 @@
                             <span>{{ item }}</span>
                             <svg
                                 v-if="isSelected('allergies', item)"
-                                class="h-4 w-4 text-purple-500"
+                                class="h-4 w-4 text-blue-500"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 aria-hidden="true"
@@ -222,7 +222,7 @@
                     <span
                         v-for="item in form.maladies_chroniques"
                         :key="`disease-chip-${item}`"
-                        class="inline-flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50 px-3 py-1 text-sm text-purple-700"
+                        class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1 text-sm text-blue-700"
                     >
                         {{ item }}
                         <button
@@ -263,7 +263,7 @@
                             <span>{{ item }}</span>
                             <svg
                                 v-if="isSelected('maladies_chroniques', item)"
-                                class="h-4 w-4 text-purple-500"
+                                class="h-4 w-4 text-blue-500"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 aria-hidden="true"
@@ -305,12 +305,12 @@
             </section>
 
             <section
-                class="bg-gradient-to-br from-purple-50 to-purple-50 rounded-2xl border-2 border-purple-100 p-6 space-y-4"
+                class="bg-gradient-to-br from-blue-50 to-blue-50 rounded-2xl border-2 border-blue-100 p-6 space-y-4"
             >
                 <div class="flex items-start gap-4">
-                    <div class="bg-purple-100 p-3 rounded-xl">
+                    <div class="bg-blue-100 p-3 rounded-xl">
                         <svg
-                            class="h-6 w-6 text-purple-500"
+                            class="h-6 w-6 text-blue-500"
                             viewBox="0 0 24 24"
                             fill="none"
                             aria-hidden="true"
@@ -350,7 +350,7 @@
 
                 <div
                     v-else
-                    class="bg-white rounded-xl border-2 border-purple-200 p-6 space-y-4"
+                    class="bg-white rounded-xl border-2 border-blue-200 p-6 space-y-4"
                 >
                     <h4 class="font-medium text-gray-900 mb-2">
                         Nouveau traitement
@@ -363,7 +363,7 @@
                         >
                         <button
                             type="button"
-                            class="h-12 w-full rounded-lg border px-4 bg-white outline-none focus:border-purple-400 text-left text-sm flex items-center justify-between"
+                            class="h-12 w-full rounded-lg border px-4 bg-white outline-none focus:border-blue-400 text-left text-sm flex items-center justify-between"
                             :class="
                                 treatmentErrors.type
                                     ? 'border-red-300'
@@ -435,7 +435,7 @@
                         >
                         <button
                             type="button"
-                            class="h-12 w-full rounded-lg border px-4 bg-white outline-none focus:border-purple-400 text-left text-sm flex items-center justify-between"
+                            class="h-12 w-full rounded-lg border px-4 bg-white outline-none focus:border-blue-400 text-left text-sm flex items-center justify-between"
                             :disabled="!treatment.type.trim()"
                             :class="
                                 treatmentErrors.name
@@ -513,7 +513,7 @@
                                 />
                                 <button
                                     type="button"
-                                    class="h-11 rounded-lg bg-purple-400 px-4 text-white font-semibold text-sm disabled:opacity-50"
+                                    class="h-11 rounded-lg bg-blue-400 px-4 text-white font-semibold text-sm disabled:opacity-50"
                                     :disabled="!customTreatmentName.trim()"
                                     @click="addCustomTreatmentName"
                                 >
@@ -531,7 +531,7 @@
                             v-model.trim="treatment.dose"
                             type="text"
                             placeholder="Ex: 500mg, 1 comprime..."
-                            class="h-12 rounded-lg w-full border bg-slate-50 px-4 outline-none focus:border-purple-400"
+                            class="h-12 rounded-lg w-full border bg-slate-50 px-4 outline-none placeholder:text-sm focus:border-blue-400"
                             :class="
                                 treatmentErrors.dose
                                     ? 'border-red-300'
@@ -555,7 +555,7 @@
                         <div class="grid grid-cols-2 gap-3">
                             <select
                                 v-model="treatment.frequency_unit"
-                                class="h-12 rounded-lg w-full border px-4 bg-white outline-none focus:border-purple-400"
+                                class="h-12 rounded-lg w-full border px-4 bg-white outline-none focus:border-blue-400"
                                 :class="
                                     treatmentErrors.frequency_unit
                                         ? 'border-red-300'
@@ -619,7 +619,7 @@
                             type="text"
                             placeholder="Ex: 01/03/2026"
                             maxlength="10"
-                            class="h-12 rounded-lg w-full border bg-slate-50 px-4 outline-none focus:border-purple-400"
+                            class="h-12 rounded-lg w-full border bg-slate-50 px-4 outline-none placeholder:text-sm focus:border-blue-400"
                             :class="
                                 treatmentErrors.start_date
                                     ? 'border-red-300'
@@ -654,7 +654,7 @@
                             type="text"
                             placeholder="Ex: 30/03/2026"
                             maxlength="10"
-                            class="h-12 rounded-lg w-full border bg-slate-50 px-4 outline-none focus:border-purple-400"
+                            class="h-12 rounded-lg w-full border bg-slate-50 px-4 outline-none placeholder:text-sm focus:border-blue-400"
                             :class="
                                 treatmentErrors.end_date
                                     ? 'border-red-300'
@@ -676,7 +676,7 @@
                     <div class="grid grid-cols-2 gap-3 pt-2">
                         <button
                             type="button"
-                            class="h-11 rounded-lg bg-purple-500 text-white font-semibold"
+                            class="h-11 rounded-lg bg-blue-500 text-white font-semibold"
                             @click="addTreatment"
                         >
                             + Ajouter
@@ -693,7 +693,7 @@
 
                 <div
                     v-if="form.traitements.length"
-                    class="bg-white rounded-xl border border-purple-100 p-4 space-y-3"
+                    class="bg-white rounded-xl border border-blue-100 p-4 space-y-3"
                 >
                     <h4 class="font-medium text-gray-900">
                         Traitements ajoutes ({{ form.traitements.length }})

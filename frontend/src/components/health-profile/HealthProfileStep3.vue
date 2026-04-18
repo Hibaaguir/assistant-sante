@@ -19,7 +19,7 @@
                         class="relative cursor-pointer rounded-2xl border-2 p-6 transition-all hover:shadow-md"
                         :class="
                             hasDoctor === 'yes'
-                                ? 'border-purple-400 bg-purple-50/50 shadow-sm'
+                                ? 'border-blue-400 bg-blue-50/50 shadow-sm'
                                 : 'border-gray-200 bg-white hover:border-gray-300'
                         "
                     >
@@ -36,7 +36,7 @@
                                 class="h-8 w-8"
                                 :class="
                                     hasDoctor === 'yes'
-                                        ? 'text-purple-500'
+                                        ? 'text-blue-500'
                                         : 'text-gray-400'
                                 "
                                 fill="none"
@@ -52,7 +52,7 @@
                                 class="font-medium"
                                 :class="
                                     hasDoctor === 'yes'
-                                        ? 'text-purple-700'
+                                        ? 'text-blue-700'
                                         : 'text-gray-700'
                                 "
                                 >Oui</span
@@ -64,7 +64,7 @@
                         class="relative cursor-pointer rounded-2xl border-2 p-6 transition-all hover:shadow-md"
                         :class="
                             hasDoctor === 'no'
-                                ? 'border-purple-400 bg-purple-50/50 shadow-sm'
+                                ? 'border-blue-400 bg-blue-50/50 shadow-sm'
                                 : 'border-gray-200 bg-white hover:border-gray-300'
                         "
                     >
@@ -81,7 +81,7 @@
                                 class="h-8 w-8"
                                 :class="
                                     hasDoctor === 'no'
-                                        ? 'text-purple-500'
+                                        ? 'text-blue-500'
                                         : 'text-gray-400'
                                 "
                                 fill="none"
@@ -97,7 +97,7 @@
                                 class="font-medium"
                                 :class="
                                     hasDoctor === 'no'
-                                        ? 'text-purple-700'
+                                        ? 'text-blue-700'
                                         : 'text-gray-700'
                                 "
                                 >Non</span
@@ -125,18 +125,18 @@
                         type="email"
                         placeholder="medecin@exemple.com"
                         v-model.trim="form.medecin_email"
-                        class="h-14 pl-14 text-lg rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:ring-purple-400 w-full outline-none"
+                        class="h-14 pl-14 text-lg rounded-xl border-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400 w-full outline-none"
                     />
                 </div>
 
                 <div
-                    class="bg-purple-50 border border-purple-200 rounded-xl p-5 flex gap-4"
+                    class="bg-blue-50 border border-blue-200 rounded-xl p-5 flex gap-4"
                 >
                     <div
-                        class="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center"
+                        class="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center"
                     >
                         <svg
-                            class="h-5 w-5 text-purple-600"
+                            class="h-5 w-5 text-blue-600"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -148,10 +148,10 @@
                         </svg>
                     </div>
                     <div class="flex-1">
-                        <p class="font-medium text-purple-900 mb-1">
+                        <p class="font-medium text-blue-900 mb-1">
                             Invitation securisee
                         </p>
-                        <p class="text-sm text-purple-700">
+                        <p class="text-sm text-blue-700">
                             Si ton medecin a deja un compte, l'invitation
                             apparaitra dans son espace medecin. Sinon, il
                             recevra un email.

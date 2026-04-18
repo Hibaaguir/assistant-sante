@@ -1,7 +1,7 @@
 <template>
     <article
         :class="[
-            'min-h-[162px] rounded-2xl border-2 border-blue-300 px-6 py-6 transition-all duration-300 hover:border-blue-400 hover:shadow-lg',
+            'min-h-[162px] rounded-2xl border-2 border-slate-200 px-6 py-6 transition-all duration-300 hover:border-slate-300 hover:shadow-lg',
             bg,
             canEdit ? 'cursor-pointer' : '',
         ]"

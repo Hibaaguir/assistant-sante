@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen bg-white relative overflow-hidden">
+    <div class="min-h-screen bg-white">
         <!-- En-tête sticky avec stepper -->
         <header
             class="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur-sm"
@@ -49,7 +49,7 @@
                                 class="text-center text-xs font-medium"
                                 :class="
                                     currentStep >= step.number
-                                        ? 'text-purple-600'
+                                        ? 'text-blue-600'
                                         : 'text-gray-400'
                                 "
                             >
@@ -61,7 +61,7 @@
                             class="-mt-6 mx-2 h-0.5 flex-1 transition-all"
                             :class="
                                 currentStep > step.number
-                                    ? 'bg-purple-500'
+                                    ? 'bg-blue-500'
                                     : 'bg-slate-200'
                             "
                         />
@@ -73,7 +73,7 @@
                     class="mx-auto h-1.5 max-w-2xl overflow-hidden rounded-full bg-slate-200"
                 >
                     <div
-                        class="h-full bg-gradient-to-r from-purple-400 to-purple-500 transition-all duration-300"
+                        class="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-300"
                         :style="{ width: progress + '%' }"
                     />
                 </div>
@@ -91,7 +91,7 @@
                 class="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm"
             >
                 <div
-                    class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-purple-50 text-purple-600"
+                    class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600"
                 >
                     <svg
                         class="h-5 w-5 animate-spin"
@@ -264,9 +264,9 @@ watch(
 
 // Return the CSS classes for a step circle (completed / active / inactive)
 function stepClass(n) {
-    if (currentStep.value > n) return "bg-purple-500 text-white";
+    if (currentStep.value > n) return "bg-blue-600 text-white";
     if (currentStep.value === n)
-        return "bg-purple-500 text-white ring-4 ring-purple-100";
+        return "bg-blue-600 text-white ring-4 ring-blue-100";
     return "bg-slate-200 text-slate-500";
 }
 

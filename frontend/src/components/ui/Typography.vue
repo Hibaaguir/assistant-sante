@@ -67,7 +67,7 @@ defineProps({
     &.h1-style {
         font-size: 3rem;
         font-weight: 800;
-        color: #004e89;
+        color: #1a1a1a;
         @media (max-width: 768px) {
             font-size: 2.4rem;
         }
@@ -86,7 +86,7 @@ defineProps({
     &.h3-style {
         font-size: 1.95rem;
         font-weight: 700;
-        color: #004e89;
+        color: #1a1a1a;
     }
 
     &.h4-style {

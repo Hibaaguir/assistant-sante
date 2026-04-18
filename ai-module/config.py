@@ -9,8 +9,10 @@ from pathlib import Path
 
 
 def _load_env_file() -> dict:
-    """Parse backend/.env and return key-value pairs."""
-    env_path = Path(__file__).parent.parent / "backend" / ".env"
+    """Parse .env and return key-value pairs. Checks ai-module/.env first, then backend/.env."""
+    local_env  = Path(__file__).parent / ".env"
+    backend_env = Path(__file__).parent.parent / "backend" / ".env"
+    env_path = local_env if local_env.exists() else backend_env
     values = {}
     if not env_path.exists():
         raise FileNotFoundError(f".env file not found at: {env_path}")
@@ -62,3 +64,5 @@ def get_db_config() -> dict:
         "user":     env.get("DB_USERNAME", "root"),
         "password": env.get("DB_PASSWORD", ""),
     }
+
+

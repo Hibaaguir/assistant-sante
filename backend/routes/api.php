@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\HealthProfileController;
 use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\TreatmentCatalogController;
 use App\Http\Controllers\Api\UserAdminController;
+use App\Http\Controllers\Api\AiAnalysisController;
 use Illuminate\Support\Facades\Route;
 
 // Routes publiques (sans Sanctum)
@@ -90,6 +91,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/treatment-checks',    [HealthDataController::class, 'indexTreatmentChecks']);
         Route::post('/treatment-checks/sync', [HealthDataController::class, 'syncTreatmentChecks']);
     });
+
+    // --- Analyse IA ---
+    Route::get('/ai/analysis', [AiAnalysisController::class, 'analyze']);
 
     // --- Invitations de medecin ---
     Route::prefix('doctor-invitations')->group(function () {

@@ -98,7 +98,7 @@ const variantClasses = computed(() => {
     const variants = {
         // Link-style variants - no borders, just text/icon
         primary:
-            "border-0 bg-transparent text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 font-bold focus:outline-none",
+            "border-2 border-blue-600 text-blue-600 bg-white hover:bg-blue-50 transition-colors duration-200 font-bold focus:outline-none focus:ring-blue-300",
         outline:
             "border-2 border-blue-600 text-slate-700 bg-white hover:border-blue-700 transition-colors duration-200 font-bold focus:outline-none",
         secondary:

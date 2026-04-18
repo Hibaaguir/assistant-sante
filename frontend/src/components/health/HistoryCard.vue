@@ -4,7 +4,7 @@
         Used inside the "Historique des mesures" section of TabSignesVitaux.
     -->
     <article
-        class="rounded-xl border-2 border-blue-300 px-4 py-3 transition-all duration-300 hover:border-blue-400 hover:shadow-md"
+        class="rounded-xl border-2 border-slate-200 px-4 py-3 transition-all duration-300 hover:border-slate-300 hover:shadow-md"
         :class="[bg]"
     >
         <div class="flex items-center gap-3">

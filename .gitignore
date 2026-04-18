@@ -1,6 +1,7 @@
 *.log
 .DS_Store
 Thumbs.db
+ai-module/.env
 
 # IDE
 /.fleet
