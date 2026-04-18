@@ -1,7 +1,7 @@
 <template>
     <!-- Goal selection card — user clicks to select or deselect a goal -->
     <div
-        class="cursor-pointer rounded-xl border-2 p-5 transition-all hover:shadow-md"
+        class="cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-md"
         :class="
             selected
                 ? 'border-blue-400 bg-blue-50/50 shadow-sm'
@@ -27,7 +27,7 @@
             </div>
 
             <!-- Goal label text -->
-            <p class="flex-1 font-medium text-gray-900">{{ label }}</p>
+            <p class="flex-1 text-sm font-semibold text-gray-700 leading-snug">{{ label }}</p>
         </div>
     </div>
 </template>

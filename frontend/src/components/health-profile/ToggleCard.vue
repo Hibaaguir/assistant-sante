@@ -4,7 +4,7 @@
         class="flex items-center justify-between rounded-xl border-2 border-gray-200 bg-white px-4 py-4"
     >
         <!-- Label text (ex: "Fumeur", "Consommation d'alcool") -->
-        <span class="text-sm font-medium text-gray-800">{{ label }}</span>
+        <span class="text-sm font-semibold text-gray-700 leading-snug">{{ label }}</span>
 
         <!-- Toggle switch (on/off) -->
         <label class="relative inline-flex cursor-pointer items-center">

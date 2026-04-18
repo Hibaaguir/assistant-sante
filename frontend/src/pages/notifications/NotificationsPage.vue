@@ -161,14 +161,17 @@ const filterType = ref("all");
 const filterDays = ref(7);
 
 const filtered = computed(() => {
+    const days = Number(filterDays.value);
     const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - filterDays.value);
+    cutoff.setDate(cutoff.getDate() - days);
+    cutoff.setHours(0, 0, 0, 0);
 
     return all.value.filter((n) => {
         const matchType =
             filterType.value === "all" || n.kind === filterType.value;
-        const matchDate = new Date(n.created_at) >= cutoff;
-        return matchType && matchDate;
+        if (!n.target_date) return matchType;
+        const notifDate = new Date(n.target_date + "T00:00:00");
+        return matchType && !isNaN(notifDate) && notifDate >= cutoff;
     });
 });
 

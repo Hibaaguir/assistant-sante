@@ -13,7 +13,7 @@
         <div class="space-y-8">
             <section class="space-y-4">
                 <label
-                    class="text-base font-medium text-gray-900 flex items-center gap-2"
+                    class="text-lg font-semibold text-gray-800 flex items-center gap-2"
                 >
                     <svg
                         class="h-5 w-5 text-red-500"
@@ -31,24 +31,30 @@
                     Groupe sanguin <span class="text-red-600">*</span>
                 </label>
 
-                <select
-                    v-model="form.groupe_sanguin"
-                    class="h-14 text-base rounded-xl border-2 border-gray-300 max-w-md w-full bg-white px-4 outline-none focus:border-blue-400"
-                >
-                    <option value="">Selectionner votre groupe sanguin</option>
-                    <option
-                        v-for="group in bloodGroups"
-                        :key="group"
-                        :value="group"
+                <div class="relative max-w-md w-full">
+                    <select
+                        v-model="form.groupe_sanguin"
+                        class="h-11 text-lg rounded-xl border-2 border-gray-300 w-full bg-white px-4 pr-10 outline-none focus:border-blue-400 appearance-none cursor-pointer"
+                        style="font-size: 1.1rem"
                     >
-                        {{ group }}
-                    </option>
-                </select>
+                        <option value="">Selectionner votre groupe sanguin</option>
+                        <option
+                            v-for="group in bloodGroups"
+                            :key="group"
+                            :value="group"
+                        >
+                            {{ group }}
+                        </option>
+                    </select>
+                    <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M8 10l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
             </section>
 
             <section class="space-y-4">
                 <label
-                    class="text-base font-medium text-gray-900 flex items-center gap-2"
+                    class="text-lg font-semibold text-gray-800 flex items-center gap-2"
                 >
                     <svg
                         class="h-5 w-5 text-orange-500"
@@ -75,10 +81,11 @@
 
                 <button
                     type="button"
-                    class="h-14 w-full rounded-xl border-2 border-gray-300 bg-white px-4 text-left text-base font-semibold flex items-center justify-between"
+                    class="h-11 w-full rounded-xl border-2 border-gray-300 bg-white px-4 text-left flex items-center justify-between outline-none focus:border-blue-400 cursor-pointer"
+                    style="font-size: 1.1rem"
                     @click="openAllergies = !openAllergies"
                 >
-                    <span>{{
+                    <span class="text-gray-700">{{
                         form.allergies.length
                             ? `${form.allergies.length} selectionne(s)`
                             : "Selectionner vos allergies"
@@ -185,16 +192,17 @@
             </section>
 
             <section class="space-y-4">
-                <label class="text-base font-medium text-gray-900">
+                <label class="text-lg font-semibold text-gray-800">
                     Maladies chroniques
                 </label>
 
                 <button
                     type="button"
-                    class="h-14 w-full rounded-xl border-2 border-gray-300 bg-white px-4 text-left text-base font-semibold flex items-center justify-between"
+                    class="h-11 w-full rounded-xl border-2 border-gray-300 bg-white px-4 text-left flex items-center justify-between outline-none focus:border-blue-400 cursor-pointer"
+                    style="font-size: 1.1rem"
                     @click="openDiseases = !openDiseases"
                 >
-                    <span>{{
+                    <span class="text-gray-700">{{
                         form.maladies_chroniques.length
                             ? `${form.maladies_chroniques.length} selectionne(s)`
                             : "Selectionner vos maladies chroniques"
@@ -227,10 +235,9 @@
                         {{ item }}
                         <button
                             type="button"
+                            class="flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-sm font-bold text-red-500 hover:bg-red-200 transition-colors"
                             @click="removeSelected('maladies_chroniques', item)"
-                        >
-                            x
-                        </button>
+                        >×</button>
                     </span>
                 </div>
 
@@ -553,20 +560,26 @@
                             <span class="text-red-500">*</span></label
                         >
                         <div class="grid grid-cols-2 gap-3">
-                            <select
-                                v-model="treatment.frequency_unit"
-                                class="h-12 rounded-lg w-full border px-4 bg-white outline-none focus:border-blue-400"
-                                :class="
-                                    treatmentErrors.frequency_unit
-                                        ? 'border-red-300'
-                                        : 'border-gray-200'
-                                "
-                                @change="treatmentErrors.frequency_unit = ''"
-                            >
-                                <option value="day">Par jour</option>
-                                <option value="week">Par semaine</option>
-                                <option value="month">Par mois</option>
-                            </select>
+                            <div class="relative">
+                                <select
+                                    v-model="treatment.frequency_unit"
+                                    class="h-11 rounded-lg w-full border px-4 pr-9 bg-white outline-none focus:border-blue-400 text-base font-medium text-gray-800 appearance-none cursor-pointer"
+                                    style="font-size: 1rem"
+                                    :class="
+                                        treatmentErrors.frequency_unit
+                                            ? 'border-red-300'
+                                            : 'border-gray-200'
+                                    "
+                                    @change="treatmentErrors.frequency_unit = ''"
+                                >
+                                    <option value="day">Par jour</option>
+                                    <option value="week">Par semaine</option>
+                                    <option value="month">Par mois</option>
+                                </select>
+                                <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M8 10l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
                             <div
                                 class="flex h-12 w-full items-center justify-between rounded-lg border border-gray-200 bg-slate-50 px-4 text-sm text-slate-900"
                             >
@@ -674,20 +687,22 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-3 pt-2">
-                        <button
+                        <BaseButton
                             type="button"
-                            class="h-11 rounded-lg bg-blue-500 text-white font-semibold"
+                            variant="add"
+                            size="md"
                             @click="addTreatment"
                         >
                             + Ajouter
-                        </button>
-                        <button
+                        </BaseButton>
+                        <BaseButton
                             type="button"
-                            class="h-11 rounded-lg border border-slate-300 font-semibold text-slate-900"
+                            variant="cancel"
+                            size="md"
                             @click="cancelTreatment"
                         >
                             Annuler
-                        </button>
+                        </BaseButton>
                     </div>
                 </div>
 

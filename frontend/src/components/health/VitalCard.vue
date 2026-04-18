@@ -18,12 +18,6 @@
                 v-html="icon"
             ></div>
 
-            <!-- Status badge (always "Normal" for now) -->
-            <span
-                class="rounded-full bg-[#dff6e4] px-3 py-1 text-[12px] leading-none text-[#08aa48]"
-            >
-                Normal
-            </span>
         </div>
 
         <!-- Vital sign name (ex: "Rythme cardiaque") -->

@@ -64,7 +64,6 @@
                         >
                             {{ item.name }}
                         </Typography>
-                        <StatusBadge :status="item.status" />
                     </div>
                     <div class="mt-2 flex items-center gap-4 text-slate-900">
                         <p class="text-[22px] font-semibold leading-none">

@@ -1,7 +1,7 @@
 <template>
     <!-- Gender selection card — click to choose Male or Female -->
     <label
-        class="relative cursor-pointer rounded-2xl border-2 p-6 transition-all hover:shadow-md"
+        class="relative cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-md"
         :class="cardClass"
     >
         <!-- Hidden radio input for accessibility (screen readers) -->
@@ -13,10 +13,10 @@
             @change="$emit('select')"
         />
 
-        <div class="flex flex-col items-center gap-3">
+        <div class="flex flex-col items-center gap-2">
             <!-- Gender icon (SVG paths are passed as an array from parent) -->
             <svg
-                class="h-8 w-8"
+                class="h-6 w-6"
                 :class="selected ? 'text-blue-500' : 'text-gray-400'"
                 fill="none"
                 viewBox="0 0 24 24"

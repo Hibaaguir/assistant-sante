@@ -36,12 +36,6 @@
                     </span>
                 </p>
 
-                <!-- Status badge -->
-                <span
-                    class="mt-2 inline-block rounded-full bg-[#dff6e4] px-2.5 py-0.5 text-[12px] leading-none text-[#08aa48]"
-                >
-                    Normal
-                </span>
             </div>
         </div>
     </article>

@@ -9,7 +9,7 @@
 
         <div class="space-y-8">
             <div class="space-y-4">
-                <p class="text-base font-medium text-gray-900">
+                <p class="text-lg font-semibold text-gray-800">
                     Souhaitez-vous inviter votre médecin à accéder à vos données
                     de santé ?
                 </p>
@@ -34,29 +34,14 @@
                         <div class="flex flex-col items-center gap-3">
                             <svg
                                 class="h-8 w-8"
-                                :class="
-                                    hasDoctor === 'yes'
-                                        ? 'text-blue-500'
-                                        : 'text-gray-400'
-                                "
+                                :class="hasDoctor === 'yes' ? 'text-blue-500' : 'text-gray-400'"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
                             >
-                                <path
-                                    d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
-                                    stroke-width="2"
-                                />
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke-width="2" />
                             </svg>
-                            <span
-                                class="font-medium"
-                                :class="
-                                    hasDoctor === 'yes'
-                                        ? 'text-blue-700'
-                                        : 'text-gray-700'
-                                "
-                                >Oui</span
-                            >
+                            <span class="font-medium" :class="hasDoctor === 'yes' ? 'text-blue-700' : 'text-gray-700'">Oui</span>
                         </div>
                     </label>
 
@@ -79,36 +64,21 @@
                         <div class="flex flex-col items-center gap-3">
                             <svg
                                 class="h-8 w-8"
-                                :class="
-                                    hasDoctor === 'no'
-                                        ? 'text-blue-500'
-                                        : 'text-gray-400'
-                                "
+                                :class="hasDoctor === 'no' ? 'text-blue-500' : 'text-gray-400'"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
                             >
-                                <path
-                                    d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"
-                                    stroke-width="2"
-                                />
+                                <path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5" stroke-width="2" />
                             </svg>
-                            <span
-                                class="font-medium"
-                                :class="
-                                    hasDoctor === 'no'
-                                        ? 'text-blue-700'
-                                        : 'text-gray-700'
-                                "
-                                >Non</span
-                            >
+                            <span class="font-medium" :class="hasDoctor === 'no' ? 'text-blue-700' : 'text-gray-700'">Non</span>
                         </div>
                     </label>
                 </div>
             </div>
 
             <div v-if="hasDoctor === 'yes'" class="space-y-4 max-w-2xl">
-                <p class="text-base font-medium text-gray-900">
+                <p class="text-lg font-semibold text-gray-800">
                     Email du medecin
                 </p>
 
@@ -164,7 +134,7 @@
                 v-if="hasDoctor === 'no'"
                 class="bg-gray-50 border border-gray-200 rounded-xl p-6"
             >
-                <p class="text-gray-700">
+                <p class="text-sm text-gray-600">
                     Aucun souci ! Tu pourras inviter un medecin plus tard depuis
                     les parametres de ton profil.
                 </p>

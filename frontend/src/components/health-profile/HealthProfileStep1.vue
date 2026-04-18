@@ -14,7 +14,7 @@
         <div class="space-y-8">
             <!-- ── Genre ─────────────────────────────────── -->
             <div class="space-y-4">
-                <p class="text-base font-medium text-gray-900">
+                <p class="text-lg font-semibold text-gray-800">
                     Genre <span class="ml-0.5 text-red-600">*</span>
                 </p>
 
@@ -41,9 +41,9 @@
 
             <!-- ── Âge (read-only, calculated from date of birth) ─────── -->
             <div class="max-w-md space-y-2">
-                <p class="text-base font-medium text-gray-900">Âge</p>
+                <p class="text-lg font-semibold text-gray-800">Âge</p>
                 <div
-                    class="flex h-14 items-center rounded-xl border-2 border-gray-200 bg-gray-50 px-5 text-lg text-gray-900"
+                    class="flex h-11 items-center rounded-xl border-2 border-gray-200 bg-gray-50 px-4 text-base text-gray-900"
                 >
                     {{
                         computedAge !== ""
@@ -59,7 +59,7 @@
 
             <!-- ── Taille / Poids ─────────────────────────────────────── -->
             <div class="space-y-4">
-                <p class="text-base font-medium text-gray-900">
+                <p class="text-lg font-semibold text-gray-800">
                     Taille et poids <span class="ml-0.5 text-red-600">*</span>
                 </p>
 
@@ -75,7 +75,7 @@
                             :min="field.min"
                             :max="field.max"
                             :placeholder="field.placeholder"
-                            class="h-14 w-full rounded-xl border-2 px-4 text-lg outline-none focus:border-blue-400"
+                            class="h-11 w-full rounded-xl border-2 px-4 text-base outline-none focus:border-blue-400"
                             :class="
                                 props.showErrors && errors[field.key]
                                     ? 'border-red-300'
@@ -100,7 +100,7 @@
 
             <!-- ── Habitudes de vie ───────────────────────────────────── -->
             <div class="space-y-4">
-                <p class="text-base font-medium text-gray-900">
+                <p class="text-lg font-semibold text-gray-800">
                     Habitudes de vie
                 </p>
 
@@ -117,7 +117,7 @@
 
             <!-- ── Objectifs ──────────────────────────────────────────── -->
             <div class="space-y-4">
-                <p class="text-base font-medium text-gray-900">
+                <p class="text-lg font-semibold text-gray-800">
                     Objectifs <span class="ml-0.5 text-red-600">*</span>
                 </p>
                 <p class="text-xs text-gray-500">

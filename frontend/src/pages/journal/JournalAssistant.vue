@@ -96,28 +96,18 @@
                     </div>
                 </div>
                 <div v-else-if="step === 2" class="space-y-4">
-                    <div
-                        class="rounded-xl border border-blue-200 bg-white p-3 sm:p-4"
-                    >
-                        <p class="text-sm font-semibold text-slate-900">
-                            Repas d'aujourd'hui
-                        </p>
-                        <p class="mt-0.5 text-xs text-slate-500">
-                            Les repas ajoutés seront enregistrés dans votre journal du jour.
-                        </p>
-                        <div
-                            class="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-4"
-                        >
+                    <!-- Bloc 1 : Repas -->
+                    <div class="rounded-xl border border-blue-200 bg-white p-4">
+                        <p class="text-sm font-semibold text-slate-900">Repas d'aujourd'hui</p>
+                        <p class="mt-0.5 text-xs text-slate-400">Les repas ajoutés seront enregistrés dans votre journal du jour.</p>
+
+                        <div class="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                             <button
                                 v-for="item in meals"
                                 :key="item.id"
                                 type="button"
-                                class="rounded-xl border px-4 py-2 text-sm font-semibold transition-colors"
-                                :class="
-                                    form.selectedMeal === item.id
-                                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                        : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'
-                                "
+                                class="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors"
+                                :class="form.selectedMeal === item.id ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'"
                                 @click="form.selectedMeal = item.id"
                             >
                                 <div v-html="item.icon" />
@@ -125,394 +115,163 @@
                             </button>
                         </div>
 
-                        <div
-                            v-if="form.selectedMeal"
-                            class="mt-3 rounded-xl border border-blue-200 bg-slate-50 p-3"
-                        >
-                            <div
-                                class="mb-2 flex items-center justify-between text-sm font-semibold"
-                            >
-                                <span>Ajouter : {{ selectedMealLabel }}</span>
-                                <button
-                                    type="button"
-                                    class="flex h-7 w-7 items-center justify-center rounded-full bg-red-100 text-lg font-bold text-red-600 hover:bg-red-200 transition-colors"
-                                    @click="form.selectedMeal = ''"
-                                >
-                                    ×
-                                </button>
+                        <div v-if="form.selectedMeal" class="mt-3 border-t border-slate-100 pt-3">
+                            <div class="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700">
+                                <span>{{ selectedMealLabel }}</span>
+                                <button type="button" class="flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-sm font-bold text-red-500 hover:bg-red-200 transition-colors" @click="form.selectedMeal = ''">×</button>
                             </div>
-                            <input
-                                v-model="mealDraft.label"
-                                type="text"
-                                class="w-full rounded-lg border border-blue-200 px-3 py-1.5 text-sm"
-                                placeholder="Ex: Oeufs + pain complet"
-                            />
-                            <input
-                                v-model.number="mealDraft.calories"
-                                type="number"
-                                min="0"
-                                class="mt-1.5 w-full rounded-lg border border-blue-200 px-3 py-1.5 text-sm"
-                                placeholder="Calories (optionnel)"
-                            />
-                            <button
-                                type="button"
-                                class="mt-3 w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                                :disabled="!mealDraft.label.trim()"
-                                @click="addMeal"
-                            >
-                                Ajouter
-                            </button>
+                            <input v-model="mealDraft.label" type="text" class="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-blue-400" placeholder="Ex: Oeufs + pain complet" />
+                            <input v-model.number="mealDraft.calories" type="number" min="0" class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-blue-400" placeholder="Calories (optionnel)" />
+                            <button type="button" class="mt-2 w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors" :disabled="!mealDraft.label.trim()" @click="addMeal">Ajouter</button>
                         </div>
 
-                        <div
-                            class="mt-3 rounded-xl border border-blue-200 bg-white p-3"
-                        >
-                            <p class="text-sm font-semibold text-slate-900">
-                                Repas ajoutés ({{ form.meals.length }})
-                            </p>
-                            <ul v-if="form.meals.length" class="mt-2 space-y-1.5">
-                                <li
-                                    v-for="(meal, index) in form.meals"
-                                    :key="`${meal.type}-${meal.label}-${index}`"
-                                    class="flex items-center justify-between rounded-lg border border-blue-200 px-3 py-1.5 text-sm"
-                                >
-                                    <span class="text-slate-700">
-                                        <strong>{{
-                                            getMealTypeLabel(meal.type)
-                                        }}</strong>
-                                        - {{ meal.label
-                                        }}<span
-                                            v-if="
-                                                meal.calories !== null &&
-                                                meal.calories !== undefined
-                                            "
-                                        >
-                                            ({{ meal.calories }} kcal)</span
-                                        >
-                                    </span>
-                                    <BaseButton
-                                        type="button"
-                                        variant="delete"
-                                        size="sm"
-                                        @click="deleteMeal(index)"
-                                    >
-                                        Supprimer
-                                    </BaseButton>
+                        <div v-if="form.meals.length" class="mt-3 border-t border-slate-100 pt-3">
+                            <ul class="space-y-1.5">
+                                <li v-for="(meal, index) in form.meals" :key="`${meal.type}-${meal.label}-${index}`" class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-1.5 text-sm">
+                                    <span class="text-slate-700"><strong>{{ getMealTypeLabel(meal.type) }}</strong> — {{ meal.label }}<span v-if="meal.calories != null"> ({{ meal.calories }} kcal)</span></span>
+                                    <BaseButton type="button" variant="delete" size="sm" @click="deleteMeal(index)">Supprimer</BaseButton>
                                 </li>
                             </ul>
-                            <p v-else class="mt-2 text-xs text-slate-400">
-                                Aucun repas ajouté pour le moment.
-                            </p>
-                            <div
-                                class="mt-2 rounded-lg border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-800"
-                            >
-                                Total calories : {{ mealsCaloriesTotal }} kcal
-                            </div>
+                            <p class="mt-2 text-xs font-semibold text-green-700">Total calories : {{ mealsCaloriesTotal }} kcal</p>
                         </div>
+                        <p v-else class="mt-3 text-xs text-slate-400">Aucun repas ajouté pour le moment.</p>
                     </div>
 
-                    <div
-                        class="rounded-xl border border-blue-200 bg-white p-3 sm:p-4"
-                    >
-                        <p class="text-sm font-semibold text-slate-900">
-                            Caféine (tasses)
-                        </p>
-                        <div class="mt-2 flex items-center gap-2">
-                            <div
-                                class="inline-flex items-center rounded-lg border border-blue-300 bg-white px-3 py-2 text-base font-semibold text-slate-700"
-                            >
-                                {{ form.caffeine }} tasse(s)
+                    <!-- Bloc 2 : Caféine + Hydratation + Sucre -->
+                    <div class="rounded-xl border border-blue-200 bg-white p-3 sm:p-4 space-y-4">
+                        <!-- Caféine -->
+                        <div>
+                            <p class="text-sm font-semibold text-slate-900">Caféine (tasses)</p>
+                            <div class="mt-2 flex items-center gap-2">
+                                <div class="inline-flex items-center rounded-lg border border-blue-300 bg-white px-3 py-2 text-base font-semibold text-slate-700">
+                                    {{ form.caffeine }} tasse(s)
+                                </div>
+                                <BaseButton type="button" variant="secondary" size="sm" @click="adjustCaffeine(-1)">-</BaseButton>
+                                <BaseButton type="button" variant="outline" size="sm" @click="adjustCaffeine(1)">+</BaseButton>
                             </div>
-                            <BaseButton
-                                type="button"
-                                variant="secondary"
-                                size="sm"
-                                @click="adjustCaffeine(-1)"
-                            >
-                                -
-                            </BaseButton>
-                            <BaseButton
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                @click="adjustCaffeine(1)"
-                            >
-                                +
-                            </BaseButton>
                         </div>
-                    </div>
 
-                    <div
-                        class="rounded-xl border border-blue-200 bg-white p-3 sm:p-4"
-                    >
-                        <p class="text-sm font-semibold text-slate-900">
-                            Hydratation
-                        </p>
-                        <div class="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
-                            <div
-                                class="rounded-lg border border-blue-200 bg-white p-2.5"
-                            >
-                                <div class="flex items-start justify-between">
-                                    <div>
-                                        <p
-                                            class="text-sm font-semibold text-slate-800"
-                                        >
-                                            Verre
-                                        </p>
-                                        <p class="text-xs text-slate-500">
-                                            0.5L par unité
-                                        </p>
+                        <div class="border-t border-slate-100" />
+
+                        <!-- Hydratation -->
+                        <div>
+                            <p class="text-sm font-semibold text-slate-900">Hydratation</p>
+                            <div class="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                                <div class="rounded-lg border border-blue-200 bg-white p-2.5">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <p class="text-sm font-semibold text-slate-800">Verre</p>
+                                            <p class="text-xs text-slate-500">0.5L par unité</p>
+                                        </div>
+                                        <svg viewBox="0 0 24 24" class="h-4 w-4 text-sky-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <path d="M7 3h10l-1 16a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2L7 3z" />
+                                            <path d="M8 8h8" />
+                                        </svg>
                                     </div>
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        class="h-4 w-4 text-sky-600"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            d="M7 3h10l-1 16a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2L7 3z"
-                                        />
-                                        <path d="M8 8h8" />
-                                    </svg>
-                                </div>
-                                <div
-                                    class="mt-3 flex items-center justify-between"
-                                >
-                                    <BaseButton
-                                        type="button"
-                                        variant="secondary"
-                                        size="sm"
-                                        @click="adjustCups(-1)"
-                                    >
-                                        -
-                                    </BaseButton>
-                                    <span class="text-lg font-bold">{{
-                                        form.cupCount
-                                    }}</span>
-                                    <BaseButton
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        @click="adjustCups(1)"
-                                    >
-                                        +
-                                    </BaseButton>
-                                </div>
-                            </div>
-
-                            <div
-                                class="rounded-lg border border-blue-200 bg-white p-2.5"
-                            >
-                                <div class="flex items-start justify-between">
-                                    <div>
-                                        <p
-                                            class="text-sm font-semibold text-slate-800"
-                                        >
-                                            Bouteille
-                                        </p>
-                                        <p class="text-xs text-slate-500">
-                                            1.5L par unité
-                                        </p>
+                                    <div class="mt-3 flex items-center justify-between">
+                                        <BaseButton type="button" variant="secondary" size="sm" @click="adjustCups(-1)">-</BaseButton>
+                                        <span class="text-lg font-bold">{{ form.cupCount }}</span>
+                                        <BaseButton type="button" variant="outline" size="sm" @click="adjustCups(1)">+</BaseButton>
                                     </div>
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        class="h-4 w-4 text-cyan-600"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        aria-hidden="true"
-                                    >
-                                        <path d="M10 3h4v3h2v15H8V6h2z" />
-                                        <path d="M10 11h4" />
-                                    </svg>
                                 </div>
-                                <div
-                                    class="mt-3 flex items-center justify-between"
-                                >
-                                    <BaseButton
-                                        type="button"
-                                        variant="secondary"
-                                        size="sm"
-                                        @click="adjustBottles(-1)"
-                                    >
-                                        -
-                                    </BaseButton>
-                                    <span class="text-lg font-bold">{{
-                                        form.bottleCount
-                                    }}</span>
-                                    <BaseButton
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        @click="adjustBottles(1)"
-                                    >
-                                        +
-                                    </BaseButton>
+                                <div class="rounded-lg border border-blue-200 bg-white p-2.5">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <p class="text-sm font-semibold text-slate-800">Bouteille</p>
+                                            <p class="text-xs text-slate-500">1.5L par unité</p>
+                                        </div>
+                                        <svg viewBox="0 0 24 24" class="h-4 w-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <path d="M10 3h4v3h2v15H8V6h2z" />
+                                            <path d="M10 11h4" />
+                                        </svg>
+                                    </div>
+                                    <div class="mt-3 flex items-center justify-between">
+                                        <BaseButton type="button" variant="secondary" size="sm" @click="adjustBottles(-1)">-</BaseButton>
+                                        <span class="text-lg font-bold">{{ form.bottleCount }}</span>
+                                        <BaseButton type="button" variant="outline" size="sm" @click="adjustBottles(1)">+</BaseButton>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="mt-3">
+                                <input v-model.number="form.customHydration" type="number" step="0.1" min="0" class="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm" placeholder="Autre quantité (en litres)" />
+                            </div>
+                            <div class="mt-3 inline-flex rounded-lg border-2 border-violet-400 bg-white px-4 py-2 text-sm font-semibold text-violet-700">
+                                Total: {{ hydrationTotal.toFixed(1) }} L
+                            </div>
                         </div>
-                        <div class="mt-3">
-                            <input
-                                v-model.number="form.customHydration"
-                                type="number"
-                                step="0.1"
-                                min="0"
-                                class="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm"
-                                placeholder="Autre quantité (en litres)"
-                            />
-                        </div>
-                        <div
-                            class="mt-3 inline-flex rounded-lg border-2 border-violet-400 bg-white px-4 py-2 text-sm font-semibold text-violet-700"
-                        >
-                            <span
-                                >Total: {{ hydrationTotal.toFixed(1) }} L</span
-                            >
-                        </div>
-                    </div>
 
-                    <div
-                        class="rounded-xl border border-blue-200 bg-white p-3 sm:p-4"
-                    >
-                        <p class="text-sm font-semibold text-slate-900">
-                            Apport en sucre
-                        </p>
-                        <div
-                            class="mt-3 inline-flex min-w-[160px] flex-col rounded-xl border px-3 py-2 text-left"
-                            :class="sugarBadgeClasses"
-                        >
-                            <span class="text-sm font-semibold">{{
-                                sugarLabels[form.sugar]
-                            }}</span>
-                            <span class="text-[11px] opacity-80"
-                                >Détecté automatiquement</span
-                            >
+                        <div class="border-t border-slate-100" />
+
+                        <!-- Sucre -->
+                        <div>
+                            <p class="text-sm font-semibold text-slate-900">Apport en sucre</p>
+                            <div class="mt-3 inline-flex min-w-[160px] flex-col rounded-xl border px-3 py-2 text-left" :class="sugarBadgeClasses">
+                                <span class="text-sm font-semibold">{{ sugarLabels[form.sugar] }}</span>
+                                <span class="text-[11px] opacity-80">Détecté automatiquement</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Step 3: Habits & sport -->
-                <div v-else class="space-y-6">
-                    <div
-                        class="rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
-                    >
-                        <label
-                            class="text-lg font-bold text-slate-900"
-                            for="activity"
-                            >Type d'activité</label
-                        >
-                        <select
-                            id="activity"
-                            v-model="form.activityType"
-                            class="mt-2 w-full rounded-lg border border-blue-300 bg-white px-3 py-3 text-sm"
-                            @change="handleActivitySelection"
-                        >
-                            <option disabled value="">
-                                Sélectionnez une activité
-                            </option>
-                            <option
-                                v-for="item in activities"
-                                :key="item"
-                                :value="item"
-                            >
-                                {{ item }}
-                            </option>
-                            <option value="__add_new__">
-                                + Ajouter une activité
-                            </option>
-                        </select>
+                <div v-else class="space-y-4">
+                    <!-- Un seul cadre pour activité + intensité + habitudes -->
+                    <div class="rounded-xl border border-blue-200 bg-white p-4 sm:p-5 space-y-4">
 
-                        <div
-                            v-if="showNewActivityForm"
-                            class="mt-3 rounded-xl border border-purple-300 bg-purple-50 p-3"
-                        >
-                            <div class="mb-2 flex items-center justify-between">
-                                <p class="text-sm font-semibold text-slate-700">
-                                    Nouvelle activité
-                                </p>
-                                <BaseButton
-                                    type="button"
-                                    variant="text"
-                                    size="sm"
-                                    @click="cancelNewActivity"
-                                >
-                                    ×
-                                </BaseButton>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <input
-                                    v-model="newActivityName"
-                                    type="text"
-                                    class="w-full rounded-lg border border-purple-300 bg-white px-3 py-2 text-sm"
-                                    placeholder="Nom de l'activité"
-                                />
-                                <BaseButton
-                                    type="button"
-                                    variant="save"
-                                    size="sm"
-                                    :disabled="!newActivityName.trim()"
-                                    @click="addNewActivity"
-                                >
-                                    Valider
-                                </BaseButton>
+                        <!-- Type d'activité -->
+                        <div>
+                            <label class="text-sm font-semibold text-slate-900" for="activity">Type d'activité</label>
+                            <select
+                                id="activity"
+                                v-model="form.activityType"
+                                class="mt-2 w-full rounded-lg border border-blue-300 bg-white px-3 py-2.5 text-sm"
+                                @change="handleActivitySelection"
+                            >
+                                <option disabled value="">Sélectionnez une activité</option>
+                                <option v-for="item in activities" :key="item" :value="item">{{ item }}</option>
+                                <option value="__add_new__">+ Ajouter une activité</option>
+                            </select>
+                            <div v-if="showNewActivityForm" class="mt-2 rounded-lg border border-purple-200 bg-purple-50 p-3">
+                                <div class="mb-2 flex items-center justify-between">
+                                    <p class="text-sm font-semibold text-slate-700">Nouvelle activité</p>
+                                    <BaseButton type="button" variant="text" size="sm" @click="cancelNewActivity">×</BaseButton>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input v-model="newActivityName" type="text" class="w-full rounded-lg border border-purple-300 bg-white px-3 py-2 text-sm" placeholder="Nom de l'activité" />
+                                    <BaseButton type="button" variant="save" size="sm" :disabled="!newActivityName.trim()" @click="addNewActivity">Valider</BaseButton>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div
-                        class="rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
-                    >
-                        <label
-                            class="text-lg font-bold text-slate-900"
-                            for="duration"
-                        >
-                            Durée (minutes)
-                            <span
-                                v-if="isDurationRequired"
-                                class="ml-1 text-red-500"
-                                >*</span
-                            >
-                        </label>
-                        <input
-                            id="duration"
-                            v-model.number="form.activityDuration"
-                            type="number"
-                            min="0"
-                            class="mt-2 w-full rounded-lg border border-blue-300 bg-white px-3 py-3 text-sm"
-                            :class="
-                                submitAttempted && activityErrors.duration
-                                    ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
-                                    : 'border-blue-300'
-                            "
-                        />
-                        <p
-                            v-if="submitAttempted && activityErrors.duration"
-                            class="mt-1 text-sm text-red-500"
-                        >
-                            {{ activityErrors.duration }}
-                        </p>
-                    </div>
+                        <div class="border-t border-slate-100" />
 
-                    <div
-                        class="space-y-4 rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
-                    >
+                        <!-- Durée -->
                         <div>
-                            <p class="text-lg font-bold text-slate-900">
-                                Intensité
-                            </p>
-                            <div class="mt-3 grid grid-cols-3 gap-2">
+                            <label class="text-sm font-semibold text-slate-900" for="duration">
+                                Durée (minutes)<span v-if="isDurationRequired" class="ml-1 text-red-500">*</span>
+                            </label>
+                            <input
+                                id="duration"
+                                v-model.number="form.activityDuration"
+                                type="number"
+                                min="0"
+                                class="mt-2 w-full rounded-lg border bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+                                :class="submitAttempted && activityErrors.duration ? 'border-red-400' : 'border-blue-300'"
+                            />
+                            <p v-if="submitAttempted && activityErrors.duration" class="mt-1 text-sm text-red-500">{{ activityErrors.duration }}</p>
+                        </div>
+
+                        <div class="border-t border-slate-100" />
+
+                        <!-- Intensité -->
+                        <div>
+                            <p class="text-sm font-semibold text-slate-900">Intensité</p>
+                            <div class="mt-2 grid grid-cols-3 gap-2">
                                 <BaseButton
                                     v-for="value in intensityOptions"
                                     :key="`intensity-${value}`"
                                     type="button"
-                                    :variant="
-                                        form.intensity === value
-                                            ? value === 'high'
-                                                ? 'success'
-                                                : 'outline'
-                                            : 'secondary'
-                                    "
+                                    :variant="form.intensity === value ? (value === 'high' ? 'success' : 'outline') : 'secondary'"
                                     size="sm"
                                     @click="form.intensity = value"
                                 >
@@ -521,38 +280,26 @@
                             </div>
                         </div>
 
-                        <p class="text-lg font-bold text-slate-900">Habitude</p>
+                        <div class="border-t border-slate-100" />
 
-                        <div
-                            class="rounded-xl bg-white p-4 ring-1 ring-blue-300"
-                        >
+                        <!-- Habitudes -->
+                        <div class="space-y-3">
+                            <p class="text-sm font-semibold text-slate-900">Habitudes</p>
+
+                            <!-- Tabac -->
+                            <div>
                             <button
                                 type="button"
-                                class="flex w-full items-center justify-between text-base font-semibold text-slate-700"
+                                class="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
                                 @click="toggleTobacco"
                             >
                                 <span>Tabac</span>
-                                <span
-                                    class="relative h-6 w-10 rounded-full transition-colors"
-                                    :class="
-                                        form.tobacco
-                                            ? 'bg-blue-600'
-                                            : 'bg-slate-300'
-                                    "
-                                    aria-hidden="true"
-                                >
-                                    <span
-                                        class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform"
-                                        :class="
-                                            form.tobacco
-                                                ? 'translate-x-4'
-                                                : 'translate-x-0'
-                                        "
-                                    />
+                                <span class="relative h-6 w-10 rounded-full transition-colors" :class="form.tobacco ? 'bg-blue-600' : 'bg-slate-300'" aria-hidden="true">
+                                    <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="form.tobacco ? 'translate-x-4' : 'translate-x-0'" />
                                 </span>
                             </button>
 
-                            <div v-if="form.tobacco" class="mt-4 space-y-3">
+                            <div v-if="form.tobacco" class="mt-3 space-y-3">
                                 <div>
                                     <label
                                         class="text-base font-semibold text-slate-700"
@@ -643,66 +390,25 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                            </div>
 
-                        <div
-                            class="rounded-xl bg-white p-4 ring-1 ring-blue-300"
-                        >
+                            <!-- Alcool -->
+                            <div class="border-t border-slate-100 pt-3">
                             <button
                                 type="button"
-                                class="flex w-full items-center justify-between text-base font-semibold text-slate-700"
+                                class="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
                                 @click="toggleAlcohol"
                             >
-                                <span
-                                    >Alcool
-                                    <span
-                                        v-if="form.alcohol"
-                                        class="text-red-500"
-                                        >*</span
-                                    ></span
-                                >
-                                <span
-                                    class="relative h-6 w-10 rounded-full transition-colors"
-                                    :class="
-                                        form.alcohol
-                                            ? 'bg-blue-600'
-                                            : 'bg-slate-300'
-                                    "
-                                    aria-hidden="true"
-                                >
-                                    <span
-                                        class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform"
-                                        :class="
-                                            form.alcohol
-                                                ? 'translate-x-4'
-                                                : 'translate-x-0'
-                                        "
-                                    />
+                                <span>Alcool<span v-if="form.alcohol" class="ml-1 text-red-500">*</span></span>
+                                <span class="relative h-6 w-10 rounded-full transition-colors" :class="form.alcohol ? 'bg-blue-600' : 'bg-slate-300'" aria-hidden="true">
+                                    <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="form.alcohol ? 'translate-x-4' : 'translate-x-0'" />
                                 </span>
                             </button>
-
-                            <div v-if="form.alcohol" class="mt-4">
-                                <label
-                                    class="text-base font-semibold text-slate-700"
-                                >
-                                    Nombre de verres par jour
-                                    <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    v-model.number="form.alcoholDrinks"
-                                    type="number"
-                                    min="0"
-                                    placeholder="Ex: 2"
-                                    class="mt-1 w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-base text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                                />
-                                <p
-                                    v-if="
-                                        submitAttempted && alcoholErrors.drinks
-                                    "
-                                    class="mt-1 text-sm text-red-500"
-                                >
-                                    {{ alcoholErrors.drinks }}
-                                </p>
+                            <div v-if="form.alcohol" class="mt-3">
+                                <label class="text-sm font-semibold text-slate-700">Nombre de verres par jour <span class="text-red-500">*</span></label>
+                                <input v-model.number="form.alcoholDrinks" type="number" min="0" placeholder="Ex: 2" class="mt-1 w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400" />
+                                <p v-if="submitAttempted && alcoholErrors.drinks" class="mt-1 text-sm text-red-500">{{ alcoholErrors.drinks }}</p>
+                            </div>
                             </div>
                         </div>
                     </div>

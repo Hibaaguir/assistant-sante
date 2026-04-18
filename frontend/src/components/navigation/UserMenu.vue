@@ -47,13 +47,9 @@
                             <UserIcon v-else class="h-6 w-6" />
                         </div>
                         <div class="min-w-0 flex-1">
-                            <Typography
-                                tag="p"
-                                variant="h5-style"
-                                class="text-black font-bold truncate text-[12px]"
-                            >
+                            <p class="truncate text-sm font-semibold text-gray-900 leading-tight">
                                 {{ authStore.userName }}
-                            </Typography>
+                            </p>
                             <Typography
                                 tag="p"
                                 variant="paragraph"

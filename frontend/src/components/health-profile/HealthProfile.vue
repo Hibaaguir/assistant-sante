@@ -25,7 +25,7 @@
                     >
                         <div class="flex flex-1 flex-col items-center">
                             <div
-                                class="mb-2 flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-all"
+                                class="mb-2 flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition-all duration-300"
                                 :class="stepClass(step.number)"
                             >
                                 <svg
@@ -46,10 +46,10 @@
                                 <span v-else>{{ step.number }}</span>
                             </div>
                             <span
-                                class="text-center text-xs font-medium"
+                                class="text-center text-xs font-semibold"
                                 :class="
                                     currentStep >= step.number
-                                        ? 'text-blue-600'
+                                        ? 'text-blue-700'
                                         : 'text-gray-400'
                                 "
                             >
@@ -58,10 +58,10 @@
                         </div>
                         <div
                             v-if="i < STEPS.length - 1"
-                            class="-mt-6 mx-2 h-0.5 flex-1 transition-all"
+                            class="-mt-6 mx-2 h-1.5 flex-1 rounded-full transition-all duration-300"
                             :class="
                                 currentStep > step.number
-                                    ? 'bg-blue-500'
+                                    ? 'bg-blue-600'
                                     : 'bg-slate-200'
                             "
                         />
@@ -70,10 +70,10 @@
 
                 <!-- Barre de progression -->
                 <div
-                    class="mx-auto h-1.5 max-w-2xl overflow-hidden rounded-full bg-slate-200"
+                    class="mx-auto h-3 max-w-2xl overflow-hidden rounded-full bg-slate-200"
                 >
                     <div
-                        class="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-300"
+                        class="h-full bg-blue-600 transition-all duration-300 rounded-full"
                         :style="{ width: progress + '%' }"
                     />
                 </div>
@@ -266,8 +266,8 @@ watch(
 function stepClass(n) {
     if (currentStep.value > n) return "bg-blue-600 text-white";
     if (currentStep.value === n)
-        return "bg-blue-600 text-white ring-4 ring-blue-100";
-    return "bg-slate-200 text-slate-500";
+        return "bg-blue-600 text-white ring-4 ring-blue-200 shadow-md";
+    return "bg-slate-100 text-slate-400 border border-slate-200";
 }
 
 // Keep only non-empty strings from an array
@@ -472,7 +472,7 @@ async function enregistrer() {
         await api.post("/health-profile", buildPayload());
         authStore.setHealthProfile(true);
         saveSuccess.value = "Profil enregistré avec succès.";
-        router.push({ name: "health-settings" });
+        setTimeout(() => router.push({ name: "health-settings" }), 1800);
     } catch (err) {
         const status = err.response?.status;
 
