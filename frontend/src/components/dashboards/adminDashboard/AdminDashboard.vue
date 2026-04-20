@@ -295,8 +295,13 @@
             </div>
         </section>
 
-        <DeleteUserModal
+        <ConfirmationDialog
             :open="deleteModalOpen"
+            :isDanger="true"
+            title="Êtes-vous sûr?"
+            message="Cette action ne peut pas être annulée. Elle supprimera définitivement le compte utilisateur."
+            confirm-label="Supprimer"
+            cancel-label="Annuler"
             @cancel="closeDeleteModal"
             @confirm="confirmDeletion"
         />
@@ -320,148 +325,73 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import DeleteUserModal from "@/components/dashboards/adminDashboard/DeleteUserModal.vue";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
 import StatisticCard from "@/components/dashboards/adminDashboard/StatisticCard.vue";
 import AlertMessage from "@/components/ui/AlertMessage.vue";
-import {
-    listAdminUsers,
-    deleteAdminUser,
-    toggleUserStatus,
-} from "@/services/admin";
+import { listAdminUsers, deleteAdminUser, toggleUserStatus } from "@/services/admin";
 
 // ─── State ────────────────────────────────────────────────────────────────────
-const users = ref([]);
-const loadingList = ref(false);
-const errorMessage = ref("");
+const users          = ref([]);
+const loadingList    = ref(false);
+const errorMessage   = ref("");
 const successMessage = ref("");
 const deletionMessage = ref("");
-const searchText = ref("");
-const showFilters = ref(true);
-const filterType = ref("Tous");
-const filterStatus = ref("Tous");
-const deleteModalOpen = ref(false);
-const userIdToDelete = ref(null);
-// Pour la modale de confirmation d'activation/désactivation
-const confirmStatusModalOpen = ref(false);
-const userIdToToggle = ref(null);
-const userToToggle = ref(null);
-// Ouvre la modale de confirmation d'activation/désactivation
-function openToggleStatusModal(u) {
-    userIdToToggle.value = u.id;
-    userToToggle.value = u;
-    confirmStatusModalOpen.value = true;
-}
+const searchText     = ref("");
+const showFilters    = ref(true);
+const filterType     = ref("Tous");
+const filterStatus   = ref("Tous");
 
-// Confirme l'action d'activation/désactivation
-async function handleConfirmToggleStatus() {
-    confirmStatusModalOpen.value = false;
-    if (userToToggle.value) {
-        await toggleStatus(userToToggle.value);
-    }
-    userIdToToggle.value = null;
-    userToToggle.value = null;
-}
+// Modale suppression
+const deleteModalOpen  = ref(false);
+const userIdToDelete   = ref(null);
+
+// Modale activation/désactivation
+const confirmStatusModalOpen = ref(false);
+const userToToggle           = ref(null);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-// Check if a user is a doctor
 const isDoctor = (u) => u.type === "Doctor";
-
-// Check if a user account is active
 const isActive = (u) => u.status === "Active";
 
-// Get the first two initials from a full name (e.g. "Marie Dupont" → "MD")
-function initials(fullName) {
-    return String(fullName || "")
-        .split(" ")
-        .filter(Boolean)
-        .map((word) => word[0]?.toUpperCase() ?? "")
-        .slice(0, 2)
-        .join("");
+function initials(name) {
+    return String(name || "").split(" ").filter(Boolean)
+        .map((w) => w[0].toUpperCase()).slice(0, 2).join("");
 }
 
-// Extract a readable error message from an API error
-function errorMessageFrom(err) {
+function flash(msgRef, text, delay = 4000) {
+    msgRef.value = text;
+    setTimeout(() => { msgRef.value = ""; }, delay);
+}
+
+function apiError(err) {
     return err?.response?.data?.message ?? null;
 }
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
+const statsCards = computed(() => {
+    const total    = users.value.length;
+    const patients = users.value.filter((u) => u.type === "Patient").length;
+    const doctors  = users.value.filter((u) => isDoctor(u)).length;
+    const active   = users.value.filter((u) => isActive(u)).length;
+    return [
+        { label: "Total utilisateurs", value: total,    color: "blue",    icon: { viewBox: "0 0 24 24", path: '<circle cx="12" cy="8" r="4"/><path d="M6 20a6 6 0 0 1 12 0"/>' } },
+        { label: "Usagers",            value: patients, color: "emerald", icon: { viewBox: "0 0 24 24", path: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>' } },
+        { label: "Médecins",           value: doctors,  color: "indigo",  icon: { viewBox: "0 0 24 24", path: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>' } },
+        { label: "Actifs",             value: active,   color: "orange",  icon: { viewBox: "0 0 24 24", path: '<circle cx="12" cy="8" r="4"/><path d="M6 20a6 6 0 0 1 12 0"/>' } },
+    ];
+});
 
-// Count users by category for the stats cards at the top
-const statistics = computed(() => ({
-    total: users.value.length,
-    patients: users.value.filter((u) => u.type === "Patient").length,
-    doctors: users.value.filter((u) => isDoctor(u)).length,
-    active: users.value.filter((u) => isActive(u)).length,
-}));
-
-const statsCards = computed(() => [
-    {
-        label: "Total utilisateurs",
-        value: statistics.value.total,
-        color: "blue",
-        icon: {
-            viewBox: "0 0 24 24",
-            path: '<circle cx="12" cy="8" r="4"/><path d="M6 20a6 6 0 0 1 12 0"/>',
-        },
-    },
-    {
-        label: "Usagers",
-        value: statistics.value.patients,
-        color: "emerald",
-        icon: {
-            viewBox: "0 0 24 24",
-            path: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>',
-        },
-    },
-    {
-        label: "Médecins",
-        value: statistics.value.doctors,
-        color: "indigo",
-        icon: {
-            viewBox: "0 0 24 24",
-            path: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>',
-        },
-    },
-    {
-        label: "Actifs",
-        value: statistics.value.active,
-        color: "orange",
-        icon: {
-            viewBox: "0 0 24 24",
-            path: '<circle cx="12" cy="8" r="4"/><path d="M6 20a6 6 0 0 1 12 0"/>',
-        },
-    },
-]);
-
-// Filter users based on the search text and dropdown filters
 const filteredUsers = computed(() => {
     const search = searchText.value.trim().toLowerCase();
-
     return users.value.filter((u) => {
-        // Search box: match by name or email (ignore case)
-        const matchesSearch =
-            search === "" ||
-            u.name.toLowerCase().includes(search) ||
-            u.email.toLowerCase().includes(search);
-
-        // Type filter: "Tous" means show everyone
-        const matchesType =
-            filterType.value === "Tous" || u.type === filterType.value;
-
-        // Status filter: "Tous" means show everyone
-        const matchesStatus =
-            filterStatus.value === "Tous" || u.status === filterStatus.value;
-
-        return matchesSearch && matchesType && matchesStatus;
+        const matchSearch = !search || u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
+        const matchType   = filterType.value === "Tous"   || u.type   === filterType.value;
+        const matchStatus = filterStatus.value === "Tous" || u.status === filterStatus.value;
+        return matchSearch && matchType && matchStatus;
     });
 });
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
-
-// Load the full user list from the API.
-// Returns true on success, false on failure (does NOT clear the list on failure).
 async function loadUsers() {
     loadingList.value = true;
     errorMessage.value = "";
@@ -469,129 +399,75 @@ async function loadUsers() {
         users.value = await listAdminUsers();
         return true;
     } catch (err) {
-        // Do NOT clear users.value here — keep the current list visible so
-        // users don't appear to vanish because of a background refresh failure.
-        errorMessage.value =
-            errorMessageFrom(err) ??
-            "Une erreur est survenue lors du chargement des utilisateurs.";
+        errorMessage.value = apiError(err) ?? "Erreur lors du chargement des utilisateurs.";
         return false;
     } finally {
         loadingList.value = false;
     }
 }
 
-// Toggle a user between Active and Inactive
 async function toggleStatus(u) {
     const newStatus = isActive(u) ? "Inactive" : "Active";
-    const oldStatus = u.status; // keep the old status in case we need to undo
-    const userName = u.name;
-
+    const oldStatus = u.status;
     errorMessage.value = "";
     successMessage.value = "";
-
     try {
         await toggleUserStatus(u.id, newStatus);
-        u.status = newStatus; // MAJ du statut seulement après succès API
-
-        // Show a success message, then hide it after 4 seconds
-        successMessage.value =
-            newStatus === "Active"
-                ? `${userName} a été activé avec succès.`
-                : `${userName} a été désactivé avec succès.`;
-
-        setTimeout(() => {
-            successMessage.value = "";
-        }, 4000);
-
-        // Refresh the list silently to sync with the server.
-        // If the refresh fails, revert the optimistic status change.
-        const refreshed = await loadUsers();
-        if (!refreshed) {
-            u.status = oldStatus;
-        }
+        u.status = newStatus;
+        flash(successMessage, newStatus === "Active"
+            ? `${u.name} a été activé avec succès.`
+            : `${u.name} a été désactivé avec succès.`);
+        const ok = await loadUsers();
+        if (!ok) u.status = oldStatus;
     } catch (err) {
-        // API call failed — revert the status back to what it was
         u.status = oldStatus;
-        errorMessage.value =
-            errorMessageFrom(err) ??
-            "La mise à jour du statut a échoué. Veuillez réessayer.";
+        errorMessage.value = apiError(err) ?? "La mise à jour du statut a échoué.";
     }
 }
 
-// Open the delete confirmation modal for a user
 function openDeleteModal(u) {
-    if (!u?.id) {
-        errorMessage.value =
-            "Erreur : impossible d'identifier cet utilisateur.";
-        return;
-    }
+    if (!u?.id) { errorMessage.value = "Erreur : impossible d'identifier cet utilisateur."; return; }
     userIdToDelete.value = u.id;
     deleteModalOpen.value = true;
 }
 
-// Close the delete modal and reset related state (called on cancel)
 function closeDeleteModal() {
     deleteModalOpen.value = false;
     userIdToDelete.value = null;
-    errorMessage.value = "";
-    successMessage.value = "Suppression annulée.";
-    setTimeout(() => {
-        successMessage.value = "";
-    }, 3000);
+    flash(successMessage, "Suppression annulée.", 3000);
 }
 
-// Reset modal state without showing the "cancelled" message (used during actual deletion)
-function resetDeleteModal() {
+async function confirmDeletion() {
+    const id = userIdToDelete.value;
     deleteModalOpen.value = false;
     userIdToDelete.value = null;
-}
-
-// Delete the selected user after confirmation
-async function confirmDeletion() {
     errorMessage.value = "";
     successMessage.value = "";
     deletionMessage.value = "";
 
-    if (!userIdToDelete.value) {
-        errorMessage.value = "Erreur : ID utilisateur invalide.";
-        resetDeleteModal();
-        return;
-    }
-
-    const idToDelete = userIdToDelete.value;
-    const index = users.value.findIndex((u) => u.id === idToDelete);
-    const deletedUser = users.value[index] ?? null;
-    const userName = deletedUser?.name || "Utilisateur";
-
-    // Close the modal immediately — do NOT call closeDeleteModal() here as it
-    // shows a misleading "Suppression annulée." message during an actual deletion.
-    resetDeleteModal();
-
-    // Remove from the UI immediately (optimistic delete)
+    const index = users.value.findIndex((u) => u.id === id);
+    const deleted = users.value[index] ?? null;
     if (index !== -1) users.value.splice(index, 1);
 
     try {
-        await deleteAdminUser(idToDelete);
-
-        // Show success message, then hide it after 4 seconds
-        deletionMessage.value = `${userName} a été supprimé avec succès.`;
-        setTimeout(() => {
-            deletionMessage.value = "";
-        }, 4000);
-
-        // Refresh the list silently; restore the user if the refresh itself fails
-        loadUsers().catch(() => {
-            if (deletedUser && index !== -1)
-                users.value.splice(index, 0, deletedUser);
-        });
+        await deleteAdminUser(id);
+        flash(deletionMessage, `${deleted?.name ?? "Utilisateur"} a été supprimé avec succès.`);
+        loadUsers().catch(() => { if (deleted && index !== -1) users.value.splice(index, 0, deleted); });
     } catch (err) {
-        // API call failed — put the user back in the list
-        if (deletedUser && index !== -1)
-            users.value.splice(index, 0, deletedUser);
-        errorMessage.value =
-            errorMessageFrom(err) ??
-            "La suppression a échoué. Veuillez réessayer.";
+        if (deleted && index !== -1) users.value.splice(index, 0, deleted);
+        errorMessage.value = apiError(err) ?? "La suppression a échoué. Veuillez réessayer.";
     }
+}
+
+function openToggleStatusModal(u) {
+    userToToggle.value = u;
+    confirmStatusModalOpen.value = true;
+}
+
+async function handleConfirmToggleStatus() {
+    confirmStatusModalOpen.value = false;
+    if (userToToggle.value) await toggleStatus(userToToggle.value);
+    userToToggle.value = null;
 }
 
 onMounted(loadUsers);
