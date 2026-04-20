@@ -150,6 +150,7 @@ async function markAllRead() {
             ...n,
             read_at: n.read_at || now,
         }));
+        router.push({ name: "notifications" });
     } catch {
         error.value =
             "Impossible de marquer toutes les notifications comme lues.";

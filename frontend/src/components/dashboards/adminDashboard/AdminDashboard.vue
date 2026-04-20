@@ -256,7 +256,7 @@
                                                 ? 'Désactiver le compte'
                                                 : 'Activer le compte'
                                         "
-                                        @click="toggleStatus(u)"
+                                        @click="openToggleStatusModal(u)"
                                     >
                                         <svg
                                             viewBox="0 0 24 24"
@@ -300,12 +300,28 @@
             @cancel="closeDeleteModal"
             @confirm="confirmDeletion"
         />
+        <!-- Utilisation du composant ConfirmationDialog pour activation/désactivation -->
+        <ConfirmationDialog
+            :open="confirmStatusModalOpen"
+            :isDanger="false"
+            :title="
+                userToToggle && isActive(userToToggle)
+                    ? 'Confirmer la désactivation'
+                    : 'Confirmer l\'activation'
+            "
+            :message="`Voulez-vous vraiment ${userToToggle && isActive(userToToggle) ? 'désactiver' : 'activer'} le compte de ${userToToggle?.name ?? ''} ?`"
+            confirm-label="Confirmer"
+            cancel-label="Annuler"
+            @cancel="confirmStatusModalOpen = false"
+            @confirm="handleConfirmToggleStatus"
+        />
     </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import DeleteUserModal from "@/components/dashboards/adminDashboard/DeleteUserModal.vue";
+import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
 import StatisticCard from "@/components/dashboards/adminDashboard/StatisticCard.vue";
 import AlertMessage from "@/components/ui/AlertMessage.vue";
 import {
@@ -326,6 +342,26 @@ const filterType = ref("Tous");
 const filterStatus = ref("Tous");
 const deleteModalOpen = ref(false);
 const userIdToDelete = ref(null);
+// Pour la modale de confirmation d'activation/désactivation
+const confirmStatusModalOpen = ref(false);
+const userIdToToggle = ref(null);
+const userToToggle = ref(null);
+// Ouvre la modale de confirmation d'activation/désactivation
+function openToggleStatusModal(u) {
+    userIdToToggle.value = u.id;
+    userToToggle.value = u;
+    confirmStatusModalOpen.value = true;
+}
+
+// Confirme l'action d'activation/désactivation
+async function handleConfirmToggleStatus() {
+    confirmStatusModalOpen.value = false;
+    if (userToToggle.value) {
+        await toggleStatus(userToToggle.value);
+    }
+    userIdToToggle.value = null;
+    userToToggle.value = null;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -453,11 +489,9 @@ async function toggleStatus(u) {
     errorMessage.value = "";
     successMessage.value = "";
 
-    // Immediately update the UI before the API responds (optimistic update)
-    u.status = newStatus;
-
     try {
         await toggleUserStatus(u.id, newStatus);
+        u.status = newStatus; // MAJ du statut seulement après succès API
 
         // Show a success message, then hide it after 4 seconds
         successMessage.value =
