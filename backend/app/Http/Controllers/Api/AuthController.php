@@ -145,6 +145,11 @@ class AuthController extends Controller
             return response()->json(['message' => 'E-mail ou mot de passe invalide.'], 401);
         }
 
+        // Vérifier si le compte est désactivé
+        if ($account->account_status === 'inactive') {
+            return response()->json(['message' => 'Votre compte a été désactivé. Veuillez contacter l\'administrateur.'], 403);
+        }
+
         $user = $account->user;
 
         if (!$user) {

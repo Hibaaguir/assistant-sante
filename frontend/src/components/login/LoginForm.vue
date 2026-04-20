@@ -364,6 +364,10 @@ async function submit() {
             errors.email = errors.password = MESSAGES.credentials;
             return;
         }
+        if (status === 403) {
+            setError(data?.message || "Votre compte a été désactivé. Veuillez contacter l'administrateur.");
+            return;
+        }
         if (status === 422 && data?.errors) {
             for (const key of ["email", "password"])
                 errors[key] = firstMsg(data.errors[key]);

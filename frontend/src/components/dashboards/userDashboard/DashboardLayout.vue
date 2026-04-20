@@ -22,7 +22,7 @@
                 :disabled="exportingPdf"
                 @click="downloadDashboardPdf"
             >
-                {{ exportingPdf ? "Generation..." : "Telecharger PDF" }}
+                {{ exportingPdf ? "Generation..." : "Exporter statistiques" }}
             </button>
         </header>
 

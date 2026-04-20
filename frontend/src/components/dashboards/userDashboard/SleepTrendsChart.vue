@@ -146,6 +146,8 @@ async function rebuild() {
 
     await nextTick();
 
+    if (!canvasRef.value) return;
+
     chartInstance = new Chart(canvasRef.value, {
         type: "line",
         data: {

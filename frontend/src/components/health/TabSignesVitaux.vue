@@ -171,9 +171,9 @@
                         class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-5 text-[16px] text-slate-900 outline-none focus:border-purple-500"
                     >
                         <option value="all">Tous les signes</option>
-                        <option value="heart">Rythme cardiaque</option>
-                        <option value="pressure">Tension artérielle</option>
-                        <option value="oxygen">Saturation O₂</option>
+                        <option value="heartRate">Rythme cardiaque</option>
+                        <option value="bloodPressure">Tension artérielle</option>
+                        <option value="saturation">Saturation O₂</option>
                     </select>
                 </div>
             </div>
@@ -181,8 +181,8 @@
 
         <div class="mt-6 space-y-3.5">
             <article
-                v-for="day in historiqueFiltre"
-                :key="day.dateKey"
+                v-for="entry in filteredVitals"
+                :key="entry.isoDate"
                 class="rounded-2xl border border-slate-200 bg-white px-5 py-5"
             >
                 <div class="mb-4 flex items-center gap-3 text-slate-900">
@@ -198,33 +198,27 @@
                         />
                     </svg>
                     <h3 class="text-[22px] font-semibold leading-none">
-                        {{ day.longDate }}
+                        {{ entry.date }}
                     </h3>
                 </div>
                 <div class="grid gap-3 xl:grid-cols-3">
-                    <HistoryCard
-                        v-if="showType('heart')"
-                        v-bind="VITAL_META.heart"
-                        :value="day.heartRate"
-                        unit="bpm"
-                    />
-                    <HistoryCard
-                        v-if="showType('pressure')"
-                        v-bind="VITAL_META.pressure"
-                        :value="day.pressure"
-                        unit="mmHg"
-                    />
-                    <HistoryCard
-                        v-if="showType('oxygen')"
-                        v-bind="VITAL_META.oxygen"
-                        :value="day.oxygen"
-                        unit="%"
-                    />
+                    <div
+                        v-for="card in entry.cards"
+                        :key="card.key"
+                        class="rounded-[16px] border px-5 py-4"
+                        :class="card.class"
+                    >
+                        <p class="text-[14px] text-[#2d3f5e]">{{ card.label }}</p>
+                        <p class="mt-2 text-[18px] font-bold text-[#061a45]">
+                            {{ card.value }}
+                            <span class="text-[14px] font-medium text-slate-500">{{ card.unit }}</span>
+                        </p>
+                    </div>
                 </div>
             </article>
 
             <div
-                v-if="!historiqueFiltre.length"
+                v-if="!filteredVitals.length"
                 class="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-[15px] leading-7 text-black"
             >
                 Aucune mesure ne correspond aux filtres sélectionnés.
@@ -521,33 +515,45 @@ const filtresActifs = computed(
     () => Boolean(filterDate.value) || filterType.value !== "all",
 );
 
-const historiqueFiltre = computed(() => {
+// Même structure de cartes que l'espace médecin
+const VITAL_CARDS = [
+    { key: "heartRate",     label: "Rythme cardiaque",  unit: "bpm",  class: "border-[#f4bcc3] bg-[#fff5f6]" },
+    { key: "bloodPressure", label: "Tension artérielle", unit: "mmHg", class: "border-[#aac8ff] bg-[#eff6ff]" },
+    { key: "saturation",    label: "Saturation O₂",     unit: "%",    class: "border-[#dcc5ff] bg-[#faf4ff]" },
+];
+
+// Même logique que filteredVitals de l'espace médecin
+const filteredVitals = computed(() => {
     const rows = props.vitalDateKeys
         .map((dateKey, i) => {
-            const hr = props.historyHeartRate[i] ?? null;
+            const hr  = props.historyHeartRate[i] ?? null;
             const sys = props.historySystolic[i] ?? null;
             const dia = props.historyDiastolic[i] ?? null;
-            const ox = props.historySaturation[i] ?? null;
+            const ox  = props.historySaturation[i] ?? null;
             if (![hr, sys, dia, ox].some(isValidMeasure)) return null;
             return {
-                dateKey,
-                longDate: formatLongDate(dateKey),
-                heartRate: hr ?? "--",
-                pressure:
-                    isValidMeasure(sys) && isValidMeasure(dia)
-                        ? `${+sys}/${+dia}`
-                        : "--/--",
-                oxygen: ox ?? "--",
+                isoDate:       dateKey,
+                date:          formatLongDate(dateKey),
+                heartRate:     isValidMeasure(hr)  ? hr  : "--",
+                bloodPressure: isValidMeasure(sys) && isValidMeasure(dia)
+                    ? `${+sys}/${+dia}`
+                    : "--/--",
+                saturation:    isValidMeasure(ox)  ? Math.round(+ox) : "--",
             };
         })
         .filter(Boolean)
         .reverse();
 
-    // Filtrer par date
-    if (filterDate.value) {
-        return rows.filter((r) => r.dateKey === filterDate.value);
-    }
-    return rows;
+    const pool = filterDate.value ? rows : rows.slice(0, 7);
+    return pool
+        .filter((r) => !filterDate.value || r.isoDate === filterDate.value)
+        .map((r) => ({
+            ...r,
+            cards: VITAL_CARDS.filter(
+                (c) => filterType.value === "all" || c.key === filterType.value,
+            ).map((c) => ({ ...c, value: r[c.key] })),
+        }))
+        .filter((r) => r.cards.length);
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -591,9 +597,7 @@ function formatLongDate(iso) {
     // Capitalize first letter (weekday)
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
-function showType(type) {
-    return filterType.value === "all" || filterType.value === type;
-}
+
 
 function syncDraft() {
     const v = props.latestVital;

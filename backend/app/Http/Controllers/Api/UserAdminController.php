@@ -58,11 +58,16 @@ class UserAdminController extends Controller
         }
 
         $normalizedStatus = strtolower((string) $data['status']);
+        $isDeactivating = in_array($normalizedStatus, ['inactif', 'inactive'], true);
+
         $account->update([
-            'account_status' => in_array($normalizedStatus, ['inactif', 'inactive'], true)
-                ? 'inactive'
-                : 'active',
+            'account_status' => $isDeactivating ? 'inactive' : 'active',
         ]);
+
+        // Révoquer tous les tokens actifs si le compte est désactivé
+        if ($isDeactivating) {
+            $user->tokens()->delete();
+        }
 
         return response()->json(['message' => 'Statut de l\'utilisateur mis à jour avec succès.']);
     }

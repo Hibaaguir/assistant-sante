@@ -76,26 +76,6 @@
                         </div>
                     </div>
 
-                    <div
-                        class="mx-auto px-6 rounded-2xl border-2 border-blue-300 bg-white p-4 sm:p-5"
-                    >
-                        <div class="space-y-3">
-                            <div
-                                class="flex items-center justify-between text-base font-bold text-slate-800"
-                            >
-                                <span>Niveau d'énergie</span>
-                                <span class="text-blue-700"
-                                    >{{ STATIC_ENERGY }}/10</span
-                                >
-                            </div>
-                            <div
-                                class="rounded-xl border border-blue-300 bg-white px-4 py-3 text-sm text-slate-600"
-                            >
-                                Valeur statique temporaire (prediction IA a
-                                venir)
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 <div v-else-if="step === 2" class="space-y-4">
                     <!-- Bloc 1 : Repas -->
@@ -213,16 +193,6 @@
                             </div>
                         </div>
 
-                        <div class="border-t border-slate-100" />
-
-                        <!-- Sucre -->
-                        <div>
-                            <p class="text-sm font-semibold text-slate-900">Apport en sucre</p>
-                            <div class="mt-3 inline-flex min-w-[160px] flex-col rounded-xl border px-3 py-2 text-left" :class="sugarBadgeClasses">
-                                <span class="text-sm font-semibold">{{ sugarLabels[form.sugar] }}</span>
-                                <span class="text-[11px] opacity-80">Détecté automatiquement</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -547,14 +517,12 @@ const activities = ref([
     "Musculation",
     "Sport collectif",
 ]);
-const sugarLabels = { low: "Faible", medium: "Modéré", high: "Élevé" };
 const intensityLabels = { light: "Légère", medium: "Modérée", high: "Intense" };
 const intensityOptions = ["light", "medium", "high"];
 
 const step = ref(1);
 const submitAttempted = ref(false);
 const saveError = ref("");
-const STATIC_ENERGY = 7;
 const mealDraft = reactive({ label: "", calories: null });
 const showNewActivityForm = ref(false);
 const newActivityName = ref("");
@@ -564,9 +532,7 @@ const pendingDeleteMealIndex = ref(-1);
 const form = reactive({
     sleep: 7,
     stress: 5,
-    energy: STATIC_ENERGY,
     selectedMeal: "",
-    sugar: "low",
     caffeine: 0,
     hydration: 0.5,
     customHydration: null,
@@ -621,15 +587,6 @@ const getRangeFillStyle = (value, max) => {
     };
 };
 
-// CSS classes for the sugar badge, based on the selected sugar level
-const SUGAR_BADGE = {
-    high: "border-rose-300 bg-rose-100 text-rose-800",
-    medium: "border-amber-300 bg-amber-100 text-amber-800",
-    low: "border-emerald-300 bg-emerald-100 text-emerald-800",
-};
-const sugarBadgeClasses = computed(
-    () => SUGAR_BADGE[form.sugar] ?? SUGAR_BADGE.low,
-);
 
 // Check tobacco fields — returns an object with error messages (null = no error)
 const tobaccoErrors = computed(() => {
@@ -722,8 +679,6 @@ onMounted(async () => {
     // Pre-fill the form with the existing entry data
     form.sleep = Number(entry.sleep ?? 7);
     form.stress = Number(entry.stress ?? 5);
-    form.energy = STATIC_ENERGY;
-    form.sugar = entry.sugar ?? "low";
     form.caffeine = Number(entry.caffeine ?? 0);
     form.activityType = entry.activityType ?? "";
     form.activityDuration = Number(entry.activityDuration ?? 0);
@@ -867,8 +822,6 @@ function buildPayload() {
     return {
         sleep: Number(form.sleep),
         stress: Number(form.stress),
-        energy: STATIC_ENERGY,
-        sugar: form.sugar,
         caffeine: Number(form.caffeine),
         hydration: Number(hydrationTotal.value.toFixed(1)),
         meals: [...form.meals],

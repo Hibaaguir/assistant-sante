@@ -303,13 +303,13 @@ function ensureDayTracking(dayKey) {
 
 async function loadHealthData() {
     try {
-        const res = await api.get("/health-data/overview", {
-            params: { days: 7 },
-        });
+        const [res, vitalsRes, historyRes] = await Promise.all([
+            api.get("/health-data/overview", { params: { days: 7 } }),
+            api.get("/health-data/vitals", { params: { days: 30 } }),
+            api.get("/health-data/treatment-checks", { params: { days: 90 } }),
+        ]);
         const data = res?.data?.data ?? {};
-        const historyRes = await api.get("/health-data/treatment-checks", {
-            params: { days: 90 },
-        });
+        const vitalsRaw = Array.isArray(vitalsRes?.data?.data) ? vitalsRes.data.data : [];
         const historyData = Array.isArray(historyRes?.data?.data)
             ? historyRes.data.data
             : [];
@@ -337,18 +337,32 @@ async function loadHealthData() {
                 ? chartData.labels
                 : treatmentDays.value.map((day) => day.key);
 
-        const keepRaw = (values = []) =>
-            labelSource.map((_, index) => {
-                const value = values[index];
-                return value == null || value === "" ? null : value;
-            });
-
-        vitalDateKeys.value = [...labelSource];
-        historyHeartRateValues.value = keepRaw(chartData.heart_rate);
-        historySystolicValues.value = keepRaw(chartData.systolic_pressure);
-        historyDiastolicValues.value = keepRaw(chartData.diastolic_pressure);
-        historySaturationValues.value = keepRaw(chartData.oxygen_saturation);
         labels.value = labelSource.map(formatShortLabel);
+
+        // History from dedicated vitals endpoint (30 days) — sorted ascending by date
+        vitalsRaw.sort((a, b) =>
+            String(a.measured_at).localeCompare(String(b.measured_at)),
+        );
+        const historyDateKeys = [...new Set(
+            vitalsRaw.map((v) => String(v.measured_at).slice(0, 10)),
+        )];
+        vitalDateKeys.value = historyDateKeys;
+        historyHeartRateValues.value = historyDateKeys.map((dk) => {
+            const v = vitalsRaw.find((r) => String(r.measured_at).slice(0, 10) === dk);
+            return v?.heart_rate ?? null;
+        });
+        historySystolicValues.value = historyDateKeys.map((dk) => {
+            const v = vitalsRaw.find((r) => String(r.measured_at).slice(0, 10) === dk);
+            return v?.systolic_pressure ?? null;
+        });
+        historyDiastolicValues.value = historyDateKeys.map((dk) => {
+            const v = vitalsRaw.find((r) => String(r.measured_at).slice(0, 10) === dk);
+            return v?.diastolic_pressure ?? null;
+        });
+        historySaturationValues.value = historyDateKeys.map((dk) => {
+            const v = vitalsRaw.find((r) => String(r.measured_at).slice(0, 10) === dk);
+            return v?.oxygen_saturation ?? null;
+        });
         heartRateValues.value = normalizeSeries(chartData.heart_rate, 70);
         systolicValues.value = normalizeSeries(
             chartData.systolic_pressure,

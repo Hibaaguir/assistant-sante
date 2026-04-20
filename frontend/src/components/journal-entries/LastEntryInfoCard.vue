@@ -101,7 +101,7 @@
             </div>
 
             <!-- Apport en sucre -->
-            <div class="flex items-center justify-between py-0.5">
+            <div v-if="entree.sugar" class="flex items-center justify-between py-0.5">
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">🍬</span>
                     <span class="text-base font-medium text-slate-700"
@@ -113,6 +113,20 @@
                     :class="sugarBadgeClass(entree.sugar)"
                 >
                     {{ formatSugar(entree.sugar) }}
+                </span>
+            </div>
+
+            <!-- Énergie (détectée par IA) -->
+            <div v-if="entree.energy" class="flex items-center justify-between py-0.5">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-base">⚡</span>
+                    <span class="text-base font-medium text-slate-700">Énergie</span>
+                </div>
+                <span
+                    class="text-base font-semibold px-2 py-0.5 rounded-full border"
+                    :class="energyBadgeClass(entree.energy)"
+                >
+                    {{ entree.energy }}/10
                 </span>
             </div>
         </div>
@@ -184,5 +198,11 @@ const sugarBadgeClass = (sugar) => {
         low: "bg-emerald-100 text-emerald-700 border-emerald-300",
     };
     return map[sugar] || map.medium;
+};
+
+const energyBadgeClass = (energy) => {
+    if (energy >= 7) return "bg-emerald-100 text-emerald-700 border-emerald-300";
+    if (energy >= 4) return "bg-amber-100 text-amber-700 border-amber-300";
+    return "bg-rose-100 text-rose-700 border-rose-300";
 };
 </script>
