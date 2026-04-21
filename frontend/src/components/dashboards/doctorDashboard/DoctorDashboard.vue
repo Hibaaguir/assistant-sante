@@ -162,25 +162,32 @@ async function openPatient(patient) {
 }
 
 // ─── Invitations ──────────────────────────────────────────────────────────────
+
+// Accepte une invitation : POST /accept → recharge les données → notification succès
 async function acceptInvitation(id) {
-    await manageInvitation(id, "accept", notifications.itemUpdated);
-}
-
-async function rejectInvitation(id) {
-    await manageInvitation(id, "reject", notifications.actionCancelled);
-}
-
-async function manageInvitation(id, action, onSuccess) {
     actionInvitationId.value = id;
     errorMessage.value = "";
     try {
-        await api.post(`/doctor-invitations/${id}/${action}`);
+        await api.post(`/doctor-invitations/${id}/accept`);
         await loadData();
-        onSuccess();
+        notifications.itemUpdated();
     } catch {
-        setError(
-            `Impossible d'${action === "accept" ? "accepter" : "rejeter"} cette invitation pour le moment.`,
-        );
+        setError("Impossible d'accepter cette invitation pour le moment.");
+    } finally {
+        actionInvitationId.value = null;
+    }
+}
+
+// Refuse une invitation : POST /reject → recharge les données → notification annulation
+async function rejectInvitation(id) {
+    actionInvitationId.value = id;
+    errorMessage.value = "";
+    try {
+        await api.post(`/doctor-invitations/${id}/reject`);
+        await loadData();
+        notifications.actionCancelled();
+    } catch {
+        setError("Impossible de refuser cette invitation pour le moment.");
     } finally {
         actionInvitationId.value = null;
     }

@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 
 class DoctorInvitationService
 {
-    // Verifier si une invitation en attente existe
+    // Verifier si email doctor a une invitation en attente existe
     public function existsForEmail(string $email): bool
     {
         return DoctorInvitation::whereRaw('LOWER(doctor_email) = ?', [strtolower($email)])

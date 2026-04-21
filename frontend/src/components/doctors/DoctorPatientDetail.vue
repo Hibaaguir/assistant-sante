@@ -427,100 +427,91 @@ const displayedObservations = computed(() =>
         : observationHistory.value.slice(0, 1),
 );
 
-// ─── Vitals filtrés ───────────────────────────────────────────────────────────
+// ─── Signes vitaux filtrés ────────────────────────────────────────────────────
+
+// Configuration des 3 types de signes vitaux affichés dans les cartes
 const VITAL_CARDS = [
-    {
-        key: "heartRate",
-        label: "Rythme cardiaque",
-        class: "border-[#f4bcc3] bg-[#fff5f6]",
-    },
-    {
-        key: "bloodPressure",
-        label: "Tension",
-        class: "border-[#aac8ff] bg-[#eff6ff]",
-    },
-    {
-        key: "saturation",
-        label: "Saturation O2",
-        class: "border-[#dcc5ff] bg-[#faf4ff]",
-    },
+    { key: "heartRate",    label: "Rythme cardiaque", class: "border-[#f4bcc3] bg-[#fff5f6]" },
+    { key: "bloodPressure", label: "Tension",          class: "border-[#aac8ff] bg-[#eff6ff]" },
+    { key: "saturation",   label: "Saturation O2",    class: "border-[#dcc5ff] bg-[#faf4ff]" },
 ];
 
+// Retourne les entrées de signes vitaux filtrées par date et type sélectionnés
 const filteredVitals = computed(() => {
-    const entries = props.patient?.vitalsHistory ?? [];
-    const pool = vitalDate.value ? entries : entries.slice(0, 7);
-    return pool
-        .filter((e) => !vitalDate.value || e.isoDate === vitalDate.value)
-        .map((e) => ({
-            ...e,
-            cards: VITAL_CARDS.filter(
-                (c) => vitalSign.value === "all" || c.key === vitalSign.value,
-            ).map((c) => ({ ...c, value: e[c.key] })),
-        }))
-        .filter((e) => e.cards.length);
+    const toutesLesEntrees = props.patient?.vitalsHistory ?? [];
+
+    // Si aucune date choisie → afficher seulement les 7 dernières entrées
+    const entreesFiltrees = vitalDate.value
+        ? toutesLesEntrees.filter((e) => e.isoDate === vitalDate.value)
+        : toutesLesEntrees.slice(0, 7);
+
+    // Pour chaque entrée, on construit les cartes à afficher selon le type choisi
+    return entreesFiltrees.map((entree) => {
+        const cartesFiltrees = VITAL_CARDS
+            .filter((carte) => vitalSign.value === "all" || carte.key === vitalSign.value)
+            .map((carte) => ({ ...carte, value: entree[carte.key] }));
+        return { ...entree, cards: cartesFiltrees };
+    }).filter((entree) => entree.cards.length > 0);
 });
 
 // ─── Analyses filtrées ────────────────────────────────────────────────────────
+
+// Retourne la liste unique des types d'analyses disponibles (pour le select)
 const analysisTypes = computed(() => {
     const analyses = props.patient?.analyses ?? [];
-    return [
-        ...new Set(
-            analyses.map((a) => String(a.type || "").trim()).filter(Boolean),
-        ),
-    ];
+    const types = analyses.map((a) => String(a.type || "").trim()).filter(Boolean);
+    return [...new Set(types)]; // Set supprime les doublons
 });
 
+// Retourne les analyses filtrées par date et type sélectionnés
 const filteredAnalyses = computed(() => {
     const analyses = props.patient?.analyses ?? [];
-    const recentKeys = [
-        ...new Set(analyses.map((a) => a.isoDate).filter(Boolean)),
-    ].slice(0, 7);
-    return analyses
-        .filter((a) =>
-            analysisDate.value
-                ? a.isoDate === analysisDate.value
-                : recentKeys.includes(a.isoDate),
-        )
-        .filter(
-            (a) =>
-                analysisType.value === "all" || a.type === analysisType.value,
-        );
+
+    // Si aucune date choisie → garder seulement les 7 dates les plus récentes
+    const datesRecentes = [...new Set(analyses.map((a) => a.isoDate).filter(Boolean))].slice(0, 7);
+
+    return analyses.filter((a) => {
+        const matchDate = analysisDate.value ? a.isoDate === analysisDate.value : datesRecentes.includes(a.isoDate);
+        const matchType = analysisType.value === "all" || a.type === analysisType.value;
+        return matchDate && matchType;
+    });
 });
 
 // ─── Traitements filtrés ──────────────────────────────────────────────────────
-const treatMedOptions = computed(() => [
-    ...new Set(
-        (props.patient?.treatmentHistoryRows ?? [])
-            .flatMap((d) => d.meds.map((m) => String(m.name || "").trim()))
-            .filter(Boolean),
-    ),
-]);
 
+// Retourne la liste unique des noms de médicaments (pour le select de filtre)
+const treatMedOptions = computed(() => {
+    const tousLesMeds = (props.patient?.treatmentHistoryRows ?? [])
+        .flatMap((jour) => jour.meds.map((m) => String(m.name || "").trim()))
+        .filter(Boolean);
+    return [...new Set(tousLesMeds)]; // Set supprime les doublons
+});
+
+// Retourne les lignes de traitements filtrées par date, médicament et statut
 const filteredTreatments = computed(() => {
-    const rows = props.patient?.treatmentHistoryRows ?? [];
-    const pool = treatDate.value ? rows : rows.slice(0, 7);
-    return pool
-        .filter((d) => !treatDate.value || d.dateKey === treatDate.value)
-        .map((d) => {
-            const meds = d.meds.filter(
+    const tousLesJours = props.patient?.treatmentHistoryRows ?? [];
+
+    // Si aucune date → seulement les 7 derniers jours
+    const joursFiltres = treatDate.value
+        ? tousLesJours.filter((j) => j.dateKey === treatDate.value)
+        : tousLesJours.slice(0, 7);
+
+    return joursFiltres
+        .map((jour) => {
+            // Filtre les médicaments du jour selon le médicament choisi
+            const meds = jour.meds.filter(
                 (m) => treatMed.value === "all" || m.name === treatMed.value,
             );
-            const total = meds.reduce((s, m) => s + +(m.total || 0), 0);
-            const taken = meds.reduce((s, m) => s + +(m.taken || 0), 0);
-            return {
-                ...d,
-                meds,
-                total,
-                taken,
-                isComplete: total > 0 && taken >= total,
-            };
+            // Recalcule le total des doses et des prises pour le jour filtré
+            const total = meds.reduce((somme, m) => somme + Number(m.total || 0), 0);
+            const pris  = meds.reduce((somme, m) => somme + Number(m.taken || 0), 0);
+            return { ...jour, meds, total, taken: pris, isComplete: total > 0 && pris >= total };
         })
-        .filter((d) => d.meds.length)
-        .filter(
-            (d) =>
-                treatStatus.value === "all" ||
-                (treatStatus.value === "complete") === d.isComplete,
-        );
+        .filter((jour) => jour.meds.length > 0) // supprimer les jours sans médicaments
+        .filter((jour) => {
+            if (treatStatus.value === "all") return true;
+            return treatStatus.value === "complete" ? jour.isComplete : !jour.isComplete;
+        });
 });
 
 // ─── Formatters ───────────────────────────────────────────────────────────────

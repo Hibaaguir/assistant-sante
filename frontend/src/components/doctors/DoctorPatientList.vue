@@ -20,7 +20,7 @@
                         </p>
                     </div>
                     <div
-                        class="grid place-items-center h-12 w-12 shrink-0 rounded-[15px]"
+                     class="grid place-items-center h-12 w-12 shrink-0 rounded-[15px]"
                         :class="card.iconWrapClass"
                     >
                         <component
