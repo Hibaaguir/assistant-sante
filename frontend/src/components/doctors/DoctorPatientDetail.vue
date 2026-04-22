@@ -64,10 +64,12 @@
             <h3 class="text-[17px] font-bold text-[#041c49]">
                 Ajouter une observation
             </h3>
+            <AlertMessage :message="obsError" type="error" class="mb-3 mt-4" />
             <textarea
                 v-model="obsText"
                 rows="2"
-                class="mt-4 input-field-textarea"
+                class="input-field-textarea"
+                :class="obsError ? 'mt-1' : 'mt-4'"
                 placeholder="Rédigez votre observation médicale…"
             />
             <div class="mt-3 flex items-center gap-3">
@@ -101,7 +103,7 @@
                         {{
                             showObservationHistory
                                 ? "Historique des observations"
-                                : "Dernière observation"
+                                : "3 dernières observations"
                         }}
                     </p>
                     <button
@@ -159,8 +161,8 @@
         <!-- ── Signes vitaux ───────────────────────────────────────────────────── -->
         <section v-if="activeTab === 'vitals'" class="mt-8 space-y-4">
             <FilterCard
-                title="Filtrer les signes vitaux"
-                subtitle="Affinez l'historique par date et par type de mesure."
+                title="Signes vitaux"
+                subtitle="Filtrez par date ou par type."
                 :show-reset="!!(vitalDate || vitalSign !== 'all')"
                 @reset="
                     vitalDate = '';
@@ -215,8 +217,8 @@
         <!-- ── Analyses ────────────────────────────────────────────────────────── -->
         <section v-else-if="activeTab === 'analyses'" class="mt-8 space-y-4">
             <FilterCard
-                title="Filtrer les analyses"
-                subtitle="Affinez les résultats par date et par type d'analyse."
+                title="Analyses"
+                subtitle="Filtrez par date ou par type."
                 :show-reset="!!(analysisDate || analysisType !== 'all')"
                 @reset="
                     analysisDate = '';
@@ -275,8 +277,8 @@
 
                 <!-- Filtres -->
                 <FilterCard
-                    title="Filtrer les traitements"
-                    subtitle="Affinez l'historique par date, médicament ou observance."
+                    title="Traitements"
+                    subtitle="Filtrez par date, médicament ou observance."
                     :show-reset="!!(treatDate || treatMed !== 'all' || treatStatus !== 'all')"
                     @reset="treatDate = ''; treatMed = 'all'; treatStatus = 'all';"
                     class="mb-5"
@@ -357,6 +359,8 @@ import {
     IconWave,
 } from "@/components/doctors/DoctorIcons.js";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import AlertMessage from "@/components/ui/AlertMessage.vue";
+import FilterCard from "@/components/ui/FilterCard.vue";
 
 const IconeCalendrier = IconCalendar;
 const IconeCoeur = IconHeart;
@@ -368,21 +372,6 @@ const props = defineProps({ patient: { type: Object, required: true } });
 defineEmits(["back"]);
 
 // ─── Sous-composants locaux ───────────────────────────────────────────────────
-const FilterCard = {
-    props: ["title", "subtitle", "showReset"],
-    emits: ["reset"],
-    template: `
-    <article class="card p-5">
-      <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h3 class="text-[18px] font-bold text-[#041c49]">{{ title }}</h3>
-          <p class="mt-1 text-[14px] text-[#5b6b84]">{{ subtitle }}</p>
-        </div>
-        <button v-if="showReset" type="button" class="btn-outline" @click="$emit('reset')">Réinitialiser</button>
-      </div>
-      <div class="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3"><slot /></div>
-    </article>`,
-};
 
 const EmptyState = {
     props: ["title", "subtitle"],
@@ -414,17 +403,18 @@ const treatStatus = ref("all");
 const obsText = ref("");
 const obsSaving = ref(false);
 const obsMsg = ref(null);
+const obsError = ref("");
 const showObservationHistory = ref(false);
 
 const localObservations = ref(props.patient?.healthDataObservations ?? []);
 const observationHistory = computed(() => localObservations.value);
 
-const hasMoreObservations = computed(() => observationHistory.value.length > 1);
+const hasMoreObservations = computed(() => observationHistory.value.length > 3);
 
 const displayedObservations = computed(() =>
     showObservationHistory.value
         ? observationHistory.value
-        : observationHistory.value.slice(0, 1),
+        : observationHistory.value.slice(0, 3),
 );
 
 // ─── Signes vitaux filtrés ────────────────────────────────────────────────────
@@ -529,8 +519,18 @@ function longDate(iso) {
 }
 
 // ─── API — save observation ───────────────────────────────────────────────────
+const OBS_MAX = 1000;
+
 async function saveObservation() {
-    if (!obsText.value.trim()) return;
+    obsError.value = "";
+    if (!obsText.value.trim()) {
+        obsError.value = "Le champ observation ne peut pas être vide.";
+        return;
+    }
+    if (obsText.value.trim().length > OBS_MAX) {
+        obsError.value = `L'observation ne peut pas dépasser ${OBS_MAX} caractères (actuellement ${obsText.value.trim().length}).`;
+        return;
+    }
     obsSaving.value = true;
     obsMsg.value = null;
     try {
@@ -565,6 +565,7 @@ watch(
     () => {
         obsText.value = "";
         obsMsg.value = null;
+        obsError.value = "";
         showObservationHistory.value = false;
     },
 );
@@ -574,9 +575,6 @@ watch(
 @reference "../../index.css";
 .card {
     @apply rounded-[20px] border border-[#d4d9e1] bg-white p-5 shadow-[0_1px_4px_rgba(15,23,42,0.05)];
-}
-.input-field {
-    @apply h-[52px] w-full rounded-[16px] border border-[#d7dce6] bg-[#fbfcfd] px-4 text-[15px] text-[#061a45] outline-none transition focus:border-[#4a55f5];
 }
 .input-field-textarea {
     @apply w-full rounded-[12px] border border-[#d7dce6] bg-[#fbfcfd] px-4 py-3 text-[14px] text-[#061a45] outline-none transition focus:border-[#4a55f5];

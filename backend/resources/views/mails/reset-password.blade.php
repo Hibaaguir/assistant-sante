@@ -21,7 +21,7 @@
             overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #2563eb 0%, #9333ea 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
             padding: 40px 20px;
             text-align: center;
@@ -40,7 +40,7 @@
         }
         .cta-button {
             display: inline-block;
-            background: linear-gradient(135deg, #2563eb 0%, #9333ea 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
             padding: 12px 32px;
             border-radius: 8px;
@@ -69,17 +69,6 @@
             color: #6b7280;
             border-top: 1px solid #e5e7eb;
         }
-        .token-box {
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            word-break: break-all;
-            margin: 16px 0;
-            font-family: monospace;
-            color: #374151;
-        }
     </style>
 </head>
 <body>
@@ -97,14 +86,11 @@
             <p><strong>Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe :</strong></p>
 
             <div style="text-align: center;">
-                <a href="{{ $resetUrl }}" class="cta-button">Réinitialiser mon mot de passe</a>
+                <a href="{{ $resetUrl }}" class="cta-button" style="color: #ffffff !important; text-decoration: none !important;">Réinitialiser mon mot de passe</a>
             </div>
 
-            <p>Ou copiez et collez ce lien dans votre navigateur :</p>
-            <div class="token-box">{{ $resetUrl }}</div>
-
             <div class="warning">
-                <strong>⏰ Important :</strong> Ce lien de réinitialisation expire dans 60 minutes. Si vous ne réinitialisez pas votre mot de passe dans ce délai, vous devrez refaire une demande.
+                <strong>Important :</strong> Ce lien expire dans 60 minutes. Si vous ne réinitialisez pas votre mot de passe dans ce délai, vous devrez refaire une demande.
             </div>
 
             <p>Si vous n'avez pas demandé cette réinitialisation, veuillez ignorer cet email. Votre mot de passe reste sécurisé.</p>

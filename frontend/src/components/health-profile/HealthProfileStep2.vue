@@ -769,12 +769,6 @@
 </template>
 
 <script setup>
-/*
-  Etape 2 du profil sante.
-  L'utilisateur renseigne groupe sanguin, allergies, maladies chroniques et traitements.
-  Le composant modifie directement l'objet "form" recu en prop pour rester simple.
-*/
-
 import { computed, reactive, ref, onMounted } from "vue";
 import axios from "axios";
 import Typography from "@/components/ui/Typography.vue";
@@ -790,40 +784,21 @@ if (!Array.isArray(form.maladies_chroniques)) form.maladies_chroniques = [];
 if (!Array.isArray(form.traitements)) form.traitements = [];
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
 const allergyOptions = [
-    "Pollen",
-    "Acariens",
-    "Poils d'animaux",
-    "Poussiere",
-    "Arachides",
-    "Fruits de mer",
-    "Lait (lactose)",
-    "Oeufs",
-    "Gluten",
-    "Penicilline",
-    "Aspirine",
-    "Piqures d'insectes",
-    "Moisissures",
-];
-const diseaseOptions = [
-    "Diabete",
-    "Hypertension arterielle",
-    "Asthme",
-    "Maladie cardiaque",
-    "Maladie renale chronique",
-    "Maladie thyroidienne",
-    "Arthrite",
-    "Epilepsie",
-    "Migraine chronique",
-    "Maladie pulmonaire chronique",
-    "Cholesterol eleve",
-    "Depression",
-    "Anemie",
+    "Pollen", "Acariens", "Poils d'animaux", "Poussiere", "Arachides",
+    "Fruits de mer", "Lait (lactose)", "Oeufs", "Gluten", "Penicilline",
+    "Aspirine", "Piqures d'insectes", "Moisissures",
 ];
 
-// Types chargés depuis la DB via l'API
+const diseaseOptions = [
+    "Diabete", "Hypertension arterielle", "Asthme", "Maladie cardiaque",
+    "Maladie renale chronique", "Maladie thyroidienne", "Arthrite", "Epilepsie",
+    "Migraine chronique", "Maladie pulmonaire chronique", "Cholesterol eleve",
+    "Depression", "Anemie",
+];
+
 const treatmentTypes = ref([]);
-// Noms chargés depuis la DB au moment où l'utilisateur choisit un type
 const treatmentNamesByType = reactive({});
 
 onMounted(async () => {
@@ -835,14 +810,16 @@ onMounted(async () => {
     }
 });
 
+// Multi-select state for allergies and diseases
 const openAllergies = ref(false);
 const openDiseases = ref(false);
 const queryAllergies = ref("");
 const queryDiseases = ref("");
 const customAllergy = ref("");
 const customDisease = ref("");
-const showTreatmentForm = ref(false);
 
+// Treatment form state
+const showTreatmentForm = ref(false);
 const openTreatmentTypes = ref(false);
 const queryTreatmentTypes = ref("");
 const openTreatmentNames = ref(false);
@@ -858,6 +835,7 @@ const treatment = reactive({
     start_date: "",
     end_date: "",
 });
+
 const treatmentErrors = reactive({
     type: "",
     name: "",
@@ -870,37 +848,25 @@ const treatmentErrors = reactive({
 
 const filteredAllergies = computed(() => {
     const q = queryAllergies.value.trim().toLowerCase();
-    return q
-        ? allergyOptions.filter((item) => item.toLowerCase().includes(q))
-        : allergyOptions;
+    return q ? allergyOptions.filter((item) => item.toLowerCase().includes(q)) : allergyOptions;
 });
 
 const filteredDiseases = computed(() => {
     const q = queryDiseases.value.trim().toLowerCase();
-    return q
-        ? diseaseOptions.filter((item) => item.toLowerCase().includes(q))
-        : diseaseOptions;
+    return q ? diseaseOptions.filter((item) => item.toLowerCase().includes(q)) : diseaseOptions;
 });
 
 const filteredTreatmentTypes = computed(() => {
     const q = queryTreatmentTypes.value.trim().toLowerCase();
-    return q
-        ? treatmentTypes.value.filter((item) => item.toLowerCase().includes(q))
-        : treatmentTypes.value;
+    return q ? treatmentTypes.value.filter((item) => item.toLowerCase().includes(q)) : treatmentTypes.value;
 });
 
 const filteredTreatmentNames = computed(() => {
-    const selectedType = treatment.type.trim();
-    const options = selectedType
-        ? treatmentNamesByType[selectedType] || []
-        : [];
+    const options = treatment.type.trim() ? treatmentNamesByType[treatment.type] || [] : [];
     const q = queryTreatmentNames.value.trim().toLowerCase();
-    return q
-        ? options.filter((item) => item.toLowerCase().includes(q))
-        : options;
+    return q ? options.filter((item) => item.toLowerCase().includes(q)) : options;
 });
 
-// Helpers communs pour les listes multi-selection (allergies/maladies).
 function isSelected(key, value) {
     return form[key].includes(value);
 }
@@ -924,13 +890,11 @@ function addCustom(key, value) {
     if (key === "maladies_chroniques") customDisease.value = "";
 }
 
-// Gestion des options de traitement (type/nom) avec ajout personnalise.
 async function selectTreatmentType(value) {
     const previousType = treatment.type;
     treatment.type = value;
-    if (previousType !== value) {
-        treatment.name = "";
-    }
+    if (previousType !== value) treatment.name = "";
+
     treatmentErrors.type = "";
     treatmentErrors.name = "";
     queryTreatmentTypes.value = "";
@@ -939,24 +903,15 @@ async function selectTreatmentType(value) {
     openTreatmentNames.value = false;
     openTreatmentTypes.value = false;
 
-    if (
-        !Array.isArray(treatmentNamesByType[value]) ||
-        treatmentNamesByType[value].length === 0
-    ) {
+    if (!Array.isArray(treatmentNamesByType[value]) || treatmentNamesByType[value].length === 0) {
         try {
-            const res = await axios.get(
-                "/api/treatment-catalogs/medication-names",
-                { params: { type: value } },
-            );
+            const res = await axios.get("/api/treatment-catalogs/medication-names", { params: { type: value } });
             treatmentNamesByType[value] = res.data;
         } catch (e) {
-            if (!Array.isArray(treatmentNamesByType[value]))
-                treatmentNamesByType[value] = [];
+            if (!Array.isArray(treatmentNamesByType[value])) treatmentNamesByType[value] = [];
         }
     }
 }
-
-// Suppression de l'ajout dynamique de type : les types viennent uniquement de l'API
 
 function toggleTreatmentNames() {
     if (!treatment.type.trim()) {
@@ -996,36 +951,21 @@ function addCustomTreatmentName() {
     openTreatmentNames.value = false;
 }
 
-// Formatage date "JJ/MM/AAAA" au fur et a mesure de la saisie.
+// Auto-formats typed digits into DD/MM/YYYY as the user types
 function formatDateWithSlashes(value) {
-    const digits = String(value || "")
-        .replace(/\D/g, "")
-        .slice(0, 8);
+    const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
     if (digits.length <= 2) return digits;
     if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
     return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
 }
 
 function handleTreatmentDateInput(event, key) {
-    const raw = event?.target?.value ?? "";
-    treatment[key] = formatDateWithSlashes(raw);
+    treatment[key] = formatDateWithSlashes(event?.target?.value ?? "");
     treatmentErrors[key] = "";
 }
 
-function buildTreatmentDuration() {
-    if (treatment.start_date && treatment.end_date)
-        return `${treatment.start_date} - ${treatment.end_date}`;
-    return null;
-}
-
 function clearTreatmentErrors() {
-    treatmentErrors.type = "";
-    treatmentErrors.name = "";
-    treatmentErrors.dose = "";
-    treatmentErrors.frequency_unit = "";
-    treatmentErrors.frequency_count = "";
-    treatmentErrors.start_date = "";
-    treatmentErrors.end_date = "";
+    Object.keys(treatmentErrors).forEach((k) => (treatmentErrors[k] = ""));
 }
 
 function parseFrDate(value) {
@@ -1061,17 +1001,14 @@ function validateTreatment() {
         treatmentErrors.dose = "La dose est obligatoire.";
         isValid = false;
     }
-
     if (!String(treatment.frequency_unit || "").trim()) {
-        treatmentErrors.frequency_unit =
-            "L'unité de fréquence est obligatoire.";
+        treatmentErrors.frequency_unit = "L'unité de fréquence est obligatoire.";
         isValid = false;
     }
 
     const frequencyCount = Number(treatment.frequency_count);
     if (!Number.isFinite(frequencyCount) || frequencyCount < 1) {
-        treatmentErrors.frequency_count =
-            "La fréquence doit être au minimum de 1 prise.";
+        treatmentErrors.frequency_count = "La fréquence doit être au minimum de 1 prise.";
         isValid = false;
     }
 
@@ -1096,8 +1033,7 @@ function validateTreatment() {
         isValid = false;
     }
     if (startDate && endDate && endDate <= startDate) {
-        treatmentErrors.end_date =
-            "La date de fin doit être strictement après la date de début.";
+        treatmentErrors.end_date = "La date de fin doit être strictement après la date de début.";
         isValid = false;
     }
 
@@ -1115,13 +1051,14 @@ function addTreatment() {
         frequency_count: Math.max(1, Number(treatment.frequency_count || 1)),
         start_date: treatment.start_date,
         end_date: treatment.end_date,
-        duration: buildTreatmentDuration(),
+        duration: treatment.start_date && treatment.end_date
+            ? `${treatment.start_date} - ${treatment.end_date}`
+            : null,
     });
 
     cancelTreatment();
 }
 
-// Reinitialise le sous-formulaire de traitement.
 function cancelTreatment() {
     clearTreatmentErrors();
     showTreatmentForm.value = false;

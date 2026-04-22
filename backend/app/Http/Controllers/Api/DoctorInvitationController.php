@@ -142,6 +142,7 @@ class DoctorInvitationController extends Controller
                 'treatment_medicines'=> $this->healthDataService->resolveTreatmentMedicines($patient->id),
                 'treatment_checks'   => $this->healthDataService->serializeTreatmentChecks($treatmentChecks),
                 'health_data'        => HealthData::where('user_id', $patient->id)
+                                            ->where('doctor_user_id', $request->user()->id)
                                             ->orderByDesc('date')
                                             ->limit(60)
                                             ->get(['id', 'date', 'doctor_observation', 'updated_at']),
@@ -161,10 +162,14 @@ class DoctorInvitationController extends Controller
             'observation' => ['required', 'string', 'max:2000'],
         ]);
 
+        $doctorId   = $request->user()->id;
         $healthData = HealthData::firstOrCreate(
             ['user_id' => $patient->id, 'date' => $validated['date']],
         );
-        $healthData->update(['doctor_observation' => trim($validated['observation'])]);
+        $healthData->update([
+            'doctor_observation' => trim($validated['observation']),
+            'doctor_user_id'     => $doctorId,
+        ]);
 
         return response()->json(['message' => 'Observation enregistrée.', 'data' => [
             'id'                 => $healthData->id,

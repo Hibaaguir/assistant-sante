@@ -51,27 +51,7 @@
         />
 
         <div v-if="showAddButton" class="mt-4 flex justify-end gap-2">
-            <BaseButton
-                v-if="activeTab === 'labs'"
-                type="button"
-                variant="outline"
-                size="sm"
-                @click="labsTab?.basculerFiltres()"
-            >
-                <svg
-                    viewBox="0 0 24 24"
-                    class="h-4 w-4 inline mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    aria-hidden="true"
-                >
-                    <path d="M3 5h18M7 12h10M10 19h4" stroke-linecap="round" />
-                </svg>
-                Filtrer
-            </BaseButton>
-
-            <BaseButton
+<BaseButton
                 type="button"
                 variant="add"
                 size="md"

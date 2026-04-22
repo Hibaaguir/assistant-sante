@@ -39,7 +39,7 @@ class DoctorInvitationService
 
         if (!$shouldInvite) {
             DoctorInvitation::where('patient_user_id', $patient->id)
-                ->where('status', 'pending')
+                ->whereIn('status', ['pending', 'accepted'])
                 ->update(['status' => 'revoked', 'revoked_at' => now()]);
             return;
         }

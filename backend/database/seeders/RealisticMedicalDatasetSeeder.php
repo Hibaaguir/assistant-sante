@@ -82,7 +82,7 @@ class RealisticMedicalDatasetSeeder extends Seeder
                 ]
             );
 
-            $this->createOrUpdateDoctorInvitation($user, $patientData, $doctors, $startDate);
+            $acceptedDoctor = $this->createOrUpdateDoctorInvitation($user, $patientData, $doctors, $startDate);
 
             $seedHealthData = HealthData::firstOrCreate(
                 [
@@ -119,12 +119,16 @@ class RealisticMedicalDatasetSeeder extends Seeder
                 $this->seedPhysicalActivity($journal, $patientIndex, $dayOffset, $metrics);
                 $this->seedTobacco($journal, $patientData, $metrics);
 
+                $observation = $this->buildDoctorObservation($patientData, $metrics, $dayOffset);
                 $healthData = HealthData::updateOrCreate(
                     [
                         'user_id' => $user->id,
                         'date' => $date->toDateString(),
                     ],
-                    ['doctor_observation' => $this->buildDoctorObservation($patientData, $metrics, $dayOffset)]
+                    [
+                        'doctor_observation' => $observation,
+                        'doctor_user_id'     => $observation !== null ? $acceptedDoctor?->id : null,
+                    ]
                 );
 
                 $measuredAt = $date->copy()->setTime(
@@ -188,14 +192,14 @@ class RealisticMedicalDatasetSeeder extends Seeder
         return $doctors->keyBy('email')->map(fn (array $row) => $row['user']);
     }
 
-    private function createOrUpdateDoctorInvitation(User $patient, array $patientData, Collection $doctors, Carbon $startDate): void
+    private function createOrUpdateDoctorInvitation(User $patient, array $patientData, Collection $doctors, Carbon $startDate): ?User
     {
         $doctorEmail = isset($patientData['doctor_email']) && $patientData['doctor_email']
             ? strtolower(trim((string) $patientData['doctor_email']))
             : null;
 
         if (!$doctorEmail) {
-            return;
+            return null;
         }
 
         $status = strtolower((string) ($patientData['invitation_status'] ?? 'pending'));
@@ -219,6 +223,8 @@ class RealisticMedicalDatasetSeeder extends Seeder
                 'revoked_at' => null,
             ]
         );
+
+        return ($status === 'accepted') ? $doctorUser : null;
     }
 
     private function clearPatientMedicalData(User $user): void

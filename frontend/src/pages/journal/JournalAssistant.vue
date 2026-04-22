@@ -90,7 +90,7 @@
                                 type="button"
                                 class="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors"
                                 :class="form.selectedMeal === item.id ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'"
-                                @click="form.selectedMeal = item.id"
+                                @click="form.selectedMeal = item.id; mealError = ''"
                             >
                                 <div v-html="item.icon" />
                                 <div>{{ item.label }}</div>
@@ -99,10 +99,18 @@
 
                         <div v-if="form.selectedMeal" class="mt-3 border-t border-slate-100 pt-3">
                             <div class="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700">
-                                <span>{{ selectedMealLabel }}</span>
+                                <span>{{ selectedMealLabel }} <span class="text-red-500">*</span></span>
                                 <button type="button" class="flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-sm font-bold text-red-500 hover:bg-red-200 transition-colors" @click="form.selectedMeal = ''">×</button>
                             </div>
-                            <input v-model="mealDraft.label" type="text" class="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-blue-400" placeholder="Ex: Oeufs + pain complet" />
+                            <input
+                                v-model="mealDraft.label"
+                                type="text"
+                                class="w-full rounded-lg border px-3 py-1.5 text-sm outline-none transition"
+                                :class="mealError ? 'border-red-400 focus:border-red-500' : 'border-slate-200 focus:border-blue-400'"
+                                placeholder="Ex: Oeufs + pain complet"
+                                @input="mealError = ''"
+                            />
+                            <p v-if="mealError" class="mt-1 text-xs font-medium text-red-500">{{ mealError }}</p>
                             <input v-model.number="mealDraft.calories" type="number" min="0" class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-blue-400" placeholder="Calories (optionnel)" />
                             <div class="mt-3 flex justify-end">
                                 <BaseButton
@@ -110,7 +118,6 @@
                                     variant="add"
                                     size="md"
                                     class-name="min-w-40 border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100"
-                                    :disabled="!mealDraft.label.trim()"
                                     @click="addMeal"
                                 >
                                     Ajouter
@@ -398,7 +405,9 @@
                 </div>
             </div>
 
-            <div class="mt-12 flex items-center justify-between gap-3">
+            <p v-if="mealError && step === 2" class="mt-6 text-center text-sm font-medium text-red-500">{{ mealError }}</p>
+
+            <div class="mt-4 flex items-center justify-between gap-3">
                 <BaseButton
                     v-if="step === 1"
                     type="button"
@@ -524,6 +533,7 @@ const step = ref(1);
 const submitAttempted = ref(false);
 const saveError = ref("");
 const mealDraft = reactive({ label: "", calories: null });
+const mealError = ref("");
 const showNewActivityForm = ref(false);
 const newActivityName = ref("");
 const confirmDeleteMealOpen = ref(false);
@@ -702,7 +712,12 @@ onMounted(async () => {
 });
 
 const addMeal = () => {
-    if (!form.selectedMeal || !mealDraft.label.trim()) return;
+    if (!form.selectedMeal) return;
+    if (!mealDraft.label.trim()) {
+        mealError.value = "La description du repas est obligatoire.";
+        return;
+    }
+    mealError.value = "";
     form.meals.push({
         type: form.selectedMeal,
         label: mealDraft.label.trim(),
@@ -751,6 +766,11 @@ const adjustBottles = (delta) => {
 };
 
 const goNext = () => {
+    if (step.value === 2 && form.selectedMeal && !mealDraft.label.trim()) {
+        mealError.value = "Veuillez décrire le repas sélectionné avant de continuer.";
+        return;
+    }
+    mealError.value = "";
     submitAttempted.value = false;
     step.value = Math.min(3, step.value + 1);
 };

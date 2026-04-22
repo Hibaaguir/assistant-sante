@@ -1,282 +1,152 @@
 <template>
     <div
-        class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8"
+        class="min-h-screen bg-gradient-to-br from-blue-50 via-blue-50 to-blue-100 flex items-center justify-center px-4 py-8"
     >
-        <div class="w-full max-w-lg space-y-6">
-            <!-- Back Button -->
-            <BaseButton
-                type="button"
-                variant="outline"
-                size="sm"
-                @click="$router.push({ name: 'login' })"
+        <div class="w-full max-w-7xl">
+            <div
+                class="grid grid-cols-1 lg:grid-cols-2 gap-0 items-stretch rounded-[32px] overflow-hidden shadow-2xl bg-white"
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    class="h-4 w-4 inline mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                >
-                    <path
-                        d="m15 18-6-6 6-6"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    />
-                </svg>
-                Retour à la connexion
-            </BaseButton>
-
-            <!-- Header -->
-            <div class="flex items-center gap-2">
+                <!-- Colonne gauche -->
                 <div
-                    class="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-purple-700"
+                    class="hidden lg:flex flex-col items-center justify-center bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white px-8 py-20 relative overflow-hidden"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        class="h-6 w-6 stroke-white"
-                        fill="none"
-                        stroke-width="2"
-                    >
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 6v6l4 2" />
-                    </svg>
-                </div>
-                <div>
-                    <Typography tag="h1" variant="h1-style">
-                        HealthFlow
-                    </Typography>
-                </div>
-            </div>
+                    <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                    <div class="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
 
-            <!-- Content -->
-            <div v-if="!resetOk">
-                <Typography tag="h2" variant="h2-style">
-                    Réinitialiser votre mot de passe
-                </Typography>
-                <Typography tag="p" variant="paragraph" class="mt-2">
-                    Entrez votre nouveau mot de passe pour réinitialiser l'accès
-                    à votre compte.
-                </Typography>
-            </div>
-
-            <!-- Form -->
-            <form
-                v-if="!resetOk"
-                class="space-y-4"
-                @submit.prevent="resetPassword"
-            >
-                <div>
-                    <label
-                        for="email"
-                        class="block text-sm font-semibold text-gray-700"
-                        >Adresse e-mail</label
-                    >
-                    <input
-                        id="email"
-                        v-model="form.email"
-                        type="email"
-                        placeholder="votre.email@exemple.com"
-                        disabled
-                        class="mt-2 h-12 w-full rounded-xl border border-gray-200 bg-gray-100 px-4 text-sm text-gray-500 placeholder:text-gray-400 focus:outline-none"
-                    />
-                </div>
-
-                <div>
-                    <label
-                        for="password"
-                        class="block text-sm font-semibold text-gray-700"
-                        >Nouveau mot de passe</label
-                    >
-                    <div class="relative mt-2">
-                        <input
-                            id="password"
-                            v-model="form.password"
-                            :type="showPassword.new ? 'text' : 'password'"
-                            placeholder="••••••••"
-                            class="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm placeholder:text-gray-400 focus:border-purple-500 focus:bg-white focus:outline-none"
-                        />
-                        <BaseButton
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            @click="showPassword.new = !showPassword.new"
-                        >
-                            <svg
-                                v-if="showPassword.new"
-                                viewBox="0 0 24 24"
-                                class="h-5 w-5"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <path
-                                    d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
-                                />
-                                <circle cx="12" cy="12" r="3" />
-                            </svg>
-                            <svg
-                                v-else
-                                viewBox="0 0 24 24"
-                                class="h-5 w-5"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <path
-                                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
-                                />
-                                <line x1="1" y1="1" x2="23" y2="23" />
-                            </svg>
-                        </BaseButton>
-                    </div>
-                    <p
-                        v-if="errors.password"
-                        class="mt-2 text-xs text-rose-600"
-                    >
-                        {{ errors.password }}
-                    </p>
-                </div>
-
-                <div>
-                    <label
-                        for="confirm-password"
-                        class="block text-sm font-semibold text-gray-700"
-                        >Confirmer le mot de passe</label
-                    >
-                    <div class="relative mt-2">
-                        <input
-                            id="confirm-password"
-                            v-model="form.passwordConfirmation"
-                            :type="
-                                showPassword.confirmation ? 'text' : 'password'
-                            "
-                            placeholder="••••••••"
-                            class="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm placeholder:text-gray-400 focus:border-purple-500 focus:bg-white focus:outline-none"
-                        />
-                        <BaseButton
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            @click="
-                                showPassword.confirmation =
-                                    !showPassword.confirmation
-                            "
-                        >
-                            <svg
-                                v-if="showPassword.confirmation"
-                                viewBox="0 0 24 24"
-                                class="h-5 w-5"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <path
-                                    d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
-                                />
-                                <circle cx="12" cy="12" r="3" />
-                            </svg>
-                            <svg
-                                v-else
-                                viewBox="0 0 24 24"
-                                class="h-5 w-5"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <path
-                                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
-                                />
-                                <line x1="1" y1="1" x2="23" y2="23" />
-                            </svg>
-                        </BaseButton>
-                    </div>
-                    <p
-                        v-if="errors.passwordConfirmation"
-                        class="mt-2 text-xs text-rose-600"
-                    >
-                        {{ errors.passwordConfirmation }}
-                    </p>
-                </div>
-
-                <BaseButton
-                    type="submit"
-                    variant="primary"
-                    size="lg"
-                    :disabled="loading"
-                    class="w-full"
-                >
-                    {{
-                        loading
-                            ? "Réinitialisation en cours..."
-                            : "Réinitialiser mon mot de passe"
-                    }}
-                </BaseButton>
-            </form>
-
-            <!-- Success Message -->
-            <Transition name="fade">
-                <div v-if="resetOk" class="space-y-4">
-                    <div
-                        class="rounded-xl border border-emerald-200 bg-emerald-50 p-4"
-                    >
-                        <div class="flex gap-3">
-                            <div
-                                class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    class="h-5 w-5 text-emerald-600"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <polyline points="20 6 9 17 4 12" />
+                    <div class="relative z-10 text-center space-y-8">
+                        <div class="flex justify-center mb-4">
+                            <div class="w-24 h-24 rounded-2xl bg-white/15 backdrop-blur-lg flex items-center justify-center border border-white/20">
+                                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                                 </svg>
                             </div>
-                            <div>
-                                <p class="font-semibold text-emerald-900">
-                                    Succès !
-                                </p>
-                                <p class="mt-1 text-sm text-emerald-700">
-                                    Votre mot de passe a été réinitialisé avec
-                                    succès.
-                                </p>
-                                <p class="mt-2 text-xs text-emerald-600">
-                                    Vous serez redirigé vers la page de
-                                    connexion en bref.
-                                </p>
-                            </div>
+                        </div>
+                        <div class="space-y-4 max-w-sm">
+                            <h2 class="text-5xl font-extrabold">HealthFlow</h2>
+                            <p class="text-base leading-relaxed text-white/90">
+                                Choisissez un nouveau mot de passe sécurisé pour protéger votre compte.
+                            </p>
                         </div>
                     </div>
-                    <BaseButton
-                        type="button"
-                        variant="primary"
-                        size="lg"
-                        class="w-full"
-                        @click="$router.push({ name: 'login' })"
-                    >
-                        Aller à la connexion
-                    </BaseButton>
                 </div>
-            </Transition>
 
-            <!-- Error Message -->
-            <Transition name="fade">
-                <div
-                    v-if="errorMessage"
-                    class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
-                >
-                    {{ errorMessage }}
+                <!-- Colonne droite -->
+                <div class="w-full flex items-center justify-center p-8 lg:p-12">
+                    <div class="w-full max-w-md">
+
+                        <!-- Logo mobile -->
+                        <div class="lg:hidden text-center mb-8">
+                            <div class="flex justify-center mb-3">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Header -->
+                        <div class="text-center mb-8">
+                            <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Nouveau mot de passe</h1>
+                            <p class="text-sm text-gray-600">Entrez et confirmez votre nouveau mot de passe</p>
+                        </div>
+
+                        <!-- Messages -->
+                        <AlertMessage :message="errorMessage" type="error" class="mb-6" />
+
+                        <!-- Succès -->
+                        <Transition name="fade">
+                            <div v-if="resetOk" class="space-y-4">
+                                <AlertMessage message="Votre mot de passe a été réinitialisé avec succès. Vous serez redirigé vers la connexion." type="success" />
+                                <BaseButton
+                                    type="button"
+                                    variant="primary"
+                                    size="lg"
+                                    fullWidth
+                                    @click="$router.push({ name: 'login' })"
+                                >
+                                    Aller à la connexion
+                                </BaseButton>
+                            </div>
+                        </Transition>
+
+                        <!-- Form -->
+                        <form v-if="!resetOk" class="space-y-5" @submit.prevent="resetPassword">
+
+                            <!-- Email (disabled) -->
+                            <FormField label="Adresse e-mail">
+                                <template #icon>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </template>
+                                <input
+                                    v-model="form.email"
+                                    type="email"
+                                    disabled
+                                    class="w-full h-12 pl-12 pr-4 rounded-xl border border-gray-200 bg-gray-100 text-base text-gray-500 outline-none cursor-not-allowed"
+                                />
+                            </FormField>
+
+                            <!-- Nouveau mot de passe -->
+                            <FormField label="Nouveau mot de passe" :error="errors.password">
+                                <template #icon>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </template>
+                                <div class="relative">
+                                    <input
+                                        v-model="form.password"
+                                        :type="showPassword.new ? 'text' : 'password'"
+                                        placeholder="••••••••"
+                                        autocomplete="new-password"
+                                        class="w-full h-12 pl-12 pr-12 rounded-xl border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200"
+                                        :class="errors.password ? 'border-red-300 focus:border-red-500 focus:bg-white focus:ring-2 focus:ring-red-200' : 'border-gray-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100'"
+                                    />
+                                    <EyeButton :visible="showPassword.new" @toggle="showPassword.new = !showPassword.new" />
+                                </div>
+                            </FormField>
+
+                            <!-- Confirmer mot de passe -->
+                            <FormField label="Confirmer le mot de passe" :error="errors.passwordConfirmation">
+                                <template #icon>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </template>
+                                <div class="relative">
+                                    <input
+                                        v-model="form.passwordConfirmation"
+                                        :type="showPassword.confirmation ? 'text' : 'password'"
+                                        placeholder="••••••••"
+                                        autocomplete="new-password"
+                                        class="w-full h-12 pl-12 pr-12 rounded-xl border bg-gray-50 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200"
+                                        :class="errors.passwordConfirmation ? 'border-red-300 focus:border-red-500 focus:bg-white focus:ring-2 focus:ring-red-200' : 'border-gray-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100'"
+                                    />
+                                    <EyeButton :visible="showPassword.confirmation" @toggle="showPassword.confirmation = !showPassword.confirmation" />
+                                </div>
+                            </FormField>
+
+                            <BaseButton
+                                type="submit"
+                                variant="primary"
+                                size="lg"
+                                fullWidth
+                                :disabled="loading"
+                                :loading="loading"
+                                class="mt-2"
+                            >
+                                {{ loading ? "Réinitialisation en cours..." : "Réinitialiser mon mot de passe" }}
+                            </BaseButton>
+                        </form>
+
+                        <!-- Retour connexion -->
+                        <p v-if="!resetOk" class="text-center text-sm text-gray-600 pt-6">
+                            <button
+                                type="button"
+                                class="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
+                                @click="$router.push({ name: 'login' })"
+                            >
+                                Retour à la connexion
+                            </button>
+                        </p>
+                    </div>
                 </div>
-            </Transition>
-
-            <!-- Info box -->
-            <div class="rounded-xl bg-purple-50 p-4 text-sm text-purple-800">
-                <p class="font-semibold">🔒 Sécurité</p>
-                <p class="mt-1">
-                    Nous ne vous demanderons jamais votre mot de passe par
-                    e-mail. Gardez-le secret.
-                </p>
             </div>
         </div>
     </div>
@@ -287,34 +157,21 @@ import { reactive, ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
-import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import AlertMessage from "@/components/ui/AlertMessage.vue";
+import EyeButton from "@/components/ui/EyeButton.vue";
+import FormField from "@/components/login/FormField.vue";
 
 const router = useRouter();
 const route = useRoute();
 const notifications = useNotificationsStore();
 
-const form = reactive({
-    email: "",
-    password: "",
-    passwordConfirmation: "",
-    token: "",
-});
-
-const showPassword = reactive({
-    new: false,
-    confirmation: false,
-});
-
-const errors = reactive({
-    password: "",
-    passwordConfirmation: "",
-});
-
+const form = reactive({ email: "", password: "", passwordConfirmation: "", token: "" });
+const showPassword = reactive({ new: false, confirmation: false });
+const errors = reactive({ password: "", passwordConfirmation: "" });
 const loading = ref(false);
 const errorMessage = ref("");
 const resetOk = ref(false);
-const userRole = ref(null);
 
 onMounted(() => {
     const email = route.query.email;
@@ -322,9 +179,7 @@ onMounted(() => {
 
     if (!email || !token) {
         errorMessage.value = "Lien de réinitialisation invalide ou expiré.";
-        setTimeout(() => {
-            router.push({ name: "login" });
-        }, 2000);
+        setTimeout(() => router.push({ name: "login" }), 2000);
         return;
     }
 
@@ -341,13 +196,10 @@ async function resetPassword() {
         errors.password = "Le mot de passe est obligatoire.";
         return;
     }
-
     if (form.password.length < 8) {
-        errors.password =
-            "Le mot de passe doit contenir au moins 8 caractères.";
+        errors.password = "Le mot de passe doit contenir au moins 8 caractères.";
         return;
     }
-
     if (form.password !== form.passwordConfirmation) {
         errors.passwordConfirmation = "Les mots de passe ne correspondent pas.";
         return;
@@ -363,36 +215,21 @@ async function resetPassword() {
         });
 
         if (response?.data) {
-            const role = response?.data?.data?.role;
-            userRole.value = role;
             resetOk.value = true;
-            notifications.success("Your password has been reset successfully.");
-
-            // All users go to the same login page
-            setTimeout(() => {
-                router.push({ name: "login" });
-            }, 3000);
+            notifications.success("Mot de passe réinitialisé avec succès.");
+            setTimeout(() => router.push({ name: "login" }), 3000);
         }
     } catch (error) {
         if (error?.response?.data?.message) {
             errorMessage.value = error.response.data.message;
         } else if (error?.response?.data?.errors) {
             const apiErrors = error.response.data.errors;
-            if (apiErrors.password) {
-                errors.password = apiErrors.password[0];
-            }
-            if (apiErrors.password_confirmation) {
-                errors.passwordConfirmation =
-                    apiErrors.password_confirmation[0];
-            }
+            if (apiErrors.password) errors.password = apiErrors.password[0];
+            if (apiErrors.password_confirmation) errors.passwordConfirmation = apiErrors.password_confirmation[0];
         } else {
-            errorMessage.value =
-                "Une erreur s'est produite. Veuillez réessayer.";
+            errorMessage.value = "Une erreur s'est produite. Veuillez réessayer.";
         }
-        notifications.error(
-            errorMessage.value ||
-                "Erreur lors de la réinitialisation du mot de passe.",
-        );
+        notifications.error(errorMessage.value || "Erreur lors de la réinitialisation.");
     } finally {
         loading.value = false;
     }
@@ -404,7 +241,6 @@ async function resetPassword() {
 .fade-leave-active {
     transition: opacity 0.2s ease;
 }
-
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;

@@ -1,52 +1,20 @@
 <template>
     <section class="mt-4 space-y-3">
         <!-- Filtres -->
-        <div
-            v-if="showLabsFilters"
-            class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+        <FilterCard
+            title="Analyses"
+            subtitle="Filtrez par type ou par date."
+            :show-reset="!!(filters.type || filters.date)"
+            @reset="reinitialiserFiltres"
         >
-            <div class="flex items-center justify-between mb-4">
-                <div></div>
-                <BaseButton
-                    v-if="filters.type || filters.date"
-                    type="button"
-                    variant="outline"
-                    size="md"
-                    @click="reinitialiserFiltres"
-                >
-                    Réinitialiser filtres
-                </BaseButton>
-            </div>
-            <div class="grid gap-4 lg:grid-cols-2">
-                <div v-for="filter in filterFields" :key="filter.key">
-                    <label
-                        class="mb-3 block text-[14px] font-semibold text-slate-800"
-                        >{{ filter.label }}</label
-                    >
-                    <select
-                        v-if="filter.tag === 'select'"
-                        v-model="filters[filter.key]"
-                        v-bind="filter.attrs"
-                        class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-5 text-[16px] text-slate-900 outline-none focus:border-purple-500"
-                    >
-                        <option value="">Tous</option>
-                        <option
-                            v-for="opt in labTypeOptions"
-                            :key="opt"
-                            :value="opt"
-                        >
-                            {{ opt }}
-                        </option>
-                    </select>
-                    <input
-                        v-else
-                        v-model="filters[filter.key]"
-                        v-bind="filter.attrs"
-                        class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-5 text-[16px] text-slate-900 outline-none focus:border-purple-500"
-                    />
-                </div>
-            </div>
-        </div>
+            <select v-model="filters.type" class="input-field">
+                <option value="">Tous les types</option>
+                <option v-for="opt in labTypeOptions" :key="opt" :value="opt">
+                    {{ opt }}
+                </option>
+            </select>
+            <input v-model="filters.date" type="date" class="input-field" />
+        </FilterCard>
 
         <!-- Liste des analyses -->
         <article
@@ -311,6 +279,7 @@ import { useNotificationsStore } from "@/stores/notifications";
 import DialogueConfirmation from "@/components/ui/ConfirmationDialog.vue";
 import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import FilterCard from "@/components/ui/FilterCard.vue";
 
 // ─── Icônes inline légères ────────────────────────────────────────────────────
 const CalendarIcon = {
@@ -414,7 +383,6 @@ const CATALOG = {
 // ─── État ─────────────────────────────────────────────────────────────────────
 const showAnalysisModal = ref(false);
 const showDeleteConfirm = ref(false);
-const showLabsFilters = ref(true);
 const editingId = ref(null);
 const expandedIndex = ref(0);
 const formError = ref("");
@@ -641,9 +609,5 @@ function reinitialiserFiltres() {
     filters.type = "";
     filters.date = "";
 }
-function basculerFiltres() {
-    showLabsFilters.value = !showLabsFilters.value;
-}
-
-defineExpose({ ouvrirModalAjout, reinitialiserFiltres, basculerFiltres });
+defineExpose({ ouvrirModalAjout, reinitialiserFiltres });
 </script>

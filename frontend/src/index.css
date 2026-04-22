@@ -24,4 +24,8 @@
         border-radius: 1rem;
         background: #fff;
     }
+
+    .input-field {
+        @apply h-[52px] w-full rounded-[16px] border border-[#d7dce6] bg-[#fbfcfd] px-4 text-[15px] text-[#061a45] outline-none transition focus:border-[#4a55f5];
+    }
 }

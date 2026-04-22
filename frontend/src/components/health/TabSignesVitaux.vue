@@ -115,69 +115,25 @@
     <section
         class="mt-8 rounded-2xl border border-slate-200 bg-[#f8f9fb] px-8 py-8"
     >
-        <div
-            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-        >
-            <Typography tag="h2" variant="h4-style">
-                Historique des mesures
-            </Typography>
-            <BaseButton
-                v-if="filtresActifs"
-                type="button"
-                variant="outline"
-                size="md"
-                @click="reinitialiserFiltres"
-            >
-                Réinitialiser
-            </BaseButton>
-        </div>
+        <Typography tag="h2" variant="h4-style">
+            Historique des mesures
+        </Typography>
 
-        <div class="mt-8 grid gap-4 lg:grid-cols-2">
-            <div class="grid gap-4">
-                <div>
-                    <label
-                        class="mb-3 block text-[14px] font-semibold text-slate-800"
-                        >Filtrer par date</label
-                    >
-                    <div class="relative">
-                        <input
-                            v-model="filterDate"
-                            type="date"
-                            class="h-12 w-full rounded-2xl border border-slate-300 bg-white pl-5 pr-12 text-[16px] text-slate-900 outline-none focus:border-purple-500"
-                        />
-                        <!-- Calendar icon (inline SVG — no render function needed) -->
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"
-                        >
-                            <path
-                                d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
-                            />
-                        </svg>
-                    </div>
-                </div>
-            </div>
-            <div class="grid gap-4">
-                <div>
-                    <label
-                        class="mb-3 block text-[14px] font-semibold text-slate-800"
-                        >Filtrer par type</label
-                    >
-                    <select
-                        v-model="filterType"
-                        class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-5 text-[16px] text-slate-900 outline-none focus:border-purple-500"
-                    >
-                        <option value="all">Tous les signes</option>
-                        <option value="heartRate">Rythme cardiaque</option>
-                        <option value="bloodPressure">Tension artérielle</option>
-                        <option value="saturation">Saturation O₂</option>
-                    </select>
-                </div>
-            </div>
-        </div>
+        <FilterCard
+            class="mt-6"
+            title="Signes vitaux"
+            subtitle="Filtrez par date ou par type."
+            :show-reset="filtresActifs"
+            @reset="reinitialiserFiltres"
+        >
+            <input v-model="filterDate" type="date" class="input-field" />
+            <select v-model="filterType" class="input-field">
+                <option value="all">Tous les signes</option>
+                <option value="heartRate">Rythme cardiaque</option>
+                <option value="bloodPressure">Tension artérielle</option>
+                <option value="saturation">Saturation O₂</option>
+            </select>
+        </FilterCard>
 
         <div class="mt-6 space-y-3.5">
             <article
@@ -396,6 +352,7 @@ import HistoryCard from "./HistoryCard.vue";
 import ModalField from "./ModalField.vue";
 import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import FilterCard from "@/components/ui/FilterCard.vue";
 
 // ─── Métadonnées des signes vitaux (couleurs, icônes, labels) ─────────────────
 const VITAL_META = {

@@ -186,7 +186,6 @@ import Etape1 from "./HealthProfileStep1.vue";
 import Etape2 from "./HealthProfileStep2.vue";
 import Etape3 from "./HealthProfileStep3.vue";
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
 const TOTAL_STEPS = 3;
 const STEPS = [
     { number: 1, label: "Informations de base" },
@@ -194,11 +193,9 @@ const STEPS = [
     { number: 3, label: "Médecin" },
 ];
 
-// ─── Stores / Router ──────────────────────────────────────────────────────────
 const router = useRouter();
 const authStore = useAuthStore();
 
-// ─── État ─────────────────────────────────────────────────────────────────────
 const currentStep = ref(1);
 const loading = ref(true);
 const saving = ref(false);
@@ -209,14 +206,14 @@ const step1Tried = ref(false);
 const dateNaissance = ref("");
 
 const step1Errors = reactive({
-    sexe: "",
+    genre: "",
     taille: "",
     poids: "",
     objectifs: "",
 });
 
 const form = reactive({
-    sexe: "",
+    genre: "",
     taille: "",
     poids: "",
     groupe_sanguin: "",
@@ -226,12 +223,10 @@ const form = reactive({
     traitements: [],
     fumeur: false,
     alcool: false,
-    consulte_medecin: false,
     medecin_peut_consulter: false,
     medecin_email: "",
 });
 
-// ─── Computed ─────────────────────────────────────────────────────────────────
 const progress = computed(() => (currentStep.value / TOTAL_STEPS) * 100);
 
 const computedAge = computed(() => {
@@ -240,29 +235,11 @@ const computedAge = computed(() => {
     if (isNaN(dob)) return "";
     const today = new Date();
     let age = today.getFullYear() - dob.getFullYear();
-    const m = today.getMonth() - dob.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
     return age >= 0 ? age : "";
 });
 
-// ─── Watchers (effets de bord sur le formulaire) ──────────────────────────────
-watch(
-    () => form.consulte_medecin,
-    (v) => {
-        if (!v) {
-            form.medecin_peut_consulter = false;
-            form.medecin_email = "";
-        }
-    },
-);
-watch(
-    () => form.medecin_peut_consulter,
-    (v) => {
-        if (!v) form.medecin_email = "";
-    },
-);
-
-// Return the CSS classes for a step circle (completed / active / inactive)
 function stepClass(n) {
     if (currentStep.value > n) return "bg-blue-600 text-white";
     if (currentStep.value === n)
@@ -270,56 +247,43 @@ function stepClass(n) {
     return "bg-slate-100 text-slate-400 border border-slate-200";
 }
 
-// Keep only non-empty strings from an array
 function normalizeArray(v) {
     if (!Array.isArray(v)) return [];
     return v.filter((s) => typeof s === "string" && s.trim());
 }
 
-// Convert a frequency value to a positive integer — returns null if invalid
 function normalizeFrequency(v) {
     if (v === null || v === undefined || v === "") return null;
-    const number = Number(v);
-    if (!Number.isFinite(number)) return null;
-    return Math.max(1, Math.trunc(number));
+    const n = Number(v);
+    if (!Number.isFinite(n)) return null;
+    return Math.max(1, Math.trunc(n));
 }
 
-// Get the first readable error message from API validation errors
 function extractApiError(errors) {
     if (!errors || typeof errors !== "object") return "Validation invalide.";
-
-    // Flatten all error arrays into a single list of messages
     const messages = Object.values(errors).flat().filter(Boolean);
-
     return messages.join(" ") || "Validation invalide.";
 }
 
-// Clear all step 1 error messages
 function clearStep1Errors() {
-    step1Errors.sexe = "";
+    step1Errors.genre = "";
     step1Errors.taille = "";
     step1Errors.poids = "";
     step1Errors.objectifs = "";
 }
 
-// Log out and redirect to the registration page
 function redirectLogin() {
     authStore.removeToken();
     router.replace({ name: "register" });
 }
 
-// ─── Validation ───────────────────────────────────────────────────────────────
-
-// Validate step 1: gender, height, weight, goals
 function validateStep1() {
     clearStep1Errors();
 
-    // Gender is required
-    if (!form.sexe) {
-        step1Errors.sexe = "Veuillez sélectionner votre genre.";
+    if (!form.genre) {
+        step1Errors.genre = "Veuillez sélectionner votre genre.";
     }
 
-    // Height: required and must be between 80 and 250 cm
     if (!form.taille) {
         step1Errors.taille = "La taille est obligatoire.";
     } else {
@@ -329,7 +293,6 @@ function validateStep1() {
         }
     }
 
-    // Weight: required and must be between 35 and 250 kg
     if (!form.poids) {
         step1Errors.poids = "Le poids est obligatoire.";
     } else {
@@ -339,16 +302,13 @@ function validateStep1() {
         }
     }
 
-    // At least one goal must be selected
     if (!form.objectifs.length) {
         step1Errors.objectifs = "Veuillez sélectionner au moins un objectif.";
     }
 
-    // Return true only if no errors were found
     return !Object.values(step1Errors).some(Boolean);
 }
 
-// Validate step 2: blood type is required
 function validateStep2() {
     if (!form.groupe_sanguin) {
         stepError.value = "Le groupe sanguin est obligatoire.";
@@ -357,20 +317,15 @@ function validateStep2() {
     return true;
 }
 
-// Validate step 3: if doctor sharing is enabled, email is required and must be valid
 function validateStep3() {
-    const doctorSharingEnabled =
-        form.consulte_medecin && form.medecin_peut_consulter;
-
-    if (!doctorSharingEnabled) return true;
+    if (!form.medecin_peut_consulter) return true;
 
     if (!form.medecin_email) {
         stepError.value = "Veuillez renseigner l'email du médecin.";
         return false;
     }
 
-    const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.medecin_email);
-    if (!emailIsValid) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.medecin_email)) {
         stepError.value = "L'email du médecin est invalide.";
         return false;
     }
@@ -378,7 +333,6 @@ function validateStep3() {
     return true;
 }
 
-// ─── Navigation ───────────────────────────────────────────────────────────────
 function goNext() {
     saveSuccess.value = "";
     stepError.value = "";
@@ -394,32 +348,24 @@ function goNext() {
     currentStep.value++;
 }
 
-// Convert a date from DD/MM/YYYY format to YYYY-MM-DD (the format the API expects)
-// Returns null if the date string is missing or invalid
+// Converts DD/MM/YYYY → YYYY-MM-DD for the API; returns null if invalid
 function toIsoDate(frDate) {
-    const text = String(frDate || "");
-
-    // Must match exactly DD/MM/YYYY
-    const match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    const match = String(frDate || "").match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (!match) return null;
 
     const day = Number(match[1]);
     const month = Number(match[2]);
     const year = Number(match[3]);
 
-    // Double-check the date is real (e.g. rejects 31/02/2024)
     const date = new Date(year, month - 1, day);
     const isReal =
         date.getFullYear() === year &&
         date.getMonth() === month - 1 &&
         date.getDate() === day;
 
-    if (!isReal) return null;
-
-    return `${match[3]}-${match[2]}-${match[1]}`;
+    return isReal ? `${match[3]}-${match[2]}-${match[1]}` : null;
 }
 
-// Convert a single treatment object into the format expected by the API
 function buildTreatment(t) {
     return {
         type: t?.type ?? null,
@@ -433,17 +379,13 @@ function buildTreatment(t) {
     };
 }
 
-// Build the complete data object to send to the API
 function buildPayload() {
-    // Clean up treatments: convert each one and remove those without a type
     const treatments = Array.isArray(form.traitements)
         ? form.traitements.map(buildTreatment).filter((t) => t.type)
         : [];
 
     return {
-        gender: String(form.sexe || "")
-            .toLowerCase()
-            .trim(),
+        gender: String(form.genre || "").toLowerCase().trim(),
         height: form.taille,
         current_weight: form.poids,
         blood_type: form.groupe_sanguin,
@@ -458,11 +400,9 @@ function buildPayload() {
     };
 }
 
-// Save the completed health profile to the API
 async function enregistrer() {
     if (!validateStep3()) return;
 
-    // Clear previous messages
     stepError.value = "";
     saveError.value = "";
     saveSuccess.value = "";
@@ -477,13 +417,11 @@ async function enregistrer() {
         const status = err.response?.status;
 
         if (status === 401) {
-            // Not logged in — redirect to registration
             redirectLogin();
             return;
         }
 
         if (status === 422) {
-            // Server validation failed — show the first error message
             const data = err.response.data;
             saveError.value = data?.errors
                 ? extractApiError(data.errors)
@@ -496,9 +434,7 @@ async function enregistrer() {
     }
 }
 
-// Load the existing health profile when the page opens
 onMounted(async () => {
-    // Redirect to registration if the user is not logged in
     if (!authStore.isAuthenticated) {
         router.replace({ name: "register" });
         return;
@@ -507,7 +443,6 @@ onMounted(async () => {
     try {
         const { data } = await api.get("/health-profile");
 
-        // Save the user's birth date (used to compute age)
         dateNaissance.value = data?.user?.date_of_birth
             ? String(data.user.date_of_birth)
             : "";
@@ -515,23 +450,20 @@ onMounted(async () => {
         authStore.setHealthProfile(Boolean(data?.data));
 
         const profile = data?.data;
-
-        // No profile yet — stay on the creation form
         if (!profile) return;
 
-        // Profile is already complete — go straight to the settings page
         const isComplete =
             profile.gender &&
             profile.height &&
             profile.current_weight &&
             profile.blood_type;
+
         if (isComplete) {
             router.replace({ name: "health-settings" });
             return;
         }
 
-        // Pre-fill the form with whatever was already saved
-        form.sexe = profile.gender || "";
+        form.genre = profile.gender || "";
         form.taille = profile.height || "";
         form.poids = profile.current_weight || "";
         form.groupe_sanguin = profile.blood_type || "";
@@ -541,11 +473,9 @@ onMounted(async () => {
         form.traitements = profile.treatments || [];
         form.fumeur = profile.smoker || false;
         form.alcool = profile.alcoholic || false;
-        form.consulte_medecin = profile.doctor_invited || false;
         form.medecin_peut_consulter = profile.doctor_invited || false;
         form.medecin_email = profile.doctor_email || "";
     } catch (err) {
-        // Session expired — redirect to login
         if (err.response?.status === 401) {
             redirectLogin();
             return;

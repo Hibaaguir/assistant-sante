@@ -24,18 +24,18 @@
                         v-for="gender in GENDERS"
                         :key="gender.value"
                         v-bind="gender"
-                        :selected="form.sexe === gender.value"
-                        :has-error="props.showErrors && !!errors.sexe"
-                        @select="form.sexe = gender.value"
+                        :selected="form.genre === gender.value"
+                        :has-error="props.showErrors && !!errors.genre"
+                        @select="form.genre = gender.value"
                     />
                 </div>
 
                 <!-- Error message shown after the user tries to advance -->
                 <p
-                    v-if="props.showErrors && errors.sexe"
+                    v-if="props.showErrors && errors.genre"
                     class="text-sm text-red-600"
                 >
-                    {{ errors.sexe }}
+                    {{ errors.genre }}
                 </p>
             </div>
 
@@ -150,16 +150,11 @@
 </template>
 
 <script setup>
-// Import the extracted sub-components (no more render functions!)
 import GenderCard from "./GenderCard.vue";
 import ToggleCard from "./ToggleCard.vue";
 import GoalCard from "./GoalCard.vue";
 import Typography from "@/components/ui/Typography.vue";
 
-
-// ─── Static data ───────────────────────────────────────────────────────────────
-
-// Gender options — each has a value, a label, and SVG icon paths
 const GENDERS = [
     {
         value: "male",
@@ -176,13 +171,11 @@ const GENDERS = [
     },
 ];
 
-// Life habits to show as toggle switches
 const HABITS = [
     { key: "fumeur", label: "Fumeur" },
     { key: "alcool", label: "Consommation d'alcool" },
 ];
 
-// Health goals the user can choose (multiple allowed)
 const GOALS = [
     {
         value: "Maintenir mon poids",
@@ -222,51 +215,29 @@ const GOALS = [
     },
 ];
 
-// Height and weight input configuration (min, max, placeholder, hint)
 const MEASURE_FIELDS = [
-    {
-        key: "taille",
-        min: 80,
-        max: 250,
-        placeholder: "Taille en cm",
-        hint: "Ex: 175",
-    },
-    {
-        key: "poids",
-        min: 35,
-        max: 250,
-        placeholder: "Poids en kg",
-        hint: "Ex: 70",
-    },
+    { key: "taille", min: 80, max: 250, placeholder: "Taille en cm", hint: "Ex: 175" },
+    { key: "poids", min: 35, max: 250, placeholder: "Poids en kg", hint: "Ex: 70" },
 ];
 
-// ─── Props ─────────────────────────────────────────────────────────────────────
-// Note: we keep a reference to `props` so we can use props.showErrors in template
 const props = defineProps({
     form: { type: Object, required: true },
     computedAge: { type: [Number, String], default: "" },
     errors: {
         type: Object,
-        default: () => ({ sexe: "", taille: "", poids: "", objectifs: "" }),
+        default: () => ({ genre: "", taille: "", poids: "", objectifs: "" }),
     },
     showErrors: { type: Boolean, default: false },
 });
 
-// Objects keep reactivity when destructured (they are passed by reference)
 const { form, errors } = props;
 
-// Make sure objectifs is always an array before rendering
 if (!Array.isArray(form.objectifs)) form.objectifs = [];
 
-// ─── Functions ─────────────────────────────────────────────────────────────────
-
-// Add or remove a goal from the selected list when the user clicks a GoalCard
 function toggleGoal(value) {
     if (form.objectifs.includes(value)) {
-        // Already selected → remove it
         form.objectifs = form.objectifs.filter((v) => v !== value);
     } else {
-        // Not yet selected → add it
         form.objectifs = [...form.objectifs, value];
     }
 }

@@ -66,39 +66,30 @@
             </article>
         </div>
 
-        <div class="mt-6">
-            <p class="text-[15px] font-semibold text-black">Période</p>
-            <div class="mt-3 flex flex-wrap gap-2">
-                <BaseButton
-                    v-for="period in treatmentHistoryPeriods"
-                    :key="period.value"
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    class="text-black"
-                    @click="treatmentHistoryPeriod = period.value"
-                >
-                    {{ period.label }}
-                </BaseButton>
-            </div>
-        </div>
-
-        <div class="mt-5">
-            <p class="text-[15px] font-semibold text-black">Traitements</p>
-            <div class="mt-3 flex flex-wrap gap-2">
-                <BaseButton
-                    v-for="med in treatmentHistoryMedicineOptions"
+        <FilterCard
+            class="mt-6"
+            title="Historique"
+            subtitle="Filtrez par date, médicament ou observance."
+            :show-reset="!!(treatDate || treatMed !== 'all' || treatStatus !== 'all')"
+            @reset="treatDate = ''; treatMed = 'all'; treatStatus = 'all';"
+        >
+            <input v-model="treatDate" type="date" class="input-field" />
+            <select v-model="treatMed" class="input-field">
+                <option value="all">Tous les médicaments</option>
+                <option
+                    v-for="med in treatmentMedicineOptions"
                     :key="med.id"
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    class="text-black"
-                    @click="selectedTreatmentHistoryMed = med.id"
+                    :value="med.id"
                 >
                     {{ med.name }}
-                </BaseButton>
-            </div>
-        </div>
+                </option>
+            </select>
+            <select v-model="treatStatus" class="input-field">
+                <option value="all">Toute observance</option>
+                <option value="complete">Complet</option>
+                <option value="partial">Partiel</option>
+            </select>
+        </FilterCard>
 
         <div class="mt-6 space-y-3">
             <p
@@ -509,6 +500,7 @@ import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
 import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import FilterCard from "@/components/ui/FilterCard.vue";
 import {
     IconCalendar,
     IconCheckCircle,
@@ -534,14 +526,10 @@ const notifications = useNotificationsStore();
 const showTreatmentModal = ref(false);
 const showTreatmentHistory = ref(false);
 const selectedTreatmentDayKey = ref(null);
-const treatmentHistoryPeriod = ref("7");
-const selectedTreatmentHistoryMed = ref("all");
+const treatDate = ref("");
+const treatMed = ref("all");
+const treatStatus = ref("all");
 
-const treatmentHistoryPeriods = [
-    { value: "7", label: "7 derniers jours" },
-    { value: "30", label: "30 derniers jours" },
-    { value: "all", label: "Tout l'historique" },
-];
 
 const TREATMENT_HISTORY_CARD_CONFIG = [
     {
@@ -577,27 +565,17 @@ const selectedTreatmentDay = computed(
         ) ?? null,
 );
 
-const treatmentHistoryMedicineOptions = computed(() => [
-    { id: "all", name: "Tous" },
-    ...props.treatmentMedicines.map((med) => ({ id: med.id, name: med.name })),
-]);
-
-const filteredTreatmentHistoryMedicines = computed(() => {
-    if (selectedTreatmentHistoryMed.value === "all")
-        return props.treatmentMedicines;
-    return props.treatmentMedicines.filter(
-        (med) => med.id === selectedTreatmentHistoryMed.value,
-    );
-});
-
-const treatmentHistoryPeriodDays = computed(() =>
-    treatmentHistoryPeriod.value === "all"
-        ? HISTORY_ALL_DAYS
-        : Number(treatmentHistoryPeriod.value || DEFAULT_HISTORY_DAYS),
+const treatmentMedicineOptions = computed(() =>
+    props.treatmentMedicines.map((med) => ({ id: med.id, name: med.name })),
 );
 
+const filteredTreatmentHistoryMedicines = computed(() => {
+    if (treatMed.value === "all") return props.treatmentMedicines;
+    return props.treatmentMedicines.filter((med) => med.id === treatMed.value);
+});
+
 const treatmentHistoryRows = computed(() => {
-    const keys = construireClesDerniersJours(treatmentHistoryPeriodDays.value);
+    const keys = construireClesDerniersJours(HISTORY_ALL_DAYS);
 
     return keys
         .map((dateKey) => {
@@ -632,6 +610,12 @@ const treatmentHistoryRows = computed(() => {
             };
         })
         .filter((day) => day.hasTracked)
+        .filter((day) => !treatDate.value || day.dateKey === treatDate.value)
+        .filter((day) => {
+            if (treatStatus.value === "complete") return day.isComplete;
+            if (treatStatus.value === "partial") return !day.isComplete;
+            return true;
+        })
         .sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
 });
 
@@ -642,10 +626,9 @@ const treatmentHistoryStats = computed(() => {
     const totalTaken = rows.reduce((sum, day) => sum + day.taken, 0);
     const observance =
         totalDays > 0 ? Math.round((completeDays / totalDays) * 100) : 0;
-    const periodSubtitle =
-        treatmentHistoryPeriod.value === "all"
-            ? "Sur tout l'historique"
-            : `Sur les ${treatmentHistoryPeriod.value} derniers jours`;
+    const periodSubtitle = treatDate.value
+        ? `Le ${treatDate.value}`
+        : "Sur tout l'historique";
 
     return {
         totalDays,

@@ -84,6 +84,11 @@
                 </div>
             </div>
 
+            <!-- No data message -->
+            <p v-if="hasNoData" class="text-center text-lg font-bold text-slate-700">
+                Données insuffisantes pour l'analyse
+            </p>
+
             <!-- Alerts -->
             <section v-if="report.alerts?.length">
                 <SectionTitle
@@ -342,6 +347,17 @@ const activeDomains = computed(() => {
     if (!report.value?.domains) return [];
     return Object.entries(report.value.domains).filter(
         ([, d]) => d.severity !== "none" && d.analysis && !d.analysis.startsWith("No data")
+    );
+});
+
+// Detect when report exists but contains no exploitable data
+const hasNoData = computed(() => {
+    if (!report.value) return false;
+    return (
+        !report.value.alerts?.length &&
+        !report.value.anomalies?.length &&
+        !report.value.global_recommendations?.length &&
+        activeDomains.value.length === 0
     );
 });
 
