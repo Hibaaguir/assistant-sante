@@ -87,11 +87,6 @@ class DoctorInvitationController extends Controller
                 if (!$patient) return null;
 
                 $latestVitals = $this->healthDataService->latestVitals($patient->id);
-                $labResults   = AnalysisResult::whereHas('healthData', fn ($q) => $q->where('user_id', $patient->id))
-                    ->orderByDesc('analysis_date')
-                    ->orderByDesc('id')
-                    ->limit(5)
-                    ->get();
 
                 return [
                     'invitation_id' => $invitation->id,
@@ -105,7 +100,6 @@ class DoctorInvitationController extends Controller
                     ],
                     'profile'       => $patient->healthProfile,
                     'latest_vitals' => $latestVitals,
-                    'alerts'        => $this->healthDataService->buildPatientAlerts($latestVitals, $labResults),
                 ];
             })
             ->filter()

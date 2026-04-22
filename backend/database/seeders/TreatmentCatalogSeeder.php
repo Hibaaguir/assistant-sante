@@ -1,16 +1,15 @@
 <?php
-// Semoir pour initialiser le catalogue de traitements
+
 namespace Database\Seeders;
 
-use App\Models\HealthProfile;
 use App\Models\TreatmentCatalog;
 use Illuminate\Database\Seeder;
 
+/** Initialise le catalogue des médicaments disponibles dans l'application. */
 class TreatmentCatalogSeeder extends Seeder
 {
     public function run(): void
     {
-        // Supprimer les entrees du catalogue existantes pour permettre une nouvelle importation
         TreatmentCatalog::query()->delete();
 
         $defaultCatalog = [
@@ -43,12 +42,6 @@ class TreatmentCatalogSeeder extends Seeder
             }
         }
 
-        HealthProfile::query()->select('id', 'user_id')->chunkById(200, function ($profiles): void {
-            foreach ($profiles as $profile) {
-                // Les donnees de traitement sont gerees par la relation treatments()
-                // L'importation du catalogue est principalement pour les medicaments par defaut
-            }
-        });
     }
 
     private function normalizeText(mixed $value): ?string

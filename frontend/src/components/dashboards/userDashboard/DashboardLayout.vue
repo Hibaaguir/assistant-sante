@@ -30,9 +30,11 @@
 
         <NotificationsWidget />
 
-        <div ref="pdfTargetRef" class="space-y-5">
-            <div class="flex justify-start">
+        <div ref="pdfTargetRef" class="space-y-5 pt-4">
+            <!-- Résumé rapide : grid unifié poids + constantes vitales (5 colonnes) -->
+            <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
                 <WeightComparisonChart />
+                <LastVitalsRow class="contents" />
             </div>
 
             <!-- Row 1 (3 cols): treatment pie · activity distribution · top 5 activities -->
@@ -81,6 +83,7 @@ import WelcomeCard from "./WelcomeCard.vue";
 import VitalSignsProgressiveLine from "./VitalSignsProgressiveLine.vue";
 import LabsDistributionChart from "./LabsDistributionChart.vue";
 import WeightComparisonChart from "./WeightComparisonChart.vue";
+import LastVitalsRow from "./LastVitalsRow.vue";
 import Typography from "../../ui/Typography.vue";
 
 const pdfTargetRef = ref(null);

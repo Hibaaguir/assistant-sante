@@ -239,7 +239,9 @@
                             'w-full rounded-xl border-2 px-2 py-3 transition shadow-sm font-bold',
                             estJourComplet(day.key)
                                 ? 'border-green-500 bg-gradient-to-r from-green-100 to-green-200 text-green-900 hover:shadow-md'
-                                : 'border-gray-300 bg-white text-slate-900 hover:border-gray-400',
+                                : estJourPartiel(day.key)
+                                    ? 'border-slate-400 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 hover:shadow-md'
+                                    : 'border-gray-300 bg-white text-slate-900 hover:border-gray-400',
                             'disabled:cursor-not-allowed disabled:opacity-50',
                         ]"
                     >
@@ -252,7 +254,9 @@
                                 :class="
                                     estJourComplet(day.key)
                                         ? 'border-green-500 bg-green-500 text-white'
-                                        : 'border-slate-300 bg-white text-transparent'
+                                        : estJourPartiel(day.key)
+                                            ? 'border-slate-400 bg-slate-400 text-white'
+                                            : 'border-slate-300 bg-white text-transparent'
                                 "
                             >
                                 <svg
@@ -263,6 +267,13 @@
                                     stroke-width="3"
                                 >
                                     <path
+                                        v-if="estJourPartiel(day.key) && !estJourComplet(day.key)"
+                                        d="M5 12h14"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                    <path
+                                        v-else
                                         d="m5 13 4 4L19 7"
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
@@ -862,6 +873,16 @@ function estJourComplet(dayKey) {
     );
 }
 
+function estJourPartiel(dayKey) {
+    if (estJourFutur(dayKey) || estJourComplet(dayKey)) return false;
+    const dayChecks = props.treatmentChecks[dayKey];
+    if (!dayChecks) return false;
+    return props.treatmentMedicines.some((med) => {
+        const doses = obtenirNombrePrisesPourJour(dayKey, med);
+        return doses > 0 && compterPrisesCompletees(dayKey, med) > 0;
+    });
+}
+
 function estJourFutur(dayKey) {
     const todayKey = obtenirCleJour(new Date());
     return String(dayKey || "") > todayKey;
@@ -909,7 +930,14 @@ async function basculerPrise(dayKey, med, doseIndex) {
 
     try {
         await synchroniserSuiviTraitements();
-        notifications.itemUpdated();
+        if (!previousValue && estJourComplet(dayKey)) {
+            notifications.success(
+                "Toutes les prises de la journée ont été complétées. Continuez ainsi !",
+                "Journée complète",
+            );
+        } else {
+            notifications.itemUpdated();
+        }
     } catch (error) {
         props.treatmentChecks[dayKey][key] = previousValue;
         const message =

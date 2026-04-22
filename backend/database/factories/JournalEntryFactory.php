@@ -1,7 +1,8 @@
 <?php
-// Fabrique pour generer des entrees de journal fictives
+
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -11,24 +12,23 @@ class JournalEntryFactory extends Factory
 {
     public function definition(): array
     {
-        $alcohol = fake()->boolean(25);
+        $alcohol = $this->faker->boolean(25);
 
         return [
-            'user_id' => 1,
-            'entry_date' => fake()->dateTimeBetween('-90 days', 'now')->format('Y-m-d'),
-            'sleep' => fake()->numberBetween(4, 10),
-            'stress' => fake()->numberBetween(0, 10),
-            'energy' => fake()->numberBetween(0, 10),
-            'caffeine' => fake()->numberBetween(0, 8),
-            'hydration' => fake()->randomFloat(1, 0.8, 4.5),
-            'sugar_intake' => fake()->randomElement([
-                'Low sugar intake',
-                'Moderate sugar intake',
-                'High sugar intake',
-                'No added sugar today',
+            'user_id'        => User::factory(),
+            'entry_date'     => $this->faker->dateTimeBetween('-90 days', 'now')->format('Y-m-d'),
+            'sleep'          => $this->faker->numberBetween(4, 10),
+            'stress'         => $this->faker->numberBetween(0, 10),
+            'energy'         => $this->faker->numberBetween(0, 10),
+            'caffeine'       => $this->faker->numberBetween(0, 8),
+            'hydration'      => $this->faker->randomFloat(1, 0.8, 4.5),
+            'sugar_intake'   => $this->faker->randomElement([
+                'Consommation faible',
+                'Consommation moderee',
+                'Consommation elevee',
             ]),
-            'alcohol' => $alcohol,
-            'alcohol_glasses' => $alcohol ? fake()->numberBetween(1, 4) : null,
+            'alcohol'        => $alcohol,
+            'alcohol_glasses'=> $alcohol ? $this->faker->numberBetween(1, 4) : null,
         ];
     }
 }

@@ -15,7 +15,7 @@ class VitalSignsFactory extends Factory
     public function definition(): array
     {
         return [
-            'health_data_id' => 1,
+            'health_data_id' => \App\Models\HealthData::factory(),
             'measured_at' => $this->faker->dateTimeBetween('-45 days', 'now'),
             'heart_rate' => $this->faker->numberBetween(55, 100),
             'systolic_pressure' => $this->faker->numberBetween(100, 150),

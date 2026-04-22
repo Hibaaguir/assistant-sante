@@ -18,7 +18,7 @@ class UserFactory extends Factory
         $dob = Carbon::instance($this->faker->dateTimeBetween('-80 years', '-18 years'));
 
         return [
-            'account_id' => 1,
+            'account_id' => \App\Models\Account::factory(),
             'name' => $this->faker->name(),
             'date_of_birth' => $dob->toDateString(),
             'profile_photo' => null,

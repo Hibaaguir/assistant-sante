@@ -1,5 +1,5 @@
 <?php
-// Semoir principal pour initialiser les donnees de la base de donnees
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -12,9 +12,27 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            // ── Comptes système ──────────────────────────────────────────────
             AdminAccountSeeder::class,
+
+            // ── Référentiel médicaments ──────────────────────────────────────
             TreatmentCatalogSeeder::class,
-            RealisticMedicalDatasetSeeder::class,
+
+            // ── Utilisateurs ─────────────────────────────────────────────────
+            DoctorsSeeder::class,
+            PatientsSeeder::class,          // efface + recrée les données médicales
+
+            // ── Traitements patients ──────────────────────────────────────────
+            PatientTreatmentsSeeder::class,
+
+            // ── Données de santé (30 jours) ───────────────────────────────────
+            DailyHealthDataSeeder::class,   // HealthData, VitalSigns, AnalysisResults
+
+            // ── Journal quotidien (30 jours) ──────────────────────────────────
+            DailyJournalSeeder::class,      // JournalEntry, Meals, Activité, Tabac
+
+            // ── Observance des traitements (30 jours) ─────────────────────────
+            TreatmentChecksSeeder::class,   // TreatmentCheck, Notifications
         ]);
     }
 }

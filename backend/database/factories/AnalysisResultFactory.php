@@ -16,7 +16,7 @@ class AnalysisResultFactory extends Factory
     public function definition(): array
     {
         return [
-            'health_data_id' => 1,
+            'health_data_id' => \App\Models\HealthData::factory(),
             'analysis_type' => $this->faker->randomElement(['Glucose', 'Lipid panel', 'Inflammation', 'Hematology']),
             'result_name' => $this->faker->randomElement([
                 'Fasting blood glucose',

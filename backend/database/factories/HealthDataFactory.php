@@ -16,7 +16,7 @@ class HealthDataFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => 1,
+            'user_id' => \App\Models\User::factory(),
             'date' => Carbon::instance($this->faker->dateTimeBetween('-45 days', 'now'))->toDateString(),
             'doctor_observation' => $this->faker->boolean(35)
                 ? $this->faker->randomElement([

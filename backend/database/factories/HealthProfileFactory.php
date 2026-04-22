@@ -15,7 +15,7 @@ class HealthProfileFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => 1,
+            'user_id' => \App\Models\User::factory(),
             'gender' => $this->faker->randomElement(['male', 'female']),
             'height' => $this->faker->randomFloat(1, 145, 195),
             'initial_weight' => $this->faker->randomFloat(1, 45, 115),
