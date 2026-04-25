@@ -13,6 +13,7 @@ class DoctorInvitation extends Model
         'patient_user_id',
         'doctor_user_id',
         'doctor_email',
+        'doctor_invited',
         'status',
         'token',
         'accepted_at',
@@ -23,6 +24,7 @@ class DoctorInvitation extends Model
     protected $casts = [
         'patient_user_id' => 'integer',
         'doctor_user_id'  => 'integer',
+        'doctor_invited'  => 'boolean',
         'accepted_at'     => 'datetime',
         'rejected_at'     => 'datetime',
         'revoked_at'      => 'datetime',

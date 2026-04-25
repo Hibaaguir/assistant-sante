@@ -36,8 +36,6 @@ class HealthProfileFactory extends Factory
                 : [],
             'smoker' => $this->faker->boolean(22),
             'alcoholic' => $this->faker->boolean(18),
-            'doctor_invited' => false,
-            'doctor_email' => null,
         ];
     }
 

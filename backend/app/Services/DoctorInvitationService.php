@@ -33,9 +33,9 @@ class DoctorInvitationService
     }
 
     // Creer, mettre a jour ou revoquer l'invitation du profil de sante
-    public function sync(HealthProfile $profile, ?string $previousEmail, User $patient): void
+    public function sync(HealthProfile $profile, ?string $previousEmail, User $patient, bool $doctorInvited = false, ?string $doctorEmail = null): void
     {
-        $shouldInvite = (bool) $profile->doctor_invited && !empty($profile->doctor_email);
+        $shouldInvite = $doctorInvited && !empty($doctorEmail);
 
         if (!$shouldInvite) {
             DoctorInvitation::where('patient_user_id', $patient->id)
@@ -44,7 +44,7 @@ class DoctorInvitationService
             return;
         }
 
-        $doctorEmail  = strtolower(trim((string) $profile->doctor_email));
+        $doctorEmail  = strtolower(trim((string) $doctorEmail));
         $emailChanged = $doctorEmail !== ($previousEmail !== null ? strtolower(trim($previousEmail)) : null);
 
         // Revoquer les anciennes invitations si l'email a change
@@ -84,6 +84,7 @@ class DoctorInvitationService
             if ($needsReset) {
                 $existing->update([
                     'doctor_user_id' => $doctor?->id,
+                    'doctor_invited' => true,
                     'status'         => 'pending',
                     'token'          => Str::random(64),
                     'accepted_at'    => null,
@@ -92,13 +93,14 @@ class DoctorInvitationService
                 ]);
             } else {
                 // Toujours actif - maintenir la synchronisation
-                $existing->update(['doctor_user_id' => $doctor?->id]);
+                $existing->update(['doctor_user_id' => $doctor?->id, 'doctor_invited' => true]);
             }
         } else {
             DoctorInvitation::create([
                 'patient_user_id' => $patient->id,
                 'doctor_user_id'  => $doctor?->id,
                 'doctor_email'    => $doctorEmail,
+                'doctor_invited'  => true,
                 'status'          => 'pending',
                 'token'           => Str::random(64),
             ]);

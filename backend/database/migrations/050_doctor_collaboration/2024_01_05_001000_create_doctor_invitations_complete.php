@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('patient_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('doctor_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('doctor_email');
+            $table->boolean('doctor_invited')->default(true);
             $table->string('status', 30)->default('pending');
             $table->string('token', 64)->unique();
             $table->timestamp('accepted_at')->nullable(); 

@@ -194,9 +194,12 @@ class HealthDataController extends Controller
     // Récupérer les vérifications de traitement pour l'utilisateur
     public function indexTreatmentChecks(Request $request): JsonResponse
     {
-        $userId    = $request->user()->id;
-        $days      = max(1, min((int) $request->query('days', 14), 90));
-        $startDate = Carbon::today()->subDays($days - 1)->toDateString();
+    $userId = $request->user()->id;
+    $days = (int) $request->query('days');
+    if ($days < 1) {
+        return response()->json(['message' => 'Le paramètre days doit être supérieur ou égal à 1.'], 422);
+    }
+    $startDate = Carbon::today()->subDays($days - 1)->toDateString();
 
         $checks = TreatmentCheck::with('treatment.treatmentCatalog')
             ->where('user_id', $userId)

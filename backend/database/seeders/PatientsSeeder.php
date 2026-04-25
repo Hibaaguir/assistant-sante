@@ -76,8 +76,6 @@ class PatientsSeeder extends MedicalSeeder
                     'chronic_diseases'=> $patientData['chronic_diseases'],
                     'smoker'          => $patientData['smoker'],
                     'alcoholic'       => $patientData['alcoholic'],
-                    'doctor_invited'  => $doctorEmail !== null,
-                    'doctor_email'    => $doctorEmail,
                 ]
             );
 
@@ -129,6 +127,7 @@ class PatientsSeeder extends MedicalSeeder
             ['patient_user_id' => $patient->id, 'doctor_email' => $doctorEmail],
             [
                 'doctor_user_id' => in_array($status, ['accepted', 'rejected']) ? $doctorUser?->id : null,
+                'doctor_invited' => true,
                 'status'         => $status,
                 'token'          => Str::random(64),
                 'accepted_at'    => $status === 'accepted' ? $startDate->copy()->addDays($this->faker->numberBetween(2, 12)) : null,

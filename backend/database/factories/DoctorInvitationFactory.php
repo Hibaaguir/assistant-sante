@@ -17,6 +17,7 @@ class DoctorInvitationFactory extends Factory
             'patient_user_id' => User::factory(),
             'doctor_user_id' => null,
             'doctor_email' => fake()->unique()->safeEmail(),
+            'doctor_invited' => true,
             'status' => fake()->randomElement(['pending', 'accepted', 'rejected', 'revoked']),
             'token' => hash('sha256', Str::uuid()->toString()),
             'accepted_at' => null,

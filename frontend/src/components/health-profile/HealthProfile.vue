@@ -226,7 +226,7 @@ const form = reactive({
     medecin_peut_consulter: false,
     medecin_email: "",
 });
-
+//la barre bleue s’allonge à chaque étape grâce à cette variable.
 const progress = computed(() => (currentStep.value / TOTAL_STEPS) * 100);
 
 const computedAge = computed(() => {
@@ -247,11 +247,13 @@ function stepClass(n) {
     return "bg-slate-100 text-slate-400 border border-slate-200";
 }
 
+// Nettoie un tableau pour ne garder que les chaînes non vides (utile pour objectifs, allergies, maladies, etc.)
 function normalizeArray(v) {
     if (!Array.isArray(v)) return [];
     return v.filter((s) => typeof s === "string" && s.trim());
 }
 
+// Transforme une valeur en entier positif (au moins 1) ou null si la valeur n’est pas valide (utile pour la fréquence d’un traitement)
 function normalizeFrequency(v) {
     if (v === null || v === undefined || v === "") return null;
     const n = Number(v);
@@ -259,6 +261,7 @@ function normalizeFrequency(v) {
     return Math.max(1, Math.trunc(n));
 }
 
+// Transforme un objet d’erreurs de validation (API) en une chaîne de texte lisible pour l’utilisateur
 function extractApiError(errors) {
     if (!errors || typeof errors !== "object") return "Validation invalide.";
     const messages = Object.values(errors).flat().filter(Boolean);
@@ -365,20 +368,20 @@ function toIsoDate(frDate) {
 
     return isReal ? `${match[3]}-${match[2]}-${match[1]}` : null;
 }
-
+// Transforme un objet de traitement du formulaire en format attendu par l’API, avec validation et normalisation des champs
 function buildTreatment(t) {
     return {
-        type: t?.type ?? null,
+        type: t?.type ?? null,// si traitement existe, on prend son type, sinon null.
         name: t?.name ?? null,
         dose: t?.dose ?? null,
         frequency_unit: t?.frequency_unit ?? null,
-        frequency_count: normalizeFrequency(t?.frequency_count),
+        frequency_count: normalizeFrequency(t?.frequency_count), // normalise la fréquence pour être un entier positif ou null
         start_date: toIsoDate(t?.start_date) ?? null,
         end_date: toIsoDate(t?.end_date) ?? null,
         duration: t?.duration ?? null,
     };
 }
-
+//envoie au backend les données du formulaire après les avoir transformées et validées
 function buildPayload() {
     const treatments = Array.isArray(form.traitements)
         ? form.traitements.map(buildTreatment).filter((t) => t.type)

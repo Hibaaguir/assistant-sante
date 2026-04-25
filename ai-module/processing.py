@@ -90,12 +90,11 @@ def _norm_sleep(records: list[dict]) -> list[dict]:
     for r in records:
         s = _clamp(_safe_num(r.get("sleep")), 0, 10)
         out.append({
-            "sleep_score":      s,
-            "stress_score":     _clamp(_safe_num(r.get("stress")), 0, 10),
-            "energy_score":     _clamp(_safe_num(r.get("energy")), 0, 10),
-            "caffeine_cups":    _clamp(_safe_num(r.get("caffeine"), 0), 0, 20),
-            "hydration_liters": _clamp(_safe_num(r.get("hydration"), 0), 0, 10),
-            "low_sleep_flag":   s is not None and s <= 4,
+            "sleep_score":    s,
+            "stress_score":   _clamp(_safe_num(r.get("stress")), 0, 10),
+            "energy_score":   _clamp(_safe_num(r.get("energy")), 0, 10),
+            "caffeine_cups":  _clamp(_safe_num(r.get("caffeine"), 0), 0, 20),
+            "low_sleep_flag": s is not None and s <= 4,
         })
     return out
 
@@ -185,7 +184,6 @@ def _summarize_sleep(records: list[dict]) -> dict:
         "avg_stress_score":        _avg(stress_v),
         "avg_energy_score":        _avg(_nums(records, "energy_score")),
         "avg_caffeine_cups":       _avg(_nums(records, "caffeine_cups")),
-        "avg_hydration_liters":    _avg(_nums(records, "hydration_liters")),
         "low_sleep_frequency_pct": _pct(sum(1 for r in records if r.get("low_sleep_flag")), len(records)),
         "sleep_trend":             _trend(sleep_v),
         "stress_trend":            stress_trend,

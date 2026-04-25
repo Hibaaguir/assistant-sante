@@ -31,10 +31,14 @@ def _call_llm(prompt: str, max_tokens: int = 1024) -> dict | list:
             {
                 "role": "system",
                 "content": (
-                    "You are a medical data analyst. "
+                    "You are a medical data analyst speaking directly to the patient. "
                     "Always respond with valid JSON only. "
                     "Never include markdown, explanations, or text outside the JSON. "
-                    "All text fields (analysis, issues, recommendations, messages, summaries) MUST be written in French."
+                    "All text fields MUST be written in French. "
+                    "CRITICAL: Always address the patient directly using 'vous' (formal second person). "
+                    "Never use 'le patient doit', 'le patient a', or any third-person reference. "
+                    "Use 'vous devez', 'votre', 'vous avez', etc. "
+                    "STYLE: Never use parentheses () in any text field. Use a dash or rewrite the sentence instead."
                 ),
             },
             {"role": "user", "content": prompt},
@@ -55,19 +59,22 @@ _DOMAIN_HINTS: dict[str, dict] = {
         "role":  "clinical sleep and stress analyst",
         "title": "SLEEP / STRESS / ENERGY",
         "hints": (
+            "SCOPE: Analyze ONLY sleep_score, stress_score, energy_score, caffeine_cups, low_sleep_frequency_pct, sleep_trend, stress_trend, energy_trend. "
+            "Do NOT mention hydration — it belongs to the nutrition domain. "
             "avg_sleep_score: 0–10 (7+ healthy, <5 concerning). "
             "sleep_variability: std dev >2 = irregular sleep. "
             "avg_stress_score: 0–10 (>6 elevated). "
             "avg_energy_score: 0–10 (<5 = chronic fatigue). "
             "low_sleep_frequency_pct: % nights with score ≤4. "
-            "avg_caffeine_cups: >3/day may impair sleep. "
-            "Consider caffeine-sleep interactions and stress-sleep feedback loops."
+            "avg_caffeine_cups: >3/day may impair sleep quality. "
         ),
     },
     "nutrition": {
         "role":  "clinical dietitian",
         "title": "NUTRITION",
         "hints": (
+            "SCOPE: Analyze ONLY calories, hydration, meal_count, sugar_intake, caffeine in a nutritional context. "
+            "Do NOT mention sleep scores, stress, energy levels, or activity data — those belong to other domains. "
             "avg_daily_calories: healthy range ~1800–2500 kcal (varies by age/gender/BMI). "
             "calorie_variability: std dev >400 = inconsistent eating. "
             "avg_hydration_liters: recommended 2.0–2.5 L/day; <1.5 is concerning. "
@@ -80,10 +87,11 @@ _DOMAIN_HINTS: dict[str, dict] = {
         "role":  "sports medicine physician",
         "title": "PHYSICAL ACTIVITY",
         "hints": (
+            "SCOPE: Analyze ONLY activity frequency, duration, effort, and intensity. "
+            "Do NOT mention sleep, nutrition, smoking, alcohol, or any other domain. "
             "active_days_per_week: WHO recommends ≥5 days moderate or ≥3 days vigorous. "
             "avg_duration_minutes: WHO minimum 150 min/week moderate or 75 min/week vigorous. "
             "avg_effort_score: >3.0 = moderate effort. "
-            "sedentary_days_pct: >60% is concerning. "
             "Consider age, BMI, and chronic diseases when interpreting results."
         ),
     },
@@ -91,10 +99,12 @@ _DOMAIN_HINTS: dict[str, dict] = {
         "role":  "pulmonologist and tobacco cessation specialist",
         "title": "SMOKING / TOBACCO",
         "hints": (
+            "SCOPE: Analyze ONLY tobacco consumption data. "
+            "Do NOT mention nutrition, sleep, activity, alcohol, or any other domain. "
             "avg_daily_units: cigarette-equivalents per day (1 cig = ~15 vape puffs). "
             "heavy_smoking_days_pct: % days with >20 units (WHO heavy smoker threshold). "
             "smoking_trend: direction of use over time. "
-            "If no log data but profile shows smoker=true, note the data gap and still give cessation recommendations. "
+            "If no log data but profile shows smoker=true, note the data gap and give cessation recommendations. "
             "Reference chronic diseases like COPD and cardiovascular disease for severity."
         ),
     },
@@ -102,6 +112,8 @@ _DOMAIN_HINTS: dict[str, dict] = {
         "role":  "hepatologist and addiction medicine specialist",
         "title": "ALCOHOL CONSUMPTION",
         "hints": (
+            "SCOPE: Analyze ONLY alcohol consumption data. "
+            "Do NOT mention nutrition, sleep, activity, smoking, or any other domain. "
             "avg_glasses_on_drinking_days: average drinks per drinking day. "
             "risky_drinking_days_pct: % days exceeding 2 standard drinks. "
             "WHO: >14 drinks/week for men or >7 for women is hazardous. "
@@ -113,6 +125,8 @@ _DOMAIN_HINTS: dict[str, dict] = {
         "role":  "cardiologist",
         "title": "VITAL SIGNS",
         "hints": (
+            "SCOPE: Analyze ONLY heart rate, blood pressure, and oxygen saturation. "
+            "Do NOT mention sleep, nutrition, activity, or any other domain. "
             "avg_heart_rate: normal 60–100 bpm; <60 bradycardia; >100 tachycardia. "
             "avg_systolic_pressure: normal <120; elevated 120–129; stage 1 HBP 130–139; stage 2 ≥140. "
             "avg_diastolic_pressure: normal <80; HBP ≥90. "
@@ -125,6 +139,8 @@ _DOMAIN_HINTS: dict[str, dict] = {
         "role":  "internist reviewing laboratory results",
         "title": "LAB RESULTS",
         "hints": (
+            "SCOPE: Analyze ONLY the laboratory values in the summary. "
+            "Do NOT mention sleep, nutrition, activity, vital signs, or any other domain. "
             "For each analysis type compare latest_value to standard reference ranges. "
             "blood_glucose: normal fasting 3.9–5.6 mmol/L or 70–100 mg/dL. "
             "HbA1c: normal <5.7%; prediabetes 5.7–6.4%; diabetes ≥6.5%. "
@@ -138,6 +154,8 @@ _DOMAIN_HINTS: dict[str, dict] = {
         "role":  "clinical pharmacist",
         "title": "MEDICATIONS & ADHERENCE",
         "hints": (
+            "SCOPE: Analyze ONLY medication adherence data. "
+            "Do NOT mention sleep, nutrition, activity, lab results, or any other domain. "
             "avg_adherence_rate: 0.0–1.0; <0.80 = clinically significant non-adherence. "
             "low_adherence_medications: specific medications below 80% adherence. "
             "Non-adherence to antihypertensives, antidiabetics, or statins carries serious risk. "
@@ -148,49 +166,54 @@ _DOMAIN_HINTS: dict[str, dict] = {
 }
 
 _DOMAIN_OUTPUT = """
-Return ONLY valid JSON — no markdown, no text outside the JSON. All text in French.
+Return ONLY valid JSON — no markdown, no text outside the JSON. All text in French, addressing the user as "vous".
+Never use parentheses in any field. Use a dash to add precision instead.
+CRITICAL: Only analyze the fields present in the domain summary provided. Do not mention or infer data from other domains.
 
-RÈGLE CRITIQUE: chaque recommendation doit être SPÉCIFIQUE — citer les valeurs du patient, donner une fréquence/durée/méthode précise.
-  ❌ MAUVAIS: "Améliorer l'hydratation"
-  ✅ BON: "Boire 2,5 L d'eau par jour (actuellement 1.2 L/j en moyenne) — poser une alarme à 9h, 13h et 17h comme rappel"
+IMPORTANT — field types:
+- "analysis" MUST be a single plain STRING (not an object, not an array). Write 4 to 6 clinical sentences joined together in one string, each separated by a space. Example: "Votre score est X. Il est en dessous de la norme de Y. La tendance est Z."
+- "issues" MUST be a flat array of strings — each string is one problem sentence citing the exact value and clinical threshold.
+- "recommendations" MUST be a flat array of strings — each string is one specific action with a number, frequency and method.
+- "severity" MUST be one of: "none", "low", "medium", "high"
+
+Only include issues and data directly supported by the fields in the summary above.
 
 {
-  "analysis":        "narrative factuelle de 2–4 phrases citant les valeurs numériques du patient",
-  "issues":          ["problème précis avec la valeur du patient, ex: 'Score de sommeil moyen de 5.1/10, avec 40% de nuits <4/10'"],
-  "recommendations": ["action SPÉCIFIQUE avec chiffre du patient + fréquence/méthode, ex: 'Fixer un réveil à 7h tous les jours pour réguler le rythme circadien — votre variabilité de sommeil de 2.3 points indique un rythme irrégulier'"],
+  "analysis":        "Phrase 1 citant une valeur. Phrase 2 sur la tendance. Phrase 3 comparant à la norme. Phrase 4 sur la signification clinique.",
+  "issues":          ["Constat précis avec valeur exacte et seuil clinique — ex: Votre score est de 5,1/10, en dessous du seuil de 7/10"],
+  "recommendations": ["Action spécifique avec chiffre, fréquence et méthode — sans parenthèses"],
   "severity":        "none | low | medium | high"
 }
 """
 
 _AGGREGATION_OUTPUT = """
-Return ONLY valid JSON — no markdown, no text outside the JSON. All text in French.
+Return ONLY valid JSON — no markdown, no text outside the JSON. All text in French, addressing the user as "vous".
+IMPORTANT STYLE RULES: Never use parentheses () in any text field. Use a dash or restructure the sentence instead.
 
-RÈGLE CRITIQUE pour global_recommendations — chaque "action" doit être SPÉCIFIQUE et ACTIONNABLE:
+RÈGLE CRITIQUE pour global_recommendations — chaque "action" doit être SPÉCIFIQUE, ACTIONNABLE et s'adresser à l'usager avec "vous":
+  ❌ MAUVAIS: "Le patient doit arrêter de fumer"
   ❌ MAUVAIS: "Arrêter de fumer"
-  ✅ BON: "Réduire à moins de 10 cigarettes/jour cette semaine, puis utiliser un patch nicotinique 14mg pendant 6 semaines pour atteindre l'abstinence"
+  ✅ BON: "Réduisez à moins de 10 cigarettes par jour cette semaine, puis utilisez un patch nicotinique 14 mg pendant 6 semaines pour atteindre l'abstinence"
   ❌ MAUVAIS: "Améliorer le sommeil"
-  ✅ BON: "Se coucher à heure fixe (22h30), éviter les écrans 1h avant, limiter la caféine après 14h — votre score moyen de 6.97/10 peut atteindre 8/10 en 3 semaines"
+  ✅ BON: "Couchez-vous à heure fixe à 22h30, évitez les écrans 1 heure avant le coucher et limitez la caféine après 14h — votre score moyen de 6,97/10 peut atteindre 8/10 en 3 semaines"
   ❌ MAUVAIS: "Augmenter l'activité physique"
-  ✅ BON: "Ajouter 2 séances de marche rapide de 30 min par semaine (lundi et jeudi) pour passer de 3 à 5 jours actifs/semaine, conformément aux recommandations OMS"
+  ✅ BON: "Ajoutez 2 séances de marche rapide de 30 minutes par semaine pour passer de 3 à 5 jours actifs — conformément aux recommandations de l'OMS"
 
-Chaque action doit: citer un chiffre du patient, donner une fréquence/durée précise, indiquer une méthode concrète.
+Chaque action doit: s'adresser à l'usager avec "vous", citer un chiffre de l'usager, donner une fréquence/durée précise, indiquer une méthode concrète, ne jamais utiliser de parenthèses.
 
 Format JSON:
 {
   "anomalies": [
-    {"code": "CODE_MAJUSCULE", "severity": "low|medium|high|critical", "message": "constat précis avec chiffres du patient", "domains": ["domain"]}
-  ],
-  "cross_domain_patterns": [
-    {"pattern": "titre court du lien", "domains": ["domain1", "domain2"], "explanation": "explication causale détaillée avec chiffres", "severity": "low|medium|high"}
+    {"code": "CODE_MAJUSCULE", "severity": "low|medium|high|critical", "message": "constat précis avec chiffres de l'usager, en s'adressant à l'usager avec 'vous'", "domains": ["domain"]}
   ],
   "global_recommendations": [
-    {"priority": 1, "action": "action SPÉCIFIQUE avec chiffres, fréquence et méthode concrète", "domain": "domaine principal", "impact": "bénéfice attendu PRÉCIS avec chiffre ou délai estimé"}
+    {"priority": 1, "action": "action SPÉCIFIQUE avec 'vous', chiffres, fréquence et méthode concrète", "domain": "domaine principal", "impact": "bénéfice attendu PRÉCIS avec chiffre ou délai estimé"}
   ],
   "alerts": [
-    {"level": "high|critical", "message": "constat urgent avec valeur précise", "domains": ["domain"], "suggested_action": "action immédiate très précise à prendre"}
+    {"level": "high|critical", "message": "constat urgent avec valeur précise, s'adressant à l'usager avec 'vous'", "domains": ["domain"], "suggested_action": "action immédiate très précise à prendre, en s'adressant à l'usager avec 'vous'"}
   ],
   "risk_level":   "low | medium | high",
-  "risk_summary": "résumé de 2–3 phrases citant les valeurs clés du patient et les 2 priorités absolues"
+  "risk_summary": "résumé de 2–3 phrases citant les valeurs clés de l'usager et les 2 priorités absolues, en s'adressant à l'usager avec 'vous'"
 }
 """
 
@@ -227,15 +250,18 @@ def analyze_with_ai(summaries: dict, user_context: dict) -> dict:
         summary = summaries.get(domain, {})
 
         # Skip empty domains — but if profile flags the behaviour, still ask the LLM
-        is_empty = (
-            not summary
-            or summary.get("days_tracked") == 0
-            or summary.get("smoking_days") == 0
-            or summary.get("drinking_days") == 0
-            or summary.get("total_medications") == 0
-            or summary.get("measurements_tracked") == 0
-            or summary.get("total_results") == 0
-        )
+        _zero_key = {
+            "sleep":       "days_tracked",
+            "nutrition":   "days_tracked",
+            "activity":    "active_days",
+            "smoking":     "smoking_days",
+            "alcohol":     "drinking_days",
+            "vital_signs": "measurements_tracked",
+            "lab_results": "total_results",
+            "treatments":  "total_medications",
+        }
+        key = _zero_key.get(domain)
+        is_empty = not summary or (key is not None and summary.get(key, 0) == 0)
         if is_empty:
             flag = (
                 (domain == "smoking"  and user_context.get("smoker"))
@@ -257,10 +283,17 @@ def analyze_with_ai(summaries: dict, user_context: dict) -> dict:
         )
 
         try:
-            result = _call_llm(prompt, max_tokens=800)
-            domain_analyses[domain] = result if isinstance(result, dict) else {
-                "analysis": str(result), "issues": [], "recommendations": [], "severity": "low"
-            }
+            result = _call_llm(prompt, max_tokens=1500)
+            if not isinstance(result, dict):
+                result = {"analysis": str(result), "issues": [], "recommendations": [], "severity": "low"}
+            # Flatten analysis if the model returned an object or list instead of a string
+            analysis = result.get("analysis", "")
+            if isinstance(analysis, dict):
+                analysis = " ".join(str(v) for v in analysis.values())
+            elif isinstance(analysis, list):
+                analysis = " ".join(str(v) for v in analysis)
+            result["analysis"] = analysis
+            domain_analyses[domain] = result
         except Exception as exc:
             domain_analyses[domain] = {
                 "analysis": f"Analysis failed: {exc}", "issues": [], "recommendations": [], "severity": "none"
@@ -276,16 +309,15 @@ def analyze_with_ai(summaries: dict, user_context: dict) -> dict:
         )
 
     agg_prompt = (
-        f"Tu es un médecin senior synthétisant un rapport de santé complet pour un patient.\n\n"
+        f"Tu es un médecin senior synthétisant un rapport de santé complet. Tu t'adresses directement à l'usager avec 'vous'.\n\n"
         f"{user_blk}\n\n"
         f"ANALYSES PAR DOMAINE:\n{analyses_block}\n\n"
         f"DONNÉES NUMÉRIQUES CLÉS (utilise ces chiffres dans tes recommandations):\n{json.dumps(summaries, indent=2)}\n\n"
         f"Tes tâches:\n"
-        f"1. Identifier les anomalies cliniquement significatives avec leurs valeurs précises\n"
-        f"2. Trouver les connexions causales entre domaines (ex: stress élevé → mauvais sommeil → fatigue)\n"
-        f"3. Formuler les 5 recommandations les plus impactantes — CHACUNE doit citer un chiffre du patient, une fréquence précise et une méthode concrète\n"
-        f"4. Signaler les alertes urgentes avec les valeurs déclenchantes\n"
-        f"5. Attribuer un niveau de risque global et rédiger un résumé citant les valeurs clés\n\n"
+        f"1. Identifier les anomalies cliniquement significatives avec leurs valeurs précises, en s'adressant à l'usager avec 'vous'\n"
+        f"2. Formuler les 5 recommandations prioritaires — CHAQUE recommandation doit répondre directement à une anomalie identifiée à l'étape 1. Si une anomalie n'a pas de recommandation, elle n'est pas traitée. Chaque recommandation doit citer le chiffre de l'usager concerné, donner une fréquence précise et une méthode concrète, en s'adressant à l'usager avec 'vous'. Utilise le même champ 'domain' que l'anomalie correspondante.\n"
+        f"3. Signaler les alertes urgentes avec les valeurs déclenchantes, en s'adressant à l'usager avec 'vous'\n"
+        f"4. Attribuer un niveau de risque global et rédiger un résumé citant les valeurs clés, en s'adressant à l'usager avec 'vous'\n\n"
         f"{_AGGREGATION_OUTPUT}"
     )
 
@@ -293,7 +325,7 @@ def analyze_with_ai(summaries: dict, user_context: dict) -> dict:
         agg = _call_llm(agg_prompt, max_tokens=2048)
     except Exception as exc:
         agg = {
-            "anomalies": [], "cross_domain_patterns": [],
+            "anomalies": [],
             "global_recommendations": [], "alerts": [],
             "risk_level": "unknown",
             "risk_summary": f"Aggregation step failed: {exc}",
@@ -302,7 +334,7 @@ def analyze_with_ai(summaries: dict, user_context: dict) -> dict:
     return {
         "domains":                domain_analyses,
         "anomalies":              agg.get("anomalies", []),
-        "cross_domain_patterns":  agg.get("cross_domain_patterns", []),
+        "cross_domain_patterns":  [],
         "global_recommendations": agg.get("global_recommendations", []),
         "alerts":                 agg.get("alerts", []),
         "risk_level":             agg.get("risk_level", "low"),

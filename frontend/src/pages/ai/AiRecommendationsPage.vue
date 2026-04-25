@@ -114,7 +114,30 @@
                 </div>
             </section>
 
-            <!-- Global recommendations -->
+            <!-- Anomalies -->
+            <section v-if="sortedAnomalies.length">
+                <SectionTitle
+                    :icon="IconPulse"
+                    title="Anomalies détectées"
+                    icon-wrap-class="border-amber-200 bg-amber-50"
+                    icon-class="text-amber-600"
+                />
+                <div class="space-y-3">
+                    <div
+                        v-for="(a, i) in sortedAnomalies"
+                        :key="i"
+                        class="flex items-start gap-3 rounded-2xl border bg-white p-4 shadow-sm"
+                        :class="severityBorder(a.severity)"
+                    >
+                        <span class="shrink-0 rounded-full px-3 py-1 text-sm font-bold uppercase mt-0.5" :class="severityBadge(a.severity)">
+                            {{ severityFr(a.severity) }}
+                        </span>
+                        <p class="text-base font-medium leading-relaxed text-slate-700">{{ a.message }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recommandations prioritaires -->
             <section v-if="report.global_recommendations?.length">
                 <SectionTitle
                     :icon="IconCheckCircle"
@@ -144,107 +167,69 @@
                 </div>
             </section>
 
-            <!-- Anomalies -->
-            <section v-if="report.anomalies?.length">
-                <SectionTitle
-                    :icon="IconPulse"
-                    title="Anomalies détectées"
-                    icon-wrap-class="border-amber-200 bg-amber-50"
-                    icon-class="text-amber-600"
-                />
-                <div class="space-y-2">
-                    <div
-                        v-for="(a, i) in report.anomalies"
-                        :key="i"
-                        class="flex items-center gap-3 rounded-2xl border bg-white p-4 shadow-sm"
-                        :class="severityBorder(a.severity)"
-                    >
-                        <span class="shrink-0 rounded-full px-3 py-1 text-sm font-bold uppercase" :class="severityBadge(a.severity)">
-                            {{ severityFr(a.severity) }}
+            <!-- Domain analyses toggle -->
+            <div v-if="activeDomains.length" class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <div class="flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-200 bg-white shadow-sm">
+                            <IconChartBars class="h-5 w-5 text-slate-600" />
                         </span>
-                        <p class="text-base font-medium leading-relaxed text-slate-700 sm:text-lg">{{ a.message }}</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Cross-domain patterns -->
-            <section v-if="validPatterns.length">
-                <SectionTitle
-                    :icon="IconLink"
-                    title="Connexions entre domaines"
-                    icon-wrap-class="border-violet-200 bg-violet-50"
-                    icon-class="text-violet-600"
-                />
-                <div class="space-y-3">
-                    <div
-                        v-for="(p, i) in validPatterns"
-                        :key="i"
-                        class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-                    >
-                        <p class="font-semibold text-slate-800">{{ p.pattern }}</p>
-                        <p class="mt-1 text-sm text-slate-600">{{ p.explanation }}</p>
-                        <div class="mt-2 flex flex-wrap gap-1">
-                            <span
-                                v-for="d in p.domains"
-                                :key="d"
-                                class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600"
-                            >{{ domainLabel(d) }}</span>
+                        <div>
+                            <p class="font-semibold text-slate-800">Rapport clinique détaillé</p>
+                            <p class="text-sm text-slate-500">{{ activeDomains.length }} domaine{{ activeDomains.length > 1 ? 's' : '' }} analysé{{ activeDomains.length > 1 ? 's' : '' }}</p>
                         </div>
                     </div>
+                    <button
+                        @click="showDomains = !showDomains"
+                        class="shrink-0 flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition hover:bg-slate-100"
+                    >
+                        <span>{{ showDomains ? 'Masquer' : 'Consulter' }}</span>
+                        <svg class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': showDomains }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
                 </div>
-            </section>
 
-            <!-- Domain analyses -->
-            <section v-if="activeDomains.length">
-                <SectionTitle
-                    :icon="IconChartBars"
-                    title="Analyse par domaine"
-                    icon-wrap-class="border-sky-200 bg-sky-50"
-                    icon-class="text-sky-600"
-                />
-                <div class="grid gap-3 sm:grid-cols-2">
+                <!-- Expandable domain list -->
+                <div v-if="showDomains" class="mt-4 divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white overflow-hidden">
                     <div
                         v-for="[domain, data] in activeDomains"
                         :key="domain"
-                        class="rounded-xl border border-slate-200 bg-white p-4"
+                        class="px-5 py-5"
                     >
                         <!-- Domain header -->
-                        <div class="mb-3 flex items-center justify-between">
-                            <div class="flex items-center gap-2">
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <div class="flex items-center gap-2.5">
                                 <span
-                                    class="grid h-9 w-9 place-items-center rounded-xl border shadow-sm"
+                                    class="grid h-9 w-9 shrink-0 place-items-center rounded-xl border shadow-sm"
                                     :class="domainIconStyle(domain).wrap"
                                 >
-                                    <component :is="domainIcon(domain)" class="h-5 w-5" :class="domainIconStyle(domain).icon" />
+                                    <component :is="domainIcon(domain)" class="h-4 w-4" :class="domainIconStyle(domain).icon" />
                                 </span>
                                 <p class="font-semibold text-slate-800">{{ domainLabel(domain) }}</p>
                             </div>
-                            <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" :class="severityBadge(data.severity)">
+                            <span class="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold" :class="severityBadge(data.severity)">
                                 {{ severityFr(data.severity) }}
                             </span>
                         </div>
 
                         <!-- Analysis text -->
-                        <p class="text-sm leading-relaxed text-slate-500">{{ data.analysis }}</p>
+                        <p class="text-sm leading-relaxed text-slate-600">{{ data.analysis }}</p>
 
                         <!-- Issues -->
-                        <ul v-if="data.issues?.length" class="mt-3 space-y-1 border-t border-slate-100 pt-3">
-                            <li v-for="(issue, i) in data.issues" :key="i" class="flex gap-2 text-xs text-slate-600">
-                                <span class="shrink-0 text-slate-400">•</span>
+                        <ul v-if="data.issues?.length" class="mt-3 space-y-1.5 border-t border-slate-100 pt-3">
+                            <li
+                                v-for="(issue, i) in data.issues"
+                                :key="i"
+                                class="flex gap-2 text-sm text-slate-600"
+                            >
+                                <span class="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-slate-400"></span>
                                 <span>{{ issue }}</span>
-                            </li>
-                        </ul>
-
-                        <!-- Recommendations -->
-                        <ul v-if="data.recommendations?.length" class="mt-2 space-y-1 border-t border-slate-100 pt-2">
-                            <li v-for="(rec, i) in data.recommendations" :key="i" class="flex gap-2 text-xs text-slate-700">
-                                <span class="shrink-0 text-slate-400">→</span>
-                                <span>{{ rec }}</span>
                             </li>
                         </ul>
                     </div>
                 </div>
-            </section>
+            </div>
 
         </div>
     </div>
@@ -263,7 +248,6 @@ import {
     IconFlask,
     IconHeart,
     IconLeaf,
-    IconLink,
     IconPill,
     IconPulse,
     IconRun,
@@ -283,9 +267,10 @@ const SectionTitle = {
     </div>`,
 };
 
-const loading = ref(false);
-const report  = ref(null);
-const error   = ref("");
+const loading     = ref(false);
+const report      = ref(null);
+const error       = ref("");
+const showDomains = ref(false);
 
 async function load() {
     loading.value = true;
@@ -342,11 +327,19 @@ const riskLabel = computed(() => {
     return { high: "Risque élevé", medium: "Risque modéré", low: "Risque faible", unknown: "Inconnu" }[report.value?.risk_level] ?? "";
 });
 
-// Only show domains that have real data
+// Anomalies sorted by severity: critical → high → medium → low
+const SEVERITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3, none: 4 };
+const sortedAnomalies = computed(() =>
+    [...(report.value?.anomalies ?? [])].sort(
+        (a, b) => (SEVERITY_ORDER[a.severity] ?? 4) - (SEVERITY_ORDER[b.severity] ?? 4)
+    )
+);
+
+// Only show domains that have a real analysis (regardless of severity)
 const activeDomains = computed(() => {
     if (!report.value?.domains) return [];
     return Object.entries(report.value.domains).filter(
-        ([, d]) => d.severity !== "none" && d.analysis && !d.analysis.startsWith("No data")
+        ([, d]) => d.analysis && !d.analysis.startsWith("No data")
     );
 });
 
@@ -359,11 +352,6 @@ const hasNoData = computed(() => {
         !report.value.global_recommendations?.length &&
         activeDomains.value.length === 0
     );
-});
-
-// Only valid pattern objects
-const validPatterns = computed(() => {
-    return (report.value?.cross_domain_patterns ?? []).filter(p => p && typeof p === "object" && p.pattern);
 });
 
 // Severity helpers

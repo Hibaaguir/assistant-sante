@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\DoctorInvitation;
 use App\Models\HealthData;
 use App\Models\HealthProfile;
 use App\Models\Treatment;
@@ -59,18 +60,24 @@ class HealthProfileController extends Controller
 
         $user = $request->user();
 
-        // Normaliser l'email du médecin en minuscules
-        if (!empty($data['doctor_email'])) {
-            $data['doctor_email'] = strtolower(trim($data['doctor_email']));
-        }
+        // Extraire les champs d'invitation (stockés dans doctor_invitations, pas dans health_profiles)
+        $doctorInvited = (bool) ($data['doctor_invited'] ?? false);
+        $doctorEmail   = !empty($data['doctor_email']) ? strtolower(trim($data['doctor_email'])) : null;
+        unset($data['doctor_invited'], $data['doctor_email']);
 
-        // Enregistrer l'ancien email du médecin pour la synchronisation
-        $existingProfile     = HealthProfile::where('user_id', $user->id)->first();
-        $previousDoctorEmail = $existingProfile ? strtolower(trim((string) $existingProfile->doctor_email)) : null;
+        // Récupérer le profil existant pour la logique initial_weight
+        $existingProfile = HealthProfile::where('user_id', $user->id)->first();
+
+        // Récupérer l'email précédent depuis la table doctor_invitations
+        $previousDoctorEmail = DoctorInvitation::where('patient_user_id', $user->id)
+            ->whereIn('status', ['pending', 'accepted'])
+            ->latest('id')
+            ->value('doctor_email');
+        $previousDoctorEmail = $previousDoctorEmail ? strtolower(trim($previousDoctorEmail)) : null;
 
         // Séparer les traitements des autres données de profil
         $treatments = $data['treatments'] ?? [];
-        unset($data['treatments']);
+        unset($data['treatments']);//On retire la clé treatments de $data
 
         $data['user_id'] = $user->id;
 
@@ -126,7 +133,7 @@ class HealthProfileController extends Controller
         }
 
         // Synchroniser les invitations du médecin
-        $this->invitationService->sync($profile, $previousDoctorEmail, $user);
+        $this->invitationService->sync($profile, $previousDoctorEmail, $user, $doctorInvited, $doctorEmail);
 
         // Charger et retourner les données du profil
         $profileData               = $profile->toArray();
@@ -134,6 +141,14 @@ class HealthProfileController extends Controller
             ->map(fn($t) => $this->formatTreatment($t))
             ->values()
             ->toArray();
+
+        // Ajouter les champs d'invitation depuis la table doctor_invitations
+        $activeInvitation = DoctorInvitation::where('patient_user_id', $user->id)
+            ->whereIn('status', ['pending', 'accepted'])
+            ->latest('id')
+            ->first();
+        $profileData['doctor_invited'] = $activeInvitation !== null;
+        $profileData['doctor_email']   = $activeInvitation?->doctor_email ?? null;
 
         return response()->json([
             'message' => 'Profil de santé enregistré avec succès.',
@@ -156,6 +171,14 @@ class HealthProfileController extends Controller
             ->map(fn($t) => $this->formatTreatment($t, withFormattedDates: true))
             ->values()
             ->toArray();
+
+        // Ajouter les champs d'invitation depuis la table doctor_invitations
+        $activeInvitation = DoctorInvitation::where('patient_user_id', $user->id)
+            ->whereIn('status', ['pending', 'accepted'])
+            ->latest('id')
+            ->first();
+        $profileData['doctor_invited'] = $activeInvitation !== null;
+        $profileData['doctor_email']   = $activeInvitation?->doctor_email ?? null;
 
         return response()->json([
             'data' => $profileData,

@@ -28,9 +28,6 @@ return new class extends Migration
             $table->boolean('smoker')->default(false);
             $table->boolean('alcoholic')->default(false);
 
-            // Doctor consultation
-            $table->boolean('doctor_invited')->default(false);
-            $table->string('doctor_email')->nullable();
             $table->timestamps();
         });
     }

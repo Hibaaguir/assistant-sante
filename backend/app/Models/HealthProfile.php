@@ -21,8 +21,6 @@ class HealthProfile extends Model
         'chronic_diseases',
         'smoker',
         'alcoholic',
-        'doctor_invited',
-        'doctor_email',
     ];
 
     protected $casts = [
@@ -31,7 +29,6 @@ class HealthProfile extends Model
         'goals' => 'array',
         'smoker' => 'boolean',
         'alcoholic' => 'boolean',
-        'doctor_invited' => 'boolean',
     ];
 
     // Relation indiquant que chaque profil de sante appartient a un utilisateur

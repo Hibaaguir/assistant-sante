@@ -6,7 +6,7 @@ use App\Models\TreatmentCatalog;
 
 class TreatmentCatalogService
 {
-    // Construire le catalogue complet des medicaments
+    // Récupère et organise les traitements par type pour un affichage optimisé côté frontend.
     public function buildCatalog(): array
     {
         $items = TreatmentCatalog::query()
