@@ -22,17 +22,17 @@ class StoreJournalEntryRequest extends ApiFormRequest
             'meals.*.calories' => ['nullable', 'integer', 'min:0', 'max:65535'],
 
             'activity_type' => ['nullable', 'string', 'max:120'],
-            'activity_duration' => ['nullable', 'integer', 'min:0', 'max:1440'],
+            'activity_duration' => ['required_with:activity_type', 'integer', 'min:0', 'max:1440'],
             'intensity' => ['nullable', 'string', 'max:30'],
 
-            'tobacco' => ['required', 'boolean'],
-            'alcohol' => ['required', 'boolean'],
-            'tobacco_types' => ['nullable', 'array'],
-            'tobacco_types.cigarette' => ['nullable', 'boolean'],
-            'tobacco_types.vape' => ['nullable', 'boolean'],
-            'cigarettes_per_day' => ['nullable', 'integer', 'min:0', 'max:200'],
-            'vape_liquid_ml' => ['nullable', 'integer', 'min:0'],
-            'alcohol_glasses' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'tobacco' => ['nullable', 'boolean'],
+            'alcohol' => ['nullable', 'boolean'],
+            'tobacco_types' => ['required_if:tobacco,true', 'array'],
+            'tobacco_types.cigarette' => ['required_without:tobacco_types.vape', 'nullable', 'boolean'],
+            'tobacco_types.vape' => ['required_without:tobacco_types.cigarette', 'nullable', 'boolean'],
+            'cigarettes_per_day' => ['required_if:tobacco_types.cigarette,true', 'nullable', 'integer', 'min:0', 'max:200'],
+            'vape_liquid_ml' => ['required_if:tobacco_types.vape,true', 'nullable', 'integer', 'min:0'],
+            'alcohol_glasses' => ['required_if:alcohol,true', 'nullable', 'integer', 'min:0', 'max:100'],
         ];
     }
 

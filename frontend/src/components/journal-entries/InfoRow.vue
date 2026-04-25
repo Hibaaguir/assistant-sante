@@ -1,4 +1,4 @@
-<!-- components/InfoRow.vue -->
+<!-- Composant réutilisable pour afficher une ligne d'information dans les entrées du journal, avec une icône, un label et soit un badge coloré, soit un texte simple. Les props permettent de personnaliser l'apparence et le contenu de la ligne en fonction des besoins spécifiques de chaque entrée du journal. -->
 <template>
     <div
         class="flex items-center justify-between gap-3 border-b border-slate-200 pb-3 last:border-0 last:pb-0"

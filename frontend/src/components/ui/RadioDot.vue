@@ -1,3 +1,4 @@
+<!-- Composant de point radio personnalisé pour indiquer la sélection dans les options de filtrage du journal -->
 <template>
     <div class="flex items-center justify-center">
         <div
@@ -17,7 +18,6 @@
         </div>
     </div>
 </template>
-
 <script setup>
 defineProps({
     active: { type: Boolean, default: false },

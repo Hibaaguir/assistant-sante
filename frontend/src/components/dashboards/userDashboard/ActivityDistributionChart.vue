@@ -1,9 +1,4 @@
-<!--
-  ActivityDistributionChart.vue
-  Doughnut chart showing physical activity distribution by type (total minutes per type).
-  Filterable by last 7 days (week) or last 30 days (month).
-  Data comes from GET /journal → physicalActivities[].
--->
+<!--ActivityDistributionChart.vue-->
 <template>
     <section
         class="mt-5 rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400"
@@ -52,7 +47,7 @@
     </section>
 </template>
 
-<script setup>
+<<script setup>
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import Typography from "@/components/ui/Typography.vue";
 import {
@@ -64,8 +59,10 @@ import {
 } from "chart.js";
 import api from "@/services/api";
 
+// Enregistrement des composants Chart.js nécessaires
 Chart.register(DoughnutController, ArcElement, Legend, Tooltip);
 
+// Couleurs du graphique
 const COLORS = [
     "#6366f1",
     "#10b981",
@@ -77,63 +74,94 @@ const COLORS = [
     "#ec4899",
 ];
 
+// Filtres disponibles (7 jours ou 30 jours)
 const filters = [
     { label: "Par semaine", days: 7 },
     { label: "Par mois", days: 30 },
 ];
 
+// Variables réactives
 const canvasRef = ref(null);
 const loading = ref(true);
 const noData = ref(false);
 const days = ref(7);
 const summary = ref([]);
+
+// Variables normales
 let allEntries = [];
 let chartInstance = null;
 
-// Compute the ISO date string for N days ago
+// Retourne la date (format YYYY-MM-DD) il y a N jours
 function dateNDaysAgo(n) {
     const d = new Date();
     d.setDate(d.getDate() - (n - 1));
     return d.toISOString().slice(0, 10);
 }
 
+// Calcule le total des minutes par type d'activité
 function aggregate() {
     const cutoff = dateNDaysAgo(days.value);
     const totals = {};
 
     for (const entry of allEntries) {
+        // Ignorer si pas de date ou trop ancien
         if (!entry.entry_date || entry.entry_date < cutoff) continue;
-        for (const act of entry.physical_activities ??
-            entry.physicalActivities ??
-            []) {
+
+        // Récupérer la liste des activités (2 formats possibles)
+        const activities =
+            entry.physical_activities ||
+            entry.physicalActivities ||
+            [];
+
+        for (const act of activities) {
             const type = act.activity_type || "Autre";
-            totals[type] = (totals[type] ?? 0) + (act.duration_minutes ?? 0);
+            const minutes = act.duration_minutes || 0;
+
+            // Initialiser si nécessaire si le type est la première fois rencontré commence par 0
+            if (!totals[type]) {
+                totals[type] = 0;
+            }
+
+            // Ajouter les minutes
+            totals[type] += minutes;
         }
     }
 
     return totals;
 }
 
+// Crée et affiche le graphique
 async function buildChart() {
-    chartInstance?.destroy();
+    // Supprimer l'ancien graphique s'il existe
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
     noData.value = false;
 
     const totals = aggregate();
     const labels = Object.keys(totals);
 
+    // Si aucune donnée
     if (labels.length === 0) {
         noData.value = true;
         return;
     }
 
-    summary.value = labels.map((l) => ({ label: l, minutes: totals[l] }));
+    // Préparer les données pour affichage ajouter une propriété "label" et "minutes" à summary pour affichage dans la légende 
+    summary.value = labels.map((label) => ({
+        label: label,
+        minutes: totals[label],
+    }));
 
+    // Attendre que le DOM soit prêt
     await nextTick();
 
+    // Création du graphique
     chartInstance = new Chart(canvasRef.value, {
         type: "doughnut",
         data: {
-            labels,
+            labels: labels,
             datasets: [
                 {
                     data: labels.map((l) => totals[l]),
@@ -148,7 +176,7 @@ async function buildChart() {
             cutout: "60%",
             plugins: {
                 legend: {
-                    display: false,
+                    display: true,
                 },
                 tooltip: {
                     backgroundColor: "rgba(0, 0, 0, 0.9)",
@@ -156,7 +184,7 @@ async function buildChart() {
                     bodyFont: { size: 13 },
                     padding: 14,
                     callbacks: {
-                        label: (ctx) => ` ${ctx.parsed} min`,
+                       label: (ctx) => `${ctx.parsed} min`,
                     },
                 },
             },
@@ -164,19 +192,34 @@ async function buildChart() {
     });
 }
 
+// Charger les données depuis l'API
 async function load() {
     loading.value = true;
-    const { data: res } = await api.get("/journal");
-    allEntries = res?.data ?? [];
+
+    const response = await api.get("/journal");
+
+    // Récupération des données
+    if (response.data && response.data.data) {
+        allEntries = response.data.data;
+    } else {
+        allEntries = [];
+    }
+
     loading.value = false;
+
+    // Construire le graphique
     await buildChart();
 }
 
+// Changer le filtre (7 jours / 30 jours)
 async function changeFilter(value) {
     days.value = value;
     await buildChart();
 }
 
+// Lifecycle
 onMounted(load);
-onUnmounted(() => chartInstance?.destroy());
+onUnmounted(() => {
+    if (chartInstance) chartInstance.destroy();
+});
 </script>

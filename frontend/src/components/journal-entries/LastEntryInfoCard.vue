@@ -1,4 +1,5 @@
-﻿<template>
+﻿<!-- Composant pour afficher des informations complémentaires sur la dernière entrée du journal, telles que l'hydratation, les repas, l'activité physique, etc. Les données sont affichées de manière structurée avec des icônes et des badges pour une meilleure lisibilité. -->
+<template>
     <div
         class="rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:border-blue-500 hover:shadow-md"
     >
@@ -101,7 +102,10 @@
             </div>
 
             <!-- Apport en sucre -->
-            <div v-if="entree.sugar" class="flex items-center justify-between py-0.5">
+            <div
+                v-if="entree.sugar"
+                class="flex items-center justify-between py-0.5"
+            >
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">🍬</span>
                     <span class="text-base font-medium text-slate-700"
@@ -117,10 +121,15 @@
             </div>
 
             <!-- Énergie (détectée par IA) -->
-            <div v-if="entree.energy" class="flex items-center justify-between py-0.5">
+            <div
+                v-if="entree.energy"
+                class="flex items-center justify-between py-0.5"
+            >
                 <div class="flex items-center gap-2.5">
                     <span class="text-base">⚡</span>
-                    <span class="text-base font-medium text-slate-700">Énergie</span>
+                    <span class="text-base font-medium text-slate-700"
+                        >Énergie</span
+                    >
                 </div>
                 <span
                     class="text-base font-semibold px-2 py-0.5 rounded-full border"
@@ -137,28 +146,33 @@
 import { computed } from "vue";
 import Typography from "@/components/ui/Typography.vue";
 
+// Déclare les props reçues depuis le composant parent
 const props = defineProps({
-    derniereEntree: { type: Object, default: null },
+    lastEntry: { type: Object, default: null },
 });
 
-const entree = computed(() => props.derniereEntree);
+// Récupère la dernière entrée sous forme réactive
+const entree = computed(() => props.lastEntry);
 
-// Formatters
+// Formate le nombre de repas consommés
 const formatMeals = (e) => {
     if (!e.meals || e.meals.length === 0) return "Aucun repas";
     return `${e.meals.length} repas`;
 };
 
+// Formate les informations de l’activité physique
 const formatActivity = (e) => {
     if (!e.activityType) return "Non renseignée";
     return `${e.activityType} ${e.activityDuration} min`;
 };
 
+// Transforme le niveau d’intensité en texte lisible
 const formatIntensity = (intensity) => {
     const map = { high: "Intense", medium: "Modérée", light: "Légère" };
     return map[intensity] || "Modérée";
 };
 
+// Retourne les classes CSS selon l’intensité
 const intensityBadgeClass = (intensity) => {
     const map = {
         high: "bg-rose-100 text-rose-700 border-rose-300",
@@ -168,6 +182,7 @@ const intensityBadgeClass = (intensity) => {
     return map[intensity] || map.medium;
 };
 
+// Formate les informations liées au tabac
 const formatTobacco = (e) => {
     if (!e.tobacco) return "Non";
     const parts = [];
@@ -180,17 +195,20 @@ const formatTobacco = (e) => {
     return parts.length ? parts.join(" + ") : "Oui";
 };
 
+// Formate les informations liées à l’alcool
 const formatAlcohol = (e) => {
     if (!e.alcohol) return "Non";
     const n = Number(e.alcoholDrinks ?? 0);
     return n > 0 ? `${n} verres/jour` : "Oui";
 };
 
+// Transforme le niveau de sucre en texte lisible
 const formatSugar = (sugar) => {
     const map = { high: "Élevé", medium: "Modéré", low: "Faible" };
     return map[sugar] || "Modéré";
 };
 
+// Retourne les classes CSS selon le niveau de sucre
 const sugarBadgeClass = (sugar) => {
     const map = {
         high: "bg-rose-100 text-rose-700 border-rose-300",
@@ -200,8 +218,10 @@ const sugarBadgeClass = (sugar) => {
     return map[sugar] || map.medium;
 };
 
+// Détermine la couleur du badge selon le niveau d’énergie
 const energyBadgeClass = (energy) => {
-    if (energy >= 7) return "bg-emerald-100 text-emerald-700 border-emerald-300";
+    if (energy >= 7)
+        return "bg-emerald-100 text-emerald-700 border-emerald-300";
     if (energy >= 4) return "bg-amber-100 text-amber-700 border-amber-300";
     return "bg-rose-100 text-rose-700 border-rose-300";
 };

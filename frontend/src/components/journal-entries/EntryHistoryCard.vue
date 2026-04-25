@@ -1,4 +1,5 @@
-﻿<template>
+﻿<!-- Composant de carte d'historique d'entrée du journal, affichant les détails d'une entrée spécifique avec des actions pour éditer ou supprimer l'entrée. Les champs affichés sont filtrés en fonction du type de filtre sélectionné  -->
+<template>
     <article
         class="rounded-2xl border-2 border-blue-300 bg-white px-5 py-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-blue-400"
     >
@@ -93,7 +94,7 @@ const props = defineProps({
 
 defineEmits(["edit", "request-delete"]);
 
-// Formateurs
+// Formate la durée de sommeil en heures et minutes
 const fmtSommeil = (h) => {
     const hh = Math.floor(h),
         mm = Math.round((h - hh) * 60);
@@ -101,12 +102,14 @@ const fmtSommeil = (h) => {
 };
 const fmtStress = (v) => (v >= 8 ? "Élevé" : v <= 3 ? "Faible" : "Modéré");
 const fmtEnergie = (v) => (v >= 8 ? "Excellente" : v <= 4 ? "Faible" : "Bonne");
+// Formate une date ISO en mois + année (ex: avril 2026)
 const fmtMois = (iso) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString("fr-FR", {
         month: "long",
         year: "numeric",
     });
 
+// Formatage simple des données liées au tabac pour l’affichage
 const fmtTabac = ({
     tobacco,
     tobaccoTypes,
@@ -114,16 +117,22 @@ const fmtTabac = ({
     vapeFrequency,
     vapeLiquidMl,
 }) => {
+    // Si l’utilisateur ne fume pas
     if (!tobacco) return "Non";
-    const parts = [
-        tobaccoTypes?.cigarette &&
-            cigarettesPerDay != null &&
-            `Cigarette • ${cigarettesPerDay}/j`,
-        tobaccoTypes?.vape &&
-            vapeFrequency &&
-            `Vape • ${vapeFrequency} • ${vapeLiquidMl} ml`,
-    ].filter(Boolean);
-    return parts.length ? parts.join(", ") : "Oui";
+
+    // On construit une liste de descriptions
+    const parts = [];
+
+    if (tobaccoTypes?.cigarette && cigarettesPerDay != null) {
+        parts.push(`Cigarette • ${cigarettesPerDay}/j`);
+    }
+
+    if (tobaccoTypes?.vape && vapeFrequency) {
+        parts.push(`Vape • ${vapeFrequency} • ${vapeLiquidMl} ml`);
+    }
+
+    // Si on a des infos → on les affiche, sinon "Oui"
+    return parts.length > 0 ? parts.join(", ") : "Oui";
 };
 
 // Table de correspondance filtre → champ
@@ -139,22 +148,23 @@ const CHAMPS = {
     }),
     tobacco: (e) => ({ label: "Tabac", valeur: fmtTabac(e) }),
 };
-
+// si date ou all ou month on affiche tous les champs, sinon on affiche uniquement le champ correspondant au filtre sélectionné (sommeil, stress, énergie, etc.) et on formate les valeurs pour les rendre plus lisibles (ex: 7.5h de sommeil devient "7h 30min", un niveau de stress de 9 devient "Élevé", etc.)
 const champsVisibles = computed(() => {
     const e = props.entree;
-
-    // Pour date et mois, afficher tous les champs pertinents (pas juste la date)
-    if (props.filterType === "date" || props.filterType === "month") {
+    const showAll = ["date", "month", "all"].includes(props.filterType);
+    if (showAll) {
         return Object.values(CHAMPS)
             .map((fn) => fn(e))
-            .filter((c) => c && c.valeur);
+            .filter((c) => c?.valeur);
     }
-
-    if (props.filterType === "all")
-        return Object.values(CHAMPS)
-            .map((fn) => fn(e))
-            .filter((c) => c && c.valeur);
-
-    return [CHAMPS[props.filterType]?.call(null, e)].filter(Boolean);
+    // Si un filtre spécifique est sélectionné, on affiche uniquement le champ correspondant
+    const fn = CHAMPS[props.filterType];
+    if (!fn) return [];
+    const champ = fn(e);
+    return champ?.valeur ? [champ] : [];
 });
+// CHAMPS : dictionnaire de fonctions qui définit comment calculer et formater chaque champ
+// champ : résultat obtenu après exécution d’une fonction de CHAMPS sur une entrée (données prêtes à afficher)
+// champsVisibles : liste des champs filtrés et formatés à afficher selon le type de filtre sélectionné
+// c : représente chaque élément de la liste des champs après transformation (résultat de map)
 </script>

@@ -121,7 +121,7 @@
             </div>
 
             <!-- Autres infos -->
-            <CarteInfosDerniereEntree :derniere-entree="latestEntry" />
+            <CarteInfosDerniereEntree :last-entry="latestEntry" />
 
             <!-- Analyse IA -->
             <div
@@ -198,7 +198,7 @@ import api from "@/services/api";
 
 const router = useRouter();
 const store = useJournalStore();
-const { derniereEntree: latestEntry } = storeToRefs(store);
+const { lastEntry: latestEntry } = storeToRefs(store);
 
 const JOURNAL_DOMAINS = ["sleep", "nutrition", "activity", "smoking", "alcohol"];
 const DOMAIN_LABELS = {

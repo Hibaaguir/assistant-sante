@@ -1,3 +1,4 @@
+<!-- Composant  pour filtrer les entrées du journal en fonction de différents critères (date, mois, type d'entrée) -->
 <template>
     <div
         v-if="open"
@@ -7,7 +8,7 @@
         <div
             class="mx-auto mt-6 w-full max-w-[540px] rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-[#f9f7ff] to-[#f3f8ff] p-4 shadow-[0_25px_50px_rgba(15,23,42,0.25)] sm:mt-10 sm:p-5"
         >
-            <!-- En-tête -->
+        
             <div class="mb-4 flex items-center justify-between">
                 <Typography tag="h3" variant="h3-style">
                     Filtrer l'historique
@@ -81,7 +82,7 @@ import Typography from "@/components/ui/Typography.vue";
 import RadioDot from "@/components/ui/RadioDot.vue";
 import DatePicker from "@/components/journal-entries/DatePicker.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-
+//open et filter sont des props passées par le composant parent pour contrôler l'affichage du modal et les critères de filtrage sélectionnés.
 const props = defineProps({
     open: { type: Boolean, default: false },
     filter: { type: Object, required: true },
@@ -89,7 +90,7 @@ const props = defineProps({
 
 defineEmits(["close", "apply", "reset"]);
 
-// --- Constantes -----------------------------------------------
+
 
 const SELECTED = "border-violet-400 bg-violet-50 text-slate-900";
 const UNSELECTED = "border-slate-300 bg-white text-slate-700";
@@ -106,13 +107,19 @@ const OPTIONS = [
     { id: "energy", label: "Énergie", icon: "⚡" },
 ];
 
-// --- État local -----------------------------------------------
 
-const model = reactive({ type: "all", month: "", date: "" });
-
+const model = reactive({ 
+    type: "all",
+    month: "", 
+    date: "" });
+// Synchronise le modèle local avec les changements du filtre parent
 watch(
+    // Lorsque la prop 'filter' change, le modèle local est mis à jour pour refléter les nouvelles valeurs de filtrage sélectionnées dans le composant parent.
     () => props.filter,
     (next) => Object.assign(model, next),
     { immediate: true, deep: true },
 );
+//model.type est mis a jourquand l'utilisateur clique sur une option de filtrage, ce qui déclenche l'émission de l'événement 'apply' avec le modèle actuel pour appliquer les filtres sélectionnés dans le composant parent.
+//option.id est comparé à model.type pour déterminer quelle option est actuellement sélectionnée, ce qui permet de mettre à jour l'apparence du bouton et du point radio en conséquence.
+// L'événement 'reset' est émis lorsque l'utilisateur clique sur le bouton de réinitialisation, permettant au composant parent de réinitialiser les filtres à leur état par défaut.
 </script>

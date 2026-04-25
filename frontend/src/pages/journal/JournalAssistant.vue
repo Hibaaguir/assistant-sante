@@ -75,43 +75,85 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
                 <div v-else-if="step === 2" class="space-y-4">
                     <!-- Bloc 1 : Repas -->
                     <div class="rounded-xl border border-blue-200 bg-white p-4">
-                        <p class="text-sm font-semibold text-slate-900">Repas d'aujourd'hui</p>
-                        <p class="mt-0.5 text-xs text-slate-400">Les repas ajoutés seront enregistrés dans votre journal du jour.</p>
+                        <p class="text-sm font-semibold text-slate-900">
+                            Repas d'aujourd'hui
+                        </p>
+                        <p class="mt-0.5 text-xs text-slate-400">
+                            Les repas ajoutés seront enregistrés dans votre
+                            journal du jour.
+                        </p>
 
-                        <div class="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                        <div
+                            class="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4"
+                        >
                             <button
                                 v-for="item in meals"
                                 :key="item.id"
                                 type="button"
                                 class="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors"
-                                :class="form.selectedMeal === item.id ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'"
-                                @click="form.selectedMeal = item.id; mealError = ''"
+                                :class="
+                                    form.selectedMeal === item.id
+                                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                        : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
+                                "
+                                @click="
+                                    form.selectedMeal = item.id;
+                                    mealError = '';
+                                "
                             >
                                 <div v-html="item.icon" />
                                 <div>{{ item.label }}</div>
                             </button>
                         </div>
 
-                        <div v-if="form.selectedMeal" class="mt-3 border-t border-slate-100 pt-3">
-                            <div class="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700">
-                                <span>{{ selectedMealLabel }} <span class="text-red-500">*</span></span>
-                                <button type="button" class="flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-sm font-bold text-red-500 hover:bg-red-200 transition-colors" @click="form.selectedMeal = ''">×</button>
+                        <div
+                            v-if="form.selectedMeal"
+                            class="mt-3 border-t border-slate-100 pt-3"
+                        >
+                            <div
+                                class="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700"
+                            >
+                                <span
+                                    >{{ selectedMealLabel }}
+                                    <span class="text-red-500">*</span></span
+                                >
+                                <button
+                                    type="button"
+                                    class="flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-sm font-bold text-red-500 hover:bg-red-200 transition-colors"
+                                    @click="form.selectedMeal = ''"
+                                >
+                                    ×
+                                </button>
                             </div>
                             <input
                                 v-model="mealDraft.label"
                                 type="text"
                                 class="w-full rounded-lg border px-3 py-1.5 text-sm outline-none transition"
-                                :class="mealError ? 'border-red-400 focus:border-red-500' : 'border-slate-200 focus:border-blue-400'"
+                                :class="
+                                    mealError
+                                        ? 'border-red-400 focus:border-red-500'
+                                        : 'border-slate-200 focus:border-blue-400'
+                                "
                                 placeholder="Ex: Oeufs + pain complet"
                                 @input="mealError = ''"
                             />
-                            <p v-if="mealError" class="mt-1 text-xs font-medium text-red-500">{{ mealError }}</p>
-                            <input v-model.number="mealDraft.calories" type="number" min="0" class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-blue-400" placeholder="Calories (optionnel)" />
+                            <p
+                                v-if="mealError"
+                                class="mt-1 text-xs font-medium text-red-500"
+                            >
+                                {{ mealError }}
+                            </p>
+                            <input
+                                v-model.number="mealDraft.calories"
+                                type="number"
+                                min="0"
+                                class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-blue-400"
+                                placeholder="Calories (optionnel)"
+                            />
                             <div class="mt-3 flex justify-end">
                                 <BaseButton
                                     type="button"
@@ -125,29 +167,74 @@
                             </div>
                         </div>
 
-                        <div v-if="form.meals.length" class="mt-3 border-t border-slate-100 pt-3">
+                        <div
+                            v-if="form.meals.length"
+                            class="mt-3 border-t border-slate-100 pt-3"
+                        >
                             <ul class="space-y-1.5">
-                                <li v-for="(meal, index) in form.meals" :key="`${meal.type}-${meal.label}-${index}`" class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-1.5 text-sm">
-                                    <span class="text-slate-700"><strong>{{ getMealTypeLabel(meal.type) }}</strong> — {{ meal.label }}<span v-if="meal.calories != null"> ({{ meal.calories }} kcal)</span></span>
-                                    <BaseButton type="button" variant="delete" size="sm" @click="deleteMeal(index)">Supprimer</BaseButton>
+                                <li
+                                    v-for="(meal, index) in form.meals"
+                                    :key="`${meal.type}-${meal.label}-${index}`"
+                                    class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-1.5 text-sm"
+                                >
+                                    <span class="text-slate-700"
+                                        ><strong>{{
+                                            getMealTypeLabel(meal.type)
+                                        }}</strong>
+                                        — {{ meal.label
+                                        }}<span v-if="meal.calories != null">
+                                            ({{ meal.calories }} kcal)</span
+                                        ></span
+                                    >
+                                    <BaseButton
+                                        type="button"
+                                        variant="delete"
+                                        size="sm"
+                                        @click="deleteMeal(index)"
+                                        >Supprimer</BaseButton
+                                    >
                                 </li>
                             </ul>
-                            <p class="mt-2 text-xs font-semibold text-green-700">Total calories : {{ mealsCaloriesTotal }} kcal</p>
+                            <p
+                                class="mt-2 text-xs font-semibold text-green-700"
+                            >
+                                Total calories : {{ mealsCaloriesTotal }} kcal
+                            </p>
                         </div>
-                        <p v-else class="mt-3 text-xs text-slate-400">Aucun repas ajouté pour le moment.</p>
+                        <p v-else class="mt-3 text-xs text-slate-400">
+                            Aucun repas ajouté pour le moment.
+                        </p>
                     </div>
 
                     <!-- Bloc 2 : Caféine + Hydratation + Sucre -->
-                    <div class="rounded-xl border border-blue-200 bg-white p-3 sm:p-4 space-y-4">
+                    <div
+                        class="rounded-xl border border-blue-200 bg-white p-3 sm:p-4 space-y-4"
+                    >
                         <!-- Caféine -->
                         <div>
-                            <p class="text-sm font-semibold text-slate-900">Caféine (tasses)</p>
+                            <p class="text-sm font-semibold text-slate-900">
+                                Caféine (tasses)
+                            </p>
                             <div class="mt-2 flex items-center gap-2">
-                                <div class="inline-flex items-center rounded-lg border border-blue-300 bg-white px-3 py-2 text-base font-semibold text-slate-700">
+                                <div
+                                    class="inline-flex items-center rounded-lg border border-blue-300 bg-white px-3 py-2 text-base font-semibold text-slate-700"
+                                >
                                     {{ form.caffeine }} tasse(s)
                                 </div>
-                                <BaseButton type="button" variant="secondary" size="sm" @click="adjustCaffeine(-1)">-</BaseButton>
-                                <BaseButton type="button" variant="outline" size="sm" @click="adjustCaffeine(1)">+</BaseButton>
+                                <BaseButton
+                                    type="button"
+                                    variant="secondary"
+                                    size="sm"
+                                    @click="adjustCaffeine(-1)"
+                                    >-</BaseButton
+                                >
+                                <BaseButton
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    @click="adjustCaffeine(1)"
+                                    >+</BaseButton
+                                >
                             </div>
                         </div>
 
@@ -155,80 +242,202 @@
 
                         <!-- Hydratation -->
                         <div>
-                            <p class="text-sm font-semibold text-slate-900">Hydratation</p>
-                            <div class="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
-                                <div class="rounded-lg border border-blue-200 bg-white p-2.5">
-                                    <div class="flex items-start justify-between">
+                            <p class="text-sm font-semibold text-slate-900">
+                                Hydratation
+                            </p>
+                            <div
+                                class="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2"
+                            >
+                                <div
+                                    class="rounded-lg border border-blue-200 bg-white p-2.5"
+                                >
+                                    <div
+                                        class="flex items-start justify-between"
+                                    >
                                         <div>
-                                            <p class="text-sm font-semibold text-slate-800">Verre</p>
-                                            <p class="text-xs text-slate-500">0.5L par unité</p>
+                                            <p
+                                                class="text-sm font-semibold text-slate-800"
+                                            >
+                                                Verre
+                                            </p>
+                                            <p class="text-xs text-slate-500">
+                                                0.5L par unité
+                                            </p>
                                         </div>
-                                        <svg viewBox="0 0 24 24" class="h-4 w-4 text-sky-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                            <path d="M7 3h10l-1 16a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2L7 3z" />
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            class="h-4 w-4 text-sky-600"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                d="M7 3h10l-1 16a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2L7 3z"
+                                            />
                                             <path d="M8 8h8" />
                                         </svg>
                                     </div>
-                                    <div class="mt-3 flex items-center justify-between">
-                                        <BaseButton type="button" variant="secondary" size="sm" @click="adjustCups(-1)">-</BaseButton>
-                                        <span class="text-lg font-bold">{{ form.cupCount }}</span>
-                                        <BaseButton type="button" variant="outline" size="sm" @click="adjustCups(1)">+</BaseButton>
+                                    <div
+                                        class="mt-3 flex items-center justify-between"
+                                    >
+                                        <BaseButton
+                                            type="button"
+                                            variant="secondary"
+                                            size="sm"
+                                            @click="adjustCups(-1)"
+                                            >-</BaseButton
+                                        >
+                                        <span class="text-lg font-bold">{{
+                                            form.cupCount
+                                        }}</span>
+                                        <BaseButton
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            @click="adjustCups(1)"
+                                            >+</BaseButton
+                                        >
                                     </div>
                                 </div>
-                                <div class="rounded-lg border border-blue-200 bg-white p-2.5">
-                                    <div class="flex items-start justify-between">
+                                <div
+                                    class="rounded-lg border border-blue-200 bg-white p-2.5"
+                                >
+                                    <div
+                                        class="flex items-start justify-between"
+                                    >
                                         <div>
-                                            <p class="text-sm font-semibold text-slate-800">Bouteille</p>
-                                            <p class="text-xs text-slate-500">1.5L par unité</p>
+                                            <p
+                                                class="text-sm font-semibold text-slate-800"
+                                            >
+                                                Bouteille
+                                            </p>
+                                            <p class="text-xs text-slate-500">
+                                                1.5L par unité
+                                            </p>
                                         </div>
-                                        <svg viewBox="0 0 24 24" class="h-4 w-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            class="h-4 w-4 text-cyan-600"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            aria-hidden="true"
+                                        >
                                             <path d="M10 3h4v3h2v15H8V6h2z" />
                                             <path d="M10 11h4" />
                                         </svg>
                                     </div>
-                                    <div class="mt-3 flex items-center justify-between">
-                                        <BaseButton type="button" variant="secondary" size="sm" @click="adjustBottles(-1)">-</BaseButton>
-                                        <span class="text-lg font-bold">{{ form.bottleCount }}</span>
-                                        <BaseButton type="button" variant="outline" size="sm" @click="adjustBottles(1)">+</BaseButton>
+                                    <div
+                                        class="mt-3 flex items-center justify-between"
+                                    >
+                                        <BaseButton
+                                            type="button"
+                                            variant="secondary"
+                                            size="sm"
+                                            @click="adjustBottles(-1)"
+                                            >-</BaseButton
+                                        >
+                                        <span class="text-lg font-bold">{{
+                                            form.bottleCount
+                                        }}</span>
+                                        <BaseButton
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            @click="adjustBottles(1)"
+                                            >+</BaseButton
+                                        >
                                     </div>
                                 </div>
                             </div>
                             <div class="mt-3">
-                                <input v-model.number="form.customHydration" type="number" step="0.1" min="0" class="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm" placeholder="Autre quantité (en litres)" />
+                                <input
+                                    v-model.number="form.customHydration"
+                                    type="number"
+                                    step="0.1"
+                                    min="0"
+                                    class="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm"
+                                    placeholder="Autre quantité (en litres)"
+                                />
                             </div>
-                            <div class="mt-3 inline-flex rounded-lg border-2 border-violet-400 bg-white px-4 py-2 text-sm font-semibold text-violet-700">
+                            <div
+                                class="mt-3 inline-flex rounded-lg border-2 border-violet-400 bg-white px-4 py-2 text-sm font-semibold text-violet-700"
+                            >
                                 Total: {{ hydrationTotal.toFixed(1) }} L
                             </div>
                         </div>
-
                     </div>
                 </div>
 
                 <!-- Step 3: Habits & sport -->
                 <div v-else class="space-y-4">
                     <!-- Un seul cadre pour activité + intensité + habitudes -->
-                    <div class="rounded-xl border border-blue-200 bg-white p-4 sm:p-5 space-y-4">
-
+                    <div
+                        class="rounded-xl border border-blue-200 bg-white p-4 sm:p-5 space-y-4"
+                    >
                         <!-- Type d'activité -->
                         <div>
-                            <label class="text-sm font-semibold text-slate-900" for="activity">Type d'activité</label>
+                            <label
+                                class="text-sm font-semibold text-slate-900"
+                                for="activity"
+                                >Type d'activité</label
+                            >
                             <select
                                 id="activity"
                                 v-model="form.activityType"
                                 class="mt-2 w-full rounded-lg border border-blue-300 bg-white px-3 py-2.5 text-sm"
                                 @change="handleActivitySelection"
                             >
-                                <option disabled value="">Sélectionnez une activité</option>
-                                <option v-for="item in activities" :key="item" :value="item">{{ item }}</option>
-                                <option value="__add_new__">+ Ajouter une activité</option>
+                                <option disabled value="">
+                                    Sélectionnez une activité
+                                </option>
+                                <option
+                                    v-for="item in activities"
+                                    :key="item"
+                                    :value="item"
+                                >
+                                    {{ item }}
+                                </option>
+                                <option value="__add_new__">
+                                    + Ajouter une activité
+                                </option>
                             </select>
-                            <div v-if="showNewActivityForm" class="mt-2 rounded-lg border border-purple-200 bg-purple-50 p-3">
-                                <div class="mb-2 flex items-center justify-between">
-                                    <p class="text-sm font-semibold text-slate-700">Nouvelle activité</p>
-                                    <BaseButton type="button" variant="text" size="sm" @click="cancelNewActivity">×</BaseButton>
+                            <div
+                                v-if="showNewActivityForm"
+                                class="mt-2 rounded-lg border border-purple-200 bg-purple-50 p-3"
+                            >
+                                <div
+                                    class="mb-2 flex items-center justify-between"
+                                >
+                                    <p
+                                        class="text-sm font-semibold text-slate-700"
+                                    >
+                                        Nouvelle activité
+                                    </p>
+                                    <BaseButton
+                                        type="button"
+                                        variant="text"
+                                        size="sm"
+                                        @click="cancelNewActivity"
+                                        >×</BaseButton
+                                    >
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <input v-model="newActivityName" type="text" class="w-full rounded-lg border border-purple-300 bg-white px-3 py-2 text-sm" placeholder="Nom de l'activité" />
-                                    <BaseButton type="button" variant="save" size="sm" :disabled="!newActivityName.trim()" @click="addNewActivity">Valider</BaseButton>
+                                    <input
+                                        v-model="newActivityName"
+                                        type="text"
+                                        class="w-full rounded-lg border border-purple-300 bg-white px-3 py-2 text-sm"
+                                        placeholder="Nom de l'activité"
+                                    />
+                                    <BaseButton
+                                        type="button"
+                                        variant="save"
+                                        size="sm"
+                                        :disabled="!newActivityName.trim()"
+                                        @click="addNewActivity"
+                                        >Valider</BaseButton
+                                    >
                                 </div>
                             </div>
                         </div>
@@ -237,8 +446,15 @@
 
                         <!-- Durée -->
                         <div>
-                            <label class="text-sm font-semibold text-slate-900" for="duration">
-                                Durée (minutes)<span v-if="isDurationRequired" class="ml-1 text-red-500">*</span>
+                            <label
+                                class="text-sm font-semibold text-slate-900"
+                                for="duration"
+                            >
+                                Durée (minutes)<span
+                                    v-if="isDurationRequired"
+                                    class="ml-1 text-red-500"
+                                    >*</span
+                                >
                             </label>
                             <input
                                 id="duration"
@@ -246,22 +462,41 @@
                                 type="number"
                                 min="0"
                                 class="mt-2 w-full rounded-lg border bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                                :class="submitAttempted && activityErrors.duration ? 'border-red-400' : 'border-blue-300'"
+                                :class="
+                                    submitAttempted && activityErrors.duration
+                                        ? 'border-red-400'
+                                        : 'border-blue-300'
+                                "
                             />
-                            <p v-if="submitAttempted && activityErrors.duration" class="mt-1 text-sm text-red-500">{{ activityErrors.duration }}</p>
+                            <p
+                                v-if="
+                                    submitAttempted && activityErrors.duration
+                                "
+                                class="mt-1 text-sm text-red-500"
+                            >
+                                {{ activityErrors.duration }}
+                            </p>
                         </div>
 
                         <div class="border-t border-slate-100" />
 
                         <!-- Intensité -->
                         <div>
-                            <p class="text-sm font-semibold text-slate-900">Intensité</p>
+                            <p class="text-sm font-semibold text-slate-900">
+                                Intensité
+                            </p>
                             <div class="mt-2 grid grid-cols-3 gap-2">
                                 <BaseButton
                                     v-for="value in intensityOptions"
                                     :key="`intensity-${value}`"
                                     type="button"
-                                    :variant="form.intensity === value ? (value === 'high' ? 'success' : 'outline') : 'secondary'"
+                                    :variant="
+                                        form.intensity === value
+                                            ? value === 'high'
+                                                ? 'success'
+                                                : 'outline'
+                                            : 'secondary'
+                                    "
                                     size="sm"
                                     @click="form.intensity = value"
                                 >
@@ -274,138 +509,222 @@
 
                         <!-- Habitudes -->
                         <div class="space-y-3">
-                            <p class="text-sm font-semibold text-slate-900">Habitudes</p>
+                            <p class="text-sm font-semibold text-slate-900">
+                                Habitudes
+                            </p>
 
                             <!-- Tabac -->
                             <div>
-                            <button
-                                type="button"
-                                class="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
-                                @click="toggleTobacco"
-                            >
-                                <span>Tabac</span>
-                                <span class="relative h-6 w-10 rounded-full transition-colors" :class="form.tobacco ? 'bg-blue-600' : 'bg-slate-300'" aria-hidden="true">
-                                    <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="form.tobacco ? 'translate-x-4' : 'translate-x-0'" />
-                                </span>
-                            </button>
-
-                            <div v-if="form.tobacco" class="mt-3 space-y-3">
-                                <div>
-                                    <label
-                                        class="text-base font-semibold text-slate-700"
-                                    >
-                                        Type <span class="text-red-500">*</span>
-                                    </label>
-                                    <div class="mt-2 flex flex-wrap gap-2">
-                                        <BaseButton
-                                            type="button"
-                                            :variant="form.tobaccoTypes.cigarette ? 'outline' : 'secondary'"
-                                            size="sm"
-                                            @click="toggleTobaccoType('cigarette')"
-                                        >
-                                            Cigarette
-                                        </BaseButton>
-                                        <BaseButton
-                                            type="button"
-                                            :variant="form.tobaccoTypes.vape ? 'outline' : 'secondary'"
-                                            size="sm"
-                                            @click="toggleTobaccoType('vape')"
-                                        >
-                                            Vape
-                                        </BaseButton>
-                                    </div>
-                                    <p
-                                        v-if="
-                                            submitAttempted &&
-                                            tobaccoErrors.types
-                                        "
-                                        class="mt-1 text-sm text-red-500"
-                                    >
-                                        {{ tobaccoErrors.types }}
-                                    </p>
-                                </div>
-
-                                <div v-if="form.tobaccoTypes.cigarette">
-                                    <label
-                                        class="text-base font-semibold text-slate-700"
-                                    >
-                                        Nombre de cigarettes par jour
-                                        <span class="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        v-model.number="form.cigarettesPerDay"
-                                        type="number"
-                                        min="0"
-                                        placeholder="Ex: 5"
-                                        class="mt-1 w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-base text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                                    />
-                                    <p
-                                        v-if="
-                                            submitAttempted &&
-                                            tobaccoErrors.cigarettesPerDay
-                                        "
-                                        class="mt-1 text-sm text-red-500"
-                                    >
-                                        {{ tobaccoErrors.cigarettesPerDay }}
-                                    </p>
-                                </div>
-
-                                <div
-                                    v-if="form.tobaccoTypes.vape"
-                                    class="space-y-3"
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
+                                    @click="toggleTobacco"
                                 >
+                                    <span>Tabac</span>
+                                    <span
+                                        class="relative h-6 w-10 rounded-full transition-colors"
+                                        :class="
+                                            form.tobacco
+                                                ? 'bg-blue-600'
+                                                : 'bg-slate-300'
+                                        "
+                                        aria-hidden="true"
+                                    >
+                                        <span
+                                            class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform"
+                                            :class="
+                                                form.tobacco
+                                                    ? 'translate-x-4'
+                                                    : 'translate-x-0'
+                                            "
+                                        />
+                                    </span>
+                                </button>
+
+                                <div v-if="form.tobacco" class="mt-3 space-y-3">
                                     <div>
                                         <label
                                             class="text-base font-semibold text-slate-700"
                                         >
-                                            Nombre de taffes prise par jour
+                                            Type
+                                            <span class="text-red-500">*</span>
+                                        </label>
+                                        <div class="mt-2 flex flex-wrap gap-2">
+                                            <BaseButton
+                                                type="button"
+                                                :variant="
+                                                    form.tobaccoTypes.cigarette
+                                                        ? 'outline'
+                                                        : 'secondary'
+                                                "
+                                                size="sm"
+                                                @click="
+                                                    toggleTobaccoType(
+                                                        'cigarette',
+                                                    )
+                                                "
+                                            >
+                                                Cigarette
+                                            </BaseButton>
+                                            <BaseButton
+                                                type="button"
+                                                :variant="
+                                                    form.tobaccoTypes.vape
+                                                        ? 'outline'
+                                                        : 'secondary'
+                                                "
+                                                size="sm"
+                                                @click="
+                                                    toggleTobaccoType('vape')
+                                                "
+                                            >
+                                                Vape
+                                            </BaseButton>
+                                        </div>
+                                        <p
+                                            v-if="
+                                                submitAttempted &&
+                                                tobaccoErrors.types
+                                            "
+                                            class="mt-1 text-sm text-red-500"
+                                        >
+                                            {{ tobaccoErrors.types }}
+                                        </p>
+                                    </div>
+
+                                    <div v-if="form.tobaccoTypes.cigarette">
+                                        <label
+                                            class="text-base font-semibold text-slate-700"
+                                        >
+                                            Nombre de cigarettes par jour
                                             <span class="text-red-500">*</span>
                                         </label>
                                         <input
-                                            v-model.number="form.vapeLiquidMl"
+                                            v-model.number="
+                                                form.cigarettesPerDay
+                                            "
                                             type="number"
                                             min="0"
-                                            placeholder="Ex: 3"
-                                            class="mt-1 w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                            placeholder="Ex: 5"
+                                            class="mt-1 w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-base text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
                                         />
                                         <p
                                             v-if="
                                                 submitAttempted &&
-                                                tobaccoErrors.vapeLiquidMl
+                                                tobaccoErrors.cigarettesPerDay
                                             "
                                             class="mt-1 text-sm text-red-500"
                                         >
-                                            {{ tobaccoErrors.vapeLiquidMl }}
+                                            {{ tobaccoErrors.cigarettesPerDay }}
                                         </p>
                                     </div>
+
+                                    <div
+                                        v-if="form.tobaccoTypes.vape"
+                                        class="space-y-3"
+                                    >
+                                        <div>
+                                            <label
+                                                class="text-base font-semibold text-slate-700"
+                                            >
+                                                Nombre de taffes prise par jour
+                                                <span class="text-red-500"
+                                                    >*</span
+                                                >
+                                            </label>
+                                            <input
+                                                v-model.number="
+                                                    form.vapeLiquidMl
+                                                "
+                                                type="number"
+                                                min="0"
+                                                placeholder="Ex: 3"
+                                                class="mt-1 w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                            />
+                                            <p
+                                                v-if="
+                                                    submitAttempted &&
+                                                    tobaccoErrors.vapeLiquidMl
+                                                "
+                                                class="mt-1 text-sm text-red-500"
+                                            >
+                                                {{ tobaccoErrors.vapeLiquidMl }}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
                             </div>
 
                             <!-- Alcool -->
                             <div class="border-t border-slate-100 pt-3">
-                            <button
-                                type="button"
-                                class="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
-                                @click="toggleAlcohol"
-                            >
-                                <span>Alcool<span v-if="form.alcohol" class="ml-1 text-red-500">*</span></span>
-                                <span class="relative h-6 w-10 rounded-full transition-colors" :class="form.alcohol ? 'bg-blue-600' : 'bg-slate-300'" aria-hidden="true">
-                                    <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="form.alcohol ? 'translate-x-4' : 'translate-x-0'" />
-                                </span>
-                            </button>
-                            <div v-if="form.alcohol" class="mt-3">
-                                <label class="text-sm font-semibold text-slate-700">Nombre de verres par jour <span class="text-red-500">*</span></label>
-                                <input v-model.number="form.alcoholDrinks" type="number" min="0" placeholder="Ex: 2" class="mt-1 w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400" />
-                                <p v-if="submitAttempted && alcoholErrors.drinks" class="mt-1 text-sm text-red-500">{{ alcoholErrors.drinks }}</p>
-                            </div>
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
+                                    @click="toggleAlcohol"
+                                >
+                                    <span
+                                        >Alcool<span
+                                            v-if="form.alcohol"
+                                            class="ml-1 text-red-500"
+                                            >*</span
+                                        ></span
+                                    >
+                                    <span
+                                        class="relative h-6 w-10 rounded-full transition-colors"
+                                        :class="
+                                            form.alcohol
+                                                ? 'bg-blue-600'
+                                                : 'bg-slate-300'
+                                        "
+                                        aria-hidden="true"
+                                    >
+                                        <span
+                                            class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform"
+                                            :class="
+                                                form.alcohol
+                                                    ? 'translate-x-4'
+                                                    : 'translate-x-0'
+                                            "
+                                        />
+                                    </span>
+                                </button>
+                                <div v-if="form.alcohol" class="mt-3">
+                                    <label
+                                        class="text-sm font-semibold text-slate-700"
+                                        >Nombre de verres par jour
+                                        <span class="text-red-500"
+                                            >*</span
+                                        ></label
+                                    >
+                                    <input
+                                        v-model.number="form.alcoholDrinks"
+                                        type="number"
+                                        min="0"
+                                        placeholder="Ex: 2"
+                                        class="mt-1 w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400"
+                                    />
+                                    <p
+                                        v-if="
+                                            submitAttempted &&
+                                            alcoholErrors.drinks
+                                        "
+                                        class="mt-1 text-sm text-red-500"
+                                    >
+                                        {{ alcoholErrors.drinks }}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <p v-if="mealError && step === 2" class="mt-6 text-center text-sm font-medium text-red-500">{{ mealError }}</p>
+            <p
+                v-if="mealError && step === 2"
+                class="mt-6 text-center text-sm font-medium text-red-500"
+            >
+                {{ mealError }}
+            </p>
 
             <div class="mt-4 flex items-center justify-between gap-3">
                 <BaseButton
@@ -585,7 +904,8 @@ const mealsCaloriesTotal = computed(() =>
 // Build a filled-track gradient for range inputs (left side = light blue fill)
 const getRangeFillStyle = (value, max) => {
     const numericMax = Number(max);
-    const safeMax = Number.isFinite(numericMax) && numericMax > 0 ? numericMax : 1;
+    const safeMax =
+        Number.isFinite(numericMax) && numericMax > 0 ? numericMax : 1;
     const numericValue = Number(value);
     const clampedValue = Number.isFinite(numericValue)
         ? Math.min(Math.max(numericValue, 0), safeMax)
@@ -596,7 +916,6 @@ const getRangeFillStyle = (value, max) => {
         background: `linear-gradient(90deg, #4338ca ${percent}%, #c7d2fe ${percent}%)`,
     };
 };
-
 
 // Check tobacco fields — returns an object with error messages (null = no error)
 const tobaccoErrors = computed(() => {
@@ -669,18 +988,18 @@ const hasAlcoholErrors = computed(() =>
 
 onMounted(async () => {
     // Load all journal entries from the server
-    await store.initialiser();
+    await store.initialize();
 
     // If we are creating a new entry, nothing more to do
     if (!isEditMode.value) return;
 
     // Try to find the entry we want to edit (by its ID from the URL)
-    let entry = store.obtenirParId(editEntryId.value);
+    let entry = store.findById(editEntryId.value);
 
     // If not found yet, reload from server and try again
     if (!entry) {
-        await store.chargerEntrees();
-        entry = store.obtenirParId(editEntryId.value);
+        await store.loadEntries();
+        entry = store.findById(editEntryId.value);
     }
 
     // Entry still not found — stop here (nothing to pre-fill)
@@ -767,7 +1086,8 @@ const adjustBottles = (delta) => {
 
 const goNext = () => {
     if (step.value === 2 && form.selectedMeal && !mealDraft.label.trim()) {
-        mealError.value = "Veuillez décrire le repas sélectionné avant de continuer.";
+        mealError.value =
+            "Veuillez décrire le repas sélectionné avant de continuer.";
         return;
     }
     mealError.value = "";
@@ -906,14 +1226,14 @@ const save = async () => {
 
         if (isEditMode.value) {
             // Update an existing entry
-            await store.mettreAJourEntree(editEntryId.value, payload);
+            await store.updateEntry(editEntryId.value, payload);
             router.push({
                 name: "journal-history",
                 query: { notice: "saved" },
             });
         } else {
             // Create a new entry
-            await store.ajouterEntree(payload);
+            await store.addEntry(payload);
             notifications.itemAdded();
             router.push({ name: "journal" });
         }

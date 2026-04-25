@@ -162,7 +162,7 @@ const showDeleteConfirm = ref(false);
 const pendingDeleteId = ref(null);
 
 onMounted(async () => {
-    await store.initialiser();
+    await store.initialize();
 });
 
 const activeFilterLabel = computed(() => {
@@ -203,13 +203,13 @@ const noticeMessage = computed(() => {
 
 // Apply the selected filter and close the filter modal
 const applyFilter = (nextFilter) => {
-    store.definirFiltre(nextFilter);
+    store.setFilter(nextFilter);
     showFilter.value = false;
 };
 
 // Reset the filter and close the filter modal
 const resetFilter = () => {
-    store.reinitialiserFiltre();
+    store.resetFilter();
     showFilter.value = false;
 };
 
@@ -226,19 +226,19 @@ const cancelDeletion = () => {
     notifications.actionCancelled();
 };
 
-// Confirm and perform the deletion
+//confir
 const confirmDeletion = async () => {
     if (!pendingDeleteId.value) return;
 
     try {
-        await store.supprimerEntree(pendingDeleteId.value);
+        await store.deleteEntry(pendingDeleteId.value);
         notifications.itemDeleted();
     } catch (error) {
         const message =
             error?.response?.data?.message || "Erreur lors de la suppression.";
         notifications.error(message);
     } finally {
-        // Always close the dialog when done
+        // Quel que soit le résultat, on réinitialise l’état de suppression
         pendingDeleteId.value = null;
         showDeleteConfirm.value = false;
     }

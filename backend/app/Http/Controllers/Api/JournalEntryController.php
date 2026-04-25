@@ -29,10 +29,10 @@ class JournalEntryController extends Controller
     // Vérifier l'entrée existante si elle doit être mise à jour
     public function store(StoreJournalEntryRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        $data = $request->validated();//data de utulisateur d'apres le frontend
         $user = $request->user();
 
-        // Vérifier si une entrée existe déjà pour cette date
+        // Vérifier si une entrée existe déjà pour cette date user a une journal entry dans cette date u nnouveau journal entry doit être créé ou l'existant doit être mis à jour
         $existingEntry = JournalEntry::where('user_id', $user->id)
             ->where('entry_date', $data['entry_date'])
             ->first();
@@ -55,6 +55,7 @@ class JournalEntryController extends Controller
         );
 
         $this->syncEntryData($entry, $data);
+        // Analyser les données du journal via le module IA Python (Groq LLM)
         $this->applyMealAnalysis($entry, $data);
 
         return response()->json([
@@ -97,8 +98,11 @@ class JournalEntryController extends Controller
         ];
 
         $payload = [];
+        //si le champ est présent dans les données envoyées par le frontend, l'ajouter au payload de mise à jour, sinon le laisser tel quel dans la base de données
         foreach ($updatableFields as $field) {
             if (array_key_exists($field, $data)) {
+                //$data[$field] c'est la nouvelle valeur envoyée par le frontend, $journalEntry->$field c'est l'ancienne valeur dans la base de données, si le champ n'est pas envoyé depuis le frontend, garder l'ancienne valeur
+                // $payload[$field] c'est la valeur finale à enregistrer dans la base de données, elle peut être la nouvelle valeur envoyée par le frontend ou l'ancienne valeur si le champ n'est pas envoyé depuis le frontend
                 $payload[$field] = $data[$field];
             }
         }
@@ -181,17 +185,21 @@ class JournalEntryController extends Controller
         return $value !== '' ? $value : null;
     }
 
-    // Synchroniser les données d'entrée (repas, activité, tabac)
+    // supprimer les anciennes données et créer les nouvelles pour éviter les problèmes de mise à jour complexe
     private function syncEntryData(JournalEntry $entry, array $data): void
     {
-        // Enregistrer les repas
+        // si les repas sont envoyés depuis frontend, supprimer les anciens et créer les nouveaux
         if (isset($data['meals']) && is_array($data['meals'])) {
             $entry->meals()->delete();
             foreach ($data['meals'] as $meal) {
                 $mealType = trim((string) ($meal['meal_type'] ?? ''));
+                if ($mealType === '') {
+                    // Ne pas créer de repas si meal_type est vide ou absent
+                    continue;
+                }
                 $entry->meals()->create([
-                    'meal_type'   => $mealType !== '' ? $mealType : 'lunch',
-                    'description' => $meal['description'] ?? null,
+                    'meal_type'   => $mealType,
+                    'description' => $meal['description'],
                     'calories'    => $meal['calories']    ?? null,
                 ]);
             }
