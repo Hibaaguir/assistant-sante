@@ -105,7 +105,7 @@ function monthKey(dateStr) {
 }
 
 async function load() {
-    const { data: res } = await api.get("/health-data/vitals", {
+    const { data: res } = await api.get("/dashboard/vitals", {
         params: { days: 60 },
     });
     const vitals = res?.data ?? [];

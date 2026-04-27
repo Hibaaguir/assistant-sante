@@ -196,7 +196,7 @@ async function buildChart() {
 async function load() {
     loading.value = true;
 
-    const response = await api.get("/journal");
+    const response = await api.get("/dashboard/journal");
 
     // Récupération des données
     if (response.data && response.data.data) {

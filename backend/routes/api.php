@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\TreatmentCatalogController;
 use App\Http\Controllers\Api\UserAdminController;
 use App\Http\Controllers\Api\AiAnalysisController;
+use App\Http\Controllers\Api\UserDashboardController;
 use Illuminate\Support\Facades\Route;
 
 // Routes publiques (sans Sanctum)
@@ -79,12 +80,22 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{journalEntry}', [JournalEntryController::class, 'destroy']);
     });
 
+    // --- Dashboard utilisateur ---
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/vitals-chart',       [UserDashboardController::class, 'vitalsChart']);
+        Route::get('/treatments',         [UserDashboardController::class, 'treatments']);
+        Route::get('/vitals',             [UserDashboardController::class, 'vitals']);
+        Route::get('/labs',               [UserDashboardController::class, 'labs']);
+        Route::get('/treatment-checks',   [UserDashboardController::class, 'treatmentChecks']);
+        Route::get('/journal',            [UserDashboardController::class, 'journalEntries']);
+        Route::get('/weight',             [UserDashboardController::class, 'weight']);
+    });
+
     // --- Donnees de sante ---
     Route::prefix('health-data')->group(function () {
         Route::get('/overview',      [HealthDataController::class, 'overview']);
         Route::get('/vitals',        [HealthDataController::class, 'indexVitals']);
         Route::post('/vitals',       [HealthDataController::class, 'storeVital']);
-        Route::get('/labs',          [HealthDataController::class, 'indexLabResults']);
         Route::post('/labs',         [HealthDataController::class, 'storeLabResult']);
         Route::put('/labs/{analysisResult}',    [HealthDataController::class, 'updateLabResult']);
         Route::delete('/labs/{analysisResult}', [HealthDataController::class, 'destroyLabResult']);

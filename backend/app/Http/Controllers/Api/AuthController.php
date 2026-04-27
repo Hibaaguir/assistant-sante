@@ -55,9 +55,8 @@ class AuthController extends Controller
         return response()->json([
             'message'                        => 'Compte créé avec succès',
             'token'                          => $token,
-            'has_health_profile'             => false,
+            'has_health_profile'             => false,//signifie que le profil de santé n'est pas encore rempli
             'redirect_to'                    => '/health-profile',
-            'has_pending_doctor_invitations' => false,
             'user' => [
                 'id'            => $user->id,
                 'name'          => $user->name,
@@ -152,25 +151,18 @@ class AuthController extends Controller
 
         $user = $account->user;
 
-        if (!$user) {
-            return response()->json(['message' => 'Aucun utilisateur lié à ce compte.'], 404);
-        }
-
         // Lier les nouvelles invitations du médecin
         if ($user->role === 'doctor') {
             $this->invitationService->linkToDoctor($user);
         }
 
-        // D\u00e9terminer la redirection
         $hasProfile = $user->healthProfile?->isComplete() ?? false;
 
-        if ($user->role === 'admin') {
-            $redirectTo = '/main/dashboard';
-        } elseif ($hasProfile) {
-            $redirectTo = '/main';
-        } else {
-            $redirectTo = '/health-profile';
-        }
+        $redirectTo = match($user->role) {
+            'admin'  => '/main/dashboard',
+            'doctor' => '/main',
+            default  => $hasProfile ? '/main' : '/health-profile',
+        };
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -179,7 +171,6 @@ class AuthController extends Controller
             'token'                          => $token,
             'has_health_profile'             => $hasProfile,
             'redirect_to'                    => $redirectTo,
-            'has_pending_doctor_invitations' => false,
             'user' => [
                 'id'            => $user->id,
                 'name'          => $user->name,

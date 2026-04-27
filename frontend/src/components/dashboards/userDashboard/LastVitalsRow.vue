@@ -196,8 +196,8 @@ async function load() {
     loading.value = true;
     try {
         const [vitalsRes, journalRes] = await Promise.all([
-            api.get("/health-data/vitals?days=30"),
-            api.get("/journal"),
+            api.get("/dashboard/vitals", { params: { days: 30 } }),
+            api.get("/dashboard/journal"),
         ]);
 
         // Dernière mesure vitale (tri par measured_at desc)

@@ -118,7 +118,7 @@ function compute() {
 
 async function load() {
     loading.value = true;
-    const { data: res } = await api.get("/journal");
+    const { data: res } = await api.get("/dashboard/journal");
     allEntries = res?.data ?? [];
     loading.value = false;
     compute();

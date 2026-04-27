@@ -49,10 +49,6 @@ class DoctorInvitationController extends Controller
             $invitation->update(['status' => 'accepted', 'accepted_at' => now(), 'rejected_at' => null, 'revoked_at' => null]);
         }
 
-        if ($user->role !== 'doctor') {
-            $user->update(['role' => 'doctor']);
-        }
-
         return response()->json([
             'message' => 'Invitation acceptée.',
             'data'    => $this->serializeInvitation($invitation->fresh($this->withPatient())),
@@ -91,13 +87,7 @@ class DoctorInvitationController extends Controller
                 return [
                     'invitation_id' => $invitation->id,
                     'accepted_at'   => $invitation->accepted_at?->toISOString(),
-                    'patient'       => [
-                        'id'            => $patient->id,
-                        'name'          => $patient->name,
-                        'date_of_birth' => $patient->date_of_birth,
-                        'profile_photo' => $patient->profile_photo,
-                        'email'         => $patient->account?->email,
-                    ],
+                    'patient'       => $this->patientSummary($patient),
                     'profile'       => $patient->healthProfile,
                     'latest_vitals' => $latestVitals,
                 ];
@@ -114,8 +104,7 @@ class DoctorInvitationController extends Controller
         $invitation = $this->authorizePatient($request, $patient);
         if ($invitation instanceof JsonResponse) return $invitation;
 
-        $vitalsDays  = max(1, min((int) $request->query('vitals_days', 30), 90));
-        $vitalsStart = Carbon::today()->subDays($vitalsDays - 1)->startOfDay();
+        $vitalsStart = Carbon::today()->subDays(29)->startOfDay();
 
         $treatmentChecks = TreatmentCheck::with('treatment.treatmentCatalog')
             ->where('user_id', $patient->id)
@@ -156,14 +145,10 @@ class DoctorInvitationController extends Controller
             'observation' => ['required', 'string', 'max:2000'],
         ]);
 
-        $doctorId   = $request->user()->id;
-        $healthData = HealthData::firstOrCreate(
+        $healthData = HealthData::updateOrCreate(
             ['user_id' => $patient->id, 'date' => $validated['date']],
+            ['doctor_observation' => trim($validated['observation']), 'doctor_user_id' => $request->user()->id],
         );
-        $healthData->update([
-            'doctor_observation' => trim($validated['observation']),
-            'doctor_user_id'     => $doctorId,
-        ]);
 
         return response()->json(['message' => 'Observation enregistrée.', 'data' => [
             'id'                 => $healthData->id,
@@ -174,10 +159,7 @@ class DoctorInvitationController extends Controller
 
     // ─── Private Helpers ──────────────────────────────────────────────────────
 
-    // Authorize that the current doctor has an accepted invitation for this patient.
-    // Returns the invitation on success, or a 403 JsonResponse on failure.
-    // Autoriser le médecin courant pour accéder au patient
-    // Retourne l'invitation si succès, ou une réponse 403 sinon
+    // Vérifie que le médecin a une invitation acceptée pour ce patient
     private function authorizePatient(Request $request, User $patient): DoctorInvitation|JsonResponse
     {
         $invitation = $this->invitationService->findAccepted($request->user()->id, $patient->id);
@@ -189,7 +171,17 @@ class DoctorInvitationController extends Controller
         return $invitation;
     }
 
-    // Retourner seulement les champs du patient nécessaires au frontend
+    private function patientSummary(User $patient): array
+    {
+        return [
+            'id'            => $patient->id,
+            'name'          => $patient->name,
+            'date_of_birth' => $patient->date_of_birth,
+            'profile_photo' => $patient->profile_photo,
+            'email'         => $patient->account?->email,
+        ];
+    }
+
     private function serializePatient(User $patient): array
     {
         return [
@@ -221,13 +213,7 @@ class DoctorInvitationController extends Controller
             'created_at'  => $invitation->created_at?->toISOString(),
             'accepted_at' => $invitation->accepted_at?->toISOString(),
             'rejected_at' => $invitation->rejected_at?->toISOString(),
-            'patient'     => $patient ? [
-                'id'            => $patient->id,
-                'name'          => $patient->name,
-                'date_of_birth' => $patient->date_of_birth,
-                'profile_photo' => $patient->profile_photo,
-                'email'         => $patient->account?->email,
-            ] : null,
+            'patient'     => $patient ? $this->patientSummary($patient) : null,
             'profile'     => $patient?->healthProfile,
         ];
     }

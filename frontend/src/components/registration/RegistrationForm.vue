@@ -307,7 +307,7 @@ async function soumettre() {
     if (Object.values(errors).some(Boolean)) return;
 
     loading.value = true;
-    try {
+    try {// data hia l reponse mtaa laravel fiha message w redirect_to w les infos du user
         const { data } = await api.post("/auth/register", {
             name: form.name,
             email: form.email,

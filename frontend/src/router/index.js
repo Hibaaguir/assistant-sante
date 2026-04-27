@@ -116,17 +116,10 @@ router.beforeEach(async (to) => {
     const authStore = useAuthStore();
     const user = await authStore.loadUser();
 
-    const defaultAuthenticatedRoute = () => {
-        if (authStore.isAdmin) {
-            return { name: "dashboard" };
-        }
-        if (authStore.isInDoctorSpace) {
-            return { name: "dashboard" };
-        }
-        return authStore.hasHealthProfile
-            ? { name: "dashboard" }
-            : { name: "health-profile" };
-    };
+    const defaultAuthenticatedRoute = () =>
+        authStore.isInUserSpace && !authStore.hasHealthProfile
+            ? { name: "health-profile" }
+            : { name: "dashboard" };
 
     const routeName = String(to.name || "");
     const isPublicAuthPage = [

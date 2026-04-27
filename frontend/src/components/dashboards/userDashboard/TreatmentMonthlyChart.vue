@@ -264,8 +264,8 @@ async function buildChart() {
 
 async function load() {
     loading.value = true;
-    const { data: res } = await api.get("/health-data/treatment-checks", {
-        params: { days: 90 }, // fetch 90 days once, slice locally on filter change
+    const { data: res } = await api.get("/dashboard/treatment-checks", {
+        params: { days: 90 },
     });
     allChecks = res?.data ?? [];
     loading.value = false;

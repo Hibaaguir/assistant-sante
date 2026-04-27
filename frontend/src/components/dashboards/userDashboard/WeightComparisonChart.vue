@@ -61,7 +61,7 @@ const subtextLabel = computed(() => {
 async function load() {
     loading.value = true;
     try {
-        const { data: res } = await api.get("/health-profile");
+        const { data: res } = await api.get("/dashboard/weight");
         const profile = res?.data;
 
         if (profile?.initial_weight == null || profile?.current_weight == null)

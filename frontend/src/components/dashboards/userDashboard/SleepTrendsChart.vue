@@ -235,7 +235,7 @@ async function rebuild() {
 }
 
 async function load() {
-    const { data: res } = await api.get("/journal");
+    const { data: res } = await api.get("/dashboard/journal");
     allEntries = res?.data ?? [];
     loading.value = false;
     await rebuild();

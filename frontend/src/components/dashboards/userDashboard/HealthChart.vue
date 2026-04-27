@@ -59,11 +59,11 @@ async function loadChart() {
     loading.value = true;
     chart?.destroy();
 
-    const { data: res } = await api.get("/health-data/overview", {
+    const { data: res } = await api.get("/dashboard/vitals-chart", {
         params: { days: days.value },
     });
 
-    const vitals = res?.data?.vitals_chart ?? {};
+    const vitals = res?.data ?? {};
 
     loading.value = false;
     await nextTick();

@@ -100,7 +100,7 @@ function getLast7Days() {
 }
 
 async function load() {
-    const { data: res } = await api.get("/journal");
+    const { data: res } = await api.get("/dashboard/journal");
     const entries = res?.data ?? [];
 
     const byDate = {};

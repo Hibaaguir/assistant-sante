@@ -287,7 +287,7 @@ async function rebuild() {
 }
 
 async function load() {
-    const { data: res } = await api.get("/health-data/vitals", {
+    const { data: res } = await api.get("/dashboard/vitals", {
         params: { days: 62 },
     });
     allVitals = res?.data ?? [];

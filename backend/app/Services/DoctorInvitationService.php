@@ -15,7 +15,7 @@ class DoctorInvitationService
     // Verifier si email doctor a une invitation en attente existe
     public function existsForEmail(string $email): bool
     {
-        return DoctorInvitation::whereRaw('LOWER(doctor_email) = ?', [strtolower($email)])
+        return DoctorInvitation::whereRaw('LOWER(doctor_email) = ?', [strtolower($email)])//lena where raw bch tnajam testaamel LOWER() snn testaamel where aadia
             ->where('status', 'pending')
             ->exists();
     }
@@ -23,7 +23,7 @@ class DoctorInvitationService
     // Lier les invitations en attente au compte du medecin
     public function linkToDoctor(User $doctor): bool
     {
-        if ($doctor->role !== 'doctor' || !$doctor->account?->email) {
+        if ($doctor->role !== 'doctor' || !$doctor->account?->email) {//verification lele role w aandou email wela 
             return false;
         }
 

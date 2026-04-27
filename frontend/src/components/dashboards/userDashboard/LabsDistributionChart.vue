@@ -98,7 +98,7 @@ const typeColors = ref({}); // { "Biologie sanguine": "#6366f1", ... }
 let chart = null;
 
 async function load() {
-    const { data: res } = await api.get("/health-data/labs");
+    const { data: res } = await api.get("/dashboard/labs");
     const labs = res?.data ?? [];
 
     if (!labs.length) {

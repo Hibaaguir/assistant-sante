@@ -53,14 +53,14 @@ const COLORS = [
 ];
 
 async function loadChart() {
-    const { data: res } = await api.get("/health-data/overview");
+    const { data: res } = await api.get("/dashboard/treatments");
 
-    const medicines = res?.data?.treatment_medicines ?? [];
+    const medicines = res?.data ?? [];
 
     // Count treatments per type (the "note" field holds medication_type)
     const counts = {};
     for (const med of medicines) {
-        const type = med.note || "Autre";
+        const type = med.type || "Autre";
         counts[type] = (counts[type] || 0) + 1;
     }
 
