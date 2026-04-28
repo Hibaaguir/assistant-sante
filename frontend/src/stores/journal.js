@@ -60,12 +60,11 @@ function toVue(model) {
         hydration: Number(model.hydration ?? 0),
         meals: Array.isArray(model.meals) ? model.meals : [],
         calories: Number(model.calories ?? 0),
-        activityType: activity?.activity_type ?? "",
-        activityDuration: Number(activity?.duration_minutes ?? 0),
-        intensity:
-            activity?.intensity === "low"
-                ? "light"
-                : (activity?.intensity ?? "medium"),
+        activities: activities.map((a) => ({
+            type: a.activity_type ?? "",
+            duration: Number(a.duration_minutes ?? 0),
+            intensity: a.intensity === "low" ? "light" : (a.intensity ?? "medium"),
+        })),
         tobacco: tobaccoList.length > 0,
         alcohol: Boolean(model.alcohol),
         tobaccoTypes: {
@@ -98,10 +97,11 @@ function toPayload(entry) {
         hydration: entry.hydration ?? 0,
         meals,
         calories: calories ?? calculateCaloriesFromMeals(mealsBruts),
-        activity_type: entry.activityType ?? null,
-        activity_duration: convertToIntOrNull(entry.activityDuration),
-        intensity:
-            entry.intensity === "light" ? "low" : (entry.intensity ?? "medium"),
+        activities: (entry.activities ?? []).map((a) => ({
+            activity_type: a.type,
+            activity_duration: convertToIntOrNull(a.duration),
+            intensity: a.intensity === "light" ? "low" : (a.intensity ?? "medium"),
+        })),
         tobacco: Boolean(entry.tobacco),
         alcohol: Boolean(entry.alcohol),
         tobacco_types: entry.tobaccoTypes ?? { cigarette: false, vape: false },
@@ -194,13 +194,22 @@ export const useJournalStore = defineStore("journal", () => {
             else entries.value.unshift(next);
         } //next contient l'entrée complète retournée par le backend, avec l'ID généré et les éventuelles modifications apportées par le backend (comme le calcul des calories à partir des repas)
     };
+    // Récupérer une entrée depuis le backend et mettre à jour le state (utilisé en mode édition pour garantir des données fraîches)
+    const fetchEntry = async (id) => {
+        const res = await api.get(`/journal/${id}`);
+        if (!res?.data?.data) return null;
+        const next = toVue(res.data.data);
+        const idx = entries.value.findIndex((item) => item.id === String(id));
+        if (idx >= 0) entries.value[idx] = next;
+        else entries.value.unshift(next);
+        return next;
+    };
     // Mettre à jour une entrée existante du journal en envoyant les données modifiées au backend, puis mettre à jour le state avec les données retournées par le backend
     const updateEntry = async (id, patch) => {
-        const current = findById(id);
-        if (!current) return;
+        const current = findById(id) ?? {};
         //patch contient les champs modifiés, on les fusionne avec l'entrée actuelle pour créer le payload complet à envoyer au backend
-        const res = await api.put(`/journal/${id}`, payload);
         const payload = toPayload({ ...current, ...patch });
+        const res = await api.put(`/journal/${id}`, payload);
         if (res?.data?.data) {
             const next = toVue(res.data.data);
             // Trouver l'index de l'entrée modifiée dans le state en utilisant l'ID, et remplacer l'entrée existante par la nouvelle entrée retournée par le backend
@@ -236,6 +245,7 @@ export const useJournalStore = defineStore("journal", () => {
         findById,
         loadEntries,
         initialize,
+        fetchEntry,
         addEntry,
         updateEntry,
         deleteEntry,

@@ -144,7 +144,9 @@ const CHAMPS = {
     hydration: (e) => ({ label: "Hydratation", valeur: `${e.hydration} L` }),
     activity: (e) => ({
         label: "Activité",
-        valeur: `${e.activityType} ${e.activityDuration}min`,
+        valeur: e.activities?.length
+            ? e.activities.map((a) => a.type).join(", ")
+            : null,
     }),
     tobacco: (e) => ({ label: "Tabac", valeur: fmtTabac(e) }),
 };

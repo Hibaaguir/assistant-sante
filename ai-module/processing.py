@@ -214,21 +214,29 @@ def _summarize_activity(records: list[dict]) -> dict:
         return {"active_days": 0, "sedentary_days_pct": None}
     dates = {r.get("entry_date") for r in records if r.get("entry_date")}
     dates_sorted = sorted(str(d) for d in dates if d)
+    # +1 to include both endpoints (Mon→Sun = 7 days, not 6)
     span_days = 1
     if len(dates_sorted) >= 2:
         d0 = Date.fromisoformat(dates_sorted[0])
         d1 = Date.fromisoformat(dates_sorted[-1])
-        span_days = max((d1 - d0).days, 1)
+        span_days = max((d1 - d0).days + 1, 1)
     types = [r.get("activity_type") for r in records if r.get("activity_type")]
+    active_days_count = len(dates)
+    active_days_per_week = round((active_days_count / span_days) * 7, 2)
+    avg_dur = _avg(_nums(records, "duration_minutes"))
+    weekly_minutes = round(avg_dur * active_days_per_week) if avg_dur is not None else None
     return {
-        "active_days":            len(dates),
-        "active_days_per_week":   round((len(dates) / span_days) * 7, 2),
-        "avg_duration_minutes":   _avg(_nums(records, "duration_minutes")),
-        "avg_effort_score":       _avg(_nums(records, "effort_score")),
-        "most_common_activity":   Counter(types).most_common(1)[0][0] if types else None,
-        "intensity_distribution": _dist(records, "intensity"),
-        "effort_trend":           _trend(_nums(records, "effort_score")),
-        "sessions_tracked":       len(records),
+        "active_days":             active_days_count,
+        "tracking_period_days":    span_days,
+        "active_days_per_week":    active_days_per_week,
+        "meets_who_threshold":     active_days_per_week >= 5,
+        "estimated_weekly_minutes": weekly_minutes,
+        "avg_duration_minutes":    avg_dur,
+        "avg_effort_score":        _avg(_nums(records, "effort_score")),
+        "most_common_activity":    Counter(types).most_common(1)[0][0] if types else None,
+        "intensity_distribution":  _dist(records, "intensity"),
+        "effort_trend":            _trend(_nums(records, "effort_score")),
+        "sessions_tracked":        len(records),
     }
 
 

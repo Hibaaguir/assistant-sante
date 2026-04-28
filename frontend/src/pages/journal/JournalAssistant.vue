@@ -376,133 +376,99 @@
                     <div
                         class="rounded-xl border border-blue-200 bg-white p-4 sm:p-5 space-y-4"
                     >
-                        <!-- Type d'activité -->
-                        <div>
-                            <label
-                                class="text-sm font-semibold text-slate-900"
-                                for="activity"
-                                >Type d'activité</label
-                            >
-                            <select
-                                id="activity"
-                                v-model="form.activityType"
-                                class="mt-2 w-full rounded-lg border border-blue-300 bg-white px-3 py-2.5 text-sm"
-                                @change="handleActivitySelection"
-                            >
-                                <option disabled value="">
-                                    Sélectionnez une activité
-                                </option>
-                                <option
-                                    v-for="item in activities"
-                                    :key="item"
-                                    :value="item"
-                                >
-                                    {{ item }}
-                                </option>
-                                <option value="__add_new__">
-                                    + Ajouter une activité
-                                </option>
-                            </select>
-                            <div
-                                v-if="showNewActivityForm"
-                                class="mt-2 rounded-lg border border-purple-200 bg-purple-50 p-3"
-                            >
-                                <div
-                                    class="mb-2 flex items-center justify-between"
-                                >
-                                    <p
-                                        class="text-sm font-semibold text-slate-700"
-                                    >
-                                        Nouvelle activité
-                                    </p>
-                                    <BaseButton
-                                        type="button"
-                                        variant="text"
-                                        size="sm"
-                                        @click="cancelNewActivity"
-                                        >×</BaseButton
-                                    >
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <input
-                                        v-model="newActivityName"
-                                        type="text"
-                                        class="w-full rounded-lg border border-purple-300 bg-white px-3 py-2 text-sm"
-                                        placeholder="Nom de l'activité"
-                                    />
-                                    <BaseButton
-                                        type="button"
-                                        variant="save"
-                                        size="sm"
-                                        :disabled="!newActivityName.trim()"
-                                        @click="addNewActivity"
-                                        >Valider</BaseButton
-                                    >
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="border-t border-slate-100" />
-
-                        <!-- Durée -->
-                        <div>
-                            <label
-                                class="text-sm font-semibold text-slate-900"
-                                for="duration"
-                            >
-                                Durée (minutes)<span
-                                    v-if="isDurationRequired"
-                                    class="ml-1 text-red-500"
-                                    >*</span
-                                >
-                            </label>
-                            <input
-                                id="duration"
-                                v-model.number="form.activityDuration"
-                                type="number"
-                                min="0"
-                                class="mt-2 w-full rounded-lg border bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                                :class="
-                                    submitAttempted && activityErrors.duration
-                                        ? 'border-red-400'
-                                        : 'border-blue-300'
-                                "
-                            />
-                            <p
-                                v-if="
-                                    submitAttempted && activityErrors.duration
-                                "
-                                class="mt-1 text-sm text-red-500"
-                            >
-                                {{ activityErrors.duration }}
-                            </p>
-                        </div>
-
-                        <div class="border-t border-slate-100" />
-
-                        <!-- Intensité -->
+                        <!-- Activités physiques -->
                         <div>
                             <p class="text-sm font-semibold text-slate-900">
-                                Intensité
+                                Activités physiques
                             </p>
-                            <div class="mt-2 grid grid-cols-3 gap-2">
-                                <BaseButton
-                                    v-for="value in intensityOptions"
-                                    :key="`intensity-${value}`"
-                                    type="button"
-                                    :variant="
-                                        form.intensity === value
-                                            ? value === 'high'
-                                                ? 'success'
-                                                : 'outline'
-                                            : 'secondary'
-                                    "
-                                    size="sm"
-                                    @click="form.intensity = value"
+
+                            <div class="mt-3 space-y-3">
+                                <div
+                                    v-for="(act, i) in form.activities"
+                                    :key="i"
+                                    class="rounded-xl border border-blue-100 bg-white p-4 space-y-3"
                                 >
-                                    {{ intensityLabels[value] }}
-                                </BaseButton>
+                                    <!-- Type + supprimer -->
+                                    <div class="flex items-center gap-3">
+                                        <select
+                                            v-model="act.type"
+                                            class="flex-1 rounded-lg border border-blue-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700"
+                                        >
+                                            <option disabled value="">
+                                                Sélectionnez une activité
+                                            </option>
+                                            <option
+                                                v-for="item in activityOptions"
+                                                :key="item"
+                                                :value="item"
+                                            >
+                                                {{ item }}
+                                            </option>
+                                        </select>
+                                        <button
+                                            v-if="form.activities.length > 1"
+                                            type="button"
+                                            class="text-2xl leading-none text-slate-300 hover:text-red-400 transition-colors"
+                                            @click="removeActivity(i)"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+
+                                    <!-- Durée -->
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-28 shrink-0 text-sm font-medium text-slate-600">Durée (min)</span>
+                                        <input
+                                            v-model.number="act.duration"
+                                            type="number"
+                                            min="0"
+                                            class="flex-1 rounded-lg border bg-white px-3 py-2 text-sm outline-none focus:border-blue-400"
+                                            :class="
+                                                submitAttempted && act.type && (!act.duration || act.duration <= 0)
+                                                    ? 'border-red-400'
+                                                    : 'border-blue-300'
+                                            "
+                                        />
+                                    </div>
+
+                                    <!-- Intensité -->
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-28 shrink-0 text-sm font-medium text-slate-600">Intensité</span>
+                                        <div class="flex flex-1 gap-2">
+                                            <button
+                                                v-for="opt in intensityOptions"
+                                                :key="opt"
+                                                type="button"
+                                                class="flex-1 rounded-lg py-2 text-sm font-medium transition-colors"
+                                                :class="
+                                                    act.intensity === opt
+                                                        ? 'bg-blue-600 text-white shadow-sm'
+                                                        : 'bg-white text-slate-500 border border-blue-200 hover:bg-blue-100'
+                                                "
+                                                @click="act.intensity = opt"
+                                            >
+                                                {{ intensityLabels[opt] }}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <p
+                                        v-if="submitAttempted && (!act.type || !act.duration || act.duration <= 0)"
+                                        class="text-sm text-red-500"
+                                    >
+                                        {{ !act.type ? "Sélectionnez un type d'activité." : "La durée est obligatoire." }}
+                                    </p>
+                                </div>
                             </div>
+
+                            <button
+                                type="button"
+                                class="mt-4 flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                                @click="addActivity"
+                            >
+                                <span class="text-lg leading-none">+</span>
+                                Ajouter une activité
+                            </button>
                         </div>
 
                         <div class="border-t border-slate-100" />
@@ -836,7 +802,7 @@ const meals = [
     { id: "snack", label: "Snacks", icon: "&#127813;" },
 ];
 
-const activities = ref([
+const activityOptions = [
     "Marche",
     "Course",
     "Vélo",
@@ -844,7 +810,7 @@ const activities = ref([
     "Yoga",
     "Musculation",
     "Sport collectif",
-]);
+];
 const intensityLabels = { light: "Légère", medium: "Modérée", high: "Intense" };
 const intensityOptions = ["light", "medium", "high"];
 
@@ -853,8 +819,6 @@ const submitAttempted = ref(false);
 const saveError = ref("");
 const mealDraft = reactive({ label: "", calories: null });
 const mealError = ref("");
-const showNewActivityForm = ref(false);
-const newActivityName = ref("");
 const confirmDeleteMealOpen = ref(false);
 const pendingDeleteMealIndex = ref(-1);
 
@@ -868,9 +832,7 @@ const form = reactive({
     cupCount: 0,
     bottleCount: 0,
     meals: [],
-    activityType: "",
-    activityDuration: 0,
-    intensity: "medium",
+    activities: [{ type: "", duration: 0, intensity: "medium" }],
     tobacco: false,
     alcohol: false,
     tobaccoTypes: { cigarette: false, vape: false },
@@ -947,25 +909,9 @@ const hasTobaccoErrors = computed(() =>
     Object.values(tobaccoErrors.value).some(Boolean),
 );
 
-// True when an activity is selected (makes the duration field required)
-const isDurationRequired = computed(() => Boolean(form.activityType));
-
-// Check activity fields — duration is required if an activity is selected
-const activityErrors = computed(() => {
-    const errors = { duration: null };
-
-    if (!isDurationRequired.value) return errors;
-
-    if (!form.activityDuration || form.activityDuration <= 0) {
-        errors.duration = "Veuillez remplir la durée (minutes).";
-    }
-
-    return errors;
-});
-
-// True when any activity error exists
+// True when any added activity is incomplete
 const hasActivityErrors = computed(() =>
-    Object.values(activityErrors.value).some(Boolean),
+    form.activities.some((a) => !a.type || !a.duration || a.duration <= 0),
 );
 
 // Check alcohol fields — quantity is required if alcohol is enabled
@@ -987,31 +933,19 @@ const hasAlcoholErrors = computed(() =>
 );
 
 onMounted(async () => {
-    // Load all journal entries from the server
     await store.initialize();
 
-    // If we are creating a new entry, nothing more to do
     if (!isEditMode.value) return;
 
-    // Try to find the entry we want to edit (by its ID from the URL)
-    let entry = store.findById(editEntryId.value);
-
-    // If not found yet, reload from server and try again
-    if (!entry) {
-        await store.loadEntries();
-        entry = store.findById(editEntryId.value);
-    }
-
-    // Entry still not found — stop here (nothing to pre-fill)
+    // Always fetch the entry fresh from the server in edit mode to guarantee
+    // up-to-date data (activities, meals, etc.) regardless of store cache state
+    const entry = await store.fetchEntry(editEntryId.value);
     if (!entry) return;
 
-    // Pre-fill the form with the existing entry data
     form.sleep = Number(entry.sleep ?? 7);
     form.stress = Number(entry.stress ?? 5);
     form.caffeine = Number(entry.caffeine ?? 0);
-    form.activityType = entry.activityType ?? "";
-    form.activityDuration = Number(entry.activityDuration ?? 0);
-    form.intensity = entry.intensity ?? "medium";
+    form.activities = (entry.activities ?? []).map((a) => ({ ...a }));
     form.tobacco = Boolean(entry.tobacco);
     form.alcohol = Boolean(entry.alcohol);
     form.tobaccoTypes = entry.tobaccoTypes ?? { cigarette: false, vape: false };
@@ -1021,8 +955,6 @@ onMounted(async () => {
     form.cupCount = 0;
     form.bottleCount = 0;
     form.customHydration = Number(entry.hydration ?? 0);
-
-    // The API may return different field names — normalize them to type/label
     form.meals = (entry.meals ?? []).map((m) => ({
         type: m.type || m.meal_type || "",
         label: m.label || m.description || "",
@@ -1103,29 +1035,12 @@ const goBack = () => {
     step.value = Math.max(1, step.value - 1);
 };
 
-const handleActivitySelection = () => {
-    if (form.activityType === "__add_new__") {
-        showNewActivityForm.value = true;
-        form.activityType = "";
-        return;
-    }
-    showNewActivityForm.value = false;
+const addActivity = () => {
+    form.activities.push({ type: "", duration: 0, intensity: "medium" });
 };
 
-const cancelNewActivity = () => {
-    showNewActivityForm.value = false;
-    newActivityName.value = "";
-    notifications.actionCancelled();
-};
-
-const addNewActivity = () => {
-    const name = newActivityName.value.trim();
-    if (!name) return;
-    if (!activities.value.includes(name)) activities.value.push(name);
-    form.activityType = name;
-    showNewActivityForm.value = false;
-    newActivityName.value = "";
-    notifications.itemAdded();
+const removeActivity = (index) => {
+    form.activities.splice(index, 1);
 };
 
 const toggleTobacco = () => {
@@ -1166,9 +1081,7 @@ function buildPayload() {
         hydration: Number(hydrationTotal.value.toFixed(1)),
         meals: [...form.meals],
         calories: mealsCaloriesTotal.value,
-        activityType: form.activityType || "Marche",
-        activityDuration: Number(form.activityDuration) || 0,
-        intensity: form.intensity,
+        activities: form.activities.filter((a) => a.type),
         tobacco: form.tobacco,
         alcohol: form.alcohol,
         tobaccoTypes: {

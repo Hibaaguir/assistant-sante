@@ -182,9 +182,9 @@ import api from "@/services/api";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import Etape1 from "./HealthProfileStep1.vue";
-import Etape2 from "./HealthProfileStep2.vue";
-import Etape3 from "./HealthProfileStep3.vue";
+import Etape1 from "@/components/health-profile/HealthProfileStep1.vue";
+import Etape2 from "@/components/health-profile/HealthProfileStep2.vue";
+import Etape3 from "@/components/health-profile/HealthProfileStep3.vue";
 
 const TOTAL_STEPS = 3;
 const STEPS = [
@@ -226,7 +226,7 @@ const form = reactive({
     medecin_peut_consulter: false,
     medecin_email: "",
 });
-//la barre bleue s’allonge à chaque étape grâce à cette variable.
+//la barre bleue s'allonge à chaque étape grâce à cette variable.
 const progress = computed(() => (currentStep.value / TOTAL_STEPS) * 100);
 
 const computedAge = computed(() => {
@@ -253,7 +253,7 @@ function normalizeArray(v) {
     return v.filter((s) => typeof s === "string" && s.trim());
 }
 
-// Transforme une valeur en entier positif (au moins 1) ou null si la valeur n’est pas valide (utile pour la fréquence d’un traitement)
+// Transforme une valeur en entier positif (au moins 1) ou null si la valeur n'est pas valide (utile pour la fréquence d'un traitement)
 function normalizeFrequency(v) {
     if (v === null || v === undefined || v === "") return null;
     const n = Number(v);
@@ -261,7 +261,7 @@ function normalizeFrequency(v) {
     return Math.max(1, Math.trunc(n));
 }
 
-// Transforme un objet d’erreurs de validation (API) en une chaîne de texte lisible pour l’utilisateur
+// Transforme un objet d'erreurs de validation (API) en une chaîne de texte lisible pour l'utilisateur
 function extractApiError(errors) {
     if (!errors || typeof errors !== "object") return "Validation invalide.";
     const messages = Object.values(errors).flat().filter(Boolean);
@@ -368,7 +368,7 @@ function toIsoDate(frDate) {
 
     return isReal ? `${match[3]}-${match[2]}-${match[1]}` : null;
 }
-// Transforme un objet de traitement du formulaire en format attendu par l’API, avec validation et normalisation des champs
+// Transforme un objet de traitement du formulaire en format attendu par l'API, avec validation et normalisation des champs
 function buildTreatment(t) {
     return {
         type: t?.type ?? null,// si traitement existe, on prend son type, sinon null.
@@ -412,26 +412,17 @@ async function enregistrer() {
     saving.value = true;
 
     try {
-        await api.post("/health-profile", buildPayload());
+        const { data } = await api.post("/health-profile", buildPayload());
         authStore.setHealthProfile(true);
-        saveSuccess.value = "Profil enregistré avec succès.";
+        saveSuccess.value = data.message;
         setTimeout(() => router.push({ name: "health-settings" }), 1800);
     } catch (err) {
         const status = err.response?.status;
-
-        if (status === 401) {
-            redirectLogin();
-            return;
-        }
-
-        if (status === 422) {
-            const data = err.response.data;
-            saveError.value = data?.errors
-                ? extractApiError(data.errors)
-                : data?.message?.trim() || "Erreur de validation (422).";
-        } else {
-            saveError.value = "Erreur lors de l'enregistrement du profil.";
-        }
+        if (status === 401) return redirectLogin();
+        const body = err.response?.data;
+        saveError.value = body?.errors
+            ? extractApiError(body.errors)
+            : body?.message?.trim() || "Erreur lors de l'enregistrement du profil.";
     } finally {
         saving.value = false;
     }

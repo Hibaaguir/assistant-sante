@@ -162,8 +162,8 @@ const formatMeals = (e) => {
 
 // Formate les informations de l’activité physique
 const formatActivity = (e) => {
-    if (!e.activityType) return "Non renseignée";
-    return `${e.activityType} ${e.activityDuration} min`;
+    if (!e.activities?.length) return "Non renseignée";
+    return e.activities.map((a) => a.type).join(", ");
 };
 
 // Transforme le niveau d’intensité en texte lisible

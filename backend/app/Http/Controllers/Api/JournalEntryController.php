@@ -55,8 +55,6 @@ class JournalEntryController extends Controller
         );
 
         $this->syncEntryData($entry, $data);
-        // Analyser les données du journal via le module IA Python (Groq LLM)
-        $this->applyMealAnalysis($entry, $data);
 
         return response()->json([
             'message' => 'Entrée du journal enregistrée avec succès.',
@@ -116,7 +114,6 @@ class JournalEntryController extends Controller
         }
 
         $this->syncEntryData($journalEntry, $data);
-        $this->applyMealAnalysis($journalEntry, $data);
 
         return response()->json([
             'message' => 'Entrée du journal mise à jour avec succès.',
@@ -134,41 +131,6 @@ class JournalEntryController extends Controller
         $journalEntry->delete();
 
         return response()->json(['message' => 'Entrée du journal supprimée avec succès.']);
-    }
-
-    // Analyser les données du journal via le module IA Python (Groq LLM)
-    private function applyMealAnalysis(JournalEntry $entry, array $data): void
-    {
-        $payload = json_encode([
-            'sleep'             => $data['sleep']             ?? null,
-            'stress'            => $data['stress']            ?? null,
-            'hydration'         => $data['hydration']         ?? null,
-            'activity_duration' => $data['activity_duration'] ?? 0,
-            'meals'             => $data['meals']             ?? [],
-        ]);
-
-        $script   = base_path('../ai-module/meal_analysis.py');
-        $redirect = PHP_OS_FAMILY === 'Windows' ? '2>NUL' : '2>/dev/null';
-        $output   = shell_exec('python ' . escapeshellarg($script) . ' ' . escapeshellarg($payload) . ' ' . $redirect);
-
-        if (!$output) return;
-
-        $result = json_decode($output, true);
-        if (!is_array($result) || isset($result['error'])) return;
-
-        $updates = [];
-
-        if (isset($result['energy'])) {
-            $updates['energy'] = max(1, min(10, (int) $result['energy']));
-        }
-
-        if (isset($result['sugar']) && in_array($result['sugar'], ['low', 'medium', 'high'], true)) {
-            $updates['sugar_intake'] = $result['sugar'];
-        }
-
-        if (!empty($updates)) {
-            $entry->update($updates);
-        }
     }
 
     // Déterminer la valeur de sugar_intake à enregistrer
@@ -205,19 +167,17 @@ class JournalEntryController extends Controller
             }
         }
 
-        // Enregistrer l'activité physique (une seule par entrée)
+        // Enregistrer les activités physiques
         $entry->physicalActivities()->delete();
-        if (!empty($data['activity_type'])) {
-            $intensity = strtolower(trim((string) ($data['intensity'] ?? '')));
-            if ($intensity === 'light') {
-                $intensity = 'low';
-            }
+        foreach ($data['activities'] ?? [] as $act) {
+            if (empty($act['activity_type'])) continue;
+            $intensity = strtolower(trim((string) ($act['intensity'] ?? 'medium')));
             if (!in_array($intensity, ['low', 'medium', 'high'], true)) {
                 $intensity = 'medium';
             }
             $entry->physicalActivities()->create([
-                'activity_type'    => $data['activity_type'],
-                'duration_minutes' => $data['activity_duration'] ?? null,
+                'activity_type'    => $act['activity_type'],
+                'duration_minutes' => $act['activity_duration'] ?? null,
                 'intensity'        => $intensity,
             ]);
         }

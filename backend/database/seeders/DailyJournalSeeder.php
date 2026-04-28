@@ -101,23 +101,20 @@ class DailyJournalSeeder extends MedicalSeeder
             return;
         }
 
-        $activities  = ['marche rapide', 'velo', 'yoga', 'renforcement musculaire', 'natation'];
-        $activityType = $activities[($dayOffset + $patientIndex) % count($activities)];
-        $duration     = 25 + ((($dayOffset + $patientIndex) % 5) * 10);
+        $options  = ['Marche', 'Course', 'Vélo', 'Natation', 'Yoga', 'Musculation', 'Sport collectif'];
+        $count    = ($dayOffset % 3 === 0) ? 2 : 1;
 
-        $intensity = 'low';
-        if ($duration >= 45) {
-            $intensity = 'medium';
-        }
-        if ($duration >= 60) {
-            $intensity = 'high';
-        }
+        for ($k = 0; $k < $count; $k++) {
+            $type     = $options[($dayOffset + $patientIndex + $k) % count($options)];
+            $duration = 20 + ((($dayOffset + $patientIndex + $k) % 5) * 10);
+            $intensity = $duration >= 60 ? 'high' : ($duration >= 40 ? 'medium' : 'low');
 
-        $journal->physicalActivities()->create([
-            'activity_type'    => $activityType,
-            'duration_minutes' => $duration,
-            'intensity'        => $intensity,
-        ]);
+            $journal->physicalActivities()->create([
+                'activity_type'    => $type,
+                'duration_minutes' => $duration,
+                'intensity'        => $intensity,
+            ]);
+        }
     }
 
     // ─── Tabac ────────────────────────────────────────────────────────────────

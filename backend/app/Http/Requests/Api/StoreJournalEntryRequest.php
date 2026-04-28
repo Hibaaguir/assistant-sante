@@ -21,9 +21,10 @@ class StoreJournalEntryRequest extends ApiFormRequest
             'meals.*.description' => ['required_with:meals', 'string', 'max:255'],
             'meals.*.calories' => ['nullable', 'integer', 'min:0', 'max:65535'],
 
-            'activity_type' => ['nullable', 'string', 'max:120'],
-            'activity_duration' => ['required_with:activity_type', 'integer', 'min:0', 'max:1440'],
-            'intensity' => ['nullable', 'string', 'max:30'],
+            'activities'                    => ['nullable', 'array'],
+            'activities.*.activity_type'    => ['required', 'string', 'max:120'],
+            'activities.*.activity_duration'=> ['required', 'integer', 'min:0', 'max:1440'],
+            'activities.*.intensity'        => ['nullable', 'string', 'in:low,medium,high'],
 
             'tobacco' => ['nullable', 'boolean'],
             'alcohol' => ['nullable', 'boolean'],

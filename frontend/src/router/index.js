@@ -5,7 +5,7 @@ import RegistrationForm from "@/components/registration/RegistrationForm.vue";
 import LoginForm from "@/components/login/LoginForm.vue";
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage.vue";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage.vue";
-import HealthProfile from "@/components/health-profile/HealthProfile.vue";
+import HealthProfileInitialPage from "@/pages/health/HealthProfileInitialPage.vue";
 import AppLayout from "@/layouts/AppLayout.vue";
 import JournalHome from "@/pages/journal/JournalHome.vue";
 import JournalAssistant from "@/pages/journal/JournalAssistant.vue";
@@ -42,7 +42,7 @@ const routes = [
     { path: "/register/user", redirect: "/register" },
     { path: "/oublier-mot-de-passe", redirect: "/forgot-password" },
     { path: "/reinitialiser-mot-de-passe", redirect: "/reset-password" },
-    { path: "/health-profile", component: HealthProfile, meta: { requiresAuth: true } },
+    { path: "/health-profile", component: HealthProfileInitialPage, meta: { requiresAuth: true } },
     {
         path: "/doctor-register",
         name: "doctor-register",
@@ -52,7 +52,7 @@ const routes = [
     {
         path: "/profil-sante",
         name: "health-profile",
-        component: HealthProfile,
+        component: HealthProfileInitialPage,
         meta: { requiresAuth: true },
     },
     {

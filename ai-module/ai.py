@@ -7,7 +7,7 @@ import re
 
 from groq import Groq
 
-MODEL = "llama-3.1-8b-instant"
+MODEL = "llama-3.3-70b-versatile"
 _client = None
 
 
@@ -89,8 +89,14 @@ _DOMAIN_HINTS: dict[str, dict] = {
         "hints": (
             "SCOPE: Analyze ONLY activity frequency, duration, effort, and intensity. "
             "Do NOT mention sleep, nutrition, smoking, alcohol, or any other domain. "
+            "CRITICAL — READ meets_who_threshold BEFORE writing any issue or recommendation: "
+            "  - meets_who_threshold=true means active_days_per_week >= 5 — the user ALREADY exceeds WHO frequency. "
+            "    Do NOT write any issue about insufficient frequency. "
+            "    Do NOT recommend adding more active days. "
+            "    Instead analyze quality, intensity variety, duration, or injury prevention. "
+            "  - meets_who_threshold=false means active_days_per_week < 5 — flag as insufficient and recommend reaching 5 days/week. "
             "active_days_per_week: WHO recommends ≥5 days moderate or ≥3 days vigorous. "
-            "avg_duration_minutes: WHO minimum 150 min/week moderate or 75 min/week vigorous. "
+            "estimated_weekly_minutes: WHO minimum 150 min/week moderate or 75 min/week vigorous. "
             "avg_effort_score: >3.0 = moderate effort. "
             "Consider age, BMI, and chronic diseases when interpreting results."
         ),
@@ -190,14 +196,21 @@ _AGGREGATION_OUTPUT = """
 Return ONLY valid JSON — no markdown, no text outside the JSON. All text in French, addressing the user as "vous".
 IMPORTANT STYLE RULES: Never use parentheses () in any text field. Use a dash or restructure the sentence instead.
 
+RÈGLE ABSOLUE — RESPECTEZ LES PRÉ-ÉVALUATIONS MATHÉMATIQUES FOURNIES:
+- Valeur marquée ABOVE threshold = résultat POSITIF — ne pas la signaler comme problème, ne pas recommander de l'augmenter.
+- Valeur marquée BELOW threshold = résultat PROBLÉMATIQUE — la signaler et proposer une action corrective.
+- Ne JAMAIS contredire les pré-évaluations. Elles sont calculées mathématiquement et sont exactes.
+- INTERDIT: écrire qu'une fréquence est "en dessous du seuil" si la pré-évaluation dit ABOVE.
+
 RÈGLE CRITIQUE pour global_recommendations — chaque "action" doit être SPÉCIFIQUE, ACTIONNABLE et s'adresser à l'usager avec "vous":
-  ❌ MAUVAIS: "Le patient doit arrêter de fumer"
-  ❌ MAUVAIS: "Arrêter de fumer"
-  ✅ BON: "Réduisez à moins de 10 cigarettes par jour cette semaine, puis utilisez un patch nicotinique 14 mg pendant 6 semaines pour atteindre l'abstinence"
-  ❌ MAUVAIS: "Améliorer le sommeil"
-  ✅ BON: "Couchez-vous à heure fixe à 22h30, évitez les écrans 1 heure avant le coucher et limitez la caféine après 14h — votre score moyen de 6,97/10 peut atteindre 8/10 en 3 semaines"
-  ❌ MAUVAIS: "Augmenter l'activité physique"
-  ✅ BON: "Ajoutez 2 séances de marche rapide de 30 minutes par semaine pour passer de 3 à 5 jours actifs — conformément aux recommandations de l'OMS"
+  MAUVAIS: "Le patient doit arrêter de fumer"
+  MAUVAIS: "Arrêter de fumer"
+  BON: "Réduisez à moins de 10 cigarettes par jour cette semaine, puis utilisez un patch nicotinique 14 mg pendant 6 semaines pour atteindre l'abstinence"
+  MAUVAIS: "Améliorer le sommeil"
+  BON: "Couchez-vous à heure fixe à 22h30, évitez les écrans 1 heure avant le coucher et limitez la caféine après 14h"
+  MAUVAIS si usager ABOVE seuil OMS: "Augmenter l'activité physique — passer à 5 jours actifs"
+  BON si usager BELOW seuil OMS: "Ajoutez 2 séances à votre rythme actuel pour atteindre 5 jours actifs par semaine — conformément aux recommandations de l'OMS"
+  BON si usager ABOVE seuil OMS: "Pour optimiser vos séances actuelles, intégrez 1 séance de haute intensité par semaine - type HIIT de 20 minutes - pour améliorer votre endurance cardiovasculaire"
 
 Chaque action doit: s'adresser à l'usager avec "vous", citer un chiffre de l'usager, donner une fréquence/durée précise, indiquer une méthode concrète, ne jamais utiliser de parenthèses.
 
@@ -216,6 +229,84 @@ Format JSON:
   "risk_summary": "résumé de 2–3 phrases citant les valeurs clés de l'usager et les 2 priorités absolues, en s'adressant à l'usager avec 'vous'"
 }
 """
+
+
+def _rule_based_checks(summaries: dict) -> str:
+    """Pre-compute mathematical threshold evaluations to prevent LLM from generating contradictory messages."""
+    lines = []
+
+    act = summaries.get("activity", {})
+    adpw = act.get("active_days_per_week")
+    if adpw is not None:
+        status = "ABOVE" if adpw >= 5 else "BELOW"
+        note = "Do NOT flag as sedentary. Do NOT recommend increasing frequency." if adpw >= 5 else "Should be flagged as insufficient activity."
+        lines.append(f"ACTIVITY frequency: {adpw} days/week — {status} WHO minimum of 5 days/week. {note}")
+    weekly_min = act.get("estimated_weekly_minutes")
+    if weekly_min is not None:
+        status = "ABOVE" if weekly_min >= 150 else "BELOW"
+        lines.append(f"ACTIVITY duration: ~{weekly_min} min/week — {status} WHO minimum of 150 min/week.")
+
+    slp = summaries.get("sleep", {})
+    avg_sleep = slp.get("avg_sleep_score")
+    if avg_sleep is not None:
+        status = "ABOVE" if avg_sleep >= 7 else "BELOW"
+        lines.append(f"SLEEP score: {avg_sleep}/10 — {status} healthy threshold of 7/10.")
+    avg_stress = slp.get("avg_stress_score")
+    if avg_stress is not None:
+        status = "ELEVATED" if avg_stress > 6 else "NORMAL"
+        lines.append(f"STRESS score: {avg_stress}/10 — {status} (threshold: >6/10 = elevated).")
+    avg_energy = slp.get("avg_energy_score")
+    if avg_energy is not None:
+        status = "BELOW" if avg_energy < 5 else "ADEQUATE"
+        lines.append(f"ENERGY score: {avg_energy}/10 — {status} (chronic fatigue threshold: <5/10).")
+
+    nut = summaries.get("nutrition", {})
+    avg_hyd = nut.get("avg_hydration_liters")
+    if avg_hyd is not None:
+        if avg_hyd >= 2.0:
+            lines.append(f"HYDRATION: {avg_hyd} L/day — ADEQUATE (minimum: 2.0 L/day).")
+        elif avg_hyd >= 1.5:
+            lines.append(f"HYDRATION: {avg_hyd} L/day — SLIGHTLY BELOW recommended 2.0 L/day.")
+        else:
+            lines.append(f"HYDRATION: {avg_hyd} L/day — SIGNIFICANTLY BELOW recommended 2.0 L/day.")
+    avg_cal = nut.get("avg_daily_calories")
+    if avg_cal is not None:
+        if avg_cal < 1500:
+            lines.append(f"CALORIES: {avg_cal} kcal/day — BELOW healthy minimum (~1800 kcal/day).")
+        elif avg_cal > 3000:
+            lines.append(f"CALORIES: {avg_cal} kcal/day — ABOVE healthy maximum (~2500 kcal/day).")
+        else:
+            lines.append(f"CALORIES: {avg_cal} kcal/day — WITHIN normal range (1800–2500 kcal/day).")
+
+    vit = summaries.get("vital_signs", {})
+    avg_hr = vit.get("avg_heart_rate")
+    if avg_hr is not None:
+        if avg_hr < 60:
+            lines.append(f"HEART RATE: {avg_hr} bpm — BRADYCARDIA (below 60 bpm).")
+        elif avg_hr > 100:
+            lines.append(f"HEART RATE: {avg_hr} bpm — TACHYCARDIA (above 100 bpm).")
+        else:
+            lines.append(f"HEART RATE: {avg_hr} bpm — NORMAL (60–100 bpm).")
+    avg_sys = vit.get("avg_systolic_pressure")
+    if avg_sys is not None:
+        if avg_sys >= 140:
+            lines.append(f"SYSTOLIC BP: {avg_sys} mmHg — STAGE 2 HYPERTENSION (threshold: ≥140 mmHg).")
+        elif avg_sys >= 130:
+            lines.append(f"SYSTOLIC BP: {avg_sys} mmHg — STAGE 1 HYPERTENSION (130–139 mmHg).")
+        elif avg_sys >= 120:
+            lines.append(f"SYSTOLIC BP: {avg_sys} mmHg — ELEVATED (120–129 mmHg).")
+        else:
+            lines.append(f"SYSTOLIC BP: {avg_sys} mmHg — NORMAL (<120 mmHg).")
+    avg_spo2 = vit.get("avg_oxygen_saturation")
+    if avg_spo2 is not None:
+        if avg_spo2 < 90:
+            lines.append(f"SPO2: {avg_spo2}% — CRITICALLY LOW (threshold: <90%).")
+        elif avg_spo2 < 95:
+            lines.append(f"SPO2: {avg_spo2}% — BELOW NORMAL (threshold: <95%).")
+        else:
+            lines.append(f"SPO2: {avg_spo2}% — NORMAL (≥95%).")
+
+    return "\n".join(lines) if lines else "No threshold data available."
 
 
 def _user_block(ctx: dict) -> str:
@@ -308,14 +399,16 @@ def analyze_with_ai(summaries: dict, user_context: dict) -> dict:
             f"  Issues: {result.get('issues', [])}\n"
         )
 
+    rule_checks = _rule_based_checks(summaries)
     agg_prompt = (
         f"Tu es un médecin senior synthétisant un rapport de santé complet. Tu t'adresses directement à l'usager avec 'vous'.\n\n"
         f"{user_blk}\n\n"
+        f"PRÉ-ÉVALUATIONS MATHÉMATIQUES (calculées avec précision — tu DOIS les respecter impérativement):\n{rule_checks}\n\n"
         f"ANALYSES PAR DOMAINE:\n{analyses_block}\n\n"
         f"DONNÉES NUMÉRIQUES CLÉS (utilise ces chiffres dans tes recommandations):\n{json.dumps(summaries, indent=2)}\n\n"
         f"Tes tâches:\n"
-        f"1. Identifier les anomalies cliniquement significatives avec leurs valeurs précises, en s'adressant à l'usager avec 'vous'\n"
-        f"2. Formuler les 5 recommandations prioritaires — CHAQUE recommandation doit répondre directement à une anomalie identifiée à l'étape 1. Si une anomalie n'a pas de recommandation, elle n'est pas traitée. Chaque recommandation doit citer le chiffre de l'usager concerné, donner une fréquence précise et une méthode concrète, en s'adressant à l'usager avec 'vous'. Utilise le même champ 'domain' que l'anomalie correspondante.\n"
+        f"1. Identifier les anomalies cliniquement significatives — UNIQUEMENT pour les valeurs marquées BELOW threshold dans les pré-évaluations, ou absentes des pré-évaluations mais anormales. Ne jamais signaler une valeur ABOVE threshold comme anomalie.\n"
+        f"2. Formuler les 5 recommandations prioritaires — CHAQUE recommandation doit répondre directement à une anomalie identifiée à l'étape 1. Chaque recommandation doit citer le chiffre de l'usager concerné, donner une fréquence précise et une méthode concrète, en s'adressant à l'usager avec 'vous'. Utilise le même champ 'domain' que l'anomalie correspondante.\n"
         f"3. Signaler les alertes urgentes avec les valeurs déclenchantes, en s'adressant à l'usager avec 'vous'\n"
         f"4. Attribuer un niveau de risque global et rédiger un résumé citant les valeurs clés, en s'adressant à l'usager avec 'vous'\n\n"
         f"{_AGGREGATION_OUTPUT}"
