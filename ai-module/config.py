@@ -1,29 +1,25 @@
 """
-Database configuration for the AI module.
-Reads credentials from backend/.env — no hardcoded secrets.
+Configuration for the AI module.
+Reads credentials from ai-module/.env — no hardcoded secrets.
 """
 
 import os
 from pathlib import Path
 
 
-
 def _load_env_file() -> dict:
-    """Parse .env and return key-value pairs. Checks ai-module/.env first, then backend/.env."""
-    local_env  = Path(__file__).parent / ".env"
-    backend_env = Path(__file__).parent.parent / "backend" / ".env"
-    env_path = local_env if local_env.exists() else backend_env
-    values = {}
+    """Parse ai-module/.env and return key-value pairs."""
+    env_path = Path(__file__).parent / ".env"
     if not env_path.exists():
         raise FileNotFoundError(f".env file not found at: {env_path}")
 
+    values = {}
     with open(env_path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("#") or "=" not in line:
                 continue
             key, _, value = line.partition("=")
-            # Strip surrounding quotes if present
             value = value.strip().strip('"').strip("'")
             values[key.strip()] = value
 
@@ -31,19 +27,13 @@ def _load_env_file() -> dict:
 
 
 def load_groq_api_key() -> None:
-    """
-    Read GROQ_API_KEY from backend/.env and inject it into os.environ
-    so the Groq SDK can find it automatically.
-    Call this once at module startup before importing ai_pipeline.
-    """
+    """Read GROQ_API_KEY from ai-module/.env and inject it into os.environ."""
     env = _load_env_file()
     api_key = env.get("GROQ_API_KEY", "").strip()
     if api_key:
         os.environ.setdefault("GROQ_API_KEY", api_key)
-    # If not in .env, the SDK will fall back to the already-set env var (if any).
 
 
-# Keep old name as alias so nothing breaks if referenced elsewhere
 load_anthropic_api_key = load_groq_api_key
 
 

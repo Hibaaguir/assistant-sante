@@ -87,6 +87,9 @@
             </template>
         </MetricSummaryCard>
 
+        <!-- Poids actuel et écart au poids initial -->
+        <WeightCard />
+
         <!-- Dernière activité physique -->
         <MetricSummaryCard
             color="emerald"
@@ -125,6 +128,7 @@
 import { ref, computed, onMounted } from "vue";
 import api from "@/services/api";
 import MetricSummaryCard from "./MetricSummaryCard.vue";
+import WeightCard from "./WeightComparisonChart.vue";
 
 const loading     = ref(true);
 const vitals      = ref(null);

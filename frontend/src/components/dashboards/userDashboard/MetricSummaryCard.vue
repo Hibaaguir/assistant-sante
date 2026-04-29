@@ -86,12 +86,12 @@ const props = defineProps({
 
 // ── Thèmes couleurs ────────────────────────────────────────────────────────────
 const themes = {
-    red:     { border: "border-red-200",     bg: "bg-red-50",     iconBg: "bg-red-100",     iconColor: "text-red-500",     value: "text-red-600"     },
-    purple:  { border: "border-purple-200",  bg: "bg-purple-50",  iconBg: "bg-purple-100",  iconColor: "text-purple-500",  value: "text-purple-600"  },
-    sky:     { border: "border-sky-200",     bg: "bg-sky-50",     iconBg: "bg-sky-100",     iconColor: "text-sky-500",     value: "text-sky-600"     },
-    emerald: { border: "border-emerald-200", bg: "bg-emerald-50", iconBg: "bg-emerald-100", iconColor: "text-emerald-500", value: "text-emerald-600" },
-    blue:    { border: "border-blue-300",    bg: "bg-blue-50",    iconBg: "bg-blue-100",    iconColor: "text-blue-500",    value: "text-indigo-600"  },
-    orange:  { border: "border-orange-200",  bg: "bg-orange-50",  iconBg: "bg-orange-100",  iconColor: "text-orange-500",  value: "text-orange-600"  },
+    red:     { border: "border-red-300",     bg: "bg-white", iconBg: "bg-red-100",     iconColor: "text-red-500",     value: "text-red-600"     },
+    purple:  { border: "border-purple-300",  bg: "bg-white", iconBg: "bg-purple-100",  iconColor: "text-purple-500",  value: "text-purple-600"  },
+    sky:     { border: "border-sky-300",     bg: "bg-white", iconBg: "bg-sky-100",     iconColor: "text-sky-500",     value: "text-sky-600"     },
+    emerald: { border: "border-emerald-300", bg: "bg-white", iconBg: "bg-emerald-100", iconColor: "text-emerald-500", value: "text-emerald-600" },
+    blue:    { border: "border-blue-300",    bg: "bg-white", iconBg: "bg-blue-100",    iconColor: "text-blue-500",    value: "text-indigo-600"  },
+    orange:  { border: "border-orange-300",  bg: "bg-white", iconBg: "bg-orange-100",  iconColor: "text-orange-500",  value: "text-orange-600"  },
 };
 
 const badgeTypes = {

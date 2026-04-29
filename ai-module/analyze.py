@@ -89,6 +89,5 @@ def analyze_user(user_id: int) -> dict:
         },
     }
 
-    total = round(sum(timing.values()), 3)
-    logger.info(f"Analysis complete for user_id={user_id} — risk={report['risk_level']} total={total}s")
+    logger.info(f"Analysis complete for user_id={user_id} — risk={report['risk_level']} total={round(sum(timing.values()), 3)}s")
     return enforce_schema(report)

@@ -31,9 +31,8 @@
         <NotificationsWidget />
 
         <div ref="pdfTargetRef" class="space-y-5 pt-4">
-            <!-- Résumé rapide : grid unifié poids + constantes vitales (5 colonnes) -->
+            <!-- Résumé rapide : 5 KPI (rythme, tension, O₂, poids, activité) -->
             <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
-                <WeightComparisonChart />
                 <LastVitalsRow class="contents" />
             </div>
 
@@ -82,7 +81,6 @@ import NotificationsWidget from "./NotificationsWidget.vue";
 import WelcomeCard from "./WelcomeCard.vue";
 import VitalSignsProgressiveLine from "./VitalSignsProgressiveLine.vue";
 import LabsDistributionChart from "./LabsDistributionChart.vue";
-import WeightComparisonChart from "./WeightComparisonChart.vue";
 import LastVitalsRow from "./LastVitalsRow.vue";
 import Typography from "../../ui/Typography.vue";
 
