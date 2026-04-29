@@ -1,11 +1,7 @@
-<!--
-  LastVitalsRow.vue
-  Ligne de 4 cartes de métriques vitales :
-  rythme cardiaque · tension artérielle · saturation O₂ · dernière activité physique
--->
+<!-- Ligne de 5 cartes : dernières valeurs vitales + poids + dernière activité physique -->
 <template>
     <div>
-        <!-- Rythme cardiaque -->
+        <!-- Carte : fréquence cardiaque -->
         <MetricSummaryCard
             color="red"
             label="Rythme cardiaque"
@@ -16,23 +12,13 @@
             :loading="loading"
         >
             <template #icon>
-                <svg
-                    class="h-4 w-4 text-red-500"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        d="M22 12h-4l-3 9L9 3l-3 9H2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    />
+                <svg class="h-4 w-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </template>
         </MetricSummaryCard>
 
-        <!-- Tension artérielle -->
+        <!-- Carte : tension artérielle (systolique / diastolique) -->
         <MetricSummaryCard
             color="purple"
             label="Tension artérielle"
@@ -44,23 +30,13 @@
             :loading="loading"
         >
             <template #icon>
-                <svg
-                    class="h-4 w-4 text-purple-500"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    />
+                <svg class="h-4 w-4 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </template>
         </MetricSummaryCard>
 
-        <!-- Saturation en oxygène -->
+        <!-- Carte : saturation en oxygène -->
         <MetricSummaryCard
             color="sky"
             label="Saturation O₂"
@@ -71,26 +47,16 @@
             :loading="loading"
         >
             <template #icon>
-                <svg
-                    class="h-4 w-4 text-sky-500"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    />
+                <svg class="h-4 w-4 text-sky-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </template>
         </MetricSummaryCard>
 
-        <!-- Poids actuel et écart au poids initial -->
+        <!-- Carte : poids actuel vs poids initial -->
         <WeightCard />
 
-        <!-- Dernière activité physique -->
+        <!-- Carte : dernière activité physique -->
         <MetricSummaryCard
             color="emerald"
             label="Dernière activité"
@@ -101,23 +67,10 @@
             :loading="loading"
         >
             <template #icon>
-                <svg
-                    class="h-4 w-4 text-emerald-500"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                >
+                <svg class="h-4 w-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <circle cx="12" cy="5" r="2" />
-                    <path
-                        d="M5 16.5l3.5-5 3.5 2.5 2.5-3 4 5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    />
-                    <path
-                        d="M8.5 11.5l-.5 4M15 11l.5 3.5"
-                        stroke-linecap="round"
-                    />
+                    <path d="M5 16.5l3.5-5 3.5 2.5 2.5-3 4 5" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M8.5 11.5l-.5 4M15 11l.5 3.5" stroke-linecap="round" />
                 </svg>
             </template>
         </MetricSummaryCard>
@@ -130,14 +83,14 @@ import api from "@/services/api";
 import MetricSummaryCard from "./MetricSummaryCard.vue";
 import WeightCard from "./WeightComparisonChart.vue";
 
-const loading     = ref(true);
-const vitals      = ref(null);
-const vitalsDate  = ref(null);
-const activity    = ref(null);
-const activityDate = ref(null);
+// Données chargées depuis l'API
+const loading      = ref(true);   // true pendant le chargement
+const vitals       = ref(null);   // dernière mesure vitale
+const vitalsDate   = ref(null);   // date formatée de la dernière mesure
+const activity     = ref(null);   // dernière activité physique
+const activityDate = ref(null);   // date formatée de la dernière activité
 
-// ── Badges calculés ────────────────────────────────────────────────────────────
-
+// Badge pour la fréquence cardiaque (bradycardie / normal / tachycardie)
 const heartRateBadge = computed(() => {
     const hr = vitals.value?.heart_rate;
     if (hr == null) return null;
@@ -146,75 +99,75 @@ const heartRateBadge = computed(() => {
     return { text: "Normal", type: "normal" };
 });
 
+// Valeur affichée pour la tension : "systolique/diastolique"
 const bpValue = computed(() => {
     if (!vitals.value) return null;
     return `${vitals.value.systolic_pressure}/${vitals.value.diastolic_pressure}`;
 });
 
+// Badge pour la tension systolique
 const bpBadge = computed(() => {
     const sys = vitals.value?.systolic_pressure;
     if (sys == null) return null;
-    if (sys < 120)  return { text: "Optimale", type: "normal"  };
-    if (sys < 130)  return { text: "Normale",  type: "info"    };
-    if (sys < 140)  return { text: "Élevée",   type: "warning" };
+    if (sys < 120)   return { text: "Optimale", type: "normal"  };
+    if (sys < 130)   return { text: "Normale",  type: "info"    };
+    if (sys < 140)   return { text: "Élevée",   type: "warning" };
     return { text: "Haute", type: "danger" };
 });
 
+// Badge pour la saturation en oxygène
 const spo2Badge = computed(() => {
     const spo2 = vitals.value?.oxygen_saturation;
     if (spo2 == null) return null;
-    if (spo2 >= 95)  return { text: "Normal",   type: "normal"  };
-    if (spo2 >= 90)  return { text: "Faible",   type: "warning" };
+    if (spo2 >= 95)   return { text: "Normal",   type: "normal"  };
+    if (spo2 >= 90)   return { text: "Faible",   type: "warning" };
     return { text: "Critique", type: "danger" };
 });
 
+// Badge pour l'intensité de la dernière activité physique
 const activityBadge = computed(() => {
     if (!activity.value) return null;
     const map = {
-        low:    { text: "Légère",  type: "muted"  },
-        medium: { text: "Modérée", type: "info"   },
+        low:    { text: "Légère",  type: "muted"   },
+        medium: { text: "Modérée", type: "info"    },
         high:   { text: "Intense", type: "intense" },
     };
     return map[activity.value.intensity] ?? { text: activity.value.intensity, type: "muted" };
 });
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
-
+// Met la première lettre en majuscule
 function capitalize(str) {
     if (!str) return str;
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+// Formate une date en français : "12 avr. 2025"
 function formatDate(dateStr) {
     if (!dateStr) return null;
     return new Date(dateStr).toLocaleDateString("fr-FR", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
+        day: "numeric", month: "short", year: "numeric",
     });
 }
 
-// ── Chargement des données ─────────────────────────────────────────────────────
-
+// Charge les signes vitaux et les activités depuis l'API
 async function load() {
     loading.value = true;
     try {
+        // Lancer les deux requêtes en parallèle pour gagner du temps
         const [vitalsRes, journalRes] = await Promise.all([
             api.get("/dashboard/vitals", { params: { days: 30 } }),
             api.get("/dashboard/journal"),
         ]);
 
-        // Dernière mesure vitale (tri par measured_at desc)
+        // Trouver la mesure vitale la plus récente
         const vitalsList = vitalsRes.data?.data ?? [];
         if (vitalsList.length > 0) {
-            const sorted = [...vitalsList].sort(
-                (a, b) => new Date(b.measured_at) - new Date(a.measured_at),
-            );
+            const sorted     = [...vitalsList].sort((a, b) => new Date(b.measured_at) - new Date(a.measured_at));
             vitals.value     = sorted[0];
             vitalsDate.value = formatDate(sorted[0].measured_at);
         }
 
-        // Dernière entrée de journal avec activité physique
+        // Trouver la dernière entrée du journal contenant une activité physique
         const entries = journalRes.data?.data ?? journalRes.data ?? [];
         const withActivity = [...entries]
             .filter((e) => {
@@ -224,17 +177,18 @@ async function load() {
             .sort((a, b) => new Date(b.entry_date) - new Date(a.entry_date));
 
         if (withActivity.length > 0) {
-            const entry = withActivity[0];
-            const acts  = entry.physical_activities ?? entry.physicalActivities ?? [];
-            activity.value      = acts[0];
-            activityDate.value  = formatDate(entry.entry_date);
+            const entry        = withActivity[0];
+            const acts         = entry.physical_activities ?? entry.physicalActivities ?? [];
+            activity.value     = acts[0];
+            activityDate.value = formatDate(entry.entry_date);
         }
     } catch (e) {
-        console.error("LastVitalsRow load error:", e);
+        console.error("Erreur chargement LastVitalsRow :", e);
     } finally {
         loading.value = false;
     }
 }
 
+// Charger au démarrage du composant
 onMounted(load);
 </script>

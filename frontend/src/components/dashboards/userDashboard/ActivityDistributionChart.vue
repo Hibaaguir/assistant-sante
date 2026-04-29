@@ -1,95 +1,68 @@
-<!--ActivityDistributionChart.vue-->
+<!-- Graphe en anneau : répartition du temps d'activité physique par type -->
 <template>
-    <section
-        class="mt-5 rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400"
-    >
+    <section class="mt-5 rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400">
+
+        <!-- Titre et boutons de filtre (semaine / mois) -->
         <div class="mb-4 flex items-center justify-between">
-            <Typography tag="h2" variant="h2-style">
-                Activité physique par type
-            </Typography>
+            <Typography tag="h2" variant="h2-style">Activité physique par type</Typography>
             <div class="flex gap-2">
                 <button
                     v-for="f in filters"
                     :key="f.days"
                     @click="changeFilter(f.days)"
                     class="rounded-lg border px-3 py-1.5 text-sm font-medium transition"
-                    :class="
-                        days === f.days
-                            ? 'border-purple-500 bg-purple-50 text-purple-700'
-                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
-                    "
+                    :class="days === f.days
+                        ? 'border-purple-500 bg-purple-50 text-purple-700'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'"
                 >
                     {{ f.label }}
                 </button>
             </div>
         </div>
 
-        <div
-            v-if="loading"
-            class="flex h-64 items-center justify-center text-slate-700"
-        >
+        <!-- Message pendant le chargement -->
+        <div v-if="loading" class="flex h-64 items-center justify-center text-slate-700">
             Chargement...
         </div>
 
-        <div
-            v-else-if="noData"
-            class="flex h-64 items-center justify-center text-slate-700"
-        >
+        <!-- Message si aucune activité sur la période -->
+        <div v-else-if="noData" class="flex h-64 items-center justify-center text-slate-700">
             Aucune activité physique sur cette période.
         </div>
 
-        <div
-            v-else
-            class="flex flex-col items-center gap-4 sm:flex-row justify-center"
-        >
+        <!-- Zone du graphe (canvas Chart.js) -->
+        <div v-else class="flex flex-col items-center gap-4 sm:flex-row justify-center">
             <canvas ref="canvasRef" class="max-h-64 max-w-[260px]"></canvas>
         </div>
     </section>
 </template>
 
-<<script setup>
+<script setup>
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import Typography from "@/components/ui/Typography.vue";
-import {
-    Chart,
-    DoughnutController,
-    ArcElement,
-    Legend,
-    Tooltip,
-} from "chart.js";
+import { Chart, DoughnutController, ArcElement, Legend, Tooltip } from "chart.js";
 import api from "@/services/api";
 
-// Enregistrement des composants Chart.js nécessaires
+// Enregistrer les composants Chart.js pour le graphe en anneau
 Chart.register(DoughnutController, ArcElement, Legend, Tooltip);
 
-// Couleurs du graphique
-const COLORS = [
-    "#6366f1",
-    "#10b981",
-    "#f59e0b",
-    "#f43f5e",
-    "#149bd7",
-    "#8b5cf6",
-    "#14b8a6",
-    "#ec4899",
-];
+// Couleurs des parts du graphe
+const COLORS = ["#6366f1", "#10b981", "#f59e0b", "#f43f5e", "#149bd7", "#8b5cf6", "#14b8a6", "#ec4899"];
 
-// Filtres disponibles (7 jours ou 30 jours)
+// Options de filtre disponibles
 const filters = [
     { label: "Par semaine", days: 7 },
-    { label: "Par mois", days: 30 },
+    { label: "Par mois",    days: 30 },
 ];
 
-// Variables réactives
-const canvasRef = ref(null);
-const loading = ref(true);
-const noData = ref(false);
-const days = ref(7);
-const summary = ref([]);
+// Références et variables
+const canvasRef = ref(null);  // référence vers le <canvas>
+const loading   = ref(true);  // true pendant le chargement
+const noData    = ref(false); // true si aucune activité trouvée
+const days      = ref(7);     // filtre actif (7 ou 30 jours)
 
-// Variables normales
-let allEntries = [];
-let chartInstance = null;
+let allEntries    = []; // toutes les entrées du journal (non réactif)
+let chartInstance = null; // instance Chart.js
 
 // Retourne la date (format YYYY-MM-DD) il y a N jours
 function dateNDaysAgo(n) {
@@ -98,31 +71,25 @@ function dateNDaysAgo(n) {
     return d.toISOString().slice(0, 10);
 }
 
-// Calcule le total des minutes par type d'activité
+// Calcule le total des minutes par type d'activité sur la période
 function aggregate() {
     const cutoff = dateNDaysAgo(days.value);
     const totals = {};
 
     for (const entry of allEntries) {
-        // Ignorer si pas de date ou trop ancien
+        // Ignorer les entrées trop anciennes ou sans date
         if (!entry.entry_date || entry.entry_date < cutoff) continue;
 
-        // Récupérer la liste des activités (2 formats possibles)
-        const activities =
-            entry.physical_activities ||
-            entry.physicalActivities ||
-            [];
+        // Accepter les deux noms de champ possibles selon la version de l'API
+        const activities = entry.physical_activities || entry.physicalActivities || [];
 
         for (const act of activities) {
-            const type = act.activity_type || "Autre";
+            const type    = act.activity_type || "Autre";
             const minutes = act.duration_minutes || 0;
 
-            // Initialiser si nécessaire si le type est la première fois rencontré commence par 0
-            if (!totals[type]) {
-                totals[type] = 0;
-            }
+            // Initialiser à 0 si ce type n'a pas encore été rencontré
+            if (!totals[type]) totals[type] = 0;
 
-            // Ajouter les minutes
             totals[type] += minutes;
         }
     }
@@ -130,61 +97,49 @@ function aggregate() {
     return totals;
 }
 
-// Crée et affiche le graphique
+// Construit et affiche le graphe en anneau
 async function buildChart() {
-    // Supprimer l'ancien graphique s'il existe
-    if (chartInstance) {
-        chartInstance.destroy();
-    }
+    // Détruire l'ancien graphe avant d'en créer un nouveau
+    if (chartInstance) chartInstance.destroy();
 
     noData.value = false;
 
     const totals = aggregate();
     const labels = Object.keys(totals);
 
-    // Si aucune donnée
+    // Si aucune donnée, afficher le message "aucune activité"
     if (labels.length === 0) {
         noData.value = true;
         return;
     }
 
-    // Préparer les données pour affichage ajouter une propriété "label" et "minutes" à summary pour affichage dans la légende 
-    summary.value = labels.map((label) => ({
-        label: label,
-        minutes: totals[label],
-    }));
-
-    // Attendre que le DOM soit prêt
+    // Attendre que le DOM affiche le canvas avant de dessiner
     await nextTick();
 
-    // Création du graphique
+    // Créer le graphe en anneau
     chartInstance = new Chart(canvasRef.value, {
         type: "doughnut",
         data: {
-            labels: labels,
-            datasets: [
-                {
-                    data: labels.map((l) => totals[l]),
-                    backgroundColor: COLORS.slice(0, labels.length),
-                    borderWidth: 2.5,
-                    borderColor: "#fff",
-                },
-            ],
+            labels,
+            datasets: [{
+                data: labels.map((l) => totals[l]),
+                backgroundColor: COLORS.slice(0, labels.length),
+                borderWidth: 2.5,
+                borderColor: "#fff",
+            }],
         },
         options: {
             responsive: true,
             cutout: "60%",
             plugins: {
-                legend: {
-                    display: true,
-                },
+                legend: { display: true },
                 tooltip: {
-                    backgroundColor: "rgba(0, 0, 0, 0.9)",
+                    backgroundColor: "rgba(0,0,0,0.9)",
                     titleFont: { size: 15, weight: "bold" },
                     bodyFont: { size: 13 },
                     padding: 14,
                     callbacks: {
-                       label: (ctx) => `${ctx.parsed} min`,
+                        label: (ctx) => `${ctx.parsed} min`,
                     },
                 },
             },
@@ -192,33 +147,31 @@ async function buildChart() {
     });
 }
 
-// Charger les données depuis l'API
+// Charge les données du journal depuis l'API
 async function load() {
     loading.value = true;
 
     const response = await api.get("/dashboard/journal");
 
-    // Récupération des données
-    if (response.data && response.data.data) {
-        allEntries = response.data.data;
-    } else {
-        allEntries = [];
-    }
+    // Stocker toutes les entrées du journal
+    allEntries = response.data?.data ?? [];
 
     loading.value = false;
 
-    // Construire le graphique
+    // Construire le graphe avec les données chargées
     await buildChart();
 }
 
-// Changer le filtre (7 jours / 30 jours)
+// Changer le filtre et reconstruire le graphe
 async function changeFilter(value) {
     days.value = value;
     await buildChart();
 }
 
-// Lifecycle
+// Charger au démarrage du composant
 onMounted(load);
+
+// Détruire le graphe quand le composant est retiré (libération mémoire)
 onUnmounted(() => {
     if (chartInstance) chartInstance.destroy();
 });

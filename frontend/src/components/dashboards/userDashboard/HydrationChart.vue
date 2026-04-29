@@ -1,56 +1,37 @@
-<!--
-  HydrationChart.vue
-  Weekly hydration rate per day (in liters).
-  Different template: blue gradient header, goal line at 2 L, bar chart.
-  Data comes from GET /journal → entry.hydration (numeric, liters).
--->
+<!-- Graphe en barres : hydratation quotidienne sur les 7 derniers jours -->
 <template>
-    <section
-        class="mt-5 overflow-hidden rounded-2xl border-2 border-blue-300 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400"
-    >
-        <!-- Blue gradient header -->
+    <section class="mt-5 overflow-hidden rounded-2xl border-2 border-blue-300 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400">
+
+        <!-- En-tête dégradé bleu avec titre et objectif -->
         <div class="bg-gradient-to-r from-blue-500 to-cyan-400 px-5 py-4">
-            <Typography tag="h2" variant="h2-style" class="text-white">
-                Hydratation hebdomadaire
-            </Typography>
-            <p class="mt-0.5 text-sm text-blue-100">
-                Objectif : {{ GOAL }} L / jour
-            </p>
+            <Typography tag="h2" variant="h2-style" class="text-white">Hydratation hebdomadaire</Typography>
+            <p class="mt-0.5 text-sm text-blue-100">Objectif : {{ GOAL }} L / jour</p>
         </div>
 
         <div class="bg-white p-4">
-            <div
-                v-if="loading"
-                class="flex h-48 items-center justify-center text-slate-400"
-            >
+            <!-- Message pendant le chargement -->
+            <div v-if="loading" class="flex h-48 items-center justify-center text-slate-400">
                 Chargement...
             </div>
 
-            <div
-                v-else-if="noData"
-                class="flex h-48 items-center justify-center text-slate-400"
-            >
+            <!-- Message si aucune donnée cette semaine -->
+            <div v-else-if="noData" class="flex h-48 items-center justify-center text-slate-400">
                 Aucune donnée d'hydratation cette semaine.
             </div>
 
             <template v-else>
-                <!-- Bar chart canvas -->
+                <!-- Zone du graphe (canvas Chart.js) -->
                 <canvas ref="canvasRef" class="max-h-52"></canvas>
 
-                <!-- Daily recap chips -->
+                <!-- Récapitulatif par jour sous le graphe -->
                 <div class="mt-4 flex flex-wrap gap-2">
                     <span
                         v-for="day in weekDays"
                         :key="day.date"
                         class="rounded-full px-3 py-1 text-xs font-medium"
-                        :class="
-                            day.value >= GOAL
-                                ? 'bg-cyan-100 text-cyan-700'
-                                : 'bg-slate-100 text-slate-500'
-                        "
+                        :class="day.value >= GOAL ? 'bg-cyan-100 text-cyan-700' : 'bg-slate-100 text-slate-500'"
                     >
-                        {{ day.label }} ·
-                        {{ day.value > 0 ? day.value + " L" : "—" }}
+                        {{ day.label }} · {{ day.value > 0 ? day.value + " L" : "—" }}
                     </span>
                 </div>
             </template>
@@ -61,100 +42,111 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import Typography from "@/components/ui/Typography.vue";
-import {
-    Chart,
-    BarController,
-    BarElement,
-    CategoryScale,
-    LinearScale,
-    Tooltip,
-} from "chart.js";
+import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from "chart.js";
 import api from "@/services/api";
 
+// Enregistrer les composants Chart.js pour le graphe en barres
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
-const GOAL = 2; // liters per day
-const DAY_LABELS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-const DAYS_OF_WEEK = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-];
+// Objectif d'hydratation journalier en litres
+const GOAL = 2;
 
-const canvasRef = ref(null);
-const loading = ref(true);
-const noData = ref(false);
-const weekDays = ref([]);
-let chartInstance = null;
+// Noms des jours en français et en anglais (pour la correspondance)
+const DAY_LABELS   = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
+// Références et variables
+const canvasRef = ref(null);  // référence vers le <canvas>
+const loading   = ref(true);  // true pendant le chargement
+const noData    = ref(false); // true si aucune donnée
+const weekDays  = ref([]);    // données des 7 derniers jours
+let chartInstance = null;     // instance Chart.js
+
+// Retourne la liste des 7 derniers jours au format YYYY-MM-DD
 function getLast7Days() {
-    return Array.from({ length: 7 }, (_, i) => {
+    const liste = [];
+    for (let i = 6; i >= 0; i--) {
         const d = new Date();
-        d.setDate(d.getDate() - (6 - i));
-        return d.toISOString().slice(0, 10);
-    });
+        d.setDate(d.getDate() - i);
+        liste.push(d.toISOString().slice(0, 10));
+    }
+    return liste;
 }
 
+// Charge les données du journal et dessine le graphe
 async function load() {
     const { data: res } = await api.get("/dashboard/journal");
     const entries = res?.data ?? [];
 
+    // Regrouper les valeurs d'hydratation par date
     const byDate = {};
-    for (const e of entries) {
-        if (e.entry_date && e.hydration != null) {
-            byDate[e.entry_date] = parseFloat(e.hydration);
+    for (const entry of entries) {
+        if (entry.entry_date && entry.hydration != null) {
+            byDate[entry.entry_date] = parseFloat(entry.hydration);
         }
     }
 
-    const dates = getLast7Days();
-    const values = dates.map((d) => byDate[d] ?? 0);
+    // Construire les données pour chacun des 7 derniers jours
+    const dates  = getLast7Days();
+    const values = [];
+    for (const d of dates) {
+        values.push(byDate[d] ?? 0); // 0 si pas de donnée ce jour
+    }
 
-    weekDays.value = dates.map((d, i) => {
-        // Use T12:00:00 to avoid UTC midnight being interpreted as the previous day in local timezone
-        const jsDay = new Date(d + "T12:00:00").toLocaleDateString("en-US", {
-            weekday: "long",
-        });
-        const idx = DAYS_OF_WEEK.indexOf(jsDay);
-        return {
-            date: d,
-            label: idx >= 0 ? DAY_LABELS[idx] : d.slice(5),
+    // Construire la liste des jours avec leur étiquette et leur valeur
+    weekDays.value = [];
+    for (let i = 0; i < dates.length; i++) {
+        // Utiliser T12:00:00 pour éviter les problèmes de fuseau horaire UTC
+        const nomJourAnglais = new Date(dates[i] + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" });
+        const indexJour = DAYS_OF_WEEK.indexOf(nomJourAnglais);
+
+        weekDays.value.push({
+            date:  dates[i],
+            label: indexJour >= 0 ? DAY_LABELS[indexJour] : dates[i].slice(5),
             value: values[i],
-        };
-    });
+        });
+    }
 
     loading.value = false;
 
-    if (values.every((v) => v === 0)) {
+    // Vérifier si toutes les valeurs sont à zéro (pas de données)
+    let toutZero = true;
+    for (const v of values) {
+        if (v !== 0) { toutZero = false; break; }
+    }
+    if (toutZero) {
         noData.value = true;
         return;
     }
 
+    // Attendre que le DOM affiche le canvas avant de dessiner
     await nextTick();
 
+    // Préparer les labels et les couleurs des barres
+    const labelsGraphe = [];
+    const couleursFond = [];
+    const couleursBord = [];
+
+    for (let i = 0; i < weekDays.value.length; i++) {
+        labelsGraphe.push(weekDays.value[i].label);
+        // Barre pleine si l'objectif est atteint, transparente sinon
+        couleursFond.push(values[i] >= GOAL ? "rgba(6,182,212,0.75)" : "rgba(6,182,212,0.3)");
+        couleursBord.push(values[i] >= GOAL ? "#0891b2" : "#67e8f9");
+    }
+
+    // Créer le graphe en barres
     chartInstance = new Chart(canvasRef.value, {
         type: "bar",
         data: {
-            labels: weekDays.value.map((d) => d.label),
-            datasets: [
-                {
-                    label: "Hydratation (L)",
-                    data: values,
-                    backgroundColor: values.map((v) =>
-                        v >= GOAL
-                            ? "rgba(6,182,212,0.75)"
-                            : "rgba(6,182,212,0.3)",
-                    ),
-                    borderColor: values.map((v) =>
-                        v >= GOAL ? "#0891b2" : "#67e8f9",
-                    ),
-                    borderWidth: 1.5,
-                    borderRadius: 6,
-                },
-            ],
+            labels: labelsGraphe,
+            datasets: [{
+                label: "Hydratation (L)",
+                data: values,
+                backgroundColor: couleursFond,
+                borderColor: couleursBord,
+                borderWidth: 1.5,
+                borderRadius: 6,
+            }],
         },
         options: {
             responsive: true,
@@ -163,63 +155,54 @@ async function load() {
                     beginAtZero: true,
                     max: Math.max(GOAL + 1, ...values) + 0.5,
                     ticks: {
-                        callback: (v) => v + " L",
+                        callback: function (v) { return v + " L"; },
                         font: { size: 12, weight: "500" },
                         color: "#475569",
                     },
-                    grid: { color: "#e2e8f0", drawBorder: true },
+                    grid: { color: "#e2e8f0" },
                 },
                 x: {
                     grid: { display: false },
-                    ticks: {
-                        font: { size: 12, weight: "500" },
-                        color: "#475569",
-                    },
+                    ticks: { font: { size: 12, weight: "500" }, color: "#475569" },
                 },
             },
             plugins: {
                 legend: {
                     position: "top",
-                    labels: {
-                        font: { size: 13, weight: "bold" },
-                        padding: 12,
-                        boxWidth: 18,
-                        color: "#334155",
-                    },
+                    labels: { font: { size: 13, weight: "bold" }, padding: 12, boxWidth: 18, color: "#334155" },
                 },
                 tooltip: {
-                    backgroundColor: "rgba(0, 0, 0, 0.8)",
+                    backgroundColor: "rgba(0,0,0,0.8)",
                     titleFont: { size: 13, weight: "bold" },
                     bodyFont: { size: 12 },
                     padding: 12,
-                    callbacks: {
-                        label: (ctx) => ` ${ctx.parsed.y} L`,
-                    },
+                    callbacks: { label: function (ctx) { return " " + ctx.parsed.y + " L"; } },
                 },
-                // Inline goal line annotation via afterDraw plugin
             },
         },
-        plugins: [
-            {
-                id: "goalLine",
-                afterDraw(chart) {
-                    const { ctx, chartArea, scales } = chart;
-                    const y = scales.y.getPixelForValue(GOAL);
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.setLineDash([6, 4]);
-                    ctx.strokeStyle = "#149bd7";
-                    ctx.lineWidth = 1.5;
-                    ctx.moveTo(chartArea.left, y);
-                    ctx.lineTo(chartArea.right, y);
-                    ctx.stroke();
-                    ctx.restore();
-                },
+        // Plugin maison : tracer une ligne pointillée à l'objectif de 2L
+        plugins: [{
+            id: "goalLine",
+            afterDraw(chart) {
+                const { ctx, chartArea, scales } = chart;
+                const y = scales.y.getPixelForValue(GOAL);
+                ctx.save();
+                ctx.beginPath();
+                ctx.setLineDash([6, 4]);
+                ctx.strokeStyle = "#149bd7";
+                ctx.lineWidth   = 1.5;
+                ctx.moveTo(chartArea.left, y);
+                ctx.lineTo(chartArea.right, y);
+                ctx.stroke();
+                ctx.restore();
             },
-        ],
+        }],
     });
 }
 
+// Charger au démarrage du composant
 onMounted(load);
-onUnmounted(() => chartInstance?.destroy());
+
+// Détruire le graphe quand le composant est retiré (libération mémoire)
+onUnmounted(function () { if (chartInstance) chartInstance.destroy(); });
 </script>

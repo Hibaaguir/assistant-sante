@@ -1,8 +1,9 @@
 <!--
   DashboardPage.vue
-  Unified dashboard page — shows the correct dashboard based on the authenticated user's role.
+  Redirige vers le bon composant dashboard selon le rôle de l'utilisateur connecté.
 -->
 <template>
+    <!-- Affiche le dashboard adapté au rôle (admin, médecin ou patient) -->
     <div v-if="authStore.user" class="w-full">
         <component :is="dashboardComponent" />
     </div>
@@ -20,10 +21,12 @@ import DashboardLayout from "@/components/dashboards/userDashboard/DashboardLayo
 
 const authStore = useAuthStore();
 
+// Charger les informations de l'utilisateur connecté au démarrage
 onMounted(() => {
     authStore.loadUser();
 });
 
+// Choisir le composant dashboard selon le rôle de l'utilisateur
 const dashboardComponent = computed(() => {
     if (authStore.isAdmin) return AdminDashboard;
     if (authStore.isDoctor) return DoctorDashboard;

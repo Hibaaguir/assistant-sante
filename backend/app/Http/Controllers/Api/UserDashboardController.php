@@ -13,115 +13,170 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-
 class UserDashboardController extends Controller
 {
-    // HealthChart — séries de signes vitaux pour le graphe en courbe
+    // Retourne les signes vitaux jour par jour pour afficher le graphe en courbe
     public function vitalsChart(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
         $days      = (int) $request->query('days', 7);
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
-        $fields    = ['heart_rate', 'systolic_pressure', 'diastolic_pressure', 'oxygen_saturation'];
 
-        $vitals = VitalSigns::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
-            ->whereDate('measured_at', '>=', $startDate)
-            ->orderBy('measured_at')
-            ->get()
-            ->groupBy(fn ($v) => $v->measured_at?->toDateString());
+        // Les 4 indicateurs que l'on veut afficher sur le graphe
+        $fields = ['heart_rate', 'systolic_pressure', 'diastolic_pressure', 'oxygen_saturation'];
 
-        $dates = collect(range(0, $days - 1))
-            ->map(fn ($i) => Carbon::today()->subDays($days - 1 - $i)->toDateString());
+        // Récupérer toutes les mesures de l'utilisateur à partir de la date de début
+        $rawVitals = VitalSigns::whereHas('healthData', function ($q) use ($userId) {
+            $q->where('user_id', $userId);
+        })
+        ->whereDate('measured_at', '>=', $startDate)
+        ->orderBy('measured_at')
+        ->get();
 
-        $chart = ['labels' => $dates->values()];
+        // Regrouper les mesures dans un tableau indexé par date
+        // Résultat : ['2025-04-20' => [mesure1, mesure2], '2025-04-21' => [mesure3], ...]
+        $vitalsByDate = [];
+        foreach ($rawVitals as $vital) {
+            if ($vital->measured_at) {
+                $date                  = $vital->measured_at->toDateString();
+                $vitalsByDate[$date][] = $vital;
+            }
+        }
 
+        // Générer la liste de tous les jours de la période (du plus ancien au plus récent)
+        $dates = [];
+        for ($i = 0; $i < $days; $i++) {
+            $dates[] = Carbon::today()->subDays($days - 1 - $i)->toDateString();
+        }
+
+        // Initialiser le résultat avec les dates comme étiquettes de l'axe X
+        $chart = ['labels' => $dates];
+
+        // Pour chaque indicateur, chercher la dernière valeur connue pour chaque jour
         foreach ($fields as $field) {
-            $chart[$field] = $dates->map(function ($date) use ($vitals, $field) {
-                $row = ($vitals[$date] ?? collect())->sortByDesc('id')->first(fn ($v) => $v->{$field} !== null);
-                return $row ? round((float) $row->{$field}, 1) : null;
-            })->values();
+            $valeurs = [];
+
+            foreach ($dates as $date) {
+                $mesuresDuJour = $vitalsByDate[$date] ?? [];
+                $valeur        = null;
+
+                // Parcourir les mesures du jour du plus récent au plus ancien
+                // et prendre la première valeur non nulle trouvée
+                for ($j = count($mesuresDuJour) - 1; $j >= 0; $j--) {
+                    if ($mesuresDuJour[$j]->{$field} !== null) {
+                        $valeur = round((float) $mesuresDuJour[$j]->{$field}, 1);
+                        break; // trouvé, on arrête la boucle
+                    }
+                }
+
+                $valeurs[] = $valeur; // null si aucune mesure ce jour-là
+            }
+
+            $chart[$field] = $valeurs;
         }
 
         return response()->json(['data' => $chart]);
     }
 
-    // TreatmentPieChart — traitements actifs aujourd'hui regroupés par type
+    // Retourne les traitements actifs aujourd'hui pour le graphe camembert
     public function treatments(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
         $today  = Carbon::today()->toDateString();
 
-        $data = Treatment::with('treatmentCatalog')
-            ->whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
-            ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $today))
-            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $today))
-            ->get()
-            ->map(fn ($t) => [
-                'type' => ucfirst(trim($t->treatmentCatalog?->treatment_type ?? 'Autre')),
-            ]);
+        // Récupérer les traitements dont la période est en cours
+        // (date début vide ou passée) ET (date fin vide ou future)
+        $traitements = Treatment::with('treatmentCatalog')
+            ->whereHas('healthData', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->where(function ($q) use ($today) {
+                $q->whereNull('start_date')->orWhere('start_date', '<=', $today);
+            })
+            ->where(function ($q) use ($today) {
+                $q->whereNull('end_date')->orWhere('end_date', '>=', $today);
+            })
+            ->get();
+
+        // Extraire uniquement le type de chaque traitement
+        $data = [];
+        foreach ($traitements as $traitement) {
+            $catalog = $traitement->treatmentCatalog;
+            $type    = $catalog ? $catalog->treatment_type : 'Autre';
+            $data[]  = ['type' => ucfirst(trim($type))];
+        }
 
         return response()->json(['data' => $data]);
     }
 
-    // LastVitalsRow + VitalSignsComparisonChart + VitalSignsProgressiveLine
+    // Retourne tous les signes vitaux des N derniers jours (pour les graphes de comparaison)
     public function vitals(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
         $days      = (int) $request->query('days', 30);
         $startDate = Carbon::today()->subDays($days - 1);
 
-        $vitals = VitalSigns::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
-            ->where('measured_at', '>=', $startDate)
-            ->orderByDesc('measured_at')
-            ->get();
+        $vitals = VitalSigns::whereHas('healthData', function ($q) use ($userId) {
+            $q->where('user_id', $userId);
+        })
+        ->where('measured_at', '>=', $startDate)
+        ->orderByDesc('measured_at')
+        ->get();
 
         return response()->json(['data' => $vitals]);
     }
 
-    // LabsDistributionChart — analyses biologiques
+    // Retourne les analyses biologiques des 12 derniers mois
     public function labs(Request $request): JsonResponse
     {
+        $userId    = $request->user()->id;
         $startDate = Carbon::today()->subMonths(12)->toDateString();
 
-        $labs = AnalysisResult::whereHas('healthData', fn ($q) => $q->where('user_id', $request->user()->id))
-            ->where('analysis_date', '>=', $startDate)
-            ->orderByDesc('analysis_date')
-            ->orderByDesc('id')
-            ->get();
+        $labs = AnalysisResult::whereHas('healthData', function ($q) use ($userId) {
+            $q->where('user_id', $userId);
+        })
+        ->where('analysis_date', '>=', $startDate)
+        ->orderByDesc('analysis_date')
+        ->orderByDesc('id')
+        ->get();
 
         return response()->json(['data' => $labs]);
     }
 
-    // TreatmentMonthlyChart — prises et oublis de médicaments
+    // Retourne l'historique des prises de médicaments sur les 90 derniers jours
     public function treatmentChecks(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
         $startDate = Carbon::today()->subDays(89)->toDateString();
 
-        $data = TreatmentCheck::with('treatment.treatmentCatalog')
+        $prises = TreatmentCheck::with('treatment.treatmentCatalog')
             ->where('user_id', $userId)
             ->where('check_date', '>=', $startDate)
             ->orderBy('check_date')
-            ->get()
-            ->map(fn ($c) => [
-                'check_date'      => $c->check_date?->toDateString(),
-                'medication_name' => $c->treatment?->treatmentCatalog?->treatment_name,
-                'taken'           => (bool) $c->taken,
-            ])
-            ->values();
+            ->get();
+
+        // Formater chaque prise pour le frontend
+        $data = [];
+        foreach ($prises as $prise) {
+            $catalog = $prise->treatment ? $prise->treatment->treatmentCatalog : null;
+
+            $data[] = [
+                'check_date'      => $prise->check_date ? $prise->check_date->toDateString() : null,
+                'medication_name' => $catalog ? $catalog->treatment_name : null,
+                'taken'           => (bool) $prise->taken,
+            ];
+        }
 
         return response()->json(['data' => $data]);
     }
 
-    // ActivityDistributionChart + Top3ActivitiesChart + HydrationChart + SleepTrendsChart
-    // + LastVitalsRow (uniquement pour la dernière activité physique)
-    // Limité à 12 mois (période max utilisée par SleepTrendsChart)
-    // Seule la relation physicalActivities est chargée (meals et tobacco non utilisés dans le dashboard)
+    // Retourne les entrées du journal sur 12 mois avec les activités physiques
     public function journalEntries(Request $request): JsonResponse
     {
+        $userId    = $request->user()->id;
         $startDate = Carbon::today()->subMonths(12)->toDateString();
 
-        $entries = JournalEntry::where('user_id', $request->user()->id)
+        $entries = JournalEntry::where('user_id', $userId)
             ->where('entry_date', '>=', $startDate)
             ->with(['physicalActivities'])
             ->orderByDesc('entry_date')
@@ -130,15 +185,20 @@ class UserDashboardController extends Controller
         return response()->json(['data' => $entries]);
     }
 
-    // WeightComparisonChart — poids initial et poids actuel
+    // Retourne le poids initial et le poids actuel depuis le profil de santé
     public function weight(Request $request): JsonResponse
     {
-        $profile = HealthProfile::where('user_id', $request->user()->id)->first();
+        $userId  = $request->user()->id;
+        $profile = HealthProfile::where('user_id', $userId)->first();
+
+        // Si aucun profil trouvé, retourner null pour les deux valeurs
+        $poidInitial = $profile ? $profile->initial_weight : null;
+        $poidActuel  = $profile ? $profile->current_weight : null;
 
         return response()->json([
             'data' => [
-                'initial_weight' => $profile?->initial_weight,
-                'current_weight' => $profile?->current_weight,
+                'initial_weight' => $poidInitial,
+                'current_weight' => $poidActuel,
             ],
         ]);
     }
