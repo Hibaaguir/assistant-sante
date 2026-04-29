@@ -69,11 +69,13 @@ class TreatmentChecksSeeder extends MedicalSeeder
                 continue;
             }
 
+            $medicineName = $treatment->treatmentCatalog?->treatment_name ?? 'votre traitement';
+
             Notification::create([
                 'treatment_id' => $treatment->id,
                 'kind'         => 'reminder',
                 'target_date'  => $date->toDateString(),
-                'message'      => 'N oubliez pas de prendre ' . ($treatment->treatmentCatalog?->treatment_name ?? 'votre traitement') . ' aujourd hui.',
+                'message'      => 'N\'oubliez pas de prendre ' . $medicineName . ' aujourd\'hui.',
                 'read_at'      => $date->lt(Carbon::today()->subDays(2)) && $this->faker->boolean(60)
                     ? $date->copy()->setTime(21, $this->faker->numberBetween(0, 45))
                     : null,
@@ -114,7 +116,7 @@ class TreatmentChecksSeeder extends MedicalSeeder
                     'treatment_id' => $treatment->id,
                     'kind'         => 'missed',
                     'target_date'  => $date->toDateString(),
-                    'message'      => 'Vous avez manque au moins une prise de ' . ($treatment->treatmentCatalog?->treatment_name ?? 'votre traitement') . ' aujourd hui.',
+                    'message'      => 'Vous avez manqué au moins une prise de ' . $medicineName . ' aujourd\'hui.',
                     'read_at'      => null,
                 ]);
             }

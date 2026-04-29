@@ -60,7 +60,7 @@
         </section>
 
         <!-- Cards principale -->
-        <div class="grid flex-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div class="grid flex-1 gap-4 md:grid-cols-2">
             <!-- Dernière entrée détail -->
             <div
                 class="flex flex-col rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:border-blue-500 hover:shadow-md"
@@ -122,111 +122,25 @@
 
             <!-- Autres infos -->
             <CarteInfosDerniereEntree :last-entry="latestEntry" />
-
-            <!-- Analyse IA -->
-            <div
-                class="rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:border-blue-500 hover:shadow-md flex flex-col gap-3"
-            >
-                <div class="flex items-center gap-2">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
-                        <span class="text-base">🤖</span>
-                    </div>
-                    <h3 class="text-base font-bold text-slate-900">Analyse IA</h3>
-                </div>
-
-                <!-- Pas de données -->
-                <div
-                    v-if="!latestEntry || !latestEntry.energy"
-                    class="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500"
-                >
-                    <span class="text-2xl">🍽️</span>
-                    Ajoutez des repas à votre entrée pour que l'IA analyse votre énergie et apport en sucre.
-                </div>
-
-                <template v-else>
-                    <!-- Énergie -->
-                    <div class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2.5">
-                        <div class="flex items-center gap-2 text-sm font-medium text-slate-700">
-                            <span>⚡</span> Énergie
-                        </div>
-                        <span class="text-sm font-bold px-2.5 py-0.5 rounded-full border" :class="energyBadgeClass(latestEntry.energy)">
-                            {{ latestEntry.energy }}/10 — {{ energyLabel(latestEntry.energy) }}
-                        </span>
-                    </div>
-
-                    <!-- Apport en sucre -->
-                    <div class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2.5">
-                        <div class="flex items-center gap-2 text-sm font-medium text-slate-700">
-                            <span>🍬</span> Apport en sucre
-                        </div>
-                        <span class="text-sm font-bold px-2.5 py-0.5 rounded-full border" :class="sugarBadgeClass(latestEntry.sugar)">
-                            {{ sugarLabel(latestEntry.sugar) }}
-                        </span>
-                    </div>
-
-                    <!-- Recommandations journal (depuis l'analyse IA) -->
-                    <div v-if="journalRecs.length" class="space-y-2">
-                        <div
-                            v-for="rec in journalRecs"
-                            :key="rec.priority"
-                            class="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5"
-                        >
-                            <div class="flex items-center gap-1.5 text-xs font-semibold text-blue-700 mb-1">
-                                <span>💡</span> {{ domainLabel(rec.domain) }}
-                            </div>
-                            <p class="text-xs text-slate-600 leading-relaxed">{{ rec.action }}</p>
-                        </div>
-                    </div>
-                    <div v-else-if="!aiLoading" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-400 text-center">
-                        Aucune recommandation disponible
-                    </div>
-                </template>
-            </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from "vue";
+import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import CarteInfosDerniereEntree from "@/components/journal-entries/LastEntryInfoCard.vue";
 import { useJournalStore } from "@/stores/journal";
 import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import api from "@/services/api";
 
 const router = useRouter();
 const store = useJournalStore();
 const { lastEntry: latestEntry } = storeToRefs(store);
 
-const JOURNAL_DOMAINS = ["sleep", "nutrition", "activity", "smoking", "alcohol"];
-const DOMAIN_LABELS = {
-    sleep: "Sommeil", nutrition: "Nutrition", activity: "Activité physique",
-    smoking: "Tabac", alcohol: "Alcool",
-};
-const domainLabel = (d) => DOMAIN_LABELS[d] ?? d;
-
-const aiLoading = ref(false);
-const journalRecs = ref([]);
-
-async function loadAiRecs() {
-    aiLoading.value = true;
-    try {
-        const { data } = await api.get("/ai/analysis");
-        journalRecs.value = (data.global_recommendations ?? []).filter(
-            (r) => JOURNAL_DOMAINS.includes(r.domain)
-        );
-    } catch {
-        journalRecs.value = [];
-    } finally {
-        aiLoading.value = false;
-    }
-}
-
 onMounted(async () => {
-    await store.initialiser();
-    loadAiRecs();
+    await store.initialize();
 });
 
 const sleepLabel = (hours) => {
@@ -241,30 +155,12 @@ const stressLabel = (value) => {
     return "Modéré";
 };
 
-const energyLabel = (value) => {
-    if (value >= 8) return "Excellente";
-    if (value <= 4) return "Faible";
-    return "Bonne";
+const energyLabel = (v) => {
+    if (!v && v !== 0) return "—";
+    if (v >= 9) return "Optimale";
+    if (v >= 7) return "Satisfaisante";
+    if (v >= 5) return "Modérée";
+    if (v >= 3) return "Insuffisante";
+    return "Altérée";
 };
-
-const energyBadgeClass = (value) => {
-    if (value >= 7) return "bg-emerald-100 text-emerald-700 border-emerald-300";
-    if (value >= 4) return "bg-amber-100 text-amber-700 border-amber-300";
-    return "bg-rose-100 text-rose-700 border-rose-300";
-};
-
-const sugarLabel = (sugar) => {
-    const map = { high: "Élevé", medium: "Modéré", low: "Faible" };
-    return map[sugar] || "Modéré";
-};
-
-const sugarBadgeClass = (sugar) => {
-    const map = {
-        high: "bg-rose-100 text-rose-700 border-rose-300",
-        medium: "bg-amber-100 text-amber-700 border-amber-300",
-        low: "bg-emerald-100 text-emerald-700 border-emerald-300",
-    };
-    return map[sugar] || map.medium;
-};
-
 </script>

@@ -32,18 +32,18 @@ abstract class MedicalSeeder extends Seeder
     protected function patients(): array
     {
         $objectifs = [
-            'Reduire la tension arterielle',
-            'Mieux controler la glycemie',
-            'Ameliorer la qualite du sommeil',
-            'Augmenter l activite physique quotidienne',
+            'Réduire la tension artérielle',
+            'Mieux contrôler la glycémie',
+            'Améliorer la qualité du sommeil',
+            'Augmenter l\'activité physique quotidienne',
             'Stabiliser le poids',
-            'Diminuer les episodes de migraine',
-            'Renforcer l adherence aux traitements',
-            'Reduire le stress quotidien',
+            'Diminuer les épisodes de migraine',
+            'Renforcer l\'adhérence aux traitements',
+            'Réduire le stress quotidien',
         ];
 
-        $allergieOptions = ['Pollen', 'Acarien', 'Penicilline', 'Fruits de mer', 'Aucune'];
-        $maladieOptions  = ['Hypertension', 'Diabete de type 2', 'Asthme', 'Hypothyroidie', 'Aucune'];
+        $allergieOptions = ['Pollen', 'Acarien', 'Pénicilline', 'Fruits de mer', 'Aucune'];
+        $maladieOptions  = ['Hypertension', 'Diabète de type 2', 'Asthme', 'Hypothyroïdie', 'Aucune'];
 
         $base = [
             [
@@ -56,8 +56,8 @@ abstract class MedicalSeeder extends Seeder
                 'baseline' => ['sleep' => 7, 'stress' => 5, 'energy' => 6, 'hydration' => 2.2,
                                'heart_rate' => 74, 'systolic_pressure' => 136, 'diastolic_pressure' => 86, 'oxygen_saturation' => 97],
                 'treatments' => [
-                    ['type' => 'Antihypertenseur', 'name' => 'Amlodipine',  'dose' => '5 mg',   'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -20],
-                    ['type' => 'Antidiabetique',   'name' => 'Metformine',  'dose' => '500 mg', 'frequency' => 'day', 'daily_doses' => 2, 'start_offset' => -14],
+                    ['type' => 'Antihypertenseur', 'name' => 'Amlodipine',  'dose' => '5 mg',   'frequency' => 'day', 'daily_doses' => 1, 'start_date' => '2026-04-01', 'end_date' => '2026-06-30'],
+                    ['type' => 'Antidiabétique',   'name' => 'Metformine',  'dose' => '500 mg', 'frequency' => 'day', 'daily_doses' => 2, 'start_date' => '2026-04-08', 'end_date' => '2026-06-30'],
                 ],
             ],
             [
@@ -70,8 +70,8 @@ abstract class MedicalSeeder extends Seeder
                 'baseline' => ['sleep' => 6, 'stress' => 6, 'energy' => 5, 'hydration' => 1.9,
                                'heart_rate' => 80, 'systolic_pressure' => 130, 'diastolic_pressure' => 84, 'oxygen_saturation' => 95],
                 'treatments' => [
-                    ['type' => 'Inhalateur respiratoire', 'name' => 'Budesonide/Formoterol', 'dose' => '2 inhalations', 'frequency' => 'day', 'daily_doses' => 2, 'start_offset' => -18],
-                    ['type' => 'Antihistaminique',        'name' => 'Cetirizine',             'dose' => '10 mg',         'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -10],
+                    ['type' => 'Inhalateur respiratoire', 'name' => 'Budésonide/Formotérol', 'dose' => '2 inhalations', 'frequency' => 'day', 'daily_doses' => 2, 'start_date' => '2026-04-03', 'end_date' => '2026-06-15'],
+                    ['type' => 'Antihistaminique',        'name' => 'Cétirizine',             'dose' => '10 mg',         'frequency' => 'day', 'daily_doses' => 1, 'start_date' => '2026-04-10', 'end_date' => '2026-06-30'],
                 ],
             ],
             [
@@ -84,8 +84,8 @@ abstract class MedicalSeeder extends Seeder
                 'baseline' => ['sleep' => 7, 'stress' => 4, 'energy' => 7, 'hydration' => 2.4,
                                'heart_rate' => 70, 'systolic_pressure' => 118, 'diastolic_pressure' => 76, 'oxygen_saturation' => 98],
                 'treatments' => [
-                    ['type' => 'Therapie hormonale',  'name' => 'Levothyroxine', 'dose' => '50 mcg',  'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -30],
-                    ['type' => 'Supplement vitamine', 'name' => 'Vitamine D',    'dose' => '1000 UI', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -12],
+                    ['type' => 'Thérapie hormonale',   'name' => 'Lévothyroxine', 'dose' => '50 mcg',  'frequency' => 'day', 'daily_doses' => 1, 'start_date' => '2026-04-01', 'end_date' => '2026-06-30'],
+                    ['type' => 'Supplément vitaminé',  'name' => 'Vitamine D',    'dose' => '1000 UI', 'frequency' => 'day', 'daily_doses' => 1, 'start_date' => '2026-04-12', 'end_date' => '2026-06-30'],
                 ],
             ],
             [
@@ -98,8 +98,8 @@ abstract class MedicalSeeder extends Seeder
                 'baseline' => ['sleep' => 6, 'stress' => 5, 'energy' => 5, 'hydration' => 2.0,
                                'heart_rate' => 76, 'systolic_pressure' => 138, 'diastolic_pressure' => 88, 'oxygen_saturation' => 96],
                 'treatments' => [
-                    ['type' => 'Antihypertenseur', 'name' => 'Losartan',   'dose' => '50 mg', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -25],
-                    ['type' => 'Anticoagulant',    'name' => 'Warfarine',  'dose' => '3 mg',  'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -20],
+                    ['type' => 'Antihypertenseur', 'name' => 'Losartan',  'dose' => '50 mg', 'frequency' => 'day', 'daily_doses' => 1, 'start_date' => '2026-04-02', 'end_date' => '2026-06-30'],
+                    ['type' => 'Anticoagulant',    'name' => 'Warfarine', 'dose' => '3 mg',  'frequency' => 'day', 'daily_doses' => 1, 'start_date' => '2026-04-05', 'end_date' => '2026-06-30'],
                 ],
             ],
             [
@@ -112,8 +112,8 @@ abstract class MedicalSeeder extends Seeder
                 'baseline' => ['sleep' => 7, 'stress' => 6, 'energy' => 6, 'hydration' => 2.1,
                                'heart_rate' => 72, 'systolic_pressure' => 121, 'diastolic_pressure' => 79, 'oxygen_saturation' => 98],
                 'treatments' => [
-                    ['type' => 'Antidouleur',        'name' => 'Paracetamol', 'dose' => '500 mg', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -7],
-                    ['type' => 'Supplement vitamine', 'name' => 'Vitamine C', 'dose' => '500 mg', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -7],
+                    ['type' => 'Antidouleur',       'name' => 'Paracétamol', 'dose' => '500 mg', 'frequency' => 'day', 'daily_doses' => 1, 'start_date' => '2026-04-20', 'end_date' => '2026-05-20'],
+                    ['type' => 'Supplément vitaminé', 'name' => 'Vitamine C', 'dose' => '500 mg', 'frequency' => 'day', 'daily_doses' => 1, 'start_date' => '2026-04-20', 'end_date' => '2026-05-20'],
                 ],
             ],
             [
@@ -126,8 +126,8 @@ abstract class MedicalSeeder extends Seeder
                 'baseline' => ['sleep' => 6, 'stress' => 7, 'energy' => 5, 'hydration' => 1.8,
                                'heart_rate' => 82, 'systolic_pressure' => 134, 'diastolic_pressure' => 85, 'oxygen_saturation' => 95],
                 'treatments' => [
-                    ['type' => 'Inhalateur respiratoire', 'name' => 'Albuterol',  'dose' => '1 inhalation', 'frequency' => 'day', 'daily_doses' => 2, 'start_offset' => -16],
-                    ['type' => 'Antidouleur',             'name' => 'Ibuprofene', 'dose' => '400 mg',       'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -4],
+                    ['type' => 'Inhalateur respiratoire', 'name' => 'Albutérol',   'dose' => '1 inhalation', 'frequency' => 'day', 'daily_doses' => 2, 'start_date' => '2026-04-05', 'end_date' => '2026-06-30'],
+                    ['type' => 'Anti-inflammatoire',      'name' => 'Ibuprofène',  'dose' => '400 mg',       'frequency' => 'day', 'daily_doses' => 1, 'start_date' => '2026-04-22', 'end_date' => '2026-05-22'],
                 ],
             ],
             [
@@ -140,8 +140,8 @@ abstract class MedicalSeeder extends Seeder
                 'baseline' => ['sleep' => 8, 'stress' => 4, 'energy' => 7, 'hydration' => 2.5,
                                'heart_rate' => 68, 'systolic_pressure' => 112, 'diastolic_pressure' => 72, 'oxygen_saturation' => 99],
                 'treatments' => [
-                    ['type' => 'Antihistaminique',    'name' => 'Loratadine', 'dose' => '10 mg',      'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -11],
-                    ['type' => 'Supplement vitamine', 'name' => 'Fer',        'dose' => '1 comprime', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -9],
+                    ['type' => 'Antihistaminique',   'name' => 'Loratadine', 'dose' => '10 mg',      'frequency' => 'day', 'daily_doses' => 1, 'start_date' => '2026-04-08', 'end_date' => '2026-06-30'],
+                    ['type' => 'Supplément vitaminé', 'name' => 'Fer',       'dose' => '1 comprimé', 'frequency' => 'day', 'daily_doses' => 1, 'start_date' => '2026-04-10', 'end_date' => '2026-06-30'],
                 ],
             ],
             [
@@ -154,8 +154,8 @@ abstract class MedicalSeeder extends Seeder
                 'baseline' => ['sleep' => 6, 'stress' => 6, 'energy' => 5, 'hydration' => 2.0,
                                'heart_rate' => 78, 'systolic_pressure' => 132, 'diastolic_pressure' => 83, 'oxygen_saturation' => 96],
                 'treatments' => [
-                    ['type' => 'Antihypertenseur', 'name' => 'Ramipril',    'dose' => '5 mg',  'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -21],
-                    ['type' => 'Anticoagulant',    'name' => 'Rivaroxaban', 'dose' => '20 mg', 'frequency' => 'day', 'daily_doses' => 1, 'start_offset' => -19],
+                    ['type' => 'Antihypertenseur', 'name' => 'Ramipril',    'dose' => '5 mg',  'frequency' => 'day', 'daily_doses' => 1, 'start_date' => '2026-04-01', 'end_date' => '2026-06-30'],
+                    ['type' => 'Anticoagulant',    'name' => 'Rivaroxaban', 'dose' => '20 mg', 'frequency' => 'day', 'daily_doses' => 1, 'start_date' => '2026-04-03', 'end_date' => '2026-06-30'],
                 ],
             ],
         ];
@@ -173,7 +173,7 @@ abstract class MedicalSeeder extends Seeder
 
             // Scénarios cliniques stables pour les cas métier importants.
             if ($patient['name'] === 'Amina Benali') {
-                $diseases = ['Hypertension', 'Diabete de type 2'];
+                $diseases = ['Hypertension', 'Diabète de type 2'];
             }
             if ($patient['name'] === 'Youssef Karim') {
                 $diseases  = ['Asthme'];
@@ -271,15 +271,16 @@ abstract class MedicalSeeder extends Seeder
         ];
     }
 
+    // Retourne 'low'/'medium'/'high' pour correspondre au mapping du frontend
     protected function buildSugarIntakeLabel(int $stress, int $caffeine): string
     {
         if ($stress >= 8 || $caffeine >= 5) {
-            return 'Consommation elevee';
+            return 'high';
         }
         if ($stress <= 3 && $caffeine <= 2) {
-            return 'Consommation faible';
+            return 'low';
         }
-        return 'Consommation moderee';
+        return 'medium';
     }
 
     protected function clampInt(int $value, int $min, int $max): int

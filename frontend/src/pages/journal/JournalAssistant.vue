@@ -367,6 +367,31 @@
                                 Total: {{ hydrationTotal.toFixed(1) }} L
                             </div>
                         </div>
+
+                        <div class="border-t border-slate-100" />
+
+                        <!-- Apport en sucre -->
+                        <div>
+                            <p class="text-sm font-semibold text-slate-900">
+                                Apport en sucre
+                            </p>
+                            <div class="mt-2 flex gap-2">
+                                <button
+                                    v-for="opt in sugarOptions"
+                                    :key="opt"
+                                    type="button"
+                                    class="flex-1 rounded-lg py-2 text-sm font-medium transition-colors"
+                                    :class="
+                                        form.sugar === opt
+                                            ? 'bg-blue-600 text-white shadow-sm'
+                                            : 'bg-white text-slate-500 border border-blue-200 hover:bg-blue-100'
+                                    "
+                                    @click="form.sugar = opt"
+                                >
+                                    {{ sugarLabels[opt] }}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -813,6 +838,8 @@ const activityOptions = [
 ];
 const intensityLabels = { light: "Légère", medium: "Modérée", high: "Intense" };
 const intensityOptions = ["light", "medium", "high"];
+const sugarOptions = ["low", "medium", "high"];
+const sugarLabels = { low: "Faible", medium: "Modéré", high: "Élevé" };
 
 const step = ref(1);
 const submitAttempted = ref(false);
@@ -832,6 +859,7 @@ const form = reactive({
     cupCount: 0,
     bottleCount: 0,
     meals: [],
+    sugar: "medium",
     activities: [{ type: "", duration: 0, intensity: "medium" }],
     tobacco: false,
     alcohol: false,
@@ -909,9 +937,9 @@ const hasTobaccoErrors = computed(() =>
     Object.values(tobaccoErrors.value).some(Boolean),
 );
 
-// True when any added activity is incomplete
+// True when an activity type is selected but its duration is missing
 const hasActivityErrors = computed(() =>
-    form.activities.some((a) => !a.type || !a.duration || a.duration <= 0),
+    form.activities.some((a) => a.type && (!a.duration || a.duration <= 0)),
 );
 
 // Check alcohol fields — quantity is required if alcohol is enabled
@@ -952,6 +980,7 @@ onMounted(async () => {
     form.cigarettesPerDay = entry.cigarettesPerDay ?? null;
     form.vapeLiquidMl = entry.vapeLiquidMl ?? null;
     form.alcoholDrinks = entry.alcoholDrinks ?? null;
+    form.sugar = entry.sugar ?? "medium";
     form.cupCount = 0;
     form.bottleCount = 0;
     form.customHydration = Number(entry.hydration ?? 0);
@@ -1072,13 +1101,27 @@ const cancelEdit = async () => {
     router.push({ name: "journal-history", query: { notice: "canceled" } });
 };
 
+// Calcule le niveau d'énergie (1-10) à partir du sommeil, du stress et de la caféine
+function calculateEnergy(sleep, stress, caffeine) {
+    const sleepScore = sleep >= 7 && sleep <= 9 ? 10
+        : (sleep >= 6 || sleep === 10) ? 7
+        : sleep >= 5 ? 5
+        : sleep >= 4 ? 3
+        : 1;
+    const stressScore = Math.max(1, 10 - Number(stress));
+    const caffeineBonus = caffeine >= 1 && caffeine <= 3 ? 1 : caffeine >= 6 ? -1 : 0;
+    return Math.max(1, Math.min(10, Math.round(sleepScore * 0.5 + stressScore * 0.5 + caffeineBonus)));
+}
+
 // Build the data object to send to the API
 function buildPayload() {
     return {
         sleep: Number(form.sleep),
         stress: Number(form.stress),
+        energy: calculateEnergy(Number(form.sleep), Number(form.stress), Number(form.caffeine)),
         caffeine: Number(form.caffeine),
         hydration: Number(hydrationTotal.value.toFixed(1)),
+        sugar: form.sugar,
         meals: [...form.meals],
         calories: mealsCaloriesTotal.value,
         activities: form.activities.filter((a) => a.type),

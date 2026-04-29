@@ -33,15 +33,11 @@ class PatientTreatmentsSeeder extends MedicalSeeder
                     'treatment_name' => trim((string) $row['name']),
                 ]);
 
-                $treatStart = $startDate->copy()->addDays((int) ($row['start_offset'] ?? 0));
+                $treatStart = Carbon::parse($row['start_date']);
+                $treatEnd   = Carbon::parse($row['end_date']);
 
-                if (array_key_exists('end_offset', $row) && $row['end_offset'] !== null) {
-                    $treatEnd = $startDate->copy()->addDays((int) $row['end_offset']);
-                    if ($treatEnd->lt($treatStart)) {
-                        [$treatStart, $treatEnd] = [$treatEnd, $treatStart];
-                    }
-                } else {
-                    $treatEnd = $treatStart->copy()->addDays(30);
+                if ($treatEnd->lt($treatStart)) {
+                    [$treatStart, $treatEnd] = [$treatEnd, $treatStart];
                 }
 
                 Treatment::create([

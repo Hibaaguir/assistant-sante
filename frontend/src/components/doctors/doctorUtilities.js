@@ -16,7 +16,7 @@ function toInt(value) {
 }
 
 // Calcule l'âge exact d'une personne à partir de sa date de naissance
-export function calculateAge(dateString) {
+function calculateAge(dateString) {
     const date = parseDate(dateString);
     if (!date) return null;
     const now = new Date();
@@ -29,7 +29,7 @@ export function calculateAge(dateString) {
 }
 
 // Retourne le temps écoulé depuis une date sous forme lisible
-export function formatRelativeTime(dateString) {
+function formatRelativeTime(dateString) {
     const date = parseDate(dateString);
     if (!date) return "-";
     const heures = Math.max(0, Math.round((Date.now() - date.getTime()) / 3_600_000));
@@ -40,7 +40,7 @@ export function formatRelativeTime(dateString) {
 }
 
 // Formate une date en format long lisible
-export function formatLongDate(dateString) {
+function formatLongDate(dateString) {
     const date = parseDate(dateString);
     return date
         ? date.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })
@@ -48,7 +48,7 @@ export function formatLongDate(dateString) {
 }
 
 // Formate une date en format court lisible
-export function formatShortDate(dateString) {
+function formatShortDate(dateString) {
     const date = parseDate(dateString);
     return date
         ? date.toLocaleDateString("en-US", { day: "numeric", month: "short" }).replace(".", "")
@@ -56,19 +56,19 @@ export function formatShortDate(dateString) {
 }
 
 // Formate une date en format numérique
-export function formatNumericDate(dateString) {
+function formatNumericDate(dateString) {
     const date = parseDate(dateString);
     return date ? date.toLocaleDateString("en-US") : "-";
 }
 
 // Met la première lettre en majuscule
-export function capitalize(value) {
+function capitalize(value) {
     const text = String(value || "").trim();
     return text ? text.charAt(0).toUpperCase() + text.slice(1) : "-";
 }
 
 // Choisit la couleur de l'avatar selon le statut
-export function resolveAvatarColor(status, name) {
+function resolveAvatarColor(status, name) {
     if (status === "critical") return "#f5002d";
     if (status === "watch") return "#ef7b00";
     const palette = ["#3d57f4", "#4955f2", "#3558f0"];
@@ -76,14 +76,14 @@ export function resolveAvatarColor(status, name) {
 }
 
 // Retourne la couleur du point de statut
-export function resolveDotColor(status) {
+function resolveDotColor(status) {
     if (status === "critical") return "#ff5964";
     if (status === "watch") return "#f59d0b";
     return "#08c44e";
 }
 
 // Détermine le statut d'un patient selon ses signes vitaux
-export function resolvePatientStatus(vitals = {}) {
+function resolvePatientStatus(vitals = {}) {
     const fc  = Number(vitals.heart_rate || 0);
     const sys = Number(vitals.systolic_pressure || 0);
     const o2  = Number(vitals.oxygen_saturation || 0);
@@ -94,7 +94,7 @@ export function resolvePatientStatus(vitals = {}) {
 }
 
 // Construit les tags de la liste patient
-export function buildListTags(profile = {}) {
+function buildListTags(profile = {}) {
     const tags = [
         ...toArray(profile.maladies_chroniques),
         ...toArray(profile.allergies),
@@ -103,7 +103,7 @@ export function buildListTags(profile = {}) {
 }
 
 // Construit les tags du détail patient
-export function buildDetailTags(profile = {}) {
+function buildDetailTags(profile = {}) {
     const tag = (items, cls) => toArray(items).map((label) => ({ label, class: cls }));
     return [
         ...tag(profile.maladies_chroniques, "border-[#b8d1ff] bg-[#eef5ff] text-[#2454ff]"),
@@ -112,7 +112,7 @@ export function buildDetailTags(profile = {}) {
 }
 
 // Génère les initiales du nom
-export function buildInitials(name) {
+function buildInitials(name) {
     return (
         String(name || "")
             .trim()
@@ -160,7 +160,6 @@ export function mapPatient(item = {}) {
         nextVisit: formatLongDate(item.accepted_at || patient.created_at),
         heartRate: formatHeartRate(vitals),
         bloodPressure: formatBloodPressure(vitals),
-        glucose: "",
         status,
         tags: buildListTags(profile),
         avatarColor: resolveAvatarColor(status, patient.name),
@@ -207,7 +206,7 @@ export function mapPatientDetail(data = {}, fallbackPatient = {}) {
 }
 
 // Groupe l'historique des signes vitaux par jour
-export function groupVitalsHistory(rows) {
+function groupVitalsHistory(rows) {
     const vues = new Set();
     return toArray(rows)
         .filter((row) => {
@@ -227,40 +226,23 @@ export function groupVitalsHistory(rows) {
 }
 
 // Transforme une analyse biologique
-export function mapAnalysis(item = {}) {
-    const num = Number(item.value);
+function mapAnalysis(item = {}) {
     const unit = item.unit ? String(item.unit) : "";
     const value = item.value != null ? `${item.value}${unit ? ` ${unit}` : ""}` : "--";
-
-    const status =
-        !Number.isFinite(num) ? "Normal"
-        : num < 3.9 ? "Critical"
-        : num > 7 ? "Alert"
-        : "Normal";
-
-    const badgeClass =
-        status === "Critical" ? "bg-[#ffe3e3] text-[#e03535]"
-        : status === "Alert" ? "bg-[#ffe8b8] text-[#d47b00]"
-        : "bg-[#d7f5df] text-[#11a84d]";
 
     return {
         id: item.id,
         type: item.analysis_type || "Other",
-        result: item.result_name || "",
-        unit,
-        numericValue: Number.isFinite(num) ? num : null,
         name: [item.analysis_type, item.result_name].filter(Boolean).join(" - ") || "Analysis",
         value,
         range: "Normal range: verify",
-        status,
-        badgeClass,
         isoDate: String(item.analysis_date || "").slice(0, 10),
         date: formatNumericDate(item.analysis_date),
     };
 }
 
 // Construit les traitements
-export function buildTreatments(medicines, checks) {
+function buildTreatments(medicines, checks) {
     return toArray(medicines).map((medicine) => {
         const rows = resolveTreatmentChecksForMedicine(checks, medicine.id);
         const prises = rows.filter((r) => r?.taken).length;
@@ -281,7 +263,7 @@ export function buildTreatments(medicines, checks) {
 }
 
 // Construit l'historique des traitements
-export function buildTreatmentHistoryRows(medicines, checks) {
+function buildTreatmentHistoryRows(medicines, checks) {
     const meds = toArray(medicines);
     const rows = toArray(checks);
     const toDateKey = (val) => String(val || "").slice(0, 10);

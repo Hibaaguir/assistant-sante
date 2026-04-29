@@ -243,11 +243,6 @@
                     <h3 class="text-[18px] font-bold text-[#061a45]">
                         {{ a.name }}
                     </h3>
-                    <span
-                        class="inline-flex rounded-full px-3 py-1 text-[13px] font-medium"
-                        :class="a.badgeClass"
-                        >{{ a.status }}</span
-                    >
                 </div>
                 <div
                     class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-[15px] text-[#2d3f5e]"

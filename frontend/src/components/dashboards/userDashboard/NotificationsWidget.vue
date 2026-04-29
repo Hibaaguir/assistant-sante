@@ -49,7 +49,7 @@
                             </div>
                             <!-- Message et date de la notification -->
                             <Typography tag="h4" variant="h4-style" class="mt-1.5">{{ n.message }}</Typography>
-                            <Typography tag="h4" variant="default">{{ formatDate(n.created_at) }}</Typography>
+                            <Typography tag="h4" variant="default">{{ formatDate(n.target_date, n.kind) }}</Typography>
                         </div>
                     </div>
                 </li>
@@ -121,10 +121,11 @@ async function markAllRead() {
     }
 }
 
-// Formate une date ISO en format lisible (ex: "14 Apr, 09:30")
-function formatDate(val) {
-    if (!val) return "";
-    const d = new Date(val);
+// Formate la date de la notification selon son type : reminder → 08:00, missed → 21:00
+function formatDate(targetDate, kind) {
+    if (!targetDate) return "";
+    const hour = kind === "missed" ? 21 : 8;
+    const d = new Date(`${targetDate}T${String(hour).padStart(2, "0")}:00:00`);
     return isNaN(d) ? "" : d.toLocaleString("en-US", {
         day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
     });

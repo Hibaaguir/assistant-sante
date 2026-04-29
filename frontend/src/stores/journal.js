@@ -72,7 +72,6 @@ function toVue(model) {
             vape: !!vapeEntry,
         },
         cigarettesPerDay: cigaretteEntry?.cigarettes_per_day ?? null,
-        vapeFrequency: null,
         vapeLiquidMl: vapeEntry?.puffs_per_day ?? null,
         alcoholDrinks: model.alcohol_glasses,
     };
@@ -106,7 +105,6 @@ function toPayload(entry) {
         alcohol: Boolean(entry.alcohol),
         tobacco_types: entry.tobaccoTypes ?? { cigarette: false, vape: false },
         cigarettes_per_day: convertToIntOrNull(entry.cigarettesPerDay),
-        vape_frequency: entry.vapeFrequency ?? null,
         vape_liquid_ml: convertToIntOrNull(entry.vapeLiquidMl),
         alcohol_glasses: convertToIntOrNull(entry.alcoholDrinks),
     };
@@ -142,7 +140,7 @@ export const useJournalStore = defineStore("journal", () => {
         }
 
         if (f.type === "activity") {
-            return entries.value.filter((entry) => Boolean(entry.activityType));
+            return entries.value.filter((entry) => entry.activities?.length > 0);
         }
 
         if (f.type === "month") {

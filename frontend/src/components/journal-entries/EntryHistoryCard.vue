@@ -101,7 +101,14 @@ const fmtSommeil = (h) => {
     return mm ? `${hh}h ${mm}min` : `${hh}h`;
 };
 const fmtStress = (v) => (v >= 8 ? "Élevé" : v <= 3 ? "Faible" : "Modéré");
-const fmtEnergie = (v) => (v >= 8 ? "Excellente" : v <= 4 ? "Faible" : "Bonne");
+const fmtEnergie = (v) => {
+    if (!v && v !== 0) return "—";
+    if (v >= 9) return "Optimale";
+    if (v >= 7) return "Satisfaisante";
+    if (v >= 5) return "Modérée";
+    if (v >= 3) return "Insuffisante";
+    return "Altérée";
+};
 // Formate une date ISO en mois + année (ex: avril 2026)
 const fmtMois = (iso) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString("fr-FR", {
@@ -110,28 +117,15 @@ const fmtMois = (iso) =>
     });
 
 // Formatage simple des données liées au tabac pour l’affichage
-const fmtTabac = ({
-    tobacco,
-    tobaccoTypes,
-    cigarettesPerDay,
-    vapeFrequency,
-    vapeLiquidMl,
-}) => {
-    // Si l’utilisateur ne fume pas
+const fmtTabac = ({ tobacco, tobaccoTypes, cigarettesPerDay, vapeLiquidMl }) => {
     if (!tobacco) return "Non";
-
-    // On construit une liste de descriptions
     const parts = [];
-
     if (tobaccoTypes?.cigarette && cigarettesPerDay != null) {
         parts.push(`Cigarette • ${cigarettesPerDay}/j`);
     }
-
-    if (tobaccoTypes?.vape && vapeFrequency) {
-        parts.push(`Vape • ${vapeFrequency} • ${vapeLiquidMl} ml`);
+    if (tobaccoTypes?.vape && vapeLiquidMl != null) {
+        parts.push(`Vape • ${vapeLiquidMl} taffes/j`);
     }
-
-    // Si on a des infos → on les affiche, sinon "Oui"
     return parts.length > 0 ? parts.join(", ") : "Oui";
 };
 

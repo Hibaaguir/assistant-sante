@@ -120,7 +120,7 @@
                 </span>
             </div>
 
-            <!-- Énergie (détectée par IA) -->
+            <!-- Énergie -->
             <div
                 v-if="entree.energy"
                 class="flex items-center justify-between py-0.5"
@@ -135,7 +135,7 @@
                     class="text-base font-semibold px-2 py-0.5 rounded-full border"
                     :class="energyBadgeClass(entree.energy)"
                 >
-                    {{ entree.energy }}/10
+                    {{ formatEnergy(entree.energy) }}
                 </span>
             </div>
         </div>
@@ -189,8 +189,8 @@ const formatTobacco = (e) => {
     if (e.tobaccoTypes?.cigarette && e.cigarettesPerDay != null) {
         parts.push(`Cigarette • ${e.cigarettesPerDay}/j`);
     }
-    if (e.tobaccoTypes?.vape && e.vapeFrequency) {
-        parts.push(`Vape • ${e.vapeFrequency}`);
+    if (e.tobaccoTypes?.vape && e.vapeLiquidMl != null) {
+        parts.push(`Vape • ${e.vapeLiquidMl} taffes/j`);
     }
     return parts.length ? parts.join(" + ") : "Oui";
 };
@@ -218,10 +218,19 @@ const sugarBadgeClass = (sugar) => {
     return map[sugar] || map.medium;
 };
 
+// Retourne le libellé professionnel du niveau d’énergie
+const formatEnergy = (v) => {
+    if (!v && v !== 0) return "—";
+    if (v >= 9) return "Optimale";
+    if (v >= 7) return "Satisfaisante";
+    if (v >= 5) return "Modérée";
+    if (v >= 3) return "Insuffisante";
+    return "Altérée";
+};
+
 // Détermine la couleur du badge selon le niveau d’énergie
 const energyBadgeClass = (energy) => {
-    if (energy >= 7)
-        return "bg-emerald-100 text-emerald-700 border-emerald-300";
+    if (energy >= 7) return "bg-emerald-100 text-emerald-700 border-emerald-300";
     if (energy >= 4) return "bg-amber-100 text-amber-700 border-amber-300";
     return "bg-rose-100 text-rose-700 border-rose-300";
 };
