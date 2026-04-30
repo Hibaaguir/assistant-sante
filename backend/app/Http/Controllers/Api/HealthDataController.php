@@ -24,10 +24,11 @@ class HealthDataController extends Controller
     public function overview(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
-        $days      = max(1, min((int) $request->query('days', 7), 30));
+        $days      = max(1, min((int) $request->query('days', 30), 30));
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
 
         $labResults = AnalysisResult::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
+            ->where('analysis_date', '>=', $startDate)
             ->orderByDesc('analysis_date')
             ->orderByDesc('id')
             ->get();
@@ -42,7 +43,7 @@ class HealthDataController extends Controller
             'message' => 'Données de santé récupérées avec succès.',
             'data' => [
                 'latest_vitals'       => $this->healthDataService->latestVitals($userId),
-'lab_results'         => $labResults,
+                'lab_results'         => $labResults,
                 'treatment_medicines' => $this->healthDataService->resolveTreatmentMedicines($userId),
                 'doctor_observations' => $doctorObservations,
             ],
@@ -53,7 +54,7 @@ class HealthDataController extends Controller
     public function indexVitals(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
-        $days      = max(1, min((int) $request->query('days', 30), 90));
+        $days      = max(1, min((int) $request->query('days', 30), 30));
         $startDate = Carbon::today()->subDays($days - 1);
 
         $vitals = VitalSigns::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))

@@ -256,9 +256,9 @@ function ensureDayTracking(dayKey) {
 async function loadHealthData() {
     try {
         const [res, vitalsRes, historyRes] = await Promise.all([
-            api.get("/health-data/overview", { params: { days: 7 } }),
+            api.get("/health-data/overview", { params: { days: 30 } }),
             api.get("/health-data/vitals", { params: { days: 30 } }),
-            api.get("/health-data/treatment-checks", { params: { days: 90 } }),
+            api.get("/health-data/treatment-checks", { params: { days: 30 } }),
         ]);
         const data = res?.data?.data ?? {};
         const vitalsRaw = Array.isArray(vitalsRes?.data?.data) ? vitalsRes.data.data : [];

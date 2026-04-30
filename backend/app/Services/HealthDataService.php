@@ -11,29 +11,31 @@ class HealthDataService
 {
     // Resoudre la liste des traitements actifs pour aujourd'hui
     public function resolveTreatmentMedicines(int $userId): array
-    {
-        $today = Carbon::today()->toDateString();
+{
+    $today = Carbon::today()->toDateString();
 
-        $treatments = Treatment::query()
-            ->with('treatmentCatalog')
-            ->whereHas('healthData', function ($q) use ($userId) {
-                $q->where('user_id', $userId);
-            })
-            ->where('start_date', '<=', $today)
-            ->where('end_date', '>=', $today)
-            ->get();
+    $treatments = Treatment::query()
+        ->with('treatmentCatalog')
+        ->whereHas('healthData', function ($q) use ($userId) {
+            $q->where('user_id', $userId);
+        })
+        ->where('start_date', '<=', $today)
+        ->where('end_date', '>=', $today)
+        ->get();
+    
 
-        $medicines = [];
-        foreach ($treatments as $treatment) {
-            $medicine = $this->normalizeTreatment($treatment);
-            if ($medicine !== null) {
-                $medicines[] = $medicine;
-            }
+    $medicines = [];
+
+    foreach ($treatments as $treatment) {
+        $medicine = $this->normalizeTreatment($treatment);
+
+        if ($medicine !== null) {
+            $medicines[] = $medicine;
         }
-
-        return $medicines;
     }
 
+    return $medicines;
+}
     // Recuperer le dernier enregistrement de signes vitaux pour l'utilisateur
     public function latestVitals(int $userId): ?VitalSigns
     {
@@ -83,12 +85,14 @@ class HealthDataService
         if (!$catalog) return null;
 
         $name  = trim($catalog->treatment_name ?? '');
+        $type  = trim($catalog->treatment_type ?? '');
         $doses = $treatment->daily_doses ?? 0;
         $unit  = trim($treatment->frequency ?? '');
         $dose  = trim($treatment->dose ?? '');
 
         return [
             'id'              => $treatment->id,
+            'type'            => $type,
             'name'            => $name,
             'dose'            => $dose,
             'frequency_unit'  => $unit,

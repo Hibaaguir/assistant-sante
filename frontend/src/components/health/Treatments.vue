@@ -45,7 +45,9 @@
                         <p class="text-lg font-semibold text-black">
                             {{ card.label }}
                         </p>
-                        <p class="mt-4 text-4xl font-bold leading-none text-black">
+                        <p
+                            class="mt-4 text-4xl font-bold leading-none text-black"
+                        >
                             {{ card.value }}
                         </p>
                         <p class="mt-2 text-[14px] font-medium text-black">
@@ -70,8 +72,14 @@
             class="mt-6"
             title="Historique"
             subtitle="Filtrez par date, médicament ou observance."
-            :show-reset="!!(treatDate || treatMed !== 'all' || treatStatus !== 'all')"
-            @reset="treatDate = ''; treatMed = 'all'; treatStatus = 'all';"
+            :show-reset="
+                !!(treatDate || treatMed !== 'all' || treatStatus !== 'all')
+            "
+            @reset="
+                treatDate = '';
+                treatMed = 'all';
+                treatStatus = 'all';
+            "
         >
             <input v-model="treatDate" type="date" class="input-field" />
             <select v-model="treatMed" class="input-field">
@@ -240,8 +248,8 @@
                             estJourComplet(day.key)
                                 ? 'border-green-500 bg-gradient-to-r from-green-100 to-green-200 text-green-900 hover:shadow-md'
                                 : estJourPartiel(day.key)
-                                    ? 'border-slate-400 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 hover:shadow-md'
-                                    : 'border-gray-300 bg-white text-slate-900 hover:border-gray-400',
+                                  ? 'border-slate-400 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 hover:shadow-md'
+                                  : 'border-gray-300 bg-white text-slate-900 hover:border-gray-400',
                             'disabled:cursor-not-allowed disabled:opacity-50',
                         ]"
                     >
@@ -255,8 +263,8 @@
                                     estJourComplet(day.key)
                                         ? 'border-green-500 bg-green-500 text-white'
                                         : estJourPartiel(day.key)
-                                            ? 'border-slate-400 bg-slate-400 text-white'
-                                            : 'border-slate-300 bg-white text-transparent'
+                                          ? 'border-slate-400 bg-slate-400 text-white'
+                                          : 'border-slate-300 bg-white text-transparent'
                                 "
                             >
                                 <svg
@@ -267,7 +275,10 @@
                                     stroke-width="3"
                                 >
                                     <path
-                                        v-if="estJourPartiel(day.key) && !estJourComplet(day.key)"
+                                        v-if="
+                                            estJourPartiel(day.key) &&
+                                            !estJourComplet(day.key)
+                                        "
                                         d="M5 12h14"
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
@@ -307,12 +318,17 @@
                     >
                         {{ med.name }}
                     </p>
+                    <p
+                        v-if="med.type"
+                        class="text-[13px] font-medium text-blue-700 mt-1"
+                    >
+                        {{ med.type }}
+                    </p>
                     <p class="mt-2 text-[13px] font-medium text-slate-800">
-                        {{ med.dose }} - {{ med.frequency_count }} fois / {{ translateUnit(med.frequency_unit) }}
+                        {{ med.dose }} - {{ med.frequency_count }} fois /
+                        {{ translateUnit(med.frequency_unit) }}
                     </p>
-                    <p class="mt-1 text-[13px] font-medium text-slate-700">
-                        {{ med.note }}
-                    </p>
+                
                 </article>
             </div>
         </section>
@@ -521,7 +537,7 @@ import {
 
 const MAX_DAILY_DOSES = 12;
 const MAX_MONTHLY_FREQUENCY = 31;
-const HISTORY_ALL_DAYS = 90;
+const HISTORY_ALL_DAYS = 30;
 const DEFAULT_HISTORY_DAYS = 7;
 const ALLOWED_FREQUENCY_UNITS = ["jour", "semaine", "mois"];
 const FREQUENCY_UNIT_FR = { day: "jour", week: "semaine", month: "mois" };
@@ -543,7 +559,6 @@ const selectedTreatmentDayKey = ref(null);
 const treatDate = ref("");
 const treatMed = ref("all");
 const treatStatus = ref("all");
-
 
 const TREATMENT_HISTORY_CARD_CONFIG = [
     {
@@ -705,12 +720,21 @@ function construireClesDerniersJours(periodDays) {
 }
 
 function resoudreFrequenceTraitement(med) {
-    const frequencyUnit = translateUnit(String(med?.frequency_unit || "").trim().toLowerCase());
+    const frequencyUnit = translateUnit(
+        String(med?.frequency_unit || "")
+            .trim()
+            .toLowerCase(),
+    );
     const frequencyCount = Number(med?.frequency_count ?? 1);
 
     return {
-        unit: ALLOWED_FREQUENCY_UNITS.includes(frequencyUnit) ? frequencyUnit : "jour",
-        count: Math.max(1, Math.min(Math.round(frequencyCount), MAX_MONTHLY_FREQUENCY)),
+        unit: ALLOWED_FREQUENCY_UNITS.includes(frequencyUnit)
+            ? frequencyUnit
+            : "jour",
+        count: Math.max(
+            1,
+            Math.min(Math.round(frequencyCount), MAX_MONTHLY_FREQUENCY),
+        ),
     };
 }
 
