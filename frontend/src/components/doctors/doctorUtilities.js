@@ -28,37 +28,13 @@ function calculateAge(dateString) {
     return age;
 }
 
-// Retourne le temps écoulé depuis une date sous forme lisible
-function formatRelativeTime(dateString) {
-    const date = parseDate(dateString);
-    if (!date) return "-";
-    const heures = Math.max(0, Math.round((Date.now() - date.getTime()) / 3_600_000));
-    if (heures < 1) return "Less than 1h ago";
-    if (heures < 24) return `${heures}h ago`;
-    const jours = Math.round(heures / 24);
-    return jours === 1 ? "1 day ago" : `${jours} days ago`;
-}
 
 // Formate une date en format long lisible
-function formatLongDate(dateString) {
+export function formatLongDate(dateString) {
     const date = parseDate(dateString);
     return date
-        ? date.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })
+        ? date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
         : "-";
-}
-
-// Formate une date en format court lisible
-function formatShortDate(dateString) {
-    const date = parseDate(dateString);
-    return date
-        ? date.toLocaleDateString("en-US", { day: "numeric", month: "short" }).replace(".", "")
-        : "-";
-}
-
-// Formate une date en format numérique
-function formatNumericDate(dateString) {
-    const date = parseDate(dateString);
-    return date ? date.toLocaleDateString("en-US") : "-";
 }
 
 // Met la première lettre en majuscule
@@ -156,7 +132,6 @@ export function mapPatient(item = {}) {
         initials: buildInitials(patient.name),
         email: patient.email || "",
         age: calculateAge(patient.date_of_birth),
-        lastSeen: formatRelativeTime(dateRef),
         nextVisit: formatLongDate(item.accepted_at || patient.created_at),
         heartRate: formatHeartRate(vitals),
         bloodPressure: formatBloodPressure(vitals),
@@ -189,7 +164,6 @@ export function mapPatientDetail(data = {}, fallbackPatient = {}) {
         name: patient.name || fallbackPatient.name,
         age: calculateAge(patient.date_of_birth) || fallbackPatient.age,
         gender: capitalize(profile.gender),
-        lastSeen: formatRelativeTime(vitals.measured_at || patient.updated_at || patient.created_at),
         detailTags: buildDetailTags(profile),
         vitalsHistory: groupVitalsHistory(toArray(data.vitals)),
         analyses: toArray(data.lab_results).map(mapAnalysis),
@@ -218,7 +192,7 @@ function groupVitalsHistory(rows) {
         .map((row) => ({
             id: row.id,
             isoDate: String(row.measured_at || "").slice(0, 10),
-            date: formatShortDate(row.measured_at),
+            date: formatLongDate(row.measured_at),
             heartRate: formatHeartRate(row),
             bloodPressure: formatBloodPressure(row),
             saturation: formatSaturation(row),
@@ -237,7 +211,7 @@ function mapAnalysis(item = {}) {
         value,
         range: "Normal range: verify",
         isoDate: String(item.analysis_date || "").slice(0, 10),
-        date: formatNumericDate(item.analysis_date),
+        date: formatLongDate(item.analysis_date),
     };
 }
 

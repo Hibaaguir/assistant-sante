@@ -37,11 +37,6 @@
                     <span>{{ patient.age }} ans</span>
                     <span>•</span>
                     <span>{{ patient.gender }}</span>
-                    <span>•</span>
-                    <span class="inline-flex items-center gap-1.5">
-                        <IconClock class="h-[16px] w-[16px]" />
-                        Dernière mise à jour : {{ patient.lastSeen }}
-                    </span>
                 </div>
 
                 <div class="mt-4 flex flex-wrap gap-3">
@@ -348,11 +343,11 @@ import api from "@/services/api";
 import {
     IconArrowLeft,
     IconCalendar,
-    IconClock,
     IconHeart,
     IconLink,
     IconWave,
 } from "@/components/doctors/DoctorIcons.js";
+import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import AlertMessage from "@/components/ui/AlertMessage.vue";
 import FilterCard from "@/components/ui/FilterCard.vue";
@@ -501,16 +496,7 @@ const filteredTreatments = computed(() => {
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 function longDate(iso) {
-    if (!iso) return "-";
-    const d = new Date(`${iso}T00:00:00`);
-    return isNaN(d)
-        ? iso
-        : d.toLocaleDateString("fr-FR", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-          });
+    return formatLongDate(iso);
 }
 
 // ─── API — save observation ───────────────────────────────────────────────────
@@ -537,7 +523,7 @@ async function saveObservation() {
         localObservations.value = [
             {
                 isoDate: new Date().toISOString().slice(0, 10),
-                date: new Date().toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" }),
+                date: formatLongDate(new Date().toISOString().slice(0, 10)),
                 observation: text,
             },
             ...localObservations.value,

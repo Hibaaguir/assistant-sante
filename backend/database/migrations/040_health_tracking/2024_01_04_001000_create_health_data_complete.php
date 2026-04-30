@@ -1,5 +1,5 @@
 <?php
-// Migration: creer les tables de suivi de sante (signes vitaux, resultats d'analyse, verifications de traitement)
+// Migration: creer les tables de suivi de sante (signes vitaux, resultats d'analyse, traitements, verifications de traitement)
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -8,8 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Central parent table: one record per user per day.
-        // Holds the doctor's single general observation for all health data of that day.
         Schema::create('health_data', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
@@ -20,7 +18,7 @@ return new class extends Migration
 
             $table->unique(['user_id', 'date']);
             $table->index('user_id');
-        }); 
+        });
 
         Schema::create('vital_signs', function (Blueprint $table) {
             $table->id();
@@ -48,10 +46,30 @@ return new class extends Migration
             $table->index(['health_data_id', 'analysis_date']);
         });
 
+        Schema::create('treatments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('health_data_id')->constrained('health_data')->cascadeOnDelete();
+            $table->foreignId('treatment_catalog_id')->nullable()->constrained('treatment_catalogs')->nullOnDelete();
+
+            $table->string('dose', 120)->nullable();
+            $table->string('frequency', 120)->nullable();
+            $table->unsignedTinyInteger('daily_doses')->nullable();
+
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
+
+            $table->timestamps();
+
+            $table->index('health_data_id');
+            $table->index('treatment_catalog_id');
+            $table->index('start_date');
+            $table->index(['health_data_id', 'treatment_catalog_id']);
+        });
+
         Schema::create('treatment_checks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('treatment_id')->constrained('treatments')->cascadeOnDelete();
-            $table->foreignId('health_data_id')->nullable()->constrained('health_data')->nullOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->date('check_date');
             $table->string('medication_key', 120)->nullable();
             $table->boolean('taken')->default(false);
@@ -60,21 +78,14 @@ return new class extends Migration
 
             $table->unique(['treatment_id', 'check_date', 'medication_key'], 'treatment_checks_unique');
             $table->index(['treatment_id', 'check_date']);
-            $table->index(['health_data_id', 'check_date']);
-        });
-
-        Schema::table('treatments', function (Blueprint $table) {
-            $table->foreign('health_data_id')->references('id')->on('health_data')->cascadeOnDelete();
+            $table->index(['user_id', 'check_date']);
         });
     }
 
     public function down(): void
     {
-        Schema::table('treatments', function (Blueprint $table) {
-            $table->dropForeign(['health_data_id']);
-        });
-
         Schema::dropIfExists('treatment_checks');
+        Schema::dropIfExists('treatments');
         Schema::dropIfExists('analysis_results');
         Schema::dropIfExists('vital_signs');
         Schema::dropIfExists('health_data');

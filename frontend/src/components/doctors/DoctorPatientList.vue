@@ -104,12 +104,6 @@
                         >
                             <span>{{ patient.age }} ans</span>
                             <span class="text-[#9aa5b7]">•</span>
-                            <span class="inline-flex items-center gap-1.5">
-                                <IconClock class="size-4" />{{
-                                    patient.lastSeen
-                                }}
-                            </span>
-                            <span class="text-[#9aa5b7]">•</span>
                             <span>RDV : {{ patient.nextVisit }}</span>
                         </div>
 
@@ -174,7 +168,6 @@ import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import {
     IconAlert,
-    IconClock,
     IconDrop,
     IconHeart,
     IconHeartFilled,

@@ -508,6 +508,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import api from "@/services/api";
+import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
 import { useNotificationsStore } from "@/stores/notifications";
 import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
@@ -681,16 +682,7 @@ const treatmentHistoryCards = computed(() => {
 
 // Cette fonction formate la date pour l'historique des prises (sans annee).
 function formaterDateHistoriqueTraitement(dateIso) {
-    if (!dateIso) return "";
-    const date = construireDateDepuisCle(dateIso);
-
-    if (!date) return "";
-
-    return date.toLocaleDateString("fr-FR", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-    });
+    return formatLongDate(dateIso);
 }
 
 function obtenirCleJour(date) {

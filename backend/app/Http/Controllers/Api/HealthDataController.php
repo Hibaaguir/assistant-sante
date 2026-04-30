@@ -54,7 +54,6 @@ class HealthDataController extends Controller
             'message' => 'Données de santé récupérées avec succès.',
             'data' => [
                 'latest_vitals'       => $this->healthDataService->latestVitals($userId),
-                'vitals'              => $vitals,
                 'vitals_chart'        => $this->healthDataService->buildVitalSignsChartSeries($vitals, $days),
                 'lab_results'         => $labResults,
                 'treatment_medicines' => $this->healthDataService->resolveTreatmentMedicines($userId),
@@ -82,44 +81,36 @@ class HealthDataController extends Controller
         ]);
     }
 
-    // Enregistrer une nouvelle mesure de signes vitaux
-    // Un enregistrement par utilisateur par jour — si un existe déjà, fusionner les nouvelles valeurs
+    // Enregistrer ou mettre à jour les signes vitaux du jour
     public function storeVital(StoreVitalSignsRequest $request): JsonResponse
     {
-        $userId     = $request->user()->id;
         $data       = $request->validated();
         $measuredAt = Carbon::parse($data['measured_at']);
 
         $healthData = HealthData::firstOrCreate([
-            'user_id' => $userId,
+            'user_id' => $request->user()->id,
             'date'    => $measuredAt->toDateString(),
         ]);
 
         $existing = VitalSigns::where('health_data_id', $healthData->id)->first();
 
-        if ($existing) {
-            $existing->update([
-                'heart_rate'         => $data['heart_rate']         ?? $existing->heart_rate,
-                'systolic_pressure'  => $data['systolic_pressure']  ?? $existing->systolic_pressure,
-                'diastolic_pressure' => $data['diastolic_pressure'] ?? $existing->diastolic_pressure,
-                'oxygen_saturation'  => $data['oxygen_saturation']  ?? $existing->oxygen_saturation,
-                'measured_at'        => $measuredAt,
-            ]);
+        $fields = [
+            'heart_rate'         => $data['heart_rate']         ?? $existing?->heart_rate,
+            'systolic_pressure'  => $data['systolic_pressure']  ?? $existing?->systolic_pressure,
+            'diastolic_pressure' => $data['diastolic_pressure'] ?? $existing?->diastolic_pressure,
+            'oxygen_saturation'  => $data['oxygen_saturation']  ?? $existing?->oxygen_saturation,
+            'measured_at'        => $measuredAt,
+        ];
 
+        if ($existing) {
+            $existing->update($fields);
             return response()->json([
                 'message' => 'Signe vital mis à jour avec succès.',
                 'data'    => $existing->fresh(),
             ]);
         }
 
-        $vital = VitalSigns::create([
-            'health_data_id'     => $healthData->id,
-            'heart_rate'         => $data['heart_rate']         ?? null,
-            'systolic_pressure'  => $data['systolic_pressure']  ?? null,
-            'diastolic_pressure' => $data['diastolic_pressure'] ?? null,
-            'oxygen_saturation'  => $data['oxygen_saturation']  ?? null,
-            'measured_at'        => $measuredAt,
-        ]);
+        $vital = VitalSigns::create(['health_data_id' => $healthData->id, ...$fields]);
 
         return response()->json([
             'message' => 'Signe vital enregistré avec succès.',
@@ -130,9 +121,7 @@ class HealthDataController extends Controller
     // Récupérer tous les résultats d'analyses pour l'utilisateur
     public function indexLabResults(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
-
-        $labResults = AnalysisResult::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
+        $labResults = AnalysisResult::whereHas('healthData', fn ($q) => $q->where('user_id', $request->user()->id))
             ->orderByDesc('analysis_date')
             ->orderByDesc('id')
             ->get();
@@ -146,17 +135,13 @@ class HealthDataController extends Controller
     // Enregistrer un nouveau résultat d'analyse
     public function storeLabResult(StoreAnalysisResultRequest $request): JsonResponse
     {
-        $userId     = $request->user()->id;
         $data       = $request->validated();
         $healthData = HealthData::firstOrCreate([
-            'user_id' => $userId,
+            'user_id' => $request->user()->id,
             'date'    => $data['analysis_date'],
         ]);
 
-        $labResult = AnalysisResult::create([
-            ...$data,
-            'health_data_id' => $healthData->id,
-        ]);
+        $labResult = AnalysisResult::create([...$data, 'health_data_id' => $healthData->id]);
 
         return response()->json([
             'message' => 'Résultat d\'analyse enregistré avec succès.',
@@ -194,16 +179,15 @@ class HealthDataController extends Controller
     // Récupérer les vérifications de traitement pour l'utilisateur
     public function indexTreatmentChecks(Request $request): JsonResponse
     {
-    $userId = $request->user()->id;
-    $days = (int) $request->query('days');
-    if ($days < 1) {
-        return response()->json(['message' => 'Le paramètre days doit être supérieur ou égal à 1.'], 422);
-    }
-    $startDate = Carbon::today()->subDays($days - 1)->toDateString();
+        $days = (int) $request->query('days');
+
+        if ($days < 1) {
+            return response()->json(['message' => 'Le paramètre days doit être supérieur ou égal à 1.'], 422);
+        }
 
         $checks = TreatmentCheck::with('treatment.treatmentCatalog')
-            ->where('user_id', $userId)
-            ->where('check_date', '>=', $startDate)
+            ->where('user_id', $request->user()->id)
+            ->where('check_date', '>=', Carbon::today()->subDays($days - 1)->toDateString())
             ->orderBy('check_date')
             ->get();
 
@@ -214,16 +198,12 @@ class HealthDataController extends Controller
     }
 
     // Enregistrer ou mettre à jour un lot de vérifications de traitement
-    // Chaque vérification a une clé comme "12__dose_1" — extraire l'ID du traitement
     public function syncTreatmentChecks(SyncTreatmentCheckRequest $request): JsonResponse
     {
-        $user   = $request->user();
-        $userId = $user->id;
+        $user = $request->user();
 
         foreach ($request->validated('checks') as $check) {
-            // Format du medication_key validé par la requête
-            $parts = explode('__dose_', $check['medication_key'], 2);
-            $treatmentId = (int) $parts[0];
+            $treatmentId = (int) explode('__dose_', $check['medication_key'], 2)[0];
 
             if (!$user->treatments()->where('treatments.id', $treatmentId)->exists()) {
                 continue;
@@ -231,7 +211,7 @@ class HealthDataController extends Controller
 
             TreatmentCheck::updateOrCreate(
                 [
-                    'user_id'        => $userId,
+                    'user_id'        => $user->id,
                     'treatment_id'   => $treatmentId,
                     'check_date'     => $check['check_date'],
                     'medication_key' => $check['medication_key'],

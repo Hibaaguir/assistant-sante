@@ -478,10 +478,10 @@
                                     </div>
 
                                     <p
-                                        v-if="submitAttempted && (!act.type || !act.duration || act.duration <= 0)"
+                                        v-if="submitAttempted && act.type && (!act.duration || act.duration <= 0)"
                                         class="text-sm text-red-500"
                                     >
-                                        {{ !act.type ? "Sélectionnez un type d'activité." : "La durée est obligatoire." }}
+                                        La durée est obligatoire.
                                     </p>
                                 </div>
                             </div>

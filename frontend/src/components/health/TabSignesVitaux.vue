@@ -345,6 +345,7 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
+import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
 // Proper .vue components — no render functions needed
 import BloodPressureCard from "./BloodPressureCard.vue";
 import VitalCard from "./VitalCard.vue";
@@ -446,7 +447,7 @@ watch(
 // ─── Computed ─────────────────────────────────────────────────────────────────
 const latestVitalDate = computed(() => isoDate(props.latestVital?.measured_at));
 const latestVitalMeasuredAtLabel = computed(() =>
-    props.latestVital?.measured_at ? formatDate(latestVitalDate.value) : "",
+    props.latestVital?.measured_at ? formatLongDate(latestVitalDate.value) : "",
 );
 const peutModifierDerniereMesure = computed(() =>
     Boolean(props.latestVital?.measured_at),
@@ -538,21 +539,6 @@ function isValidMeasure(v) {
     return (
         v !== null && v !== undefined && v !== "" && Number.isFinite(Number(v))
     );
-}
-function formatDate(iso) {
-    return iso ? new Date(`${iso}T00:00:00`).toLocaleDateString("fr-FR") : "";
-}
-function formatLongDate(iso) {
-    if (!iso) return "";
-    const date = new Date(`${iso}T00:00:00`);
-    const formatted = date.toLocaleDateString("fr-FR", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    });
-    // Capitalize first letter (weekday)
-    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
 

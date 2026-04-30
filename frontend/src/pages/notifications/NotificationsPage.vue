@@ -138,6 +138,7 @@ import api from "@/services/api";
 import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { useAuthStore } from "@/stores/auth";
+import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -176,12 +177,7 @@ const filtered = computed(() => {
 });
 
 function formatDate(dateStr) {
-    if (!dateStr) return "";
-    return new Date(`${dateStr}T00:00:00`).toLocaleDateString("fr-FR", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-    });
+    return formatLongDate(dateStr);
 }
 
 async function load() {

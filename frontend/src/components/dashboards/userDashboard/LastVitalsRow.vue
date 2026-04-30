@@ -80,6 +80,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import api from "@/services/api";
+import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
 import MetricSummaryCard from "./MetricSummaryCard.vue";
 import WeightCard from "./WeightComparisonChart.vue";
 
@@ -141,12 +142,8 @@ function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// Formate une date en français : "12 avr. 2025"
 function formatDate(dateStr) {
-    if (!dateStr) return null;
-    return new Date(dateStr).toLocaleDateString("fr-FR", {
-        day: "numeric", month: "short", year: "numeric",
-    });
+    return formatLongDate(dateStr);
 }
 
 // Charge les signes vitaux et les activités depuis l'API

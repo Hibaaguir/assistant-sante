@@ -1,6 +1,7 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import api from "@/services/api";
+import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
 // transformateur de données entre le format backend et le format utilisé dans le frontend, notamment pour les champs liés à l'activité physique et au tabac qui ont une structure différente entre les deux côtés
 function convertToIntOrNull(value) {
     if (value == null || value === "") return null;
@@ -20,19 +21,6 @@ function calculateCaloriesFromMeals(meals) {
 
     return Math.max(0, Math.min(total, 65535));
 }
-// Formater la date au format "Lundi 1 janvier" en français
-function formatDateLabel(dateIso) {
-    if (!dateIso) return "";
-    const date = new Date(`${dateIso}T00:00:00`);
-    if (Number.isNaN(date.getTime())) return dateIso;
-    const formatted = date.toLocaleDateString("fr-FR", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-    });
-    // Mettre la première lettre en majuscule (car toLocaleDateString peut retourner le jour en minuscule)
-    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-}
 // Convertir une entrée du format backend au format utilisé dans le frontend, en gérant les différences de structure pour les activités physiques et le tabac
 function toVue(model) {
     // Physical activity: on prend la première activité s'il y en a, sinon null
@@ -51,7 +39,7 @@ function toVue(model) {
     return {
         id: String(model.id),
         dateIso: model.entry_date,
-        dateLabel: formatDateLabel(model.entry_date),
+        dateLabel: formatLongDate(model.entry_date),
         sleep: Number(model.sleep ?? 0),
         stress: Number(model.stress ?? 0),
         energy: model.energy != null ? Number(model.energy) : null,

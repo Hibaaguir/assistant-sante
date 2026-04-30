@@ -108,6 +108,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import api from "@/services/api";
+import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
 import TabSignesVitaux from "@/components/health/TabSignesVitaux.vue";
 import TabAnalyseBiologique from "@/components/health/TabAnalyseBiologique.vue";
 import TabTraitements from "@/components/health/TabTraitements.vue";
@@ -204,7 +205,7 @@ const formatShortLabel = (iso) =>
         month: "short",
     }) ?? "";
 
-const formatDate = (iso) => toDate(iso)?.toLocaleDateString("fr-FR") ?? "";
+const formatDate = (iso) => formatLongDate(iso);
 
 const formatObsDate = (val) => {
     const d = toDate(val);
