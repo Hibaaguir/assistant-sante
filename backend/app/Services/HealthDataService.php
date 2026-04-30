@@ -2,9 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\AnalysisResult;
 use App\Models\Treatment;
-use App\Models\TreatmentCheck;
 use App\Models\VitalSigns;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -14,20 +12,49 @@ class HealthDataService
     // Construire la serie de graphique des signes vitaux
     public function buildVitalSignsChartSeries(Collection $vitals, int $days): array
     {
-        $dates = collect(range(0, $days - 1))
-            ->map(fn (int $offset) => Carbon::today()->subDays($days - 1 - $offset)->toDateString())
-            ->values();
+        // Créer la liste des dates des N derniers jours
+        $dates = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $dates[] = Carbon::today()->subDays($i)->toDateString();
+        }
 
-        $grouped = $vitals
-            ->groupBy(fn (VitalSigns $v) => $v->measured_at?->toDateString())
-            ->map(fn (Collection $items) => $this->extractVitalSignsByDate($items));
+        // Grouper les signes vitaux par date
+        $groupedByDate = [];
+        foreach ($vitals as $vital) {
+            $date = $vital->measured_at?->toDateString();
+            if ($date !== null) {
+                if (!isset($groupedByDate[$date])) {
+                    $groupedByDate[$date] = collect();
+                }
+                $groupedByDate[$date]->push($vital);
+            }
+        }
+
+        // Extraire les dernières valeurs pour chaque date
+        $extractedByDate = [];
+        foreach ($groupedByDate as $date => $items) {
+            $extractedByDate[$date] = $this->extractVitalSignsByDate($items);
+        }
+
+        // Construire les tableaux de données pour le graphique
+        $heartRate         = [];
+        $systolicPressure  = [];
+        $diastolicPressure = [];
+        $oxygenSaturation  = [];
+
+        foreach ($dates as $date) {
+            $heartRate[]         = $extractedByDate[$date]['heart_rate'] ?? null;
+            $systolicPressure[]  = $extractedByDate[$date]['systolic_pressure'] ?? null;
+            $diastolicPressure[] = $extractedByDate[$date]['diastolic_pressure'] ?? null;
+            $oxygenSaturation[]  = $extractedByDate[$date]['oxygen_saturation'] ?? null;
+        }
 
         return [
             'labels'             => $dates,
-            'heart_rate'         => $dates->map(fn (string $date) => $grouped[$date]['heart_rate'] ?? null)->all(),
-            'systolic_pressure'  => $dates->map(fn (string $date) => $grouped[$date]['systolic_pressure'] ?? null)->all(),
-            'diastolic_pressure' => $dates->map(fn (string $date) => $grouped[$date]['diastolic_pressure'] ?? null)->all(),
-            'oxygen_saturation'  => $dates->map(fn (string $date) => $grouped[$date]['oxygen_saturation'] ?? null)->all(),
+            'heart_rate'         => $heartRate,
+            'systolic_pressure'  => $systolicPressure,
+            'diastolic_pressure' => $diastolicPressure,
+            'oxygen_saturation'  => $oxygenSaturation,
         ];
     }
 
@@ -38,7 +65,9 @@ class HealthDataService
 
         $treatments = Treatment::query()
             ->with('treatmentCatalog')
-            ->whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
+            ->whereHas('healthData', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
             ->where(function ($q) use ($today) {
                 $q->whereNull('start_date')->orWhere('start_date', '<=', $today);
             })
@@ -47,23 +76,29 @@ class HealthDataService
             })
             ->get();
 
-        return $treatments
-            ->map(fn (Treatment $t) => $this->normalizeMedicine($t))
-            ->filter()
-            ->values()
-            ->all();
+        $medicines = [];
+        foreach ($treatments as $treatment) {
+            $medicine = $this->normalizeMedicine($treatment);
+            if ($medicine !== null) {
+                $medicines[] = $medicine;
+            }
+        }
+
+        return $medicines;
     }
 
     // Recuperer le dernier enregistrement de signes vitaux pour l'utilisateur
     public function latestVitals(int $userId): ?VitalSigns
     {
-        return VitalSigns::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
-            ->where(fn ($q) => $q
-                ->whereNotNull('heart_rate')
-                ->orWhereNotNull('systolic_pressure')
-                ->orWhereNotNull('diastolic_pressure')
-                ->orWhereNotNull('oxygen_saturation')
-            )
+        return VitalSigns::whereHas('healthData', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->where(function ($q) {
+                $q->whereNotNull('heart_rate')
+                  ->orWhereNotNull('systolic_pressure')
+                  ->orWhereNotNull('diastolic_pressure')
+                  ->orWhereNotNull('oxygen_saturation');
+            })
             ->orderByDesc('measured_at')
             ->orderByDesc('id')
             ->first();
@@ -72,22 +107,26 @@ class HealthDataService
     // Serialiser les verifications de traitement en tableau standard
     public function serializeTreatmentChecks(Collection $rows): array
     {
-        return $rows->map(function (TreatmentCheck $check) {
+        $result = [];
+
+        foreach ($rows as $check) {
             $treatment = $check->treatment;
-            return [
+            $result[] = [
                 'id'             => $check->id,
                 'user_id'        => $check->user_id,
                 'treatment_id'   => $check->treatment_id,
                 'check_date'     => $check->check_date?->toDateString(),
                 'medication_key' => $check->medication_key,
-                'treatment_name'=> $treatment?->treatmentCatalog?->treatment_name,
+                'treatment_name' => $treatment?->treatmentCatalog?->treatment_name,
                 'dose'           => $treatment?->dose,
                 'taken'          => (bool) $check->taken,
                 'checked_at'     => $check->checked_at?->toDateTimeString(),
                 'created_at'     => $check->created_at?->toISOString(),
                 'updated_at'     => $check->updated_at?->toISOString(),
             ];
-        })->values()->all();
+        }
+
+        return $result;
     }
 
     // Construire des alertes cliniques a partir des donnees du patient
@@ -95,23 +134,38 @@ class HealthDataService
     {
         $alerts = [];
 
+        // Vérifier si la pression artérielle est élevée
         if ($latestVitals?->systolic_pressure >= 140) {
+            $systolic  = (int) $latestVitals->systolic_pressure;
+            $diastolic = (int) ($latestVitals->diastolic_pressure ?? 0);
+
             $alerts[] = [
                 'severity'       => 'warning',
                 'title'          => 'Alert',
-                'message'        => 'Elevated blood pressure: ' . (int) $latestVitals->systolic_pressure . '/' . (int) ($latestVitals->diastolic_pressure ?? 0) . ' mmHg',
+                'message'        => 'Elevated blood pressure: ' . $systolic . '/' . $diastolic . ' mmHg',
                 'recommendation' => 'Monitor blood pressure and contact patient if elevation persists.',
                 'measured_at'    => $latestVitals->measured_at?->toISOString(),
             ];
         }
 
-        $glucose = $labResults->first(fn (AnalysisResult $r) => str_contains(strtolower((string) $r->analysis_type), 'glucose'));
+        // Chercher un résultat de glucose parmi les analyses
+        $glucose = null;
+        foreach ($labResults as $labResult) {
+            if (str_contains(strtolower((string) $labResult->analysis_type), 'glucose')) {
+                $glucose = $labResult;
+                break;
+            }
+        }
 
-        if ($glucose && is_numeric($glucose->analysis_result) && $glucose->analysis_result < 3.9) {
+        // Vérifier si le glucose est trop bas
+        if ($glucose !== null && is_numeric($glucose->analysis_result) && $glucose->analysis_result < 3.9) {
+            $glucoseValue = rtrim(rtrim((string) $glucose->analysis_result, '0'), '.');
+            $glucoseUnit  = $glucose->normal_range ?: 'mmol/L';
+
             $alerts[] = [
                 'severity'       => 'critical',
                 'title'          => 'Critical Alert',
-                'message'        => 'Very low blood glucose detected: ' . rtrim(rtrim((string) $glucose->analysis_result, '0'), '.') . ' ' . ($glucose->normal_range ?: 'mmol/L'),
+                'message'        => 'Very low blood glucose detected: ' . $glucoseValue . ' ' . $glucoseUnit,
                 'recommendation' => 'Contact patient immediately. Emergency sugar intake recommended.',
                 'measured_at'    => $glucose->analysis_date?->toISOString(),
             ];
@@ -120,13 +174,14 @@ class HealthDataService
         return $alerts;
     }
 
-    // Extraire les signes vitaux par date
+    // Extraire les signes vitaux par date (le plus récent en premier)
     private function extractVitalSignsByDate(Collection $items): array
     {
-        $sorted = $items->sortByDesc(fn (VitalSigns $v) =>
-            ($v->measured_at?->format('Y-m-d H:i:s') ?? '0000-00-00 00:00:00') . '#' .
-            str_pad((string) $v->id, 10, '0', STR_PAD_LEFT)
-        );
+        $sorted = $items->sortByDesc(function (VitalSigns $v) {
+            $date = $v->measured_at ? $v->measured_at->format('Y-m-d H:i:s') : '0000-00-00 00:00:00';
+            $id   = str_pad((string) $v->id, 10, '0', STR_PAD_LEFT);
+            return $date . '#' . $id;
+        });
 
         return [
             'heart_rate'         => $this->getLatestValue($sorted, 'heart_rate'),
@@ -136,11 +191,15 @@ class HealthDataService
         ];
     }
 
-    // Obtenir la derniere valeur pour un champ donne
+    // Obtenir la derniere valeur non-nulle pour un champ donne
     private function getLatestValue(Collection $items, string $field): ?float
     {
-        $row = $items->first(fn (VitalSigns $v) => $v->{$field} !== null);
-        return $row ? round((float) $row->{$field}, 1) : null;
+        foreach ($items as $vital) {
+            if ($vital->{$field} !== null) {
+                return round((float) $vital->{$field}, 1);
+            }
+        }
+        return null;
     }
 
     // Normaliser un medicament pour l'affichage
@@ -149,22 +208,44 @@ class HealthDataService
         $name = trim((string) ($treatment->treatmentCatalog?->treatment_name ?? ''));
         $type = trim((string) ($treatment->treatmentCatalog?->treatment_type ?? ''));
 
-        if ($name === '' && $type === '') return null;
+        // Ignorer si le nom et le type sont tous les deux vides
+        if ($name === '' && $type === '') {
+            return null;
+        }
 
         $frequencyCount = (int) ($treatment->daily_doses ?? 0);
         $frequencyUnit  = trim((string) ($treatment->frequency ?? ''));
-        $dosesPerDay    = ($frequencyCount > 0 && $frequencyUnit === 'day') ? $frequencyCount : 1;
+
+        // Calculer le nombre de doses par jour
+        if ($frequencyCount > 0 && $frequencyUnit === 'day') {
+            $dosesPerDay = $frequencyCount;
+        } else {
+            $dosesPerDay = 1;
+        }
+
+        // Construire le texte de fréquence
+        if ($frequencyCount > 0 && $frequencyUnit !== '') {
+            $freq = "$frequencyCount fois / $frequencyUnit";
+        } else {
+            $freq = 'Non spécifiée';
+        }
+
+        // Choisir le nom d'affichage
+        $displayName = ($name !== '') ? $name : ucfirst($type);
+
+        // Construire le texte de la dose
+        $dose = trim((string) ($treatment->dose ?? ''));
+        if ($dose === '') {
+            $dose = 'Dose non spécifiée';
+        }
 
         return [
-            // Use the real database ID so the frontend builds medication_key as "{id}__dose_{n}"
-            'id'           => $treatment->id,
-            'name'         => $name ?: ucfirst($type),
-            'dose'         => trim((string) ($treatment->dose ?? '')) ?: 'Dose non spécifiée',
-            'freq'         => $frequencyCount > 0 && $frequencyUnit
-                                ? "$frequencyCount fois / $frequencyUnit"
-                                : 'Non spécifiée',
+            'id'            => $treatment->id,
+            'name'          => $displayName,
+            'dose'          => $dose,
+            'freq'          => $freq,
             'doses_per_day' => max(1, min($dosesPerDay, 12)),
-            'note'          => $type ? ucfirst($type) : '',
+            'note'          => ($type !== '') ? ucfirst($type) : '',
             'start_date'    => $treatment->start_date?->toDateString(),
             'end_date'      => $treatment->end_date?->toDateString(),
         ];
