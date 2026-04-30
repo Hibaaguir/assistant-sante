@@ -392,11 +392,6 @@ const VITAL_META = {
 // ─── Props / Emits ────────────────────────────────────────────────────────────
 const props = defineProps({
     latestVital: { type: Object, default: null },
-    chartLabels: { type: Array, default: () => [] },
-    chartHeartRate: { type: Array, default: () => [] },
-    chartSystolic: { type: Array, default: () => [] },
-    chartDiastolic: { type: Array, default: () => [] },
-    chartSaturation: { type: Array, default: () => [] },
     historyHeartRate: { type: Array, default: () => [] },
     historySystolic: { type: Array, default: () => [] },
     historyDiastolic: { type: Array, default: () => [] },

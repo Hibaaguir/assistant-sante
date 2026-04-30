@@ -20,28 +20,16 @@ class HealthDataController extends Controller
 {
     public function __construct(private readonly HealthDataService $healthDataService) {}
 
-    // Récupérer un résumé de toutes les données de santé (tableau de bord)
+    // Récupérer un résumé de toutes les données de santé 
     public function overview(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
         $days      = max(1, min((int) $request->query('days', 7), 30));
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
 
-        $vitals = VitalSigns::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
-            ->whereDate('measured_at', '>=', $startDate)
-            ->orderBy('measured_at')
-            ->get();
-
         $labResults = AnalysisResult::whereHas('healthData', fn ($q) => $q->where('user_id', $userId))
             ->orderByDesc('analysis_date')
             ->orderByDesc('id')
-            ->limit(20)
-            ->get();
-
-        $treatmentChecks = TreatmentCheck::with('treatment.treatmentCatalog')
-            ->where('user_id', $userId)
-            ->where('check_date', '>=', $startDate)
-            ->orderBy('check_date')
             ->get();
 
         $doctorObservations = HealthData::where('user_id', $userId)
@@ -54,10 +42,8 @@ class HealthDataController extends Controller
             'message' => 'Données de santé récupérées avec succès.',
             'data' => [
                 'latest_vitals'       => $this->healthDataService->latestVitals($userId),
-                'vitals_chart'        => $this->healthDataService->buildVitalSignsChartSeries($vitals, $days),
-                'lab_results'         => $labResults,
+'lab_results'         => $labResults,
                 'treatment_medicines' => $this->healthDataService->resolveTreatmentMedicines($userId),
-                'treatment_checks'    => $this->healthDataService->serializeTreatmentChecks($treatmentChecks),
                 'doctor_observations' => $doctorObservations,
             ],
         ]);
@@ -116,20 +102,6 @@ class HealthDataController extends Controller
             'message' => 'Signe vital enregistré avec succès.',
             'data'    => $vital,
         ], 201);
-    }
-
-    // Récupérer tous les résultats d'analyses pour l'utilisateur
-    public function indexLabResults(Request $request): JsonResponse
-    {
-        $labResults = AnalysisResult::whereHas('healthData', fn ($q) => $q->where('user_id', $request->user()->id))
-            ->orderByDesc('analysis_date')
-            ->orderByDesc('id')
-            ->get();
-
-        return response()->json([
-            'message' => 'Résultats des analyses récupérés avec succès.',
-            'data'    => $labResults,
-        ]);
     }
 
     // Enregistrer un nouveau résultat d'analyse

@@ -71,15 +71,10 @@
             </BaseButton>
         </div>
 
-        <TabSignesVitaux
+        <VitalSigns
             v-if="activeTab === 'vitals'"
             ref="vitalsTab"
             :latest-vital="latestVital"
-            :chart-labels="labels"
-            :chart-heart-rate="heartRateValues"
-            :chart-systolic="systolicValues"
-            :chart-diastolic="diastolicValues"
-            :chart-saturation="saturationValues"
             :history-heart-rate="historyHeartRateValues"
             :history-systolic="historySystolicValues"
             :history-diastolic="historyDiastolicValues"
@@ -88,14 +83,14 @@
             @refresh="loadHealthData"
         />
 
-        <TabAnalyseBiologique
+        <MedicalAnalysis
             v-else-if="activeTab === 'labs'"
             ref="labsTab"
             :analyses="labResults"
             @refresh="loadHealthData"
         />
 
-        <TabTraitements
+        <Treatments
             v-else
             :treatment-medicines="treatmentMedicines"
             :treatment-checks="treatmentChecks"
@@ -109,9 +104,9 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import api from "@/services/api";
 import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
-import TabSignesVitaux from "@/components/health/TabSignesVitaux.vue";
-import TabAnalyseBiologique from "@/components/health/TabAnalyseBiologique.vue";
-import TabTraitements from "@/components/health/TabTraitements.vue";
+import VitalSigns from "@/components/health/VitalSigns.vue";
+import MedicalAnalysis from "@/components/health/MedicalAnalysis.vue";
+import Treatments from "@/components/health/Treatments.vue";
 import { useNotificationsStore } from "@/stores/notifications";
 import Typography from "@/components/ui/Typography.vue";
 import TabBar from "@/components/ui/TabBar.vue";
@@ -130,12 +125,7 @@ const addButtonLabel = computed(() =>
 
 const labResults = ref([]);
 const latestVital = ref(null);
-const labels = ref([]);
 const vitalDateKeys = ref([]);
-const heartRateValues = ref([]);
-const systolicValues = ref([]);
-const diastolicValues = ref([]);
-const saturationValues = ref([]);
 const historyHeartRateValues = ref([]);
 const historySystolicValues = ref([]);
 const historyDiastolicValues = ref([]);
@@ -199,12 +189,6 @@ function toDate(rawDate) {
     return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-const formatShortLabel = (iso) =>
-    toDate(iso)?.toLocaleDateString("fr-FR", {
-        day: "2-digit",
-        month: "short",
-    }) ?? "";
-
 const formatDate = (iso) => formatLongDate(iso);
 
 const formatObsDate = (val) => {
@@ -218,19 +202,6 @@ const formatObsDate = (val) => {
               year: "numeric",
           });
 };
-
-function normalizeSeries(values, fallback = 0) {
-    if (!Array.isArray(values)) return [];
-    let last = fallback;
-    return values.map((v) => {
-        const n = Number(v);
-        if (!isNaN(n)) {
-            last = n;
-            return n;
-        }
-        return last; // valeur manquante → on répète la dernière connue
-    });
-}
 
 function buildLast7Days() {
     const today = new Date();
@@ -312,14 +283,6 @@ async function loadHealthData() {
               }))
             : [];
 
-        const chartData = data.vitals_chart ?? {};
-        const labelSource =
-            Array.isArray(chartData.labels) && chartData.labels.length > 0
-                ? chartData.labels
-                : treatmentDays.value.map((day) => day.key);
-
-        labels.value = labelSource.map(formatShortLabel);
-
         // History from dedicated vitals endpoint (30 days) — sorted ascending by date
         vitalsRaw.sort((a, b) =>
             String(a.measured_at).localeCompare(String(b.measured_at)),
@@ -344,19 +307,6 @@ async function loadHealthData() {
             const v = vitalsRaw.find((r) => String(r.measured_at).slice(0, 10) === dk);
             return v?.oxygen_saturation ?? null;
         });
-        heartRateValues.value = normalizeSeries(chartData.heart_rate, 70);
-        systolicValues.value = normalizeSeries(
-            chartData.systolic_pressure,
-            120,
-        );
-        diastolicValues.value = normalizeSeries(
-            chartData.diastolic_pressure,
-            80,
-        );
-        saturationValues.value = normalizeSeries(
-            chartData.oxygen_saturation,
-            98,
-        );
         treatmentMedicines.value = Array.isArray(data.treatment_medicines)
             ? data.treatment_medicines
             : [];
