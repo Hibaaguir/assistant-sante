@@ -242,7 +242,7 @@ function ensureDayTracking(dayKey) {
     for (const med of treatmentMedicines.value) {
         const doses = Math.max(
             1,
-            Math.min(Math.round(Number(med?.doses_per_day ?? 1)), 12),
+            Math.min(Math.round(Number(med?.frequency_count ?? 1)), 12),
         );
         for (let i = 1; i <= doses; i += 1) {
             const key = buildDoseKey(med.id, i);

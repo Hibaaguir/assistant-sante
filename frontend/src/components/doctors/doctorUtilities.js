@@ -225,12 +225,12 @@ function buildTreatments(medicines, checks) {
         return {
             id: medicine.id,
             name: medicine.name || "Treatment",
-            dose: `${medicine.dose || "Dose not specified"} - ${medicine.freq || "Not specified"}`,
-            when: medicine.note || "As prescribed",
+            dose: `${medicine.dose || "Dose not specified"} - ${medicine.frequency_count || 1} fois / ${medicine.frequency_unit || "jour"}`,
+            when: "As prescribed",
             adherence: `${adherence}%`,
             taken: prises,
             total: rows.length,
-            dosesPerDay: Number(medicine.doses_per_day || 1),
+            dosesPerDay: Number(medicine.frequency_count || 1),
             barClass: adherence >= 90 ? "bg-[#0cb342]" : "bg-[#ea7a00]",
         };
     });

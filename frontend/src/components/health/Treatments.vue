@@ -308,7 +308,7 @@
                         {{ med.name }}
                     </p>
                     <p class="mt-2 text-[13px] font-medium text-slate-800">
-                        {{ med.dose }} - {{ med.freq }}
+                        {{ med.dose }} - {{ med.frequency_count }} fois / {{ translateUnit(med.frequency_unit) }}
                     </p>
                     <p class="mt-1 text-[13px] font-medium text-slate-700">
                         {{ med.note }}
@@ -524,6 +524,8 @@ const MAX_MONTHLY_FREQUENCY = 31;
 const HISTORY_ALL_DAYS = 90;
 const DEFAULT_HISTORY_DAYS = 7;
 const ALLOWED_FREQUENCY_UNITS = ["jour", "semaine", "mois"];
+const FREQUENCY_UNIT_FR = { day: "jour", week: "semaine", month: "mois" };
+const translateUnit = (unit) => FREQUENCY_UNIT_FR[unit] ?? unit;
 
 const props = defineProps({
     treatmentMedicines: { type: Array, default: () => [] },
@@ -703,36 +705,12 @@ function construireClesDerniersJours(periodDays) {
 }
 
 function resoudreFrequenceTraitement(med) {
-    let frequencyUnit = String(med?.frequency_unit || "")
-        .trim()
-        .toLowerCase();
-
-    let frequencyCount = Number(med?.frequency_count ?? NaN);
-
-    if (!Number.isFinite(frequencyCount)) {
-        const match = String(med?.freq || "").match(
-            /(\d+)\s*fois\s*\/\s*(jour|semaine|mois)/i,
-        );
-        if (match) {
-            frequencyCount = Number(match[1]);
-            frequencyUnit = String(match[2]).toLowerCase();
-        }
-    }
-
-    if (!ALLOWED_FREQUENCY_UNITS.includes(frequencyUnit)) {
-        frequencyUnit = "jour";
-    }
-
-    if (!Number.isFinite(frequencyCount) || frequencyCount < 1) {
-        frequencyCount = Number(med?.doses_per_day ?? 1);
-    }
+    const frequencyUnit = translateUnit(String(med?.frequency_unit || "").trim().toLowerCase());
+    const frequencyCount = Number(med?.frequency_count ?? 1);
 
     return {
-        unit: frequencyUnit,
-        count: Math.max(
-            1,
-            Math.min(Math.round(frequencyCount), MAX_MONTHLY_FREQUENCY),
-        ),
+        unit: ALLOWED_FREQUENCY_UNITS.includes(frequencyUnit) ? frequencyUnit : "jour",
+        count: Math.max(1, Math.min(Math.round(frequencyCount), MAX_MONTHLY_FREQUENCY)),
     };
 }
 

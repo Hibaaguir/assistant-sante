@@ -50,13 +50,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('health_data_id')->constrained('health_data')->cascadeOnDelete();
             $table->foreignId('treatment_catalog_id')->nullable()->constrained('treatment_catalogs')->nullOnDelete();
-
-            $table->string('dose', 120)->nullable();
-            $table->string('frequency', 120)->nullable();
-            $table->unsignedTinyInteger('daily_doses')->nullable();
-
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
+            $table->string('dose', 120);
+            $table->string('frequency', 120);
+            $table->unsignedTinyInteger('daily_doses');
+            $table->date('start_date');
+            $table->date('end_date');
 
             $table->timestamps();
 

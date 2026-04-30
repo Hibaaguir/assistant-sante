@@ -19,17 +19,13 @@ class HealthDataService
             ->whereHas('healthData', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             })
-            ->where(function ($q) use ($today) {
-                $q->whereNull('start_date')->orWhere('start_date', '<=', $today);
-            })
-            ->where(function ($q) use ($today) {
-                $q->whereNull('end_date')->orWhere('end_date', '>=', $today);
-            })
+            ->where('start_date', '<=', $today)
+            ->where('end_date', '>=', $today)
             ->get();
 
         $medicines = [];
         foreach ($treatments as $treatment) {
-            $medicine = $this->normalizeMedicine($treatment);
+            $medicine = $this->normalizeTreatment($treatment);
             if ($medicine !== null) {
                 $medicines[] = $medicine;
             }
@@ -80,52 +76,23 @@ class HealthDataService
         return $result;
     }
 
-    // Normaliser un medicament pour l'affichage
-    private function normalizeMedicine(Treatment $treatment): ?array
+    // Normaliser un traitement pour l'affichage
+    private function normalizeTreatment(Treatment $treatment): ?array
     {
-        $name = trim((string) ($treatment->treatmentCatalog?->treatment_name ?? ''));
-        $type = trim((string) ($treatment->treatmentCatalog?->treatment_type ?? ''));
+        $catalog = $treatment->treatmentCatalog;
+        if (!$catalog) return null;
 
-        // Ignorer si le nom et le type sont tous les deux vides
-        if ($name === '' && $type === '') {
-            return null;
-        }
-
-        $frequencyCount = (int) ($treatment->daily_doses ?? 0);
-        $frequencyUnit  = trim((string) ($treatment->frequency ?? ''));
-
-        // Calculer le nombre de doses par jour
-        if ($frequencyCount > 0 && $frequencyUnit === 'day') {
-            $dosesPerDay = $frequencyCount;
-        } else {
-            $dosesPerDay = 1;
-        }
-
-        // Construire le texte de fréquence
-        if ($frequencyCount > 0 && $frequencyUnit !== '') {
-            $freq = "$frequencyCount fois / $frequencyUnit";
-        } else {
-            $freq = 'Non spécifiée';
-        }
-
-        // Choisir le nom d'affichage
-        $displayName = ($name !== '') ? $name : ucfirst($type);
-
-        // Construire le texte de la dose
-        $dose = trim((string) ($treatment->dose ?? ''));
-        if ($dose === '') {
-            $dose = 'Dose non spécifiée';
-        }
+        $name  = trim($catalog->treatment_name ?? '');
+        $doses = $treatment->daily_doses ?? 0;
+        $unit  = trim($treatment->frequency ?? '');
+        $dose  = trim($treatment->dose ?? '');
 
         return [
-            'id'            => $treatment->id,
-            'name'          => $displayName,
-            'dose'          => $dose,
-            'freq'          => $freq,
-            'doses_per_day' => max(1, min($dosesPerDay, 12)),
-            'note'          => ($type !== '') ? ucfirst($type) : '',
-            'start_date'    => $treatment->start_date?->toDateString(),
-            'end_date'      => $treatment->end_date?->toDateString(),
+            'id'              => $treatment->id,
+            'name'            => $name,
+            'dose'            => $dose,
+            'frequency_unit'  => $unit,
+            'frequency_count' => $doses,
         ];
     }
 }

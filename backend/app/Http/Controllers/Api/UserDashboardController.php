@@ -90,12 +90,8 @@ class UserDashboardController extends Controller
             ->whereHas('healthData', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             })
-            ->where(function ($q) use ($today) {
-                $q->whereNull('start_date')->orWhere('start_date', '<=', $today);
-            })
-            ->where(function ($q) use ($today) {
-                $q->whereNull('end_date')->orWhere('end_date', '>=', $today);
-            })
+            ->where('start_date', '<=', $today)
+            ->where('end_date', '>=', $today)
             ->get();
 
         // Extraire uniquement le type de chaque traitement

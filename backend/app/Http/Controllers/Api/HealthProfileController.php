@@ -35,13 +35,12 @@ class HealthProfileController extends Controller
             'chronic_diseases.*'           => 'string|max:120',
             'treatments'                   => 'nullable|array',
             'treatments.*.type'            => 'required_with:treatments|string|max:120',
-            'treatments.*.name'            => 'nullable|string|max:255',
-            'treatments.*.dose'            => 'nullable|string|max:120',
-            'treatments.*.frequency_unit'  => 'nullable|string|max:30',
-            'treatments.*.frequency_count' => 'nullable|integer|min:1',
-            'treatments.*.duration'        => 'nullable|string|max:120',
-            'treatments.*.start_date'      => 'nullable|date',
-            'treatments.*.end_date'        => 'nullable|date',
+            'treatments.*.name'            => 'required_with:treatments|string|max:255',
+            'treatments.*.dose'            => 'required_with:treatments|string|max:120',
+            'treatments.*.frequency_unit'  => 'required_with:treatments|string|max:30',
+            'treatments.*.frequency_count' => 'required_with:treatments|integer|min:1',
+            'treatments.*.start_date'      => 'required_with:treatments|date',
+            'treatments.*.end_date'        => 'required_with:treatments|date|after:treatments.*.start_date',
             'doctor_invited'               => 'nullable|boolean',
             'doctor_email'                 => [
                 'nullable',
@@ -187,10 +186,10 @@ class HealthProfileController extends Controller
     }
 
     // Formater un traitement pour l'API
-    private function formatTreatment($treatment, bool $withFormattedDates = false): array
+    private function formatTreatment(Treatment $treatment, bool $withFormattedDates = false): array
     {
-        $startDate = $treatment->start_date?->toDateString();
-        $endDate   = $treatment->end_date?->toDateString();
+        $startDate = $treatment->start_date->toDateString();
+        $endDate   = $treatment->end_date->toDateString();
 
         $result = [
             'id'              => $treatment->id,
