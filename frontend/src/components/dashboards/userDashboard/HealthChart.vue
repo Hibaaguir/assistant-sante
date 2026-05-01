@@ -41,6 +41,7 @@ Chart.register(...registerables);
 
 // Options de filtre disponibles
 const filters = [
+   // exemple d'ajout d'un filtre { label: "3 mois", days: 90 },
     { label: "Par semaine", days: 7 },
     { label: "Par mois",    days: 30 },
 ];
@@ -57,6 +58,7 @@ async function loadChart() {
 
     // Détruire l'ancien graphe avant d'en créer un nouveau
     chart?.destroy();
+    
 
     // Appel API : récupérer les signes vitaux sur N jours
     const { data: res } = await api.get("/dashboard/vitals-chart", {
@@ -73,7 +75,7 @@ async function loadChart() {
     chart = new Chart(canvas.value, {
         type: "line",
         data: {
-            labels: vitals.labels ?? [],
+            labels: vitals.labels ?? [],// x = dates , y = valeurs
             datasets: [
                 {
                     label: "Fréquence cardiaque (bpm)",
@@ -84,7 +86,7 @@ async function loadChart() {
                     borderWidth: 3,
                     pointRadius: 5,
                     pointHoverRadius: 7,
-                    pointBackgroundColor: "#dc2626",
+                    pointBackgroundColor: "#dc2626",// rouge
                 },
                 {
                     label: "Pression systolique (mmHg)",
@@ -95,12 +97,12 @@ async function loadChart() {
                     borderWidth: 3,
                     pointRadius: 5,
                     pointHoverRadius: 7,
-                    pointBackgroundColor: "#0284c7",
+                    pointBackgroundColor: "#0284c7",// bleu
                 },
                 {
                     label: "Saturation oxygène (%)",
                     data: vitals.oxygen_saturation ?? [],
-                    borderColor: "#7c3aed",
+                    borderColor: "#7c3aed",// violet
                     fill: false,
                     tension: 0.3,
                     borderWidth: 3,
@@ -110,7 +112,7 @@ async function loadChart() {
                 },
             ],
         },
-        options: {
+        options: {//c'est le style du graphe
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
@@ -121,7 +123,7 @@ async function loadChart() {
                 tooltip: {
                     mode: "index",
                     intersect: false,
-                    backgroundColor: "rgba(0,0,0,0.8)",
+                    backgroundColor: "rgba(0,0,0,0.8)",// noir semi-transparent
                     titleFont: { size: 14, weight: "bold" },
                     bodyFont: { size: 13 },
                     padding: 12,
@@ -130,10 +132,10 @@ async function loadChart() {
             scales: {
                 y: {
                     ticks: { font: { size: 12, weight: "500" }, color: "#475569" },
-                    grid:  { color: "#e2e8f0" },
+                    grid:  { color: "#e2e8f0" },// gris clair
                 },
                 x: {
-                    ticks: { font: { size: 12, weight: "500" }, color: "#475569" },
+                    ticks: { font: { size: 12, weight: "500" }, color: "#475569" },// gris foncé
                     grid:  { display: false },
                 },
             },

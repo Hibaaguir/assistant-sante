@@ -544,21 +544,21 @@ const FREQUENCY_UNIT_FR = { day: "jour", week: "semaine", month: "mois" };
 const translateUnit = (unit) => FREQUENCY_UNIT_FR[unit] ?? unit;
 
 const props = defineProps({
-    treatmentMedicines: { type: Array, default: () => [] },
-    treatmentChecks: { type: Object, default: () => ({}) },
-    treatmentDays: { type: Array, default: () => [] },
+    treatmentMedicines: { type: Array, default: () => [] },//la liste des médicaments actifs.
+    treatmentChecks: { type: Object, default: () => ({}) },//l'objet qui stocke toutes les prises cochées.
+    treatmentDays: { type: Array, default: () => [] },// les jours affichés dans le calendrier
 });
 
 defineEmits(["refresh"]);
 
 const notifications = useNotificationsStore();
 
-const showTreatmentModal = ref(false);
+const showTreatmentModal = ref(false);//popup de suivi d'une journée
 const showTreatmentHistory = ref(false);
-const selectedTreatmentDayKey = ref(null);
-const treatDate = ref("");
-const treatMed = ref("all");
-const treatStatus = ref("all");
+const selectedTreatmentDayKey = ref(null);//Stocke la date du jour sélectionné quand tu cliques sur un jour dans le calendrier.
+const treatDate = ref("");//filtrer par une date précise
+const treatMed = ref("all");// filtrer par médicament
+const treatStatus = ref("all");//filtrer par observance (complet, partiel, tous)
 
 const TREATMENT_HISTORY_CARD_CONFIG = [
     {
@@ -566,27 +566,27 @@ const TREATMENT_HISTORY_CARD_CONFIG = [
         label: "Taux d'observance",
         borderClass: "border-[#f3b8bb]",
         icon: IconCheckCircle,
-        iconWrapClass: "bg-[#fee3e5]",
-        iconClass: "text-[#ff1f2d]",
+        iconWrapClass: "bg-[#fee3e5]",//couleur du fond de l'icône rose 
+        iconClass: "text-[#ff1f2d]",// rouge vif
     },
     {
         key: "totalTaken",
         label: "Prises totales",
-        borderClass: "border-[#f0cb58]",
+        borderClass: "border-[#f0cb58]",// jaune
         icon: IconCalendar,
-        iconWrapClass: "bg-[#fff0c8]",
-        iconClass: "text-[#ef7a00]",
+        iconWrapClass: "bg-[#fff0c8]",// jaune pâle
+        iconClass: "text-[#ef7a00]",// orange vif
     },
     {
         key: "activeMedicines",
         label: "Médicaments actifs",
-        borderClass: "border-[#b5e6c6]",
+        borderClass: "border-[#b5e6c6]",// vert
         icon: IconPill,
-        iconWrapClass: "bg-[#d2f3de]",
-        iconClass: "text-[#07b33f]",
+        iconWrapClass: "bg-[#d2f3de]",// vert pâle
+        iconClass: "text-[#07b33f]",// vert vif
     },
 ];
-
+// Le jour sélectionné dans le calendrier pour suivi détaillé (null si aucun ou si le modal est fermé)
 const selectedTreatmentDay = computed(
     () =>
         props.treatmentDays.find(
@@ -602,7 +602,7 @@ const filteredTreatmentHistoryMedicines = computed(() => {
     if (treatMed.value === "all") return props.treatmentMedicines;
     return props.treatmentMedicines.filter((med) => med.id === treatMed.value);
 });
-
+// Cette computed construit l'historique des prises par jour en fonction des traitements actifs et des prises cochées, puis applique les filtres de date, médicament et observance. 
 const treatmentHistoryRows = computed(() => {
     const keys = construireClesDerniersJours(HISTORY_ALL_DAYS);
 
@@ -638,21 +638,21 @@ const treatmentHistoryRows = computed(() => {
                 isComplete: hasTracked && taken >= total,
             };
         })
-        .filter((day) => day.hasTracked)
-        .filter((day) => !treatDate.value || day.dateKey === treatDate.value)
-        .filter((day) => {
+        .filter((day) => day.hasTracked)//enleve les jours sans prise prévue ou sans suivi
+        .filter((day) => !treatDate.value || day.dateKey === treatDate.value)//filtre par date précise
+        .filter((day) => {     //filtre par observance complet, partiel, tous
             if (treatStatus.value === "complete") return day.isComplete;
             if (treatStatus.value === "partial") return !day.isComplete;
             return true;
         })
-        .sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
+        .sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));//trie du plus récent au plus ancien
 });
 
 const treatmentHistoryStats = computed(() => {
     const rows = treatmentHistoryRows.value;
     const totalDays = rows.length;
-    const completeDays = rows.filter((day) => day.isComplete).length;
-    const totalTaken = rows.reduce((sum, day) => sum + day.taken, 0);
+    const completeDays = rows.filter((day) => day.isComplete).length;//nombre des jours complets 
+    const totalTaken = rows.reduce((sum, day) => sum + day.taken, 0);//nombre total de prises effectuées sur la période affichée
     const observance =
         totalDays > 0 ? Math.round((completeDays / totalDays) * 100) : 0;
     const periodSubtitle = treatDate.value
@@ -668,7 +668,7 @@ const treatmentHistoryStats = computed(() => {
         activeMedicines: props.treatmentMedicines.length,
     };
 });
-
+// Cette computed construit les données à afficher dans les cartes de l'historique en fonction des statistiques calculées et du type de carte (observance, prises totales, médicaments actifs).
 const treatmentHistoryCards = computed(() => {
     const stats = treatmentHistoryStats.value;
 
@@ -697,20 +697,20 @@ const treatmentHistoryCards = computed(() => {
     });
 });
 
-// Cette fonction formate la date pour l'historique des prises (sans annee).
+// Transforme "2025-05-01" en texte lisible "Jeudi 1 mai"
 function formaterDateHistoriqueTraitement(dateIso) {
     return formatLongDate(dateIso);
 }
-
+// Transforme un objet Date en texte "2025-05-01"
 function obtenirCleJour(date) {
     return date.toISOString().slice(0, 10);
 }
-
+// Transforme un texte "2025-05-01" en objet Date
 function construireDateDepuisCle(dayKey) {
     const date = new Date(`${dayKey}T00:00:00`);
     return Number.isNaN(date.getTime()) ? null : date;
 }
-
+// Transforme un texte "2025-05-01" en objet Date
 function construireClesDerniersJours(periodDays) {
     return Array.from({ length: periodDays }).map((_, idx) => {
         const date = new Date();
@@ -718,7 +718,7 @@ function construireClesDerniersJours(periodDays) {
         return obtenirCleJour(date);
     });
 }
-
+// Lit la fréquence du médicament et la nettoie pour être sûr qu'elle est valide
 function resoudreFrequenceTraitement(med) {
     const frequencyUnit = translateUnit(
         String(med?.frequency_unit || "")
@@ -732,8 +732,8 @@ function resoudreFrequenceTraitement(med) {
             ? frequencyUnit
             : "jour",
         count: Math.max(
-            1,
-            Math.min(Math.round(frequencyCount), MAX_MONTHLY_FREQUENCY),
+            1,//min 1 prise
+            Math.min(Math.round(frequencyCount), MAX_MONTHLY_FREQUENCY), 
         ),
     };
 }

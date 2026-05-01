@@ -281,31 +281,17 @@ import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import FilterCard from "@/components/ui/FilterCard.vue";
 
-// ─── Icônes inline légères ────────────────────────────────────────────────────
 const CalendarIcon = {
     template: `<svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg>`,
 };
 const CloseIcon = {
     template: `<svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg>`,
 };
-const StatusBadge = {
-    props: { status: { type: String, default: "Normal" } },
-    computed: {
-        classes() {
-            return this.status === "Anormal"
-                ? "bg-rose-100 text-rose-700"
-                : "bg-emerald-100 text-emerald-700";
-        },
-    },
-    template: `<span :class="['rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none', classes]">{{ status }}</span>`,
-};
 
-// ─── Props / Emits ────────────────────────────────────────────────────────────
+//props et emits
 const props = defineProps({ analyses: { type: Array, default: () => [] } });
 const emit = defineEmits(["refresh"]);
 const notifications = useNotificationsStore();
-
-// ─── Catalogue des analyses ───────────────────────────────────────────────────
 const CATALOG = {
     "Biologie sanguine": [
         { label: "Glycémie", unit: "mmol/L" },
@@ -379,25 +365,18 @@ const CATALOG = {
         { label: "ANA", unit: "positif/négatif" },
     ],
 };
-
-// ─── État ─────────────────────────────────────────────────────────────────────
+//les états locaux
 const showAnalysisModal = ref(false);
 const showDeleteConfirm = ref(false);
 const editingId = ref(null);
-const expandedIndex = ref(0);
+const expandedIndex = ref(0);//index de la ligne de résultat pour laquelle les champs sont affichés (pour modification
 const formError = ref("");
 const pendingDelete = ref(null);
 
 const filters = reactive({ type: "", date: "" });
 const form = reactive({ category: "", results: [emptyRow()], date: today() });
 
-// ─── Config filtres (évite la répétition dans le template) ───────────────────
-const filterFields = [
-    { key: "type", label: "Type", tag: "select", attrs: {} },
-    { key: "date", label: "Date", attrs: { type: "date" } },
-];
-
-// ─── Computed ─────────────────────────────────────────────────────────────────
+//les options de sélection
 const categoryOptions = Object.keys(CATALOG);
 const resultOptions = computed(() => CATALOG[form.category] ?? []);
 const labTypeOptions = computed(() => [
@@ -416,7 +395,7 @@ const filteredAnalyses = computed(() => {
         return matchType && matchDate;
     });
 });
-
+//les textes dynamiques
 const modalTitle = computed(() =>
     editingId.value ? "Modifier une analyse" : "Ajouter une analyse",
 );

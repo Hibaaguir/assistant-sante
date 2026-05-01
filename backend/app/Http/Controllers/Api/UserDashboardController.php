@@ -19,7 +19,7 @@ class UserDashboardController extends Controller
     public function vitalsChart(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
-        $days      = (int) $request->query('days', 7);
+        $days      = (int) $request->query('days', 7);// Par défaut, on affiche les 7 derniers jours
         $startDate = Carbon::today()->subDays($days - 1)->toDateString();
 
         // Les 4 indicateurs que l'on veut afficher sur le graphe
