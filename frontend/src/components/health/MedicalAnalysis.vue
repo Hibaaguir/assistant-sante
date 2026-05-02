@@ -292,6 +292,8 @@ const CloseIcon = {
 const props = defineProps({ analyses: { type: Array, default: () => [] } });
 const emit = defineEmits(["refresh"]);
 const notifications = useNotificationsStore();
+
+//cle : type d'analyse, valeur : liste de résultats possibles avec unité suggérée
 const CATALOG = {
     "Biologie sanguine": [
         { label: "Glycémie", unit: "mmol/L" },
@@ -302,26 +304,26 @@ const CATALOG = {
         { label: "Créatinine", unit: "mg/L" },
         { label: "TSH", unit: "mUI/L" },
     ],
-    Hématologie: [
+    "Hématologie": [
         { label: "Hémoglobine", unit: "g/dL" },
         { label: "Hématocrite", unit: "%" },
         { label: "Globules blancs", unit: "G/L" },
         { label: "Plaquettes", unit: "G/L" },
         { label: "VGM", unit: "fL" },
     ],
-    Radiologie: [
+    "Radiologie": [
         { label: "Radiographie thoracique", unit: "" },
         { label: "Échographie abdominale", unit: "" },
         { label: "IRM cérébrale", unit: "" },
         { label: "Scanner thoracique", unit: "" },
     ],
-    Hormonologie: [
+    "Hormonologie": [
         { label: "Cortisol", unit: "nmol/L" },
         { label: "FSH", unit: "UI/L" },
         { label: "LH", unit: "UI/L" },
         { label: "Prolactine", unit: "ng/mL" },
     ],
-    Cardiologie: [
+    "Cardiologie": [
         { label: "Troponine", unit: "ng/L" },
         { label: "BNP", unit: "pg/mL" },
         { label: "D-dimères", unit: "mg/L" },
@@ -346,18 +348,18 @@ const CATALOG = {
         { label: "LDL", unit: "mmol/L" },
         { label: "Triglycérides", unit: "mmol/L" },
     ],
-    Urines: [
+    "Urines": [
         { label: "Protéinurie", unit: "g/L" },
         { label: "Leucocyturie", unit: "/µL" },
         { label: "Nitrites", unit: "positif/négatif" },
         { label: "Glucosurie", unit: "g/L" },
     ],
-    Microbiologie: [
+    "Microbiologie": [
         { label: "Hémoculture", unit: "positif/négatif" },
         { label: "ECBU", unit: "UFC/mL" },
         { label: "PCR virale", unit: "copies/mL" },
     ],
-    Immunologie: [
+    "Immunologie": [
         { label: "IgG", unit: "g/L" },
         { label: "IgA", unit: "g/L" },
         { label: "IgM", unit: "g/L" },
@@ -365,36 +367,35 @@ const CATALOG = {
         { label: "ANA", unit: "positif/négatif" },
     ],
 };
+
 //les états locaux
-const showAnalysisModal = ref(false);
+const showAnalysisModal = ref(false); //affiche la modale d'ajout / modification
 const showDeleteConfirm = ref(false);
-const editingId = ref(null);
-const expandedIndex = ref(0);//index de la ligne de résultat pour laquelle les champs sont affichés (pour modification
+const editingId = ref(null); //id de l'analyse en cours d'édition id null si ajout
+const expandedIndex = ref(0); //contrôle quelle ligne de résultat est ouverte dans le formulaire
 const formError = ref("");
 const pendingDelete = ref(null);
 
-const filters = reactive({ type: "", date: "" });
+const filters = reactive({ type: "", date: "" ,});
 const form = reactive({ category: "", results: [emptyRow()], date: today() });
 
-//les options de sélection
+//Extrait toutes les clés du CATALOG
 const categoryOptions = Object.keys(CATALOG);
+//Extrait la liste des résultats possibles en fonction de la catégorie sélectionnée dans le formulaire
 const resultOptions = computed(() => CATALOG[form.category] ?? []);
+//Extrait la liste des types d'analyses présents dans les données pour alimenter le filtre de type d'analyse
 const labTypeOptions = computed(() => [
     ...new Set(
-        props.analyses.map((a) => (a.type ?? "").trim()).filter(Boolean),
-    ),
-]);
-
+        props.analyses.map((a) => a.type))]);
+//Applique les filtres de type et de date sur les analyses à afficher
 const filteredAnalyses = computed(() => {
     return props.analyses.filter((a) => {
-        const aType = (a.type ?? "").trim();
-        const filterType = (filters.type ?? "").trim();
-        const matchType = !filterType || aType === filterType;
-        const dateResult = isoDate(a.analysisDate);
-        const matchDate = !filters.date || dateResult === filters.date;
-        return matchType && matchDate;
+        const typeMatch = !filters.type || a.type === filters.type;
+        const dateMatch = !filters.date || isoDate(a.analysisDate) === filters.date;
+        return typeMatch && dateMatch;
     });
 });
+
 //les textes dynamiques
 const modalTitle = computed(() =>
     editingId.value ? "Modifier une analyse" : "Ajouter une analyse",
@@ -409,7 +410,7 @@ const deleteMessage = computed(() => {
     return `Vous êtes sur le point de supprimer ${name}. Cette action est irréversible.`;
 });
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+//dates sous format ISO "YYYY-MM-DD"
 function today() {
     const d = new Date();
     const year = d.getFullYear();
@@ -417,13 +418,9 @@ function today() {
     const day = String(d.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
 }
+
 function isoDate(v) {
     return v ? String(v).slice(0, 10) : today();
-}
-// Format YYYY-MM-DD → YYYY-MM-DD 12:00:00 for the API (midi local pour éviter décalage timezone)
-function toDatetime(dateStr) {
-    const d = dateStr ? String(dateStr).slice(0, 10) : today();
-    return `${d} 12:00:00`;
 }
 function toNumber(v) {
     const n = Number(v);
@@ -432,8 +429,9 @@ function toNumber(v) {
 function emptyRow() {
     return { result: "", value: "", unit: "" };
 }
+// Résume une ligne de résultat pour l'affichage dans la liste "Glycémie - 5.2 mmol/L"
 function summarizeRow(row) {
-    const name = row.result?.trim() || "Résultat non renseigné";
+    const name = row.result || "Résultat non renseigné";
     const val = String(row.value ?? "").trim();
     const right = val
         ? `${val}${row.unit ? ` ${row.unit}` : ""}`
@@ -447,21 +445,23 @@ function resetForm() {
     form.date = today();
     expandedIndex.value = 0;
 }
-
-// ─── Gestion des lignes de résultat ──────────────────────────────────────────
+// Ajoute une nouvelle ligne vide dans le formulaire quand on clique sur ajouter resultat 
 function addRow() {
     form.results.push(emptyRow());
     expandedIndex.value = form.results.length - 1;
 }
+//supprimer une ligne de résultat du formulaire d'édition uniquement en mode ajout
 function removeRow(i) {
     form.results.splice(i, 1);
     if (expandedIndex.value >= form.results.length)
         expandedIndex.value = form.results.length - 1;
 }
+//Réinitialise les résultats quand on change de catégorie
 function onCategoryChange() {
     form.results = [emptyRow()];
     expandedIndex.value = 0;
 }
+// Remplit automatiquement l'unité quand on choisit un résultat dans le select
 function onResultChange(i) {
     const opt = (CATALOG[form.category] ?? []).find(
         (o) => o.label === form.results[i].result,
@@ -469,51 +469,51 @@ function onResultChange(i) {
     if (opt?.unit) form.results[i].unit = opt.unit;
 }
 
-// ─── Sauvegarde ───────────────────────────────────────────────────────────────
 async function saveAnalysis() {
     formError.value = "";
     if (!form.category) {
         formError.value = "Veuillez choisir un type d'analyse.";
         return;
     }
-    const analysisDate = String(form.date || "").trim();
+    const analysisDate = form.date || "";
     if (!analysisDate) {
         formError.value = "La date de l'analyse est obligatoire.";
         return;
     }
 
-    const rows = [];
-    for (const row of form.results) {
-        const result = row.result?.trim();
-        const value = toNumber(row.value);
-        const unit = row.unit?.trim();
-        if (!result) {
-            formError.value = "Chaque résultat doit être sélectionné.";
-            return;
-        }
-        if (value === null) {
-            formError.value =
-                "Chaque résultat doit avoir une valeur numérique valide.";
-            return;
-        }
-        if (!unit) {
-            formError.value =
-                "Chaque résultat doit avoir une unité. Si vous supprimez la suggestion, renseignez une unité manuellement.";
-            return;
-        }
-        rows.push({
-            analysis_type: form.category,
-            result_name: result,
-            value,
-            unit,
-            analysis_date: isoDate(analysisDate),
-        });
-    }
-    if (!rows.length) {
-        formError.value = "Ajoutez au moins un résultat.";
-        return;
-    }
+    for (let i = 0; i < form.results.length; i++) {
+        const row = form.results[i];
 
+        // Vérifie que le nom du résultat est sélectionné
+        if (!row.result) {
+            formError.value = "Chaque résultat doit être sélectionné.";
+            expandedIndex.value = i;
+            return;
+        }
+
+        // Vérifie que la valeur est un nombre non vide
+        if (String(row.value ?? "").trim() === "" || toNumber(row.value) === null) {
+            formError.value = "Veuillez saisir une valeur numérique pour chaque résultat.";
+            expandedIndex.value = i;
+            return;
+        }
+
+        // Vérifie que l'unité n'est pas vide
+        if (!row.unit?.trim()) {
+            formError.value = "Veuillez saisir une unité pour chaque résultat.";
+            expandedIndex.value = i;
+            return;
+        }
+    }
+    // Prépare les données à envoyer à l'API
+    const rows = form.results.map((row) => ({
+        analysis_type: form.category,
+        result_name: row.result,
+        value: toNumber(row.value),
+        unit: row.unit.trim(),
+        analysis_date: isoDate(analysisDate),
+    }));
+// Envoie les requêtes à l'API une requête PUT si édition, sinon une requête POST par résultat
     try {
         if (editingId.value) {
             await api.put(`/health-data/labs/${editingId.value}`, rows[0]);
@@ -536,8 +536,7 @@ async function saveAnalysis() {
         );
     }
 }
-
-// ─── Édition ──────────────────────────────────────────────────────────────────
+// Ouvre la modale d'édition et pré-remplit le formulaire avec les données de l'item ciblé
 function ouvrirEditionAnalyse(item) {
     editingId.value = item.id;
     formError.value = "";
@@ -554,7 +553,7 @@ function ouvrirEditionAnalyse(item) {
     showAnalysisModal.value = true;
 }
 
-// ─── Suppression ─────────────────────────────────────────────────────────────
+// Lance la confirmation de suppression pour l'item ciblé
 function supprimerAnalyse(item) {
     pendingDelete.value = item;
     showDeleteConfirm.value = true;
@@ -563,6 +562,7 @@ function cancelDelete() {
     pendingDelete.value = null;
     showDeleteConfirm.value = false;
 }
+// Confirme la suppression de l'item ciblé
 async function confirmDelete() {
     if (!pendingDelete.value?.id) return;
     try {
@@ -578,7 +578,7 @@ async function confirmDelete() {
     }
 }
 
-// ─── API publique (exposée au parent) ────────────────────────────────────────
+// Ouvre la modale d'ajout en réinitialisant le formulaire
 function ouvrirModalAjout() {
     editingId.value = null;
     resetForm();
@@ -588,5 +588,6 @@ function reinitialiserFiltres() {
     filters.type = "";
     filters.date = "";
 }
+//expose les function pour etre accesible au parent
 defineExpose({ ouvrirModalAjout, reinitialiserFiltres });
 </script>
