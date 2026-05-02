@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
+    // Injection automatique du service qui récupère les médicaments actifs
     public function __construct(private readonly HealthDataService $healthDataService) {}
 
     // Récupérer les 100 dernières notifications de l'utilisateur
@@ -21,27 +22,33 @@ class NotificationController extends Controller
     {
         $user = $request->user();
 
+        // Créer les notifications du jour si elles n'existent pas encore
         $this->triggerMedicationNotifications($user);
 
+        // Récupérer les IDs des traitements de l'utilisateur
         $treatmentIds = $user->treatments()->pluck('treatments.id');
 
+        // Récupérer les 100 dernières notifications et les formater
+        $result = [];
         $notifications = Notification::whereIn('treatment_id', $treatmentIds)
             ->latest()
             ->limit(100)
-            ->get()
-            ->map(fn ($n) => [
+            ->get();
+
+        foreach ($notifications as $n) {
+            $result[] = [
                 'id'          => $n->id,
                 'kind'        => $n->kind,
                 'message'     => $n->message,
                 'target_date' => $n->target_date?->toDateString(),
                 'read_at'     => $n->read_at?->toISOString(),
                 'created_at'  => $n->created_at?->toISOString(),
-            ])
-            ->values();
+            ];
+        }
 
         return response()->json([
             'message' => 'Notifications récupérées avec succès.',
-            'data'    => $notifications,
+            'data'    => $result,
         ]);
     }
 
@@ -57,7 +64,7 @@ class NotificationController extends Controller
         return response()->json(['message' => 'Toutes les notifications ont été marquées comme lues.']);
     }
 
-    // Déclencher les notifications si nécessaire pour aujourd'hui
+    // Déclencher les notifications du jour si elles n'existent pas encore
     private function triggerMedicationNotifications(User $user): void
     {
         $now         = Carbon::now(config('app.timezone'));
@@ -73,24 +80,29 @@ class NotificationController extends Controller
         $isMorningWindow = $currentHour >= 5 && $currentHour < 20;
         $isNightWindow   = $currentHour >= 20;
 
+        // Chargement de tous les checks de l'utilisateur aujourd'hui en une seule requête
+        $checks = TreatmentCheck::where('user_id', $user->id)
+            ->whereDate('check_date', $today->toDateString())
+            ->where('taken', false)
+            ->get();
+
         foreach ($medicines as $medicine) {
             $treatment = Treatment::find($medicine['id'] ?? null);
+
             if (!$treatment) {
                 continue;
             }
 
             $medicineName = $medicine['name'] ?? 'Traitement';
 
+            // Fenêtre du matin : créer un rappel s'il n'existe pas encore
             if ($isMorningWindow && !$this->alreadyExists($treatment->id, 'reminder', $today)) {
                 $this->createNotification($treatment->id, 'reminder', $today, $medicineName);
             }
 
+            // Fenêtre du soir : créer une notification si des doses ont été oubliées
             if ($isNightWindow) {
-                $missedAny = TreatmentCheck::where('user_id', $user->id)
-                    ->where('treatment_id', $treatment->id)
-                    ->whereDate('check_date', $today->toDateString())
-                    ->where('taken', false)
-                    ->exists();
+                $missedAny = $checks->where('treatment_id', $treatment->id)->isNotEmpty();
 
                 if ($missedAny && !$this->alreadyExists($treatment->id, 'missed', $today)) {
                     $this->createNotification($treatment->id, 'missed', $today, $medicineName);
@@ -99,20 +111,24 @@ class NotificationController extends Controller
         }
     }
 
-    // Créer une notification
+    // Créer et sauvegarder une notification en base de données
     private function createNotification(int $treatmentId, string $kind, Carbon $date, string $medicineName): void
     {
+        if ($kind === 'missed') {
+            $message = "Vous avez oublié de prendre {$medicineName} aujourd'hui.";
+        } else {
+            $message = "N'oubliez pas de prendre {$medicineName} aujourd'hui.";
+        }
+
         Notification::create([
             'treatment_id' => $treatmentId,
             'kind'         => $kind,
             'target_date'  => $date->toDateString(),
-            'message'      => $kind === 'missed'
-                ? "Vous avez oublié de prendre {$medicineName} aujourd'hui."
-                : "N'oubliez pas de prendre {$medicineName} aujourd'hui.",
+            'message'      => $message,
         ]);
     }
 
-    // Vérifier si la notification existe déjà pour aujourd'hui
+    // Vérifier si une notification identique existe déjà pour aujourd'hui
     private function alreadyExists(int $treatmentId, string $kind, Carbon $date): bool
     {
         return Notification::where('treatment_id', $treatmentId)

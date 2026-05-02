@@ -14,7 +14,7 @@
                     v-for="f in TYPE_FILTERS"
                     :key="f.value"
                     type="button"
-                    variant="outline"
+                    :variant="filterType === f.value ? 'primary' : 'outline'"
                     size="md"
                     @click="filterType = f.value"
                 >
@@ -111,7 +111,7 @@
                         {{ notif.message }}
                     </Typography>
                     <p class="mt-1 text-sm text-slate-900">
-                        {{ formatDate(notif.target_date) }}
+                        {{ formatLongDate(notif.target_date) }}
                     </p>
                 </div>
 
@@ -162,7 +162,7 @@ const filterType = ref("all");
 const filterDays = ref(7);
 
 const filtered = computed(() => {
-    const days = Number(filterDays.value);
+    const days = filterDays.value;
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
     cutoff.setHours(0, 0, 0, 0);
@@ -173,12 +173,7 @@ const filtered = computed(() => {
         if (!n.target_date) return matchType;
         const notifDate = new Date(n.target_date + "T00:00:00");
         return matchType && !isNaN(notifDate) && notifDate >= cutoff;
-    });
-});
-
-function formatDate(dateStr) {
-    return formatLongDate(dateStr);
-}
+    });});
 
 async function load() {
     loading.value = true;

@@ -126,7 +126,7 @@ function formatDate(targetDate, kind) {
     if (!targetDate) return "";
     const hour = kind === "missed" ? 21 : 8;
     const d = new Date(`${targetDate}T${String(hour).padStart(2, "0")}:00:00`);
-    return isNaN(d) ? "" : d.toLocaleString("en-US", {
+    return isNaN(d) ? "" : d.toLocaleString("fr-FR", {
         day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
     });
 }
