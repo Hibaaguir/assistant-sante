@@ -40,12 +40,12 @@ let chartInstance   = null;       // instance Chart.js
 async function loadChart() {
     // Appel API : récupérer les traitements actifs
     const { data: res } = await api.get("/dashboard/treatments");
-    const medicines = res?.data ?? [];
+    const treatments = res?.data ?? [];
 
     // Compter le nombre de traitements par type
     const counts = {};
-    for (const med of medicines) {
-        const type = med.type || "Autre";
+    for (const treatment of treatments) {
+        const type = treatment.type || "Autre";
         counts[type] = (counts[type] || 0) + 1;
     }
 

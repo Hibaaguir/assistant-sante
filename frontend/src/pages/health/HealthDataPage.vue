@@ -28,7 +28,7 @@
                             <line x1="3" y1="10" x2="21" y2="10" />
                         </svg>
                         <span class="text-[13px] font-semibold uppercase tracking-wide text-slate-700">
-                            {{ formatObsDate(doctorLatestObservation.date) }}
+                            {{ formatLongDate(doctorLatestObservation.date) }}
                         </span>
                     </div>
                     <!-- Observation text -->
@@ -118,10 +118,14 @@ const notifications = useNotificationsStore();
 
 const activeTab = ref("vitals");
 
-const showAddButton = computed(() => activeTab.value !== "treatments");
+const getTodayKey = () => new Date().toISOString().slice(0, 10);
+
+const showAddButton = computed(() => activeTab.value !== "treatments");//true if not treatments
 const addButtonLabel = computed(() => {
     if (activeTab.value === "labs") return "Ajouter une analyse";
-    return latestVital.value ? "Modifier la dernière mesure" : "Ajouter une mesure";
+    const hasToday = latestVital.value &&
+        String(latestVital.value.measured_at).slice(0, 10) === getTodayKey();
+    return hasToday ? "Modifier la dernière mesure" : "Ajouter une mesure";
 });
 
 const labResults = ref([]);
@@ -141,78 +145,15 @@ function openAddModal() {
     else vitalsTab.value?.ouvrirModalAjout();
 }
 
-function toDate(rawDate) {
-    if (!rawDate) return null;
-
-    const text = String(rawDate).trim();
-    if (!text) return null;
-
-    // Accept legacy French format DD/MM/YYYY.
-    const frMatch = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (frMatch) {
-        const day = Number(frMatch[1]);
-        const month = Number(frMatch[2]);
-        const year = Number(frMatch[3]);
-        const date = new Date(year, month - 1, day);
-        const isValid =
-            date.getFullYear() === year &&
-            date.getMonth() === month - 1 &&
-            date.getDate() === day;
-        return isValid ? date : null;
-    }
-
-    // If the string contains a time component, parse the full datetime and
-    // extract the local calendar date to avoid UTC-offset day shifts.
-    if (text.includes("T")) {
-        const parsed = new Date(text);
-        if (Number.isNaN(parsed.getTime())) return null;
-        return new Date(
-            parsed.getFullYear(),
-            parsed.getMonth(),
-            parsed.getDate(),
-        );
-    }
-
-    const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (isoMatch) {
-        const year = Number(isoMatch[1]);
-        const month = Number(isoMatch[2]);
-        const day = Number(isoMatch[3]);
-        const date = new Date(year, month - 1, day);
-        const isValid =
-            date.getFullYear() === year &&
-            date.getMonth() === month - 1 &&
-            date.getDate() === day;
-        return isValid ? date : null;
-    }
-
-    const parsed = new Date(text);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-const formatDate = (iso) => formatLongDate(iso);
-
-const formatObsDate = (val) => {
-    const d = toDate(val);
-    return !d
-        ? String(val || "")
-        : d.toLocaleDateString("fr-FR", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-          });
-};
-
 function buildLast7Days() {
-    const today = new Date();
-    const todayKey = today.toISOString().slice(0, 10);
+    const today = new Date();//Date actuelle
+    const todayKey = getTodayKey();//Clé de la date d'aujourd'hui au format YYYY-MM-DD pour comparaison ultérieure
     const monday = new Date(today);
     // getDay() : 0=Dimanche, 1=Lundi, ..., 6=Samedi
     // On veut que Lundi soit le premier jour (offset = 0)
-    const dayOfWeek = today.getDay();
-    const dayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    monday.setDate(today.getDate() - dayOffset);
+    const dayOfWeek = today.getDay();//0 (Dimanche) à 6 (Samedi)
+    const dayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;//Si aujourd'hui est Dimanche (0), on recule de 6 jours pour arriver au Lundi précédent. Sinon, on recule de (dayOfWeek - 1) jours.
+    monday.setDate(today.getDate() - dayOffset); // Recule jusqu'au lundi de la semaine actuelle
 
     return Array.from({ length: 7 }).map((_, idx) => {
         const date = new Date(monday);
@@ -279,7 +220,7 @@ async function loadHealthData() {
                   ),
                   value: item.value,
                   unit: item.unit ?? "",
-                  date: formatDate(item.analysis_date),
+                  date: formatLongDate(item.analysis_date),
                   analysisDate: item.analysis_date,
               }))
             : [];
@@ -292,22 +233,17 @@ async function loadHealthData() {
             vitalsRaw.map((v) => String(v.measured_at).slice(0, 10)),
         )];
         vitalDateKeys.value = historyDateKeys;
-        historyHeartRateValues.value = historyDateKeys.map((dk) => {
-            const v = vitalsRaw.find((r) => String(r.measured_at).slice(0, 10) === dk);
-            return v?.heart_rate ?? null;
-        });
-        historySystolicValues.value = historyDateKeys.map((dk) => {
-            const v = vitalsRaw.find((r) => String(r.measured_at).slice(0, 10) === dk);
-            return v?.systolic_pressure ?? null;
-        });
-        historyDiastolicValues.value = historyDateKeys.map((dk) => {
-            const v = vitalsRaw.find((r) => String(r.measured_at).slice(0, 10) === dk);
-            return v?.diastolic_pressure ?? null;
-        });
-        historySaturationValues.value = historyDateKeys.map((dk) => {
-            const v = vitalsRaw.find((r) => String(r.measured_at).slice(0, 10) === dk);
-            return v?.oxygen_saturation ?? null;
-        });
+
+        const pickField = (field) =>
+            historyDateKeys.map((dk) => {
+                const v = vitalsRaw.find((r) => String(r.measured_at).slice(0, 10) === dk);
+                return v?.[field] ?? null;
+            });
+
+        historyHeartRateValues.value  = pickField("heart_rate");
+        historySystolicValues.value   = pickField("systolic_pressure");
+        historyDiastolicValues.value  = pickField("diastolic_pressure");
+        historySaturationValues.value = pickField("oxygen_saturation");
         treatmentMedicines.value = Array.isArray(data.treatment_medicines)
             ? data.treatment_medicines
             : [];
