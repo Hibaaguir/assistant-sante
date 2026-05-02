@@ -33,41 +33,6 @@
             Historique des prises
         </Typography>
 
-        <div class="mt-6 grid gap-4 md:grid-cols-3">
-            <article
-                v-for="card in treatmentHistoryCards"
-                :key="card.key"
-                class="rounded-[18px] border bg-white px-5 py-6 shadow-[0_1px_3px_rgba(15,23,42,0.05)]"
-                :class="card.borderClass"
-            >
-                <div class="flex items-center justify-between gap-4">
-                    <div>
-                        <p class="text-lg font-semibold text-black">
-                            {{ card.label }}
-                        </p>
-                        <p
-                            class="mt-4 text-4xl font-bold leading-none text-black"
-                        >
-                            {{ card.value }}
-                        </p>
-                        <p class="mt-2 text-[14px] font-medium text-black">
-                            {{ card.subtitle }}
-                        </p>
-                    </div>
-                    <div
-                        class="grid place-items-center h-12 w-12 shrink-0 rounded-[15px]"
-                        :class="card.iconWrapClass"
-                    >
-                        <component
-                            :is="card.icon"
-                            class="size-6"
-                            :class="card.iconClass"
-                        />
-                    </div>
-                </div>
-            </article>
-        </div>
-
         <FilterCard
             class="mt-6"
             title="Historique"
@@ -529,16 +494,10 @@ import { useNotificationsStore } from "@/stores/notifications";
 import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import FilterCard from "@/components/ui/FilterCard.vue";
-import {
-    IconCalendar,
-    IconCheckCircle,
-    IconPill,
-} from "@/components/doctors/DoctorIcons.js";
 
 const MAX_DAILY_DOSES = 12;
 const MAX_MONTHLY_FREQUENCY = 31;
 const HISTORY_ALL_DAYS = 30;
-const DEFAULT_HISTORY_DAYS = 7;
 const ALLOWED_FREQUENCY_UNITS = ["jour", "semaine", "mois"];
 const FREQUENCY_UNIT_FR = { day: "jour", week: "semaine", month: "mois" };
 const translateUnit = (unit) => FREQUENCY_UNIT_FR[unit] ?? unit;
@@ -549,8 +508,6 @@ const props = defineProps({
     treatmentDays: { type: Array, default: () => [] },// les jours affichés dans le calendrier
 });
 
-defineEmits(["refresh"]);
-
 const notifications = useNotificationsStore();
 
 const showTreatmentModal = ref(false);//popup de suivi d'une journée
@@ -560,32 +517,6 @@ const treatDate = ref("");//filtrer par une date précise
 const treatMed = ref("all");// filtrer par médicament
 const treatStatus = ref("all");//filtrer par observance (complet, partiel, tous)
 
-const TREATMENT_HISTORY_CARD_CONFIG = [
-    {
-        key: "observance",
-        label: "Taux d'observance",
-        borderClass: "border-[#f3b8bb]",
-        icon: IconCheckCircle,
-        iconWrapClass: "bg-[#fee3e5]",//couleur du fond de l'icône rose 
-        iconClass: "text-[#ff1f2d]",// rouge vif
-    },
-    {
-        key: "totalTaken",
-        label: "Prises totales",
-        borderClass: "border-[#f0cb58]",// jaune
-        icon: IconCalendar,
-        iconWrapClass: "bg-[#fff0c8]",// jaune pâle
-        iconClass: "text-[#ef7a00]",// orange vif
-    },
-    {
-        key: "activeMedicines",
-        label: "Médicaments actifs",
-        borderClass: "border-[#b5e6c6]",// vert
-        icon: IconPill,
-        iconWrapClass: "bg-[#d2f3de]",// vert pâle
-        iconClass: "text-[#07b33f]",// vert vif
-    },
-];
 // Le jour sélectionné dans le calendrier pour suivi détaillé (null si aucun ou si le modal est fermé)
 const selectedTreatmentDay = computed(
     () =>
@@ -611,8 +542,6 @@ const treatmentHistoryRows = computed(() => {
             const meds = filteredTreatmentHistoryMedicines.value.map((med) => {
                 const total = obtenirNombrePrisesPourJour(dateKey, med);
                 const taken = compterPrisesCompletees(dateKey, med);
-                const progress =
-                    total > 0 ? Math.round((taken / total) * 100) : 0;
 
                 return {
                     id: med.id,
@@ -620,7 +549,6 @@ const treatmentHistoryRows = computed(() => {
                     dose: med.dose,
                     taken,
                     total,
-                    progress,
                     isComplete: total > 0 && taken >= total,
                 };
             });
@@ -646,55 +574,6 @@ const treatmentHistoryRows = computed(() => {
             return true;
         })
         .sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));//trie du plus récent au plus ancien
-});
-
-const treatmentHistoryStats = computed(() => {
-    const rows = treatmentHistoryRows.value;
-    const totalDays = rows.length;
-    const completeDays = rows.filter((day) => day.isComplete).length;//nombre des jours complets 
-    const totalTaken = rows.reduce((sum, day) => sum + day.taken, 0);//nombre total de prises effectuées sur la période affichée
-    const observance =
-        totalDays > 0 ? Math.round((completeDays / totalDays) * 100) : 0;
-    const periodSubtitle = treatDate.value
-        ? `Le ${treatDate.value}`
-        : "Sur tout l'historique";
-
-    return {
-        totalDays,
-        completeDays,
-        totalTaken,
-        observance,
-        periodSubtitle,
-        activeMedicines: props.treatmentMedicines.length,
-    };
-});
-// Cette computed construit les données à afficher dans les cartes de l'historique en fonction des statistiques calculées et du type de carte (observance, prises totales, médicaments actifs).
-const treatmentHistoryCards = computed(() => {
-    const stats = treatmentHistoryStats.value;
-
-    return TREATMENT_HISTORY_CARD_CONFIG.map((card) => {
-        if (card.key === "observance") {
-            return {
-                ...card,
-                value: `${stats.observance}%`,
-                subtitle: `${stats.completeDays}/${stats.totalDays} jours complets`,
-            };
-        }
-
-        if (card.key === "totalTaken") {
-            return {
-                ...card,
-                value: stats.totalTaken,
-                subtitle: stats.periodSubtitle,
-            };
-        }
-
-        return {
-            ...card,
-            value: stats.activeMedicines,
-            subtitle: "Traitements en cours",
-        };
-    });
 });
 
 // Transforme "2025-05-01" en texte lisible "Jeudi 1 mai"

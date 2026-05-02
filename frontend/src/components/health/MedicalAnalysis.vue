@@ -372,11 +372,12 @@ const CATALOG = {
 const showAnalysisModal = ref(false); //affiche la modale d'ajout / modification
 const showDeleteConfirm = ref(false);
 const editingId = ref(null); //id de l'analyse en cours d'édition id null si ajout
-const expandedIndex = ref(0); //contrôle quelle ligne de résultat est ouverte dans le formulaire
+const expandedIndex = ref(0); // contrôle quelle ligne de résultat est ouverte dans le formulaire
 const formError = ref("");
 const pendingDelete = ref(null);
 
-const filters = reactive({ type: "", date: "" ,});
+
+const filters = reactive({ type: "", date: "" });
 const form = reactive({ category: "", results: [emptyRow()], date: today() });
 
 //Extrait toutes les clés du CATALOG
