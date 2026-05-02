@@ -1,9 +1,3 @@
-/*
-  Centralized authentication store.
-  Single source of truth for the logged-in user, their role, access level,
-  and token management.
-*/
-
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import api from "@/services/api";
@@ -23,25 +17,13 @@ export const useAuthStore = defineStore("auth", () => {
     const userRole = computed(
         () => user.value?.role?.toLowerCase() || null,
     );
-    const isAdmin = computed(
-        () =>
-            userRole.value === "administrateur" ||
-            userRole.value === "admin",
-    );
-    const isDoctor = computed(
-        () =>
-            userRole.value === "medecin" ||
-            userRole.value === "doctor",
-    );
+    const isAdmin = computed(() => userRole.value === "admin");
+    const isDoctor = computed(() => userRole.value === "doctor");
     const hasHealthProfile = computed(() =>
         Boolean(user.value?.has_profil_sante),
     );
     const currentSpace = computed(() =>
-        isDoctor.value
-            ? "medecin"
-            : isAdmin.value
-              ? "administrateur"
-              : "personnel",
+        isDoctor.value ? "doctor" : isAdmin.value ? "admin" : "user",
     );
     const isInDoctorSpace = computed(() => isDoctor.value);
     const isInUserSpace = computed(

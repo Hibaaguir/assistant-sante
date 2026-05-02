@@ -317,9 +317,9 @@ async function soumettre() {
         });
 
         // Succès : sauvegarde la session et redirige après 900ms
-        authStore.applyAuth(data, "personnel");
+        authStore.applyAuth(data);
         serverMessage.value = data?.message || "Compte créé avec succès.";
-        setTimeout(() => router.push(data?.redirect_to || "/health-profile"), 900);
+        setTimeout(() => router.push(data?.redirect_to || "/profil-sante"), 900);
 
     } catch (err) {
         messageType.value = "error";

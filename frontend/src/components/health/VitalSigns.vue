@@ -17,22 +17,15 @@
         </div>
     </div>
 
-    <!-- Cartes des dernières valeurs — toujours visibles -->
+    <!-- Cartes des dernières valeurs — affichage uniquement -->
     <section class="mt-6 grid gap-5 xl:grid-cols-3">
         <!-- Heart Rate Card -->
         <VitalCard
             v-bind="VITAL_META.heart"
-            :display-value="draft.heartRate"
-            unit="bpm"
-            :can-edit="peutModifierDerniereMesure"
-            :is-editing="mesureEnEdition === 'heart'"
-            @edit="activerEditionMesure('heart')"
-            @blur="fermerEditionMesure"
-            @update:value="(value) => mettreAJourDraft('heart', value)"
         >
             <template #value>
                 <span class="text-[36px] font-bold leading-none text-slate-900">
-                    {{ draft.heartRate || "--" }}
+                    {{ latestVital?.heart_rate ?? "--" }}
                     <span class="text-[18px] font-semibold text-slate-700 ml-1"
                         >bpm</span
                     >
@@ -44,31 +37,17 @@
         <BloodPressureCard
             v-bind="VITAL_META.pressure"
             unit="mmHg"
-            :systolic="draft.systolic"
-            :diastolic="draft.diastolic"
-            :can-edit="peutModifierDerniereMesure"
-            @update:systolic="
-                (value) => mettreAJourDraft('pressure-systolic', value)
-            "
-            @update:diastolic="
-                (value) => mettreAJourDraft('pressure-diastolic', value)
-            "
+            :systolic="latestVital?.systolic_pressure"
+            :diastolic="latestVital?.diastolic_pressure"
         />
 
         <!-- Oxygen Card -->
         <VitalCard
             v-bind="VITAL_META.oxygen"
-            :display-value="draft.oxygen"
-            unit="%"
-            :can-edit="peutModifierDerniereMesure"
-            :is-editing="mesureEnEdition === 'oxygen'"
-            @edit="activerEditionMesure('oxygen')"
-            @blur="fermerEditionMesure"
-            @update:value="(value) => mettreAJourDraft('oxygen', value)"
         >
             <template #value>
                 <span class="text-[36px] font-bold leading-none text-slate-900">
-                    {{ draft.oxygen || "--" }}
+                    {{ latestVital?.oxygen_saturation != null ? Math.round(latestVital.oxygen_saturation) : "--" }}
                     <span class="text-[22px] font-semibold text-slate-700 ml-1"
                         >%</span
                     >
@@ -76,40 +55,6 @@
             </template>
         </VitalCard>
     </section>
-
-    <!-- Actions d'édition rapide -->
-    <div
-        v-if="peutModifierDerniereMesure"
-        class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-    >
-        <p class="text-[15px] leading-7 text-black">
-            Cliquez sur une valeur pour la modifier directement dans la carte.
-        </p>
-        <div class="flex items-center gap-2">
-            <BaseButton
-                v-if="editionModifiee"
-                type="button"
-                variant="cancel"
-                size="sm"
-                @click="reinitialiserEdition"
-            >
-                Annuler
-            </BaseButton>
-            <BaseButton
-                type="button"
-                variant="save"
-                size="md"
-                :disabled="!editionModifiee || enregistrementEnCours"
-                @click="enregistrerDepuisCartes"
-            >
-                {{
-                    enregistrementEnCours
-                        ? "Enregistrement..."
-                        : "Enregistrer la derniére entrée"
-                }}
-            </BaseButton>
-        </div>
-    </div>
 
     <!-- Historique -->
     <section
@@ -206,7 +151,6 @@
                     size="sm"
                     @click="showModal = false"
                 >
-                    <!-- Close icon (inline SVG — no render function needed) -->
                     <svg
                         viewBox="0 0 24 24"
                         class="h-6 w-6"
@@ -342,14 +286,12 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, reactive, ref } from "vue";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
 import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
-// Proper .vue components — no render functions needed
 import BloodPressureCard from "./BloodPressureCard.vue";
 import VitalCard from "./VitalCard.vue";
-import HistoryCard from "./HistoryCard.vue";
 import ModalField from "./ModalField.vue";
 import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
@@ -404,18 +346,10 @@ const notifications = useNotificationsStore();
 // ─── État ─────────────────────────────────────────────────────────────────────
 const showModal = ref(false);
 const isEditingLatest = ref(false);
-const enregistrementEnCours = ref(false);
-const mesureEnEdition = ref("");
 const formError = ref("");
 const filterDate = ref("");
 const filterType = ref("all");
 
-const draft = reactive({
-    heartRate: "",
-    systolic: "",
-    diastolic: "",
-    oxygen: "",
-});
 const form = reactive({
     heartRate: "",
     systolic: "",
@@ -427,55 +361,26 @@ const form = reactive({
     date: today(),
 });
 
-// ─── Watchers ────────────────────────────────────────────────────────────────
-// Initialiser et réinitialiser le draft au montage et quand latestVital change
-onMounted(() => {
-    syncDraft();
-});
-watch(
-    () => props.latestVital,
-    () => {
-        syncDraft();
-    },
-);
-
 // ─── Computed ─────────────────────────────────────────────────────────────────
 const latestVitalDate = computed(() => isoDate(props.latestVital?.measured_at));
 const latestVitalMeasuredAtLabel = computed(() =>
     props.latestVital?.measured_at ? formatLongDate(latestVitalDate.value) : "",
-);
-const peutModifierDerniereMesure = computed(() =>
-    Boolean(props.latestVital?.measured_at),
 );
 const modalTitle = computed(() =>
     isEditingLatest.value
         ? "Modifier la dernière mesure"
         : "Ajouter une mesure",
 );
-
-const editionModifiee = computed(() => {
-    if (!peutModifierDerniereMesure.value) return false;
-    const v = props.latestVital;
-    return (
-        String(draft.heartRate) !== String(v?.heart_rate ?? "") ||
-        String(draft.systolic) !== String(v?.systolic_pressure ?? "") ||
-        String(draft.diastolic) !== String(v?.diastolic_pressure ?? "") ||
-        String(draft.oxygen) !== String(v?.oxygen_saturation ?? "")
-    );
-});
-
 const filtresActifs = computed(
     () => Boolean(filterDate.value) || filterType.value !== "all",
 );
 
-// Même structure de cartes que l'espace médecin
 const VITAL_CARDS = [
     { key: "heartRate",     label: "Rythme cardiaque",  unit: "bpm",  class: "border-[#f4bcc3] bg-[#fff5f6]" },
     { key: "bloodPressure", label: "Tension artérielle", unit: "mmHg", class: "border-[#aac8ff] bg-[#eff6ff]" },
     { key: "saturation",    label: "Saturation O₂",     unit: "%",    class: "border-[#dcc5ff] bg-[#faf4ff]" },
 ];
 
-// Même logique que filteredVitals de l'espace médecin
 const filteredVitals = computed(() => {
     const rows = props.vitalDateKeys
         .map((dateKey, i) => {
@@ -494,8 +399,8 @@ const filteredVitals = computed(() => {
                 saturation:    isValidMeasure(ox)  ? Math.round(+ox) : "--",
             };
         })
-        .filter(Boolean)
-        .reverse();
+        .filter(Boolean)// Remove nulls for dates with no valid measures
+        .reverse();// Show most recent dates first
 
     const pool = filterDate.value ? rows : rows.slice(0, 7);
     return pool
@@ -520,7 +425,6 @@ function today() {
 function isoDate(v) {
     return v ? String(v).slice(0, 10) : today();
 }
-// Format YYYY-MM-DD → YYYY-MM-DD 12:00:00 for the API (midi local pour éviter décalage timezone)
 function toDatetime(dateStr) {
     const d = dateStr ? String(dateStr).slice(0, 10) : today();
     return `${d} 12:00:00`;
@@ -536,38 +440,6 @@ function isValidMeasure(v) {
     );
 }
 
-
-function syncDraft() {
-    const v = props.latestVital;
-    draft.heartRate = String(v?.heart_rate ?? "");
-    draft.systolic = String(v?.systolic_pressure ?? "");
-    draft.diastolic = String(v?.diastolic_pressure ?? "");
-    const ox = v?.oxygen_saturation;
-    draft.oxygen = ox != null ? String(Math.round(Number(ox))) : "";
-}
-
-function mettreAJourDraft(cardKey, value) {
-    if (cardKey === "heart") {
-        draft.heartRate = value;
-    } else if (cardKey === "pressure-systolic") {
-        draft.systolic = String(value);
-    } else if (cardKey === "pressure-diastolic") {
-        draft.diastolic = String(value);
-    } else if (cardKey === "oxygen") {
-        draft.oxygen = value;
-    }
-}
-
-function activerEditionMesure(key) {
-    mesureEnEdition.value = key;
-}
-function fermerEditionMesure() {
-    mesureEnEdition.value = "";
-}
-function reinitialiserEdition() {
-    syncDraft();
-    fermerEditionMesure();
-}
 function reinitialiserFiltres() {
     filterDate.value = "";
     filterType.value = "all";
@@ -577,7 +449,7 @@ function resetForm() {
     formError.value = "";
     isEditingLatest.value = false;
     const v = props.latestVital;
-    Object.assign(form, {
+    Object.assign(form, { 
         heartRate: String(v?.heart_rate ?? 72),
         systolic: String(v?.systolic_pressure ?? 120),
         diastolic: String(v?.diastolic_pressure ?? 80),
@@ -621,11 +493,6 @@ async function enregistrerMesure() {
             oxygen_saturation: oxygen,
         });
         notifications.itemAdded();
-        // Mettre à jour le draft avec les nouvelles valeurs pour affichage immédiat
-        draft.heartRate = String(heartRate ?? "");
-        draft.systolic = String(systolic ?? "");
-        draft.diastolic = String(diastolic ?? "");
-        draft.oxygen = String(oxygen ?? "");
         resetForm();
         showModal.value = false;
         emit("refresh");
@@ -636,64 +503,12 @@ async function enregistrerMesure() {
     }
 }
 
-async function enregistrerDepuisCartes() {
-    if (!peutModifierDerniereMesure.value) return;
-
-    const heartRate = toNumber(draft.heartRate);
-    const systolic = toNumber(draft.systolic);
-    const diastolic = toNumber(draft.diastolic);
-    const rawOxygen = toNumber(draft.oxygen);
-    const oxygen = rawOxygen !== null ? Math.round(rawOxygen) : null;
-
-    if (
-        heartRate === null &&
-        systolic === null &&
-        diastolic === null &&
-        oxygen === null
-    ) {
-        notifications.warning("Veuillez renseigner au moins une valeur.");
-        return;
-    }
-    if ((systolic === null) !== (diastolic === null)) {
-        notifications.warning("Veuillez remplir les deux champs de tension.");
-        return;
-    }
-
-    enregistrementEnCours.value = true;
-    try {
-        await api.post("/health-data/vitals", {
-            measured_at: toDatetime(today()),
-            heart_rate: heartRate,
-            systolic_pressure: systolic,
-            diastolic_pressure: diastolic,
-            oxygen_saturation: oxygen,
-        });
-        notifications.itemUpdated("Dernière entrée modifiée avec succès.");
-        // Mettre à jour le draft avec les nouvelles valeurs pour affichage immédiat
-        draft.heartRate = String(heartRate ?? "");
-        draft.systolic = String(systolic ?? "");
-        draft.diastolic = String(diastolic ?? "");
-        draft.oxygen = String(oxygen ?? "");
-        fermerEditionMesure();
-        emit("refresh");
-    } catch (err) {
-        const msg = err?.response?.data?.errors
-            ? Object.values(err.response.data.errors).flat()[0]
-            : (err?.response?.data?.message ??
-              "Erreur lors de la modification.");
-        notifications.error(msg);
-    } finally {
-        enregistrementEnCours.value = false;
-    }
-}
-
 // ─── API publique ─────────────────────────────────────────────────────────────
 function ouvrirModalAjout() {
     resetForm();
+    isEditingLatest.value = Boolean(props.latestVital?.measured_at);
     showModal.value = true;
 }
-
-watch(() => props.latestVital, syncDraft, { immediate: true, deep: true });
 
 defineExpose({ ouvrirModalAjout });
 </script>

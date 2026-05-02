@@ -547,7 +547,7 @@ async function submit() {
             date_of_birth: convertDateForAPI(form.date_naissance),
         });
 
-        authStore.applyAuth(res?.data, "medecin");
+        authStore.applyAuth(res?.data);
 
         serverMessage.value =
             res?.data?.message || "Compte médecin créé avec succès.";

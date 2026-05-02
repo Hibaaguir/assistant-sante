@@ -72,9 +72,9 @@ class HealthDataController extends Controller
     public function storeVital(StoreVitalSignsRequest $request): JsonResponse
     {
         $data       = $request->validated();
-        $measuredAt = Carbon::parse($data['measured_at']);
+        $measuredAt = Carbon::parse($data['measured_at']);//kenet string radetha objet date bch tnajam taamalou manipulation plus facilement
 
-        $healthData = HealthData::firstOrCreate([
+        $healthData = HealthData::firstOrCreate([//chercher un health data pour l'utilisateur à la date donnée, sinon en créer un nouveau
             'user_id' => $request->user()->id,
             'date'    => $measuredAt->toDateString(),
         ]);

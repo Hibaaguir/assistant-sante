@@ -2,9 +2,7 @@ import api from "@/services/api";
 
 function normalizeUserType(rawType) {
     const value = String(rawType || "").trim().toLowerCase();
-    return ["doctor", "medecin", "médecin"].includes(value)
-        ? "Doctor"
-        : "Patient";
+    return value === "doctor" ? "Doctor" : "Patient";
 }
 
 function normalizeUserStatus(rawStatus) {

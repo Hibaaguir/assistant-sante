@@ -288,7 +288,7 @@ async function handleSubmit() {
             password: form.password,
         });
 
-        authStore.applyAuth(res?.data, "medecin");
+        authStore.applyAuth(res?.data);
         serverMessage.value = res?.data?.message || "Connexion réussie.";
         messageType.value = "success";
 

@@ -40,7 +40,7 @@ class ForgotPasswordController extends Controller
         ]);
 
         // Construire le lien de réinitialisation et l'envoyer par email
-        $frontendUrl = config('app.frontend_url', config('app.url')) . '/reinitialiser-mot-de-passe';
+        $frontendUrl = config('app.frontend_url', config('app.url')) . '/reset-password';
         $resetUrl    = $frontendUrl . '?email=' . urlencode($account->email) . '&token=' . $token;
 
         Mail::send(new ResetPasswordMail($account->email, $token, $resetUrl));

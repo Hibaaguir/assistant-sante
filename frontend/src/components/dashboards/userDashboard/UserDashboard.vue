@@ -1,7 +1,3 @@
-<!--
-  DashboardLayout.vue
-  Dashboard principal du patient : bienvenue, notifications et tous les graphes de santé.
--->
 <template>
     <div class="user-dashboard-scope w-full px-4 py-4 sm:px-6 lg:px-8 bg-white">
 

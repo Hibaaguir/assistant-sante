@@ -119,9 +119,10 @@ const notifications = useNotificationsStore();
 const activeTab = ref("vitals");
 
 const showAddButton = computed(() => activeTab.value !== "treatments");
-const addButtonLabel = computed(() =>
-    activeTab.value === "labs" ? "Ajouter une analyse" : "Ajouter une mesure",
-);
+const addButtonLabel = computed(() => {
+    if (activeTab.value === "labs") return "Ajouter une analyse";
+    return latestVital.value ? "Modifier la dernière mesure" : "Ajouter une mesure";
+});
 
 const labResults = ref([]);
 const latestVital = ref(null);
@@ -242,7 +243,7 @@ function ensureDayTracking(dayKey) {
     for (const med of treatmentMedicines.value) {
         const doses = Math.max(
             1,
-            Math.min(Math.round(Number(med?.frequency_count ?? 1)), 12),
+            Math.min(Number(med?.frequency_count ?? 1), 12),
         );
         for (let i = 1; i <= doses; i += 1) {
             const key = buildDoseKey(med.id, i);
