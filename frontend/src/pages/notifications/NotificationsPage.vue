@@ -161,19 +161,69 @@ const error = ref("");
 const filterType = ref("all");
 const filterDays = ref(7);
 
-const filtered = computed(() => {
-    const days = filterDays.value;
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - days);
-    cutoff.setHours(0, 0, 0, 0);
+function extractMedicineName(message, kind) {
+    const suffix = " aujourd'hui.";
+    const prefixes =
+        kind === "missed"
+            ? ["Vous avez oublié de prendre ", "Vous avez manqué au moins une prise de "]
+            : ["N'oubliez pas de prendre "];
+    for (const prefix of prefixes) {
+        if (message.startsWith(prefix) && message.endsWith(suffix)) {
+            return message.slice(prefix.length, -suffix.length);
+        }
+    }
+    return null;
+}
 
-    return all.value.filter((n) => {
+const filtered = computed(() => {
+    const days = Number(filterDays.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const cutoff = new Date(today);
+    cutoff.setDate(today.getDate() - days);
+
+    // Étape 1 : filtrer par type et période
+    const rawFiltered = all.value.filter((n) => {
         const matchType =
             filterType.value === "all" || n.kind === filterType.value;
         if (!n.target_date) return matchType;
         const notifDate = new Date(n.target_date + "T00:00:00");
         return matchType && !isNaN(notifDate) && notifDate >= cutoff;
-    });});
+    });
+
+    // Étape 2 : grouper par date + kind pour fusionner les médicaments
+    const groups = new Map();
+    for (const n of rawFiltered) {
+        const key = `${n.target_date}::${n.kind}`;
+        if (!groups.has(key)) {
+            groups.set(key, {
+                ...n,
+                _medicines: [extractMedicineName(n.message, n.kind)],
+            });
+        } else {
+            groups.get(key)._medicines.push(extractMedicineName(n.message, n.kind));
+        }
+    }
+
+    // Étape 3 : reconstruire le message combiné et trier
+    return [...groups.values()]
+        .map((g) => {
+            const names = g._medicines.filter((m) => m !== null && m !== "");
+            if (names.length <= 1) return g;
+            const combined =
+                names.slice(0, -1).join(", ") + " et " + names[names.length - 1];
+            const message =
+                g.kind === "missed"
+                    ? `Vous avez manqué une prise de ${combined} aujourd'hui.`
+                    : `N'oubliez pas de prendre ${combined} aujourd'hui.`;
+            return { ...g, message };
+        })
+        .sort((a, b) => {
+            if (!a.target_date) return 1;
+            if (!b.target_date) return -1;
+            return new Date(b.target_date) - new Date(a.target_date);
+        });
+});
 
 async function load() {
     loading.value = true;

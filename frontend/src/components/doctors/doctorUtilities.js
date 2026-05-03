@@ -1,3 +1,11 @@
+export function today() {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
 // Convertit une chaîne en objet Date, retourne null si la date est invalide
 function parseDate(dateString) {
     if (!dateString) return null;

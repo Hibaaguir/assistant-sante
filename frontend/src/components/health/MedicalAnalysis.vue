@@ -280,6 +280,7 @@ import DialogueConfirmation from "@/components/ui/ConfirmationDialog.vue";
 import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import FilterCard from "@/components/ui/FilterCard.vue";
+import { today } from "@/components/doctors/doctorUtilities.js";
 
 const CalendarIcon = {
     template: `<svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v3M16 2v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg>`,
@@ -379,14 +380,14 @@ const pendingDelete = ref(null);
 
 const filters = reactive({ type: "", date: "" });
 const form = reactive({ category: "", results: [emptyRow()], date: today() });
-
+ 
 //Extrait toutes les clés du CATALOG
 const categoryOptions = Object.keys(CATALOG);
 //Extrait la liste des résultats possibles en fonction de la catégorie sélectionnée dans le formulaire
 const resultOptions = computed(() => CATALOG[form.category] ?? []);
 //Extrait la liste des types d'analyses présents dans les données pour alimenter le filtre de type d'analyse
 const labTypeOptions = computed(() => [
-    ...new Set(
+    ...new Set(//Set supprime automatiquement les doublons 
         props.analyses.map((a) => a.type))]);
 //Applique les filtres de type et de date sur les analyses à afficher
 const filteredAnalyses = computed(() => {
@@ -411,22 +412,17 @@ const deleteMessage = computed(() => {
     return `Vous êtes sur le point de supprimer ${name}. Cette action est irréversible.`;
 });
 
-//dates sous format ISO "YYYY-MM-DD"
-function today() {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-}
 
+//fonction qui formate une date au format ISO YYYY-MM-DD ou retourne la date du jour si la valeur est falsy ou invalide
 function isoDate(v) {
     return v ? String(v).slice(0, 10) : today();
 }
+// Convertit une valeur en nombre ou retourne null si la conversion échoue ou si la valeur n'est pas finie (ex: "5.2abc" retourne null)
 function toNumber(v) {
     const n = Number(v);
     return Number.isFinite(n) ? n : null;
 }
+// Retourne une ligne vide pour initialiser le formulaire ou ajouter une nouvelle ligne de résultat
 function emptyRow() {
     return { result: "", value: "", unit: "" };
 }
