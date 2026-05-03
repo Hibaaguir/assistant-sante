@@ -13,7 +13,8 @@ class AiAnalysisController extends Controller
         $userId     = (int) $request->user()->id;
         $scriptPath = base_path('../ai-module/api.py');
 
-        $command = 'python ' . escapeshellarg($scriptPath) . ' ' . $userId . ' 2>&1';
+        $pythonPath = env('PYTHON_PATH', 'python');
+        $command    = escapeshellarg($pythonPath) . ' ' . escapeshellarg($scriptPath) . ' ' . $userId . ' 2>&1';
         $output  = shell_exec($command);
 
         if (!$output) {

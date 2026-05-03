@@ -115,11 +115,9 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 const vitalsTab = ref(null);
 const labsTab = ref(null);
 const notifications = useNotificationsStore();
-
+//ongle actuelle peut être "vitals", "labs" ou "treatments"
 const activeTab = ref("vitals");
-
 const getTodayKey = () => new Date().toISOString().slice(0, 10);
-
 const showAddButton = computed(() => activeTab.value !== "treatments");//true if not treatments
 const addButtonLabel = computed(() => {
     if (activeTab.value === "labs") return "Ajouter une analyse";
@@ -130,6 +128,7 @@ const addButtonLabel = computed(() => {
 
 const labResults = ref([]);
 const latestVital = ref(null);
+//c'est pour construire les graphiques d'historique des signes vitaux 30 derniers jours
 const vitalDateKeys = ref([]);
 const historyHeartRateValues = ref([]);
 const historySystolicValues = ref([]);
@@ -147,12 +146,12 @@ function openAddModal() {
 
 function buildLast7Days() {
     const today = new Date();//Date actuelle
-    const todayKey = getTodayKey();//Clé de la date d'aujourd'hui au format YYYY-MM-DD pour comparaison ultérieure
-    const monday = new Date(today);
-    // getDay() : 0=Dimanche, 1=Lundi, ..., 6=Samedi
+    const todayKey = getTodayKey();//Clé de la date d'aujourd'hui au format YYYY-MM-DD pour comparaison future
+    const monday = new Date(today);//copie de la date d'aujourd'hui pour calculer le lundi de la semaine
     // On veut que Lundi soit le premier jour (offset = 0)
     const dayOfWeek = today.getDay();//0 (Dimanche) à 6 (Samedi)
-    const dayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;//Si aujourd'hui est Dimanche (0), on recule de 6 jours pour arriver au Lundi précédent. Sinon, on recule de (dayOfWeek - 1) jours.
+    //Si aujourd'hui est Dimanche (0), on recule de 6 jours pour arriver au Lundi précédent. Sinon, on recule de (dayOfWeek - 1) jours.
+    const dayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
     monday.setDate(today.getDate() - dayOffset); // Recule jusqu'au lundi de la semaine actuelle
 
     return Array.from({ length: 7 }).map((_, idx) => {
@@ -182,6 +181,7 @@ function buildDoseKey(medId, doseIndex) {
 function ensureDayTracking(dayKey) {
     if (!treatmentChecks[dayKey]) treatmentChecks[dayKey] = {};
     for (const med of treatmentMedicines.value) {
+        //Pour chaque médicament actif on calcule le nombre de prises minimum 1, maximum 12.
         const doses = Math.max(
             1,
             Math.min(Number(med?.frequency_count ?? 1), 12),
@@ -194,7 +194,7 @@ function ensureDayTracking(dayKey) {
         }
     }
 }
-
+//C'est la fonction principale qui charge toutes les données depuis le backend.
 async function loadHealthData() {
     try {
         const [res, vitalsRes, historyRes] = await Promise.all([
@@ -225,7 +225,7 @@ async function loadHealthData() {
               }))
             : [];
 
-        // History from dedicated vitals endpoint (30 days) — sorted ascending by date
+        //Trie l'historique des vitaux par date croissante
         vitalsRaw.sort((a, b) =>
             String(a.measured_at).localeCompare(String(b.measured_at)),
         );

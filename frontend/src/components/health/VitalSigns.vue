@@ -297,7 +297,7 @@ import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import FilterCard from "@/components/ui/FilterCard.vue";
 
-// ─── Métadonnées des signes vitaux (couleurs, icônes, labels) ─────────────────
+//les cartes en haut de la deriniere
 const VITAL_META = {
     heart: {
         key: "heart",
@@ -331,7 +331,7 @@ const VITAL_META = {
     },
 };
 
-// ─── Props / Emits ────────────────────────────────────────────────────────────
+// props et emits
 const props = defineProps({
     latestVital: { type: Object, default: null },
     historyHeartRate: { type: Array, default: () => [] },
@@ -343,9 +343,9 @@ const props = defineProps({
 const emit = defineEmits(["refresh"]);
 const notifications = useNotificationsStore();
 
-// ─── État ─────────────────────────────────────────────────────────────────────
+// state local
 const showModal = ref(false);
-const isEditingLatest = ref(false);
+const isEditingLatest = ref(false);//true si on modifie la dernière mesure existante
 const formError = ref("");
 const filterDate = ref("");
 const filterType = ref("all");
@@ -361,7 +361,7 @@ const form = reactive({
     date: today(),
 });
 
-// ─── Computed ─────────────────────────────────────────────────────────────────
+// Computed 
 const latestVitalDate = computed(() => isoDate(props.latestVital?.measured_at));
 const latestVitalMeasuredAtLabel = computed(() =>
     props.latestVital?.measured_at ? formatLongDate(latestVitalDate.value) : "",
@@ -371,10 +371,11 @@ const modalTitle = computed(() =>
         ? "Modifier la dernière mesure"
         : "Ajouter une mesure",
 );
+//c'est pour le button de réinitialisation des filtres il s'affiche si un filtre est actif
 const filtresActifs = computed(
     () => Boolean(filterDate.value) || filterType.value !== "all",
 );
-
+//les cartes à afficher dans l'historique en fonction des filtres sélectionnés
 const VITAL_CARDS = [
     { key: "heartRate",     label: "Rythme cardiaque",  unit: "bpm",  class: "border-[#f4bcc3] bg-[#fff5f6]" },
     { key: "bloodPressure", label: "Tension artérielle", unit: "mmHg", class: "border-[#aac8ff] bg-[#eff6ff]" },
@@ -395,14 +396,14 @@ const filteredVitals = computed(() => {
                 heartRate:     isValidMeasure(hr)  ? hr  : "--",
                 bloodPressure: isValidMeasure(sys) && isValidMeasure(dia)
                     ? `${+sys}/${+dia}`
-                    : "--/--",
+                    : "--/--", 
                 saturation:    isValidMeasure(ox)  ? Math.round(+ox) : "--",
             };
         })
-        .filter(Boolean)// Remove nulls for dates with no valid measures
-        .reverse();// Show most recent dates first
-
-    const pool = filterDate.value ? rows : rows.slice(0, 7);
+        //supprime les entrées sans mesure valide 
+        .filter(Boolean)
+        .reverse();//récent en premier
+    const pool = filterDate.value ? rows : rows.slice(0, 7);//si pas de filtre de date on limite a7
     return pool
         .filter((r) => !filterDate.value || r.isoDate === filterDate.value)
         .map((r) => ({
@@ -414,7 +415,7 @@ const filteredVitals = computed(() => {
         .filter((r) => r.cards.length);
 });
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+//date d'aujourd'hui au format YYYY-MM-DD pour les champs de date et les comparaisons
 function today() {
     const d = new Date();
     const year = d.getFullYear();
@@ -422,18 +423,22 @@ function today() {
     const day = String(d.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
 }
+//extraire juste yyyy-mm-dd sans time
 function isoDate(v) {
     return v ? String(v).slice(0, 10) : today();
 }
+//format backend 
 function toDatetime(dateStr) {
     const d = dateStr ? String(dateStr).slice(0, 10) : today();
     return `${d} 12:00:00`;
 }
+//convertir le string to number ou null
 function toNumber(v) {
     if (v === null || v === undefined || v === "") return null;
     const n = Number(String(v).trim().replace(",", "."));
     return Number.isFinite(n) ? n : null;
 }
+//verifie ce qui un nombre valide 
 function isValidMeasure(v) {
     return (
         v !== null && v !== undefined && v !== "" && Number.isFinite(Number(v))
@@ -444,24 +449,21 @@ function reinitialiserFiltres() {
     filterDate.value = "";
     filterType.value = "all";
 }
-
-function resetForm() {
+//remplit le formulaire avec les données de la dernière mesure si editing est true sinon vide les champs
+function resetForm(editing = false) {
     formError.value = "";
-    isEditingLatest.value = false;
     const v = props.latestVital;
-    Object.assign(form, { 
-        heartRate: String(v?.heart_rate ?? 72),
-        systolic: String(v?.systolic_pressure ?? 120),
-        diastolic: String(v?.diastolic_pressure ?? 80),
-        oxygen: String(v?.oxygen_saturation ?? 98),
-        skipHeartRate: false,
-        skipPressure: false,
-        skipOxygen: false,
-        date: today(),
-    });
+    form.heartRate     = editing ? String(v?.heart_rate ?? "")         : "";
+    form.systolic      = editing ? String(v?.systolic_pressure ?? "")  : "";
+    form.diastolic     = editing ? String(v?.diastolic_pressure ?? "") : "";
+    form.oxygen        = editing ? String(v?.oxygen_saturation ?? "")  : "";
+    form.skipHeartRate = false;
+    form.skipPressure  = false;
+    form.skipOxygen    = false;
+    form.date          = today();
 }
 
-// ─── Actions API ─────────────────────────────────────────────────────────────
+//enregistre une nouvelle mesure ou modifie la dernière si isEditingLatest est true
 async function enregistrerMesure() {
     formError.value = "";
     const heartRate = form.skipHeartRate ? null : toNumber(form.heartRate);
@@ -503,10 +505,11 @@ async function enregistrerMesure() {
     }
 }
 
-// ─── API publique ─────────────────────────────────────────────────────────────
 function ouvrirModalAjout() {
-    resetForm();
-    isEditingLatest.value = Boolean(props.latestVital?.measured_at);
+    const hasToday = props.latestVital?.measured_at &&
+        String(props.latestVital.measured_at).slice(0, 10) === today();
+    isEditingLatest.value = Boolean(hasToday);
+    resetForm(isEditingLatest.value);
     showModal.value = true;
 }
 

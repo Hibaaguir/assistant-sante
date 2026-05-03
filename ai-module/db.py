@@ -151,7 +151,7 @@ def extract_user_data(user_id: int) -> dict:
     config = get_db_config()
     conn = None
     try:
-        conn = mysql.connector.connect(**config)
+        conn = mysql.connector.connect(**config, use_pure=True)
         cur = conn.cursor()
 
         def q(query, params):
