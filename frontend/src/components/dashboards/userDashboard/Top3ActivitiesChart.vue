@@ -55,8 +55,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import api from "@/services/api";
+import { ref, computed, onMounted, watch } from "vue";
+import { useDashboardStore } from "@/stores/dashboard";
 
 // Formate le nom d'une activité : remplace _ et - par un espace, met en capitales
 function formatActivityLabel(label) {
@@ -70,12 +70,14 @@ const filters = [
     { label: "Par mois",    days: 30 },
 ];
 
-// Références et variables
-const loading = ref(true);  // true pendant le chargement
-const days    = ref(30);    // filtre actif (7 ou 30 jours)
-const top5    = ref([]);    // liste des 5 meilleures activités
+const dashStore = useDashboardStore();
 
-let allEntries = []; // toutes les entrées du journal (non réactif)
+// Références et variables
+const loading = computed(() => !dashStore.initialized);
+const days    = ref(30);
+const top5    = ref([]);
+
+let allEntries = [];
 
 // Retourne la date limite (format YYYY-MM-DD) il y a N jours
 function cutoffDate(n) {
@@ -109,21 +111,19 @@ function compute() {
         .map(([label, duration]) => ({ label, duration: Number(duration) }));
 }
 
-// Charge les données du journal depuis l'API
-async function load() {
-    loading.value = true;
-    const { data: res } = await api.get("/dashboard/journal");
-    allEntries    = res?.data ?? [];
-    loading.value = false;
+function load() {
+    allEntries = dashStore.journal;
     compute();
 }
 
-// Changer le filtre et recalculer le top 5
 function changeFilter(v) {
     days.value = v;
     compute();
 }
 
-// Charger au démarrage du composant
-onMounted(load);
+onMounted(() => {
+    dashStore.initialize();
+    if (dashStore.initialized) load();
+});
+watch(() => dashStore.initialized, (ready) => { if (ready) load(); });
 </script>

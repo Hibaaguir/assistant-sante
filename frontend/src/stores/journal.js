@@ -2,6 +2,7 @@ import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import api from "@/services/api";
 import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
+import { useDashboardStore } from "@/stores/dashboard";
 // transformateur de données entre le format backend et le format utilisé dans le frontend, notamment pour les champs liés à l'activité physique et au tabac qui ont une structure différente entre les deux côtés
 function convertToIntOrNull(value) {
     if (value == null || value === "") return null;
@@ -178,7 +179,8 @@ export const useJournalStore = defineStore("journal", () => {
             const idx = entries.value.findIndex((item) => item.id === next.id);
             if (idx >= 0) entries.value[idx] = next;
             else entries.value.unshift(next);
-        } //next contient l'entrée complète retournée par le backend, avec l'ID généré et les éventuelles modifications apportées par le backend (comme le calcul des calories à partir des repas)
+        }
+        useDashboardStore().invalidate();
     };
     // Récupérer une entrée depuis le backend et mettre à jour le state (utilisé en mode édition pour garantir des données fraîches)
     const fetchEntry = async (id) => {
@@ -193,17 +195,16 @@ export const useJournalStore = defineStore("journal", () => {
     // Mettre à jour une entrée existante du journal en envoyant les données modifiées au backend, puis mettre à jour le state avec les données retournées par le backend
     const updateEntry = async (id, patch) => {
         const current = findById(id) ?? {};
-        //patch contient les champs modifiés, on les fusionne avec l'entrée actuelle pour créer le payload complet à envoyer au backend
         const payload = toPayload({ ...current, ...patch });
         const res = await api.put(`/journal/${id}`, payload);
         if (res?.data?.data) {
             const next = toVue(res.data.data);
-            // Trouver l'index de l'entrée modifiée dans le state en utilisant l'ID, et remplacer l'entrée existante par la nouvelle entrée retournée par le backend
             const idx = entries.value.findIndex(
                 (item) => item.id === String(id),
             );
             if (idx >= 0) entries.value[idx] = next;
         }
+        useDashboardStore().invalidate();
     };
     // Supprimer une entrée du journal en envoyant une requête de suppression au backend, puis mettre à jour le state en retirant l'entrée supprimée
     const deleteEntry = async (id) => {
@@ -211,6 +212,7 @@ export const useJournalStore = defineStore("journal", () => {
         entries.value = entries.value.filter(
             (entry) => entry.id !== String(id),
         );
+        useDashboardStore().invalidate();
     };
     // Mettre à jour le filtre utilisé pour afficher les entrées du journal, en remplaçant l'ancien filtre par le nouveau
     const setFilter = (nextFilter) => {

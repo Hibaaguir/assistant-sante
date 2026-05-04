@@ -35,25 +35,17 @@
 
         <template v-else>
             <!-- Zone du graphe (canvas Chart.js) -->
-            <canvas ref="canvasRef" class="max-h-56"></canvas>
-
-            <!-- Légende colorée pris / non pris -->
-            <div class="mt-3 flex items-center gap-5 text-sm text-slate-700">
-                <span class="flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-3 rounded-full bg-emerald-500"></span> Pris
-                </span>
-                <span class="flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-3 rounded-full bg-rose-400"></span> Non pris
-                </span>
+            <div class="relative h-56">
+                <canvas ref="canvasRef"></canvas>
             </div>
         </template>
     </section>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { Chart, LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler } from "chart.js";
-import api from "@/services/api";
+import { useDashboardStore } from "@/stores/dashboard";
 
 // Enregistrer les composants Chart.js nécessaires pour le graphe en courbe
 Chart.register(LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler);
@@ -67,15 +59,17 @@ const filters = [
 // Noms courts des mois pour les étiquettes de l'axe X
 const MONTHS = ["jan", "fév", "mar", "avr", "mai", "jun", "jul", "aoû", "sep", "oct", "nov", "déc"];
 
-// Références et variables
-const canvasRef = ref(null);  // référence vers le <canvas>
-const loading   = ref(true);  // true pendant le chargement
-const noData    = ref(false); // true si aucune donnée sur la période
-const days      = ref(30);    // filtre actif (7 ou 30 jours)
+const dashStore = useDashboardStore();
 
-let allChecks     = []; // toutes les prises de médicaments (non réactif)
-let chartInstance = null; // instance Chart.js
-let dates         = []; // liste des dates de la période affichée
+// Références et variables
+const canvasRef = ref(null);
+const loading   = computed(() => !dashStore.initialized);
+const noData    = ref(false);
+const days      = ref(30);
+
+let allChecks     = [];
+let chartInstance = null;
+let dates         = [];
 
 // Génère la liste des N derniers jours au format YYYY-MM-DD
 function buildDateRange(n) {
@@ -169,6 +163,7 @@ async function buildChart() {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             interaction: { mode: "index", intersect: false },
             plugins: {
                 legend: {
@@ -207,12 +202,9 @@ async function buildChart() {
     });
 }
 
-// Charge les données de prises de médicaments depuis l'API
+// Charge les données du store et construit le graphe
 async function load() {
-    loading.value = true;
-    const { data: res } = await api.get("/dashboard/treatment-checks", { params: { days: 90 } });
-    allChecks     = res?.data ?? [];
-    loading.value = false;
+    allChecks = dashStore.treatmentChecks90;
     await buildChart();
 }
 
@@ -222,8 +214,11 @@ async function changeFilter(v) {
     await buildChart();
 }
 
-// Charger au démarrage du composant
-onMounted(load);
+onMounted(() => {
+    dashStore.initialize();
+    if (dashStore.initialized) load();
+});
+watch(() => dashStore.initialized, async (ready) => { if (ready) await load(); });
 
 // Détruire le graphe quand le composant est retiré (libération mémoire)
 onUnmounted(() => chartInstance?.destroy());

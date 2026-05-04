@@ -22,14 +22,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import MetricSummaryCard from "./MetricSummaryCard.vue";
-import api from "@/services/api";
+import { useDashboardStore } from "@/stores/dashboard";
 
-// Valeurs chargées depuis l'API
-const initialWeight = ref(null); // poids initial du profil de santé
-const currentWeight = ref(null); // poids actuel
-const loading       = ref(false);
+const dashStore = useDashboardStore();
+
+const initialWeight = ref(null);
+const currentWeight = ref(null);
+const loading       = computed(() => !dashStore.initialized);
 
 // Calcule l'écart entre le poids actuel et le poids initial
 const diff = computed(() => {
@@ -50,25 +51,16 @@ const subtextLabel = computed(() => {
     return `Initial: ${initialWeight.value} kg`;
 });
 
-// Charge les données de poids depuis l'API
-async function load() {
-    loading.value = true;
-    try {
-        const { data: res } = await api.get("/dashboard/weight");
-        const profile = res?.data;
-
-        // Ne rien afficher si les données sont incomplètes
-        if (profile?.initial_weight == null || profile?.current_weight == null) return;
-
-        initialWeight.value = +parseFloat(profile.initial_weight).toFixed(1);
-        currentWeight.value = +parseFloat(profile.current_weight).toFixed(1);
-    } catch (error) {
-        console.error("Erreur chargement poids :", error);
-    } finally {
-        loading.value = false;
-    }
+function load() {
+    const profile = dashStore.weight;
+    if (profile?.initial_weight == null || profile?.current_weight == null) return;
+    initialWeight.value = +parseFloat(profile.initial_weight).toFixed(1);
+    currentWeight.value = +parseFloat(profile.current_weight).toFixed(1);
 }
 
-// Charger au démarrage du composant
-onMounted(load);
+onMounted(() => {
+    dashStore.initialize();
+    if (dashStore.initialized) load();
+});
+watch(() => dashStore.initialized, (ready) => { if (ready) load(); });
 </script>

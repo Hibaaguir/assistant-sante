@@ -20,9 +20,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { Chart, PieController, ArcElement, Legend, Tooltip } from "chart.js";
-import api from "@/services/api";
+import { useDashboardStore } from "@/stores/dashboard";
 
 // Enregistrer uniquement les éléments nécessaires au graphe camembert
 Chart.register(PieController, ArcElement, Legend, Tooltip);
@@ -30,19 +30,18 @@ Chart.register(PieController, ArcElement, Legend, Tooltip);
 // Couleurs des parts du camembert
 const COLORS = ["#6366f1", "#f43f5e", "#10b981", "#f59e0b", "#149bd7", "#8b5cf6"];
 
+const dashStore = useDashboardStore();
+
 // Références et variables
-const canvasRef     = ref(null);  // référence vers le <canvas>
-const loading       = ref(true);  // true pendant le chargement
-const noData        = ref(false); // true si aucun traitement actif
-let chartInstance   = null;       // instance Chart.js
+const canvasRef   = ref(null);
+const loading     = computed(() => !dashStore.initialized);
+const noData      = ref(false);
+let chartInstance = null;
 
-// Charge les données et dessine le graphe camembert
+// Dessine le graphe camembert depuis les données du store
 async function loadChart() {
-    // Appel API : récupérer les traitements actifs
-    const { data: res } = await api.get("/dashboard/treatments");
-    const treatments = res?.data ?? [];
+    const treatments = dashStore.treatments;
 
-    // Compter le nombre de traitements par type
     const counts = {};
     for (const treatment of treatments) {
         const type = treatment.type || "Autre";
@@ -51,8 +50,6 @@ async function loadChart() {
 
     const labels = Object.keys(counts);
     const values = Object.values(counts);
-
-    loading.value = false;
 
     // Si aucune donnée, afficher le message "aucun traitement"
     if (labels.length === 0) {
@@ -91,8 +88,11 @@ async function loadChart() {
     });
 }
 
-// Charger au démarrage du composant
-onMounted(loadChart);
+onMounted(() => {
+    dashStore.initialize();
+    if (dashStore.initialized) loadChart();
+});
+watch(() => dashStore.initialized, async (ready) => { if (ready) await loadChart(); });
 
 // Détruire le graphe quand le composant est retiré (libération mémoire)
 onUnmounted(() => chartInstance?.destroy());

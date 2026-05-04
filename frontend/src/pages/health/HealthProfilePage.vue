@@ -93,7 +93,7 @@
                         icon="calendar"
                     />
                     <HealthFieldRow
-                        label="Sexe"
+                        label="Genre"
                         :value="
                             profile.gender === 'male'
                                 ? 'Homme'
@@ -641,7 +641,8 @@
                             <button
                                 type="button"
                                 :aria-pressed="draft.smoker"
-                                class="relative h-8 w-14 rounded-full bg-[#c7d2e0] transition-colors"
+                                class="relative h-8 w-14 rounded-full transition-colors"
+                                :class="draft.smoker ? 'bg-blue-500' : 'bg-[#c7d2e0]'"
                                 @click="draft.smoker = !draft.smoker"
                             >
                                 <span
@@ -666,7 +667,8 @@
                             <button
                                 type="button"
                                 :aria-pressed="draft.alcoholic"
-                                class="relative h-8 w-14 rounded-full bg-[#c7d2e0] transition-colors"
+                                class="relative h-8 w-14 rounded-full transition-colors"
+                                :class="draft.alcoholic ? 'bg-blue-500' : 'bg-[#c7d2e0]'"
                                 @click="draft.alcoholic = !draft.alcoholic"
                             >
                                 <span
@@ -1205,6 +1207,7 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import api from "@/services/api";
+import { useHealthProfileStore } from "@/stores/healthProfile";
 import HealthFieldRow from "@/components/health/HealthFieldRow.vue";
 import { useNotificationsStore } from "@/stores/notifications";
 import Typography from "@/components/ui/Typography.vue";
@@ -1214,6 +1217,7 @@ import ConfirmationDialog from "@/components/ui/ConfirmationDialog.vue";
 // ─── Stores & Router ──────────────────────────────────────────────────────────
 const router = useRouter();
 const authStore = useAuthStore();
+const healthProfileStore = useHealthProfileStore();
 const notifications = useNotificationsStore();
 
 // ─── Page state ───────────────────────────────────────────────────────────────
@@ -1942,7 +1946,7 @@ function validateBaseSection() {
     clearSectionErrors("base");
 
     if (!draft.gender) {
-        sectionErrors.base.gender = "Veuillez selectionner le sexe.";
+        sectionErrors.base.gender = "Veuillez selectionner le genre.";
     }
 
     if (draft.height === "" || draft.height === null) {
@@ -2068,7 +2072,7 @@ function handleValidationErrors(section, backendErrors) {
     const messages = [];
 
     if (backendErrors.gender) {
-        sectionErrors.base.gender = "Veuillez selectionner le sexe.";
+        sectionErrors.base.gender = "Veuillez selectionner le genre.";
         messages.push(sectionErrors.base.gender);
     }
     if (backendErrors.height) {
@@ -2145,6 +2149,7 @@ async function saveSection(section) {
         user.dateOfBirth = apiUser.date_of_birth || user.dateOfBirth;
 
         authStore.setHealthProfile(true);
+        healthProfileStore.invalidate();
         syncDraftFromProfile();
         editing[section] = false;
         notifications.itemUpdated();
@@ -2189,20 +2194,17 @@ async function saveSection(section) {
 
 onMounted(async () => {
     try {
-        // Load autocomplete suggestions for the treatment fields
-        await loadTreatmentCatalog();
+        await healthProfileStore.initialize();
 
-        // Load the user's health profile
-        const response = await api.get("/health-profile");
-        Object.assign(profile, response?.data?.data || {});
+        applyTreatmentCatalog(healthProfileStore.treatmentCatalog);
 
-        const apiUser = response?.data?.user || {};
-        user.name = apiUser.name || "";
-        user.dateOfBirth = apiUser.date_of_birth || "";
+        Object.assign(profile, healthProfileStore.profileData || {});
 
-        authStore.setHealthProfile(Boolean(response?.data?.data));
+        user.name        = healthProfileStore.userInfo?.name           || "";
+        user.dateOfBirth = healthProfileStore.userInfo?.date_of_birth  || "";
 
-        // Copy the loaded profile into the draft so forms are ready to edit
+        authStore.setHealthProfile(Boolean(healthProfileStore.profileData));
+
         syncDraftFromProfile();
     } catch (err) {
         if (err?.response?.status === 401) {

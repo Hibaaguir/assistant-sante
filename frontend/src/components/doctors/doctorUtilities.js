@@ -6,6 +6,11 @@ export function today() {
     return `${year}-${month}-${day}`;
 }
 
+// Formate une date au format ISO YYYY-MM-DD ou retourne la date du jour si la valeur est falsy ou invalide
+export function isoDate(v) {
+    return v ? String(v).slice(0, 10) : today();
+}
+
 // Convertit une chaîne en objet Date, retourne null si la date est invalide
 function parseDate(dateString) {
     if (!dateString) return null;

@@ -27,7 +27,7 @@ class PatientsSeeder extends MedicalSeeder
     public function run(): void
     {
         $this->faker = fake('fr_FR');
-        $startDate   = Carbon::today()->subDays(29)->startOfDay();
+        $startDate   = Carbon::parse(self::SEED_START)->startOfDay();
 
         $doctors = User::query()
             ->where('role', 'doctor')

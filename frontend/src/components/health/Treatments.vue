@@ -491,6 +491,7 @@ import { computed, ref } from "vue";
 import api from "@/services/api";
 import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
 import { useNotificationsStore } from "@/stores/notifications";
+import { useDashboardStore } from "@/stores/dashboard";
 import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import FilterCard from "@/components/ui/FilterCard.vue";
@@ -788,6 +789,7 @@ async function synchroniserSuiviTraitements() {
     }
 
     await api.post("/health-data/treatment-checks/sync", { checks });
+    useDashboardStore().invalidate();
 }
 // Cette fonction est appelée quand l'utilisateur coche ou décoche une prise met à jour l'état local
 async function basculerPrise(dayKey, med, doseIndex) {

@@ -289,7 +289,8 @@
 import { computed, reactive, ref } from "vue";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
-import { formatLongDate, today } from "@/components/doctors/doctorUtilities.js";
+import { useDashboardStore } from "@/stores/dashboard";
+import { formatLongDate, today, isoDate } from "@/components/doctors/doctorUtilities.js";
 import BloodPressureCard from "./BloodPressureCard.vue";
 import VitalCard from "./VitalCard.vue";
 import ModalField from "./ModalField.vue";
@@ -415,10 +416,6 @@ const filteredVitals = computed(() => {
         .filter((r) => r.cards.length);
 });
 
-//extraire juste yyyy-mm-dd sans time
-function isoDate(v) {
-    return v ? String(v).slice(0, 10) : today();
-}
 //format backend 
 function toDatetime(dateStr) {
     const d = dateStr ? String(dateStr).slice(0, 10) : today();
@@ -477,6 +474,22 @@ async function enregistrerMesure() {
         formError.value = "Veuillez remplir les deux champs de tension.";
         return;
     }
+    if (heartRate !== null && (heartRate < 20 || heartRate > 260)) {
+        formError.value = "La fréquence cardiaque doit être entre 20 et 260 bpm.";
+        return;
+    }
+    if (systolic !== null && (systolic < 50 || systolic > 300)) {
+        formError.value = "La pression systolique doit être entre 50 et 300 mmHg.";
+        return;
+    }
+    if (diastolic !== null && (diastolic < 30 || diastolic > 220)) {
+        formError.value = "La pression diastolique doit être entre 30 et 220 mmHg.";
+        return;
+    }
+    if (oxygen !== null && (oxygen < 0 || oxygen > 100)) {
+        formError.value = "La saturation en oxygène doit être entre 0 et 100%.";
+        return;
+    }
 
     try {
         await api.post("/health-data/vitals", {
@@ -486,14 +499,19 @@ async function enregistrerMesure() {
             diastolic_pressure: diastolic,
             oxygen_saturation: oxygen,
         });
+        useDashboardStore().invalidate();
         notifications.itemAdded();
         resetForm();
         showModal.value = false;
         emit("refresh");
     } catch (err) {
-        notifications.error(
-            err?.response?.data?.message ?? "Erreur lors de l'enregistrement.",
-        );
+        const fieldErrors = err?.response?.data?.errors;
+        if (fieldErrors) {
+            const messages = Object.values(fieldErrors).flat();
+            formError.value = messages.join(" ");
+        } else {
+            formError.value = err?.response?.data?.message ?? "Erreur lors de l'enregistrement.";
+        }
     }
 }
 

@@ -38,10 +38,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import Typography from "@/components/ui/Typography.vue";
 import { Chart, DoughnutController, ArcElement, Legend, Tooltip } from "chart.js";
-import api from "@/services/api";
+import { useDashboardStore } from "@/stores/dashboard";
 
 // Enregistrer les composants Chart.js pour le graphe en anneau
 Chart.register(DoughnutController, ArcElement, Legend, Tooltip);
@@ -55,14 +55,16 @@ const filters = [
     { label: "Par mois",    days: 30 },
 ];
 
-// Références et variables
-const canvasRef = ref(null);  // référence vers le <canvas>
-const loading   = ref(true);  // true pendant le chargement
-const noData    = ref(false); // true si aucune activité trouvée
-const days      = ref(7);     // filtre actif (7 ou 30 jours)
+const dashStore = useDashboardStore();
 
-let allEntries    = []; // toutes les entrées du journal (non réactif)
-let chartInstance = null; // instance Chart.js
+// Références et variables
+const canvasRef = ref(null);
+const loading   = computed(() => !dashStore.initialized);
+const noData    = ref(false);
+const days      = ref(7);
+
+let allEntries    = [];
+let chartInstance = null;
 
 // Retourne la date (format YYYY-MM-DD) il y a N jours
 function dateNDaysAgo(n) {
@@ -147,29 +149,22 @@ async function buildChart() {
     });
 }
 
-// Charge les données du journal depuis l'API
+// Charge les données du store et construit le graphe
 async function load() {
-    loading.value = true;
-
-    const response = await api.get("/dashboard/journal");
-
-    // Stocker toutes les entrées du journal
-    allEntries = response.data?.data ?? [];
-
-    loading.value = false;
-
-    // Construire le graphe avec les données chargées
+    allEntries = dashStore.journal;
     await buildChart();
 }
 
-// Changer le filtre et reconstruire le graphe
 async function changeFilter(value) {
     days.value = value;
     await buildChart();
 }
 
-// Charger au démarrage du composant
-onMounted(load);
+onMounted(() => {
+    dashStore.initialize();
+    if (dashStore.initialized) load();
+});
+watch(() => dashStore.initialized, async (ready) => { if (ready) await load(); });
 
 // Détruire le graphe quand le composant est retiré (libération mémoire)
 onUnmounted(() => {

@@ -1,46 +1,33 @@
 <!-- Histogramme groupé : moyennes des signes vitaux du mois actuel vs mois précédent -->
 <template>
-    <section class="mt-5 rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400">
+    <section class="mt-5 flex flex-col rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400" style="height: calc(100% - 1.25rem);">
 
         <!-- Titre et sous-titre -->
-        <div class="mb-4">
+        <div class="mb-4 shrink-0">
             <h2 class="text-2xl font-semibold text-slate-900">Signes vitaux — comparaison</h2>
             <p class="mt-0.5 text-sm text-slate-700">Moyennes mois actuel vs mois précédent</p>
         </div>
 
         <!-- Message pendant le chargement -->
-        <div v-if="loading" class="flex h-56 items-center justify-center text-slate-700">
+        <div v-if="loading" class="flex flex-1 items-center justify-center text-slate-700">
             Chargement...
         </div>
 
         <!-- Message si pas assez de données -->
-        <div v-else-if="noData" class="flex h-56 items-center justify-center text-slate-700">
+        <div v-else-if="noData" class="flex flex-1 items-center justify-center text-slate-700">
             Pas assez de données pour comparer.
         </div>
 
-        <template v-else>
-            <!-- Zone du graphe (canvas Chart.js) -->
-            <canvas ref="canvasRef" class="max-h-56"></canvas>
-
-            <!-- Légende des deux mois -->
-            <div class="mt-3 flex flex-wrap gap-4 text-sm text-slate-700">
-                <span class="flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-3 rounded-sm bg-[#6366f1]"></span>
-                    {{ currentLabel }}
-                </span>
-                <span class="flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-3 rounded-sm bg-[#94a3b8]"></span>
-                    {{ prevLabel }}
-                </span>
-            </div>
-        </template>
+        <div v-else class="relative flex-1">
+            <canvas ref="canvasRef"></canvas>
+        </div>
     </section>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from "chart.js";
-import api from "@/services/api";
+import { useDashboardStore } from "@/stores/dashboard";
 
 // Enregistrer les composants Chart.js pour l'histogramme
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
@@ -56,13 +43,15 @@ const METRICS = [
 // Noms courts des mois en français
 const MONTHS_FR = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
 
+const dashStore = useDashboardStore();
+
 // Références et variables
-const canvasRef     = ref(null);  // référence vers le <canvas>
-const loading       = ref(true);  // true pendant le chargement
-const noData        = ref(false); // true si aucune donnée à comparer
-const currentLabel  = ref("");    // étiquette du mois actuel ex: "Avr 2025"
-const prevLabel     = ref("");    // étiquette du mois précédent
-let chartInstance   = null;       // instance Chart.js
+const canvasRef    = ref(null);
+const loading      = computed(() => !dashStore.initialized);
+const noData       = ref(false);
+const currentLabel = ref("");
+const prevLabel    = ref("");
+let chartInstance  = null;
 
 // Calcule la moyenne d'un tableau de valeurs (ignore les nulls)
 function avg(arr) {
@@ -75,11 +64,9 @@ function monthKey(dateStr) {
     return (dateStr ?? "").slice(0, 7);
 }
 
-// Charge les données et dessine l'histogramme comparatif
+// Dessine l'histogramme comparatif depuis les données du store
 async function load() {
-    // Récupérer les signes vitaux des 60 derniers jours (2 mois)
-    const { data: res } = await api.get("/dashboard/vitals", { params: { days: 60 } });
-    const vitals = res?.data ?? [];
+    const vitals = dashStore.vitals60;
 
     // Calculer les clés du mois actuel et du mois précédent
     const now      = new Date();
@@ -101,8 +88,6 @@ async function load() {
             if (v[m.key] != null) buckets[mk][m.key].push(v[m.key]);
         }
     }
-
-    loading.value = false;
 
     // Calculer la moyenne de chaque indicateur pour chaque mois
     const curAvgs  = METRICS.map((m) => avg(buckets[cur][m.key]));
@@ -149,6 +134,7 @@ async function load() {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     display: true,
@@ -185,8 +171,11 @@ async function load() {
     });
 }
 
-// Charger au démarrage du composant
-onMounted(load);
+onMounted(() => {
+    dashStore.initialize();
+    if (dashStore.initialized) load();
+});
+watch(() => dashStore.initialized, async (ready) => { if (ready) await load(); });
 
 // Détruire le graphe quand le composant est retiré (libération mémoire)
 onUnmounted(() => chartInstance?.destroy());

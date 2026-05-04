@@ -21,29 +21,20 @@
 
             <template v-else>
                 <!-- Zone du graphe (canvas Chart.js) -->
-                <canvas ref="canvasRef" class="max-h-52"></canvas>
-
-                <!-- Récapitulatif par jour sous le graphe -->
-                <div class="mt-4 flex flex-wrap gap-2">
-                    <span
-                        v-for="day in weekDays"
-                        :key="day.date"
-                        class="rounded-full px-3 py-1 text-xs font-medium"
-                        :class="day.value >= GOAL ? 'bg-cyan-100 text-cyan-700' : 'bg-slate-100 text-slate-500'"
-                    >
-                        {{ day.label }} · {{ day.value > 0 ? day.value + " L" : "—" }}
-                    </span>
+                <div class="relative h-52">
+                    <canvas ref="canvasRef"></canvas>
                 </div>
+
             </template>
         </div>
     </section>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import Typography from "@/components/ui/Typography.vue";
 import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from "chart.js";
-import api from "@/services/api";
+import { useDashboardStore } from "@/stores/dashboard";
 
 // Enregistrer les composants Chart.js pour le graphe en barres
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
@@ -55,12 +46,14 @@ const GOAL = 2;
 const DAY_LABELS   = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
+const dashStore = useDashboardStore();
+
 // Références et variables
-const canvasRef = ref(null);  // référence vers le <canvas>
-const loading   = ref(true);  // true pendant le chargement
-const noData    = ref(false); // true si aucune donnée
-const weekDays  = ref([]);    // données des 7 derniers jours
-let chartInstance = null;     // instance Chart.js
+const canvasRef = ref(null);
+const loading   = computed(() => !dashStore.initialized);
+const noData    = ref(false);
+const weekDays  = ref([]);
+let chartInstance = null;
 
 // Retourne la liste des 7 derniers jours au format YYYY-MM-DD
 function getLast7Days() {
@@ -73,10 +66,9 @@ function getLast7Days() {
     return liste;
 }
 
-// Charge les données du journal et dessine le graphe
+// Traite les données du journal depuis le store et dessine le graphe
 async function load() {
-    const { data: res } = await api.get("/dashboard/journal");
-    const entries = res?.data ?? [];
+    const entries = dashStore.journal;
 
     // Regrouper les valeurs d'hydratation par date
     const byDate = {};
@@ -106,8 +98,6 @@ async function load() {
             value: values[i],
         });
     }
-
-    loading.value = false;
 
     // Vérifier si toutes les valeurs sont à zéro (pas de données)
     let toutZero = true;
@@ -150,6 +140,7 @@ async function load() {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: {
                     beginAtZero: true,
@@ -200,8 +191,11 @@ async function load() {
     });
 }
 
-// Charger au démarrage du composant
-onMounted(load);
+onMounted(() => {
+    dashStore.initialize();
+    if (dashStore.initialized) load();
+});
+watch(() => dashStore.initialized, async (ready) => { if (ready) await load(); });
 
 // Détruire le graphe quand le composant est retiré (libération mémoire)
 onUnmounted(function () { if (chartInstance) chartInstance.destroy(); });

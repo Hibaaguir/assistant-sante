@@ -160,7 +160,7 @@ class AuthController extends Controller
 
         $redirectTo = match($user->role) {
             'admin'  => '/main/dashboard',
-            'doctor' => '/main',
+            'doctor' => '/main/dashboard',
             default  => $hasProfile ? '/main' : '/profil-sante',
         };
 

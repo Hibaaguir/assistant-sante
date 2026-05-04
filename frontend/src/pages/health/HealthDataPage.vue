@@ -102,8 +102,8 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
-import api from "@/services/api";
 import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
+import { useHealthDataStore } from "@/stores/healthData";
 import VitalSigns from "@/components/health/VitalSigns.vue";
 import MedicalAnalysis from "@/components/health/MedicalAnalysis.vue";
 import Treatments from "@/components/health/Treatments.vue";
@@ -115,6 +115,7 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 const vitalsTab = ref(null);
 const labsTab = ref(null);
 const notifications = useNotificationsStore();
+const healthDataStore = useHealthDataStore();
 //ongle actuelle peut être "vitals", "labs" ou "treatments"
 const activeTab = ref("vitals");
 const getTodayKey = () => new Date().toISOString().slice(0, 10);
@@ -194,19 +195,11 @@ function ensureDayTracking(dayKey) {
         }
     }
 }
-//C'est la fonction principale qui charge toutes les données depuis le backend.
-async function loadHealthData() {
-    try {
-        const [res, vitalsRes, historyRes] = await Promise.all([
-            api.get("/health-data/overview", { params: { days: 30 } }),
-            api.get("/health-data/vitals", { params: { days: 30 } }),
-            api.get("/health-data/treatment-checks", { params: { days: 30 } }),
-        ]);
-        const data = res?.data?.data ?? {};
-        const vitalsRaw = Array.isArray(vitalsRes?.data?.data) ? vitalsRes.data.data : [];
-        const historyData = Array.isArray(historyRes?.data?.data)
-            ? historyRes.data.data
-            : [];
+// Traite les données du store et met à jour les refs locaux
+function processHealthData() {
+    const data       = healthDataStore.overview ?? {};
+    const vitalsRaw  = healthDataStore.vitals;
+    const historyData = healthDataStore.treatmentChecks;
 
         latestVital.value = data.latest_vitals ?? null;
         // On transforme les résultats de analyses pour les adapter à l'affichage
@@ -286,6 +279,14 @@ async function loadHealthData() {
                   observation: latestObservation.doctor_observation,
               }
             : null;
+}
+
+// Appelé par @refresh depuis les composants enfants après un enregistrement
+async function loadHealthData() {
+    try {
+        healthDataStore.invalidate();
+        await healthDataStore.initialize();
+        processHealthData();
     } catch (error) {
         const message =
             error?.response?.data?.message ||
@@ -294,5 +295,12 @@ async function loadHealthData() {
     }
 }
 
-onMounted(loadHealthData);
+onMounted(async () => {
+    try {
+        await healthDataStore.initialize();
+        processHealthData();
+    } catch (error) {
+        notifications.error("Erreur lors du chargement des donnees de sante.");
+    }
+});
 </script>

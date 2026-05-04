@@ -14,7 +14,7 @@ class PatientTreatmentsSeeder extends MedicalSeeder
     public function run(): void
     {
         $this->faker = fake('fr_FR');
-        $startDate   = Carbon::today()->subDays(29)->startOfDay();
+        $startDate   = Carbon::parse(self::SEED_START)->startOfDay();
 
         foreach ($this->patients() as $patientData) {
             $user = $this->findPatientByEmail($patientData['email']);

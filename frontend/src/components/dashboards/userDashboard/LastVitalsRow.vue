@@ -78,18 +78,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import api from "@/services/api";
+import { ref, computed, onMounted, watch } from "vue";
+import { useDashboardStore } from "@/stores/dashboard";
 import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
 import MetricSummaryCard from "./MetricSummaryCard.vue";
 import WeightCard from "./WeightComparisonChart.vue";
 
-// Données chargées depuis l'API
-const loading      = ref(true);   // true pendant le chargement
-const vitals       = ref(null);   // dernière mesure vitale
-const vitalsDate   = ref(null);   // date formatée de la dernière mesure
-const activity     = ref(null);   // dernière activité physique
-const activityDate = ref(null);   // date formatée de la dernière activité
+const dashStore = useDashboardStore();
+
+const loading      = computed(() => !dashStore.initialized);
+const vitals       = ref(null);
+const vitalsDate   = ref(null);
+const activity     = ref(null);
+const activityDate = ref(null);
 
 // Badge pour la fréquence cardiaque (bradycardie / normal / tachycardie)
 const heartRateBadge = computed(() => {
@@ -146,46 +147,35 @@ function formatDate(dateStr) {
     return formatLongDate(dateStr);
 }
 
-// Charge les signes vitaux et les activités depuis l'API
-async function load() {
-    loading.value = true;
-    try {
-        // Lancer les deux requêtes en parallèle pour gagner du temps
-        const [vitalsRes, journalRes] = await Promise.all([
-            api.get("/dashboard/vitals", { params: { days: 30 } }),
-            api.get("/dashboard/journal"),
-        ]);
+// Traite les données du store pour extraire les derniers signes vitaux et la dernière activité
+function processData() {
+    const vitalsList = dashStore.vitals30;
+    if (vitalsList.length > 0) {
+        const sorted     = [...vitalsList].sort((a, b) => new Date(b.measured_at) - new Date(a.measured_at));
+        vitals.value     = sorted[0];
+        vitalsDate.value = formatDate(sorted[0].measured_at);
+    }
 
-        // Trouver la mesure vitale la plus récente
-        const vitalsList = vitalsRes.data?.data ?? [];
-        if (vitalsList.length > 0) {
-            const sorted     = [...vitalsList].sort((a, b) => new Date(b.measured_at) - new Date(a.measured_at));
-            vitals.value     = sorted[0];
-            vitalsDate.value = formatDate(sorted[0].measured_at);
-        }
+    const entries      = dashStore.journal;
+    const withActivity = [...entries]
+        .filter((e) => {
+            const acts = e.physical_activities ?? e.physicalActivities ?? [];
+            return acts.length > 0;
+        })
+        .sort((a, b) => new Date(b.entry_date) - new Date(a.entry_date));
 
-        // Trouver la dernière entrée du journal contenant une activité physique
-        const entries = journalRes.data?.data ?? journalRes.data ?? [];
-        const withActivity = [...entries]
-            .filter((e) => {
-                const acts = e.physical_activities ?? e.physicalActivities ?? [];
-                return acts.length > 0;
-            })
-            .sort((a, b) => new Date(b.entry_date) - new Date(a.entry_date));
-
-        if (withActivity.length > 0) {
-            const entry        = withActivity[0];
-            const acts         = entry.physical_activities ?? entry.physicalActivities ?? [];
-            activity.value     = acts[0];
-            activityDate.value = formatDate(entry.entry_date);
-        }
-    } catch (e) {
-        console.error("Erreur chargement LastVitalsRow :", e);
-    } finally {
-        loading.value = false;
+    if (withActivity.length > 0) {
+        const entry        = withActivity[0];
+        const acts         = entry.physical_activities ?? entry.physicalActivities ?? [];
+        activity.value     = acts[0];
+        activityDate.value = formatDate(entry.entry_date);
     }
 }
 
-// Charger au démarrage du composant
-onMounted(load);
+onMounted(() => {
+    dashStore.initialize();
+    if (dashStore.initialized) processData();
+});
+
+watch(() => dashStore.initialized, (ready) => { if (ready) processData(); });
 </script>

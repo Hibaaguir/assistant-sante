@@ -64,7 +64,8 @@
 </template>
 
 <script setup>
-import { nextTick, ref } from "vue";
+import { nextTick, onMounted, ref } from "vue";
+import { useDashboardStore } from "@/stores/dashboard";
 import { toPng } from "html-to-image";
 import jsPDF from "jspdf";
 import HealthChart from "./HealthChart.vue";
@@ -81,6 +82,10 @@ import VitalSignsProgressiveLine from "./VitalSignsProgressiveLine.vue";
 import LabsDistributionChart from "./LabsDistributionChart.vue";
 import LastVitalsRow from "./LastVitalsRow.vue";
 import Typography from "../../ui/Typography.vue";
+
+// Déclenche le chargement groupé de toutes les données du dashboard dès l'ouverture
+const dashStore = useDashboardStore();
+onMounted(() => dashStore.initialize());
 
 // Référence vers le bloc HTML à capturer pour le PDF
 const pdfTargetRef = ref(null);

@@ -22,29 +22,18 @@
 
         <template v-else>
             <!-- Zone du graphe (canvas Chart.js) -->
-            <div class="relative h-52">
+            <div class="relative h-72">
                 <canvas ref="canvasRef"></canvas>
             </div>
 
-            <!-- Légende des types d'analyses -->
-            <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
-                <span
-                    v-for="(color, type) in typeColors"
-                    :key="type"
-                    class="flex items-center gap-1.5 text-xs text-slate-600"
-                >
-                    <span class="inline-block h-2.5 w-2.5 rounded-sm flex-shrink-0" :style="{ background: color }"></span>
-                    {{ type }}
-                </span>
-            </div>
         </template>
     </section>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { Chart, registerables } from "chart.js";
-import api from "@/services/api";
+import { useDashboardStore } from "@/stores/dashboard";
 
 // Enregistrer tous les composants Chart.js nécessaires
 Chart.register(...registerables);
@@ -55,22 +44,21 @@ const MONTHS_FR = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Se
 // Palette de couleurs pour les types d'analyses
 const PALETTE = ["#6366f1", "#f87171", "#34d399", "#149bd7", "#fbbf24", "#a78bfa", "#f472b6", "#2dd4bf", "#fb923c", "#94a3b8"];
 
+const dashStore = useDashboardStore();
+
 // Références et variables
-const canvasRef  = ref(null);  // référence vers le <canvas>
-const loading    = ref(true);  // true pendant le chargement
-const noData     = ref(false); // true si aucune analyse
-const typeColors = ref({});    // { "Biologie sanguine": "#6366f1", ... }
-let chart        = null;       // instance Chart.js
+const canvasRef  = ref(null);
+const loading    = computed(() => !dashStore.initialized);
+const noData     = ref(false);
+const typeColors = ref({});
+let chart        = null;
 
-// Charge les analyses et construit le graphe
+// Construit le graphe depuis les données du store
 async function load() {
-    const { data: res } = await api.get("/dashboard/labs");
-    const labs = res?.data ?? [];
+    const labs = dashStore.labs;
 
-    // Si aucune donnée, afficher le message vide
     if (!labs.length) {
-        loading.value = false;
-        noData.value  = true;
+        noData.value = true;
         return;
     }
 
@@ -144,9 +132,6 @@ async function load() {
         });
     }
 
-    loading.value = false;
-
-    // Attendre que le DOM affiche le canvas avant de dessiner
     await nextTick();
 
     // Créer l'histogramme empilé
@@ -203,8 +188,11 @@ async function load() {
     });
 }
 
-// Charger au démarrage du composant
-onMounted(load);
+onMounted(() => {
+    dashStore.initialize();
+    if (dashStore.initialized) load();
+});
+watch(() => dashStore.initialized, async (ready) => { if (ready) await load(); });
 
 // Détruire le graphe quand le composant est retiré (libération mémoire)
 onUnmounted(() => chart?.destroy());

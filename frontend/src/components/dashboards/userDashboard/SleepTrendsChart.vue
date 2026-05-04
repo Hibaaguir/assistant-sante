@@ -38,26 +38,16 @@
                     <canvas ref="canvasRef"></canvas>
                 </div>
 
-                <!-- Récapitulatif des moyennes par semaine -->
-                <div class="mt-2 flex flex-wrap gap-2.5 px-1">
-                    <span
-                        v-for="(w, i) in weekData"
-                        :key="i"
-                        class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700"
-                    >
-                        Sem {{ i + 1 }} · {{ w.avg !== null ? `${w.avg} h` : "—" }}
-                    </span>
-                </div>
             </template>
         </div>
     </section>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import Typography from "@/components/ui/Typography.vue";
 import { Chart, registerables } from "chart.js";
-import api from "@/services/api";
+import { useDashboardStore } from "@/stores/dashboard";
 
 // Enregistrer tous les composants Chart.js nécessaires
 Chart.register(...registerables);
@@ -98,13 +88,15 @@ const selectedMonthName = computed(function () {
     return "";
 });
 
-// Références et variables
-const canvasRef = ref(null);  // référence vers le <canvas>
-const loading   = ref(true);  // true pendant le chargement
-const weekData  = ref([]);    // moyennes de sommeil par semaine
+const dashStore = useDashboardStore();
 
-let chartInstance = null; // instance Chart.js
-let allEntries    = [];   // toutes les entrées du journal
+// Références et variables
+const canvasRef = ref(null);
+const loading   = computed(() => !dashStore.initialized);
+const weekData  = ref([]);
+
+let chartInstance = null;
+let allEntries    = [];
 
 // Retourne le numéro de semaine (0 à 4) selon le jour du mois
 function weekIdx(dateStr) {
@@ -261,16 +253,17 @@ async function rebuild() {
     });
 }
 
-// Charge toutes les entrées du journal puis construit le graphe
+// Charge les données du store puis construit le graphe
 async function load() {
-    const { data: res } = await api.get("/dashboard/journal");
-    allEntries    = res?.data ?? [];
-    loading.value = false;
+    allEntries = dashStore.journal;
     await rebuild();
 }
 
-// Charger au démarrage du composant
-onMounted(load);
+onMounted(() => {
+    dashStore.initialize();
+    if (dashStore.initialized) load();
+});
+watch(() => dashStore.initialized, async (ready) => { if (ready) await load(); });
 
 // Détruire le graphe quand le composant est retiré (libération mémoire)
 onUnmounted(function () { if (chartInstance) chartInstance.destroy(); });

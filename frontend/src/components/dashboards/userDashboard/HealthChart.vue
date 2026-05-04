@@ -21,20 +21,22 @@
         </div>
 
         <!-- Message pendant le chargement des données -->
-        <div v-if="loading" class="flex h-64 items-center justify-center text-slate-700">
+        <div v-if="loading" class="flex h-72 items-center justify-center text-slate-700">
             Chargement...
         </div>
 
         <!-- Zone du graphe (canvas Chart.js) -->
-        <canvas v-else ref="canvas"></canvas>
+        <div v-else class="relative h-72">
+            <canvas ref="canvas"></canvas>
+        </div>
     </section>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import Typography from "@/components/ui/Typography.vue";
 import { Chart, registerables } from "chart.js";
-import api from "@/services/api";
+import { useDashboardStore } from "@/stores/dashboard";
 
 // Enregistrer tous les composants Chart.js nécessaires
 Chart.register(...registerables);
@@ -46,27 +48,19 @@ const filters = [
     { label: "Par mois",    days: 30 },
 ];
 
+const dashStore = useDashboardStore();
+
 // Références et variables
-const canvas  = ref(null);   // référence vers l'élément <canvas>
-const loading = ref(true);   // true pendant le chargement
-const days    = ref(7);      // filtre actif (7 ou 30 jours)
-let chart     = null;        // instance Chart.js (pour pouvoir la détruire)
+const canvas  = ref(null);
+const loading = computed(() => !dashStore.initialized);
+const days    = ref(7);
+let chart     = null;
 
-// Charge les données de l'API et (re)dessine le graphe
+// Dessine le graphe depuis les données pré-chargées du store (les deux variantes 7/30j sont déjà en cache)
 async function loadChart() {
-    loading.value = true;
-
-    // Détruire l'ancien graphe avant d'en créer un nouveau
     chart?.destroy();
-    
 
-    // Appel API : récupérer les signes vitaux sur N jours
-    const { data: res } = await api.get("/dashboard/vitals-chart", {
-        params: { days: days.value },
-    });
-    const vitals = res?.data ?? {};
-
-    loading.value = false;
+    const vitals = dashStore.vitalsChart[days.value] ?? {};
 
     // Attendre que le DOM affiche le canvas avant de dessiner
     await nextTick();
@@ -114,7 +108,7 @@ async function loadChart() {
         },
         options: {//c'est le style du graphe
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     position: "top",
@@ -143,14 +137,16 @@ async function loadChart() {
     });
 }
 
-// Changer le filtre et recharger le graphe
 function changeFilter(value) {
     days.value = value;
     loadChart();
 }
 
-// Charger au démarrage du composant
-onMounted(loadChart);
+onMounted(() => {
+    dashStore.initialize();
+    if (dashStore.initialized) loadChart();
+});
+watch(() => dashStore.initialized, async (ready) => { if (ready) await loadChart(); });
 
 // Détruire le graphe quand le composant est retiré (libération mémoire)
 onUnmounted(() => chart?.destroy());

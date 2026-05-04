@@ -40,16 +40,16 @@
         </div>
 
         <!-- Zone du graphe (canvas Chart.js) -->
-        <div v-else class="relative h-52">
+        <div v-else class="relative h-72">
             <canvas ref="canvasRef"></canvas>
         </div>
     </section>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { Chart, LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend, Filler } from "chart.js";
-import api from "@/services/api";
+import { useDashboardStore } from "@/stores/dashboard";
 
 // Enregistrer les composants Chart.js nécessaires
 Chart.register(LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend, Filler);
@@ -65,18 +65,20 @@ const METRICS = [
 // Noms courts des mois en français
 const MONTHS_FR = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
 
-// Références et variables
-const canvasRef    = ref(null);          // référence vers le <canvas>
-const loading      = ref(true);          // true pendant le chargement
-const noData       = ref(false);         // true si aucune donnée
-const selectedKey  = ref("heart_rate");  // indicateur sélectionné
-const currentLabel = ref("");            // étiquette du mois actuel ex: "Avr 2025"
-const prevLabel    = ref("");            // étiquette du mois précédent
+const dashStore = useDashboardStore();
 
-let chart     = null;  // instance Chart.js
-let allVitals = [];    // toutes les mesures chargées
-let curKey    = "";    // clé du mois actuel ex: "2025-04"
-let prevKey   = "";    // clé du mois précédent
+// Références et variables
+const canvasRef    = ref(null);
+const loading      = computed(() => !dashStore.initialized);
+const noData       = ref(false);
+const selectedKey  = ref("heart_rate");
+const currentLabel = ref("");
+const prevLabel    = ref("");
+
+let chart     = null;
+let allVitals = [];
+let curKey    = "";
+let prevKey   = "";
 
 // Retourne les 7 premiers caractères d'une date ISO pour obtenir "YYYY-MM"
 function monthOf(dateStr) {
@@ -238,10 +240,9 @@ async function rebuild() {
     });
 }
 
-// Charge les mesures vitales depuis l'API et initialise les clés de mois
+// Initialise les clés de mois et construit le graphe depuis les données du store
 async function load() {
-    const { data: res } = await api.get("/dashboard/vitals", { params: { days: 62 } });
-    allVitals = res?.data ?? [];
+    allVitals = dashStore.vitals62;
 
     // Calculer la clé du mois actuel (ex: "2025-04")
     const now  = new Date();
@@ -259,12 +260,14 @@ async function load() {
     currentLabel.value = MONTHS_FR[moisNum - 1]    + " " + annee;
     prevLabel.value    = MONTHS_FR[moisPrevNum - 1] + " " + anneePrev;
 
-    loading.value = false;
     await rebuild();
 }
 
-// Charger au démarrage du composant
-onMounted(load);
+onMounted(() => {
+    dashStore.initialize();
+    if (dashStore.initialized) load();
+});
+watch(() => dashStore.initialized, async (ready) => { if (ready) await load(); });
 
 // Détruire le graphe quand le composant est retiré (libération mémoire)
 onUnmounted(function () { if (chart) chart.destroy(); });

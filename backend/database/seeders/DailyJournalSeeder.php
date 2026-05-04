@@ -15,7 +15,7 @@ class DailyJournalSeeder extends MedicalSeeder
     public function run(): void
     {
         $this->faker = fake('fr_FR');
-        $startDate   = Carbon::today()->subDays(29)->startOfDay();
+        $startDate   = Carbon::parse(self::SEED_START)->startOfDay();
 
         foreach ($this->patients() as $patientIndex => $patientData) {
             $user = User::query()
@@ -26,7 +26,7 @@ class DailyJournalSeeder extends MedicalSeeder
                 continue;
             }
 
-            for ($dayOffset = 0; $dayOffset < 30; $dayOffset++) {
+            for ($dayOffset = 0; $dayOffset < self::SEED_DAYS; $dayOffset++) {
                 $date    = $startDate->copy()->addDays($dayOffset);
                 $metrics = $this->buildDailyMetrics($patientData, $patientIndex, $dayOffset, $date);
 
