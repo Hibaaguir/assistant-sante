@@ -115,7 +115,7 @@ class NotificationController extends Controller
     private function createNotification(int $treatmentId, string $kind, Carbon $date, string $medicineName): void
     {
         if ($kind === 'missed') {
-            $message = "Vous avez oublié de prendre {$medicineName} aujourd'hui.";
+            $message = "Vous avez manqué au moins une prise de {$medicineName} aujourd'hui.";
         } else {
             $message = "N'oubliez pas de prendre {$medicineName} aujourd'hui.";
         }

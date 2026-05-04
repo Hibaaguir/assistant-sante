@@ -289,7 +289,7 @@
 import { computed, reactive, ref } from "vue";
 import api from "@/services/api";
 import { useNotificationsStore } from "@/stores/notifications";
-import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
+import { formatLongDate, today } from "@/components/doctors/doctorUtilities.js";
 import BloodPressureCard from "./BloodPressureCard.vue";
 import VitalCard from "./VitalCard.vue";
 import ModalField from "./ModalField.vue";
@@ -415,14 +415,6 @@ const filteredVitals = computed(() => {
         .filter((r) => r.cards.length);
 });
 
-//date d'aujourd'hui au format YYYY-MM-DD pour les champs de date et les comparaisons
-function today() {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-}
 //extraire juste yyyy-mm-dd sans time
 function isoDate(v) {
     return v ? String(v).slice(0, 10) : today();
