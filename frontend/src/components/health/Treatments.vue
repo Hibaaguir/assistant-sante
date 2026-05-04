@@ -654,7 +654,7 @@ function estPrisePrevueCeJour(dayKey, med) {
     );
     return plannedMonthDays.includes(date.getDate());
 }
-
+//Calcule combien de prises doit avoir un jour
 function obtenirNombrePrisesPourJour(dayKey, med) {
     const { unit, count } = resoudreFrequenceTraitement(med);
 
@@ -705,7 +705,7 @@ function assurerSuiviJour(dayKey) {
         }
     }
 }
-
+//verifie si un eprise a été cochéé ou non 
 function estPriseCochee(dayKey, medId, doseIndex) {
     return Boolean(
         props.treatmentChecks[dayKey]?.[construireClePrise(medId, doseIndex)],
@@ -722,7 +722,7 @@ function compterPrisesCompletees(dayKey, med) {
 
     return completed;
 }
-
+//verifie si toutes les prises prévues d'un médicament pour un jour sont cochées
 function estMedicamentComplet(dayKey, med) {
     const expectedDoses = obtenirNombrePrisesPourJour(dayKey, med);
     if (expectedDoses <= 0) return true;
@@ -789,7 +789,7 @@ async function synchroniserSuiviTraitements() {
 
     await api.post("/health-data/treatment-checks/sync", { checks });
 }
-
+// Cette fonction est appelée quand l'utilisateur coche ou décoche une prise met à jour l'état local
 async function basculerPrise(dayKey, med, doseIndex) {
     if (estJourFutur(dayKey)) return;
 

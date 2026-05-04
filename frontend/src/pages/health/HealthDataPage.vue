@@ -159,11 +159,11 @@ function buildLast7Days() {
         date.setDate(monday.getDate() + idx);
         const key = date.toISOString().slice(0, 10);
         return {
-            key,
-            shortLabel: date
+            key,//"YYYY-MM-DD"
+            shortLabel: date //L
                 .toLocaleDateString("fr-FR", { weekday: "short" })
                 .replace(".", ""),
-            fullLabel: date.toLocaleDateString("fr-FR", {
+            fullLabel: date.toLocaleDateString("fr-FR", {//Lundi 1 janvier
                 weekday: "long",
                 day: "numeric",
                 month: "long",
@@ -179,7 +179,7 @@ function buildDoseKey(medId, doseIndex) {
 }
 
 function ensureDayTracking(dayKey) {
-    if (!treatmentChecks[dayKey]) treatmentChecks[dayKey] = {};
+    treatmentChecks[dayKey] ??= {};
     for (const med of treatmentMedicines.value) {
         //Pour chaque médicament actif on calcule le nombre de prises minimum 1, maximum 12.
         const doses = Math.max(
@@ -209,6 +209,7 @@ async function loadHealthData() {
             : [];
 
         latestVital.value = data.latest_vitals ?? null;
+        // On transforme les résultats de analyses pour les adapter à l'affichage
         labResults.value = Array.isArray(data.lab_results)
             ? data.lab_results.map((item) => ({
                   id: item.id,
@@ -229,11 +230,12 @@ async function loadHealthData() {
         vitalsRaw.sort((a, b) =>
             String(a.measured_at).localeCompare(String(b.measured_at)),
         );
+        // On extrait les dates uniques pour construire les carte d'historique
         const historyDateKeys = [...new Set(
             vitalsRaw.map((v) => String(v.measured_at).slice(0, 10)),
         )];
         vitalDateKeys.value = historyDateKeys;
-
+        
         const pickField = (field) =>
             historyDateKeys.map((dk) => {
                 const v = vitalsRaw.find((r) => String(r.measured_at).slice(0, 10) === dk);
@@ -247,16 +249,15 @@ async function loadHealthData() {
         treatmentMedicines.value = Array.isArray(data.treatment_medicines)
             ? data.treatment_medicines
             : [];
-
+        // On s'assure que pour chaque jour de la semaine, on a une entrée dans treatmentChecks même si aucune prise n'est cochée
         for (const day of treatmentDays.value) ensureDayTracking(day.key);
-
+        // On combine les checks actuels et historiques pour avoir une vue complète
         const allChecks = [
             ...(Array.isArray(data.treatment_checks)
                 ? data.treatment_checks
                 : []),
             ...historyData,
         ];
-
         if (allChecks.length) {
             for (const item of allChecks) {
                 ensureDayTracking(item.check_date);
