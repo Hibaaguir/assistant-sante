@@ -60,6 +60,11 @@ class UserProfileController extends Controller
             return response()->json(['message' => 'Le mot de passe actuel est incorrect.'], 422);
         }
 
+        // Vérifier que le nouveau mot de passe est différent de l'ancien
+        if (Hash::check($request->input('new_password'), $account->password)) {
+            return response()->json(['message' => 'Le nouveau mot de passe doit être différent de l\'ancien.'], 422);
+        }
+
         $account->update(['password' => Hash::make($request->input('new_password'))]);
 
         return response()->json(['message' => 'Mot de passe modifié avec succès.']);

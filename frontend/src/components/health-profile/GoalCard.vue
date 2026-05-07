@@ -1,6 +1,9 @@
 <template>
-    <div
-        class="cursor-pointer rounded-xl border-2 p-4 transition-all hover:shadow-md"
+    <button
+        type="button"
+        role="checkbox"
+        :aria-checked="selected"
+        class="w-full cursor-pointer rounded-xl border-2 p-4 text-left transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         :class="
             selected
                 ? 'border-blue-400 bg-blue-50/50 shadow-sm'
@@ -20,7 +23,7 @@
 
             <p class="flex-1 text-sm font-semibold text-gray-700 leading-snug">{{ label }}</p>
         </div>
-    </div>
+    </button>
 </template>
 
 <script setup>
