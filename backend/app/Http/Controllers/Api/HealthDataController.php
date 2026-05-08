@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreAnalysisResultRequest;
 use App\Http\Requests\Api\StoreVitalSignsRequest;
 use App\Http\Requests\Api\SyncTreatmentCheckRequest;
-use App\Http\Requests\Api\UpdateAnalysisResultRequest;
 use App\Models\AnalysisResult;
 use App\Models\HealthData;
 use App\Models\TreatmentCheck;
@@ -20,7 +19,7 @@ class HealthDataController extends Controller
 {
     public function __construct(private readonly HealthDataService $healthDataService) {}
 
-    // Récupérer un résumé de toutes les données de santé 
+    // Récupérer un résumé de toutes les données de santé
     public function overview(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
@@ -123,7 +122,7 @@ class HealthDataController extends Controller
     }
 
     // Mettre à jour un résultat d'analyse existant
-    public function updateLabResult(UpdateAnalysisResultRequest $request, AnalysisResult $analysisResult): JsonResponse
+    public function updateLabResult(StoreAnalysisResultRequest $request, AnalysisResult $analysisResult): JsonResponse
     {
         if ($analysisResult->healthData?->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Accès non autorisé à ce résultat d\'analyse.'], 403);

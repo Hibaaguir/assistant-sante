@@ -7,12 +7,14 @@ class StoreAnalysisResultRequest extends ApiFormRequest
     // Definir les regles de validation
     public function rules(): array
     {
+        $isUpdate = $this->isMethod('PUT') || $this->isMethod('PATCH');
+
         return [
-            'analysis_type' => ['required', 'string', 'max:120'],
-            'result_name' => ['nullable', 'string', 'max:120'],
-            'value' => ['required', 'numeric', 'min:0'],
-            'unit' => ['required', 'string', 'max:30'],
-            'analysis_date' => ['required', 'date'],
+            'analysis_type' => $isUpdate ? ['sometimes', 'string', 'max:120'] : ['required', 'string', 'max:120'],
+            'result_name'   => ['sometimes', 'nullable', 'string', 'max:120'],
+            'value'         => $isUpdate ? ['sometimes', 'numeric', 'min:0'] : ['required', 'numeric', 'min:0'],
+            'unit'          => $isUpdate ? ['sometimes', 'required', 'string', 'max:30'] : ['required', 'string', 'max:30'],
+            'analysis_date' => $isUpdate ? ['sometimes', 'date'] : ['required', 'date'],
         ];
     }
 

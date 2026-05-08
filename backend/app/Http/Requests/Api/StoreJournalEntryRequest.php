@@ -7,8 +7,10 @@ class StoreJournalEntryRequest extends ApiFormRequest
     // Definir les regles de validation
     public function rules(): array
     {
+        $isUpdate = $this->isMethod('PUT') || $this->isMethod('PATCH');
+
         return [
-            'entry_date' => ['required', 'date'],
+            'entry_date' => $isUpdate ? ['sometimes', 'date'] : ['required', 'date'],
             'sleep' => ['nullable', 'integer', 'min:0', 'max:24'],
             'stress' => ['nullable', 'integer', 'min:0', 'max:10'],
             'energy' => ['nullable', 'integer', 'min:0', 'max:10'],
@@ -26,8 +28,8 @@ class StoreJournalEntryRequest extends ApiFormRequest
             'activities.*.activity_duration'=> ['required', 'integer', 'min:0', 'max:1440'],
             'activities.*.intensity'        => ['nullable', 'string', 'in:low,medium,high'],
 
-            'tobacco' => ['nullable', 'boolean'],
-            'alcohol' => ['nullable', 'boolean'],
+            'tobacco' => $isUpdate ? ['sometimes', 'boolean'] : ['nullable', 'boolean'],
+            'alcohol' => $isUpdate ? ['sometimes', 'boolean'] : ['nullable', 'boolean'],
             'tobacco_types' => ['required_if:tobacco,true', 'array'],
             'tobacco_types.cigarette' => ['required_without:tobacco_types.vape', 'nullable', 'boolean'],
             'tobacco_types.vape' => ['required_without:tobacco_types.cigarette', 'nullable', 'boolean'],

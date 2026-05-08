@@ -51,6 +51,23 @@
             </button>
         </div>
 
+        <!-- Pipeline error (status=error from Python) -->
+        <div
+            v-else-if="report?.status === 'error'"
+            class="flex flex-col items-center gap-4 rounded-2xl border border-red-200 bg-red-50 p-10 text-center"
+        >
+            <svg class="h-10 w-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <p class="font-semibold text-red-700">L'analyse a échoué</p>
+            <p v-if="report.meta?.errors?.length" class="text-sm text-red-600 font-mono bg-red-100 px-4 py-2 rounded-xl max-w-xl break-all">
+                {{ report.meta.errors[0] }}
+            </p>
+            <button @click="load" class="rounded-xl bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700">
+                Réessayer
+            </button>
+        </div>
+
         <!-- Results -->
         <div v-else-if="report" class="space-y-6">
 
@@ -133,6 +150,28 @@
                             {{ severityFr(a.severity) }}
                         </span>
                         <p class="text-base font-medium leading-relaxed text-slate-700">{{ a.message }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Points positifs -->
+            <section v-if="report.positive_observations?.length">
+                <SectionTitle
+                    :icon="IconCheckCircle"
+                    title="Points positifs observés"
+                    icon-wrap-class="border-emerald-200 bg-emerald-50"
+                    icon-class="text-emerald-600"
+                />
+                <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 space-y-2">
+                    <div
+                        v-for="(obs, i) in report.positive_observations"
+                        :key="i"
+                        class="flex gap-3 items-start"
+                    >
+                        <svg class="h-4 w-4 mt-0.5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                        <p class="text-sm text-emerald-800">{{ obs }}</p>
                     </div>
                 </div>
             </section>
@@ -327,19 +366,19 @@ const riskLabel = computed(() => {
     return { high: "Risque élevé", medium: "Risque modéré", low: "Risque faible", unknown: "Inconnu" }[report.value?.risk_level] ?? "";
 });
 
-// Anomalies sorted by severity: critical → high → medium → low
-const SEVERITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3, none: 4 };
+// Anomalies sorted by severity: priority → high → moderate → watch
+const SEVERITY_ORDER = { priority: 0, high: 1, moderate: 2, watch: 3, stable: 4, none: 5, low: 5, medium: 2, critical: 0 };
 const sortedAnomalies = computed(() =>
     [...(report.value?.anomalies ?? [])].sort(
-        (a, b) => (SEVERITY_ORDER[a.severity] ?? 4) - (SEVERITY_ORDER[b.severity] ?? 4)
+        (a, b) => (SEVERITY_ORDER[a.severity] ?? 5) - (SEVERITY_ORDER[b.severity] ?? 5)
     )
 );
 
-// Only show domains that have a real analysis (regardless of severity)
+// Only show domains that have a real analysis
 const activeDomains = computed(() => {
     if (!report.value?.domains) return [];
     return Object.entries(report.value.domains).filter(
-        ([, d]) => d.analysis && !d.analysis.startsWith("No data")
+        ([, d]) => d.analysis && !d.analysis.startsWith("No data") && !d.analysis.startsWith("Aucune")
     );
 });
 
@@ -356,13 +395,46 @@ const hasNoData = computed(() => {
 
 // Severity helpers
 function severityBorder(s) {
-    return { critical: "border-l-4 border-l-red-400", high: "border-l-4 border-l-red-300", medium: "border-l-4 border-l-amber-300", low: "border-l-4 border-l-slate-300", none: "border-slate-200" }[s] ?? "border-slate-200";
+    return {
+        priority: "border-l-4 border-l-red-500",
+        high:     "border-l-4 border-l-orange-400",
+        moderate: "border-l-4 border-l-amber-300",
+        watch:    "border-l-4 border-l-blue-300",
+        stable:   "border-slate-200",
+        // legacy
+        critical: "border-l-4 border-l-red-500",
+        medium:   "border-l-4 border-l-amber-300",
+        low:      "border-l-4 border-l-blue-300",
+        none:     "border-slate-200",
+    }[s] ?? "border-slate-200";
 }
 function severityBadge(s) {
-    return { critical: "bg-red-50 text-red-600", high: "bg-red-50 text-red-500", medium: "bg-amber-50 text-amber-600", low: "bg-slate-100 text-slate-500", none: "bg-slate-100 text-slate-400" }[s] ?? "bg-slate-100 text-slate-400";
+    return {
+        priority: "bg-red-50 text-red-600",
+        high:     "bg-orange-50 text-orange-600",
+        moderate: "bg-amber-50 text-amber-600",
+        watch:    "bg-blue-50 text-blue-600",
+        stable:   "bg-emerald-50 text-emerald-600",
+        // legacy
+        critical: "bg-red-50 text-red-600",
+        medium:   "bg-amber-50 text-amber-600",
+        low:      "bg-blue-50 text-blue-600",
+        none:     "bg-emerald-50 text-emerald-600",
+    }[s] ?? "bg-slate-100 text-slate-400";
 }
 function severityFr(s) {
-    return { critical: "Critique", high: "Élevé", medium: "Modéré", low: "Faible", none: "Aucun" }[s] ?? s;
+    return {
+        priority: "Prioritaire",
+        high:     "Élevé",
+        moderate: "Modéré",
+        watch:    "À surveiller",
+        stable:   "Stable",
+        // legacy
+        critical: "Prioritaire",
+        medium:   "Modéré",
+        low:      "À surveiller",
+        none:     "Stable",
+    }[s] ?? s;
 }
 
 const DOMAIN_LABELS = {

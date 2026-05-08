@@ -255,7 +255,7 @@ async function rebuild() {
 
 // Charge les données du store puis construit le graphe
 async function load() {
-    allEntries = dashStore.journal;
+    allEntries = dashStore.sleep;
     await rebuild();
 }
 

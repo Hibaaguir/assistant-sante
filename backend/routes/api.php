@@ -87,7 +87,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/vitals',             [UserDashboardController::class, 'vitals']);
         Route::get('/labs',               [UserDashboardController::class, 'labs']);
         Route::get('/treatment-checks',   [UserDashboardController::class, 'treatmentChecks']);
-        Route::get('/journal',            [UserDashboardController::class, 'journalEntries']);
+        Route::get('/hydration',          [UserDashboardController::class, 'hydration']);
+        Route::get('/sleep',              [UserDashboardController::class, 'sleep']);
+        Route::get('/activities',         [UserDashboardController::class, 'activities']);
         Route::get('/weight',             [UserDashboardController::class, 'weight']);
     });
 

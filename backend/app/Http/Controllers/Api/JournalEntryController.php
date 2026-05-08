@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreJournalEntryRequest;
-use App\Http\Requests\Api\UpdateJournalEntryRequest;
 use App\Models\JournalEntry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -76,7 +75,7 @@ class JournalEntryController extends Controller
     }
 
     // Mettre à jour une entrée du journal existante
-    public function update(UpdateJournalEntryRequest $request, JournalEntry $journalEntry): JsonResponse
+    public function update(StoreJournalEntryRequest $request, JournalEntry $journalEntry): JsonResponse
     {
         if ($journalEntry->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Accès non autorisé'], 403);

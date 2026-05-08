@@ -9,7 +9,9 @@ export const useDashboardStore = defineStore("dashboard", () => {
     const loading     = ref(false);
     let fetchedAt     = 0;
 
-    const journal           = ref([]);
+    const hydration         = ref([]);
+    const sleep             = ref([]);
+    const activities        = ref([]);
     const vitals30          = ref([]);
     const vitals60          = ref([]);
     const vitals62          = ref([]);
@@ -32,7 +34,9 @@ export const useDashboardStore = defineStore("dashboard", () => {
         loading.value = true;
         try {
             const [
-                journalRes,
+                hydrationRes,
+                sleepRes,
+                activitiesRes,
                 vitals30Res,
                 vitals60Res,
                 vitals62Res,
@@ -43,7 +47,9 @@ export const useDashboardStore = defineStore("dashboard", () => {
                 labsRes,
                 treatmentChecksRes,
             ] = await Promise.all([
-                api.get("/dashboard/journal"),
+                api.get("/dashboard/hydration"),
+                api.get("/dashboard/sleep"),
+                api.get("/dashboard/activities"),
                 api.get("/dashboard/vitals",       { params: { days: 30 } }),
                 api.get("/dashboard/vitals",       { params: { days: 60 } }),
                 api.get("/dashboard/vitals",       { params: { days: 62 } }),
@@ -55,7 +61,9 @@ export const useDashboardStore = defineStore("dashboard", () => {
                 api.get("/dashboard/treatment-checks", { params: { days: 90 } }),
             ]);
 
-            journal.value           = journalRes.data?.data ?? journalRes.data ?? [];
+            hydration.value         = hydrationRes.data?.data ?? [];
+            sleep.value             = sleepRes.data?.data ?? [];
+            activities.value        = activitiesRes.data?.data ?? [];
             vitals30.value          = vitals30Res.data?.data ?? [];
             vitals60.value          = vitals60Res.data?.data ?? [];
             vitals62.value          = vitals62Res.data?.data ?? [];
@@ -81,7 +89,9 @@ export const useDashboardStore = defineStore("dashboard", () => {
         initialized,
         loading,
         invalidate,
-        journal,
+        hydration,
+        sleep,
+        activities,
         vitals30,
         vitals60,
         vitals62,

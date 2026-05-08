@@ -25,13 +25,13 @@ class UserDashboardController extends Controller
         // Les 4 indicateurs que l'on veut afficher sur le graphe
         $fields = ['heart_rate', 'systolic_pressure', 'diastolic_pressure', 'oxygen_saturation'];
 
-        // Récupérer toutes les mesures de l'utilisateur à partir de la date de début
+        // Récupérer uniquement les 5 colonnes nécessaires à partir de la date de début
         $rawVitals = VitalSigns::whereHas('healthData', function ($q) use ($userId) {
             $q->where('user_id', $userId);
         })
         ->whereDate('measured_at', '>=', $startDate)
         ->orderBy('measured_at')
-        ->get();
+        ->get(['measured_at', 'heart_rate', 'systolic_pressure', 'diastolic_pressure', 'oxygen_saturation']);
 
         // Regrouper les mesures dans un tableau indexé par date
         // Résultat : ['2025-04-20' => [mesure1, mesure2], '2025-04-21' => [mesure3], ...]
@@ -117,7 +117,7 @@ class UserDashboardController extends Controller
         })
         ->where('measured_at', '>=', $startDate)
         ->orderByDesc('measured_at')
-        ->get();
+        ->get(['measured_at', 'heart_rate', 'systolic_pressure', 'diastolic_pressure', 'oxygen_saturation']);
 
         return response()->json(['data' => $vitals]);
     }
@@ -133,8 +133,7 @@ class UserDashboardController extends Controller
         })
         ->where('analysis_date', '>=', $startDate)
         ->orderByDesc('analysis_date')
-        ->orderByDesc('id')
-        ->get();
+        ->get(['analysis_date', 'analysis_type']);
 
         return response()->json(['data' => $labs]);
     }
@@ -166,19 +165,50 @@ class UserDashboardController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    // Retourne les entrées du journal sur 12 mois avec les activités physiques
-    public function journalEntries(Request $request): JsonResponse
+    // Hydratation quotidienne — 7 derniers jours uniquement
+    public function hydration(Request $request): JsonResponse
+    {
+        $userId    = $request->user()->id;
+        $startDate = Carbon::today()->subDays(6)->toDateString();
+
+        $data = JournalEntry::where('user_id', $userId)
+            ->where('entry_date', '>=', $startDate)
+            ->whereNotNull('hydration')
+            ->orderBy('entry_date')
+            ->get(['entry_date', 'hydration']);
+
+        return response()->json(['data' => $data]);
+    }
+
+    // Sommeil quotidien — 12 derniers mois uniquement
+    public function sleep(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
         $startDate = Carbon::today()->subMonths(12)->toDateString();
 
-        $entries = JournalEntry::where('user_id', $userId)
+        $data = JournalEntry::where('user_id', $userId)
             ->where('entry_date', '>=', $startDate)
-            ->with(['physicalActivities'])
-            ->orderByDesc('entry_date')
-            ->get();
+            ->whereNotNull('sleep')
+            ->orderBy('entry_date')
+            ->get(['entry_date', 'sleep']);
 
-        return response()->json(['data' => $entries]);
+        return response()->json(['data' => $data]);
+    }
+
+    // Activités physiques — 30 derniers jours uniquement
+    public function activities(Request $request): JsonResponse
+    {
+        $userId    = $request->user()->id;
+        $startDate = Carbon::today()->subDays(29)->toDateString();
+
+        $data = JournalEntry::where('user_id', $userId)
+            ->where('entry_date', '>=', $startDate)
+            ->with(['physicalActivities:id,journal_entry_id,activity_type,duration_minutes,intensity'])
+            ->has('physicalActivities')
+            ->orderBy('entry_date')
+            ->get(['id', 'entry_date']);
+
+        return response()->json(['data' => $data]);
     }
 
     // Retourne le poids initial et le poids actuel depuis le profil de santé

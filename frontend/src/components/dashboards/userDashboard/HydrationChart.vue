@@ -66,9 +66,9 @@ function getLast7Days() {
     return liste;
 }
 
-// Traite les données du journal depuis le store et dessine le graphe
+// Traite les données d'hydratation depuis le store et dessine le graphe
 async function load() {
-    const entries = dashStore.journal;
+    const entries = dashStore.hydration;
 
     // Regrouper les valeurs d'hydratation par date
     const byDate = {};

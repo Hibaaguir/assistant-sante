@@ -156,7 +156,7 @@ function processData() {
         vitalsDate.value = formatDate(sorted[0].measured_at);
     }
 
-    const entries      = dashStore.journal;
+    const entries      = dashStore.activities;
     const withActivity = [...entries]
         .filter((e) => {
             const acts = e.physical_activities ?? e.physicalActivities ?? [];

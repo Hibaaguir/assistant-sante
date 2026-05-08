@@ -1,7 +1,6 @@
 *.log
 .DS_Store
 Thumbs.db
-ai-module/.env
 
 # IDE
 /.fleet
@@ -10,11 +9,12 @@ ai-module/.env
 /.vscode
 /.zed
 
-# Env
+# Env files
 .env
 .env.backup
 .env.production
 /auth.json
+ai-module/.env
 
 # Root monorepo
 /node_modules
@@ -37,17 +37,21 @@ ai-module/.env
 /backend/.phpunit.cache
 /backend/.phpunit.result.cache
 /backend/.phpactor.json
+/backend/database/database.sqlite
 
 # Frontend (Vue)
 /frontend/node_modules
 /frontend/dist
 
-# Archive: keep source snapshot, ignore heavy generated deps/builds
-/_archive/**/node_modules
-/_archive/**/node_modules-root-after-clean
-/_archive/**/vendor
-/_archive/**/dist
-/_archive/**/build
+# AI Module
+/ai-module/__pycache__/
+/ai-module/*.pyc
+/ai-module/output.txt
+
+# Dev tool logs
+/.codex-logs/
+/backend/codex-artisan.*.log
+/frontend/codex-vite.*.log
 
 Homestead.json
 Homestead.yaml

@@ -112,7 +112,7 @@ function compute() {
 }
 
 function load() {
-    allEntries = dashStore.journal;
+    allEntries = dashStore.activities;
     compute();
 }
 

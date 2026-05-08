@@ -381,14 +381,14 @@ const pendingDelete = ref(null);
 
 const filters = reactive({ type: "", date: "" });//état des filtres de type et de date pour afficher les analyses correspondantes
 const form = reactive({ category: "", results: [emptyRow()], date: today() });
- 
+
 //Extrait toutes les clés du CATALOG
 const categoryOptions = Object.keys(CATALOG);
 //Extrait la liste des résultats possibles en fonction de la catégorie sélectionnée dans le formulaire
 const resultOptions = computed(() => CATALOG[form.category] ?? []);
 //Extrait la liste des types d'analyses présents dans les données pour alimenter le filtre de type d'analyse
 const labTypeOptions = computed(() => [
-    ...new Set(//Set supprime automatiquement les doublons 
+    ...new Set(//Set supprime automatiquement les doublons
         props.analyses.map((a) => a.type))]);
 //Applique les filtres de type et de date sur les analyses à afficher
 const filteredAnalyses = computed(() => {
@@ -439,7 +439,7 @@ function resetForm() {
     form.date = today();
     expandedIndex.value = 0;
 }
-// Ajoute une nouvelle ligne vide dans le formulaire quand on clique sur ajouter resultat 
+// Ajoute une nouvelle ligne vide dans le formulaire quand on clique sur ajouter resultat
 function addRow() {
     form.results.push(emptyRow());
     expandedIndex.value = form.results.length - 1;

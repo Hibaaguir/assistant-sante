@@ -151,7 +151,7 @@ async function buildChart() {
 
 // Charge les données du store et construit le graphe
 async function load() {
-    allEntries = dashStore.journal;
+    allEntries = dashStore.activities;
     await buildChart();
 }
 

@@ -11,7 +11,7 @@ class AiAnalysisController extends Controller
     public function analyze(Request $request): JsonResponse
     {
         $userId     = (int) $request->user()->id;
-        $scriptPath = base_path('../ai-module/api.py');
+        $scriptPath = base_path('../ai-module/main.py');
 
         $pythonPath = env('PYTHON_PATH', 'python');
         $command    = escapeshellarg($pythonPath) . ' ' . escapeshellarg($scriptPath) . ' ' . $userId . ' 2>&1';

@@ -9,7 +9,7 @@ from pathlib import Path
 
 def _load_env_file() -> dict:
     """Parse ai-module/.env and return key-value pairs."""
-    env_path = Path(__file__).parent / ".env"
+    env_path = Path(__file__).parent.parent / ".env"
     if not env_path.exists():
         raise FileNotFoundError(f".env file not found at: {env_path}")
 
@@ -34,9 +34,6 @@ def load_groq_api_key() -> None:
         os.environ.setdefault("GROQ_API_KEY", api_key)
 
 
-load_anthropic_api_key = load_groq_api_key
-
-
 def get_db_config() -> dict:
     """Return a mysql-connector-python compatible connection config dict."""
     env = _load_env_file()
@@ -54,5 +51,3 @@ def get_db_config() -> dict:
         "user":     env.get("DB_USERNAME", "root"),
         "password": env.get("DB_PASSWORD", ""),
     }
-
-

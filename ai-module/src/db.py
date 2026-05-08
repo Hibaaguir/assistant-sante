@@ -9,7 +9,7 @@ from typing import Any
 import mysql.connector
 from mysql.connector import Error as MySQLError
 
-from config import get_db_config
+from .config import get_db_config
 
 # ── SQL Queries ────────────────────────────────────────────────
 
@@ -30,8 +30,7 @@ FROM journal_entries WHERE user_id = %s AND sleep IS NOT NULL ORDER BY entry_dat
 
 _QUERY_NUTRITION = """
 SELECT je.entry_date, je.hydration, je.sugar_intake, je.caffeine,
-    COUNT(m.id) AS meal_count, SUM(m.calories) AS total_calories,
-    GROUP_CONCAT(CONCAT(m.meal_type, ':', COALESCE(m.calories, 0)) ORDER BY m.meal_type SEPARATOR '|') AS meals_detail
+    COUNT(m.id) AS meal_count, SUM(m.calories) AS total_calories
 FROM journal_entries je
 LEFT JOIN meals m ON m.journal_entry_id = je.id
 WHERE je.user_id = %s
@@ -119,23 +118,6 @@ def _parse_profile(rows: list[dict]) -> dict:
     return profile
 
 
-def _parse_nutrition(rows: list[dict]) -> list[dict]:
-    result = []
-    for row in rows:
-        meals_detail = row.pop("meals_detail", None) or ""
-        meals = []
-        for item in meals_detail.split("|"):
-            if ":" in item:
-                meal_type, cal_str = item.split(":", 1)
-                try:
-                    meals.append({"meal_type": meal_type, "calories": int(cal_str)})
-                except ValueError:
-                    pass
-        row["meals"] = meals
-        result.append(row)
-    return result
-
-
 def _parse_treatments(rows: list[dict]) -> list[dict]:
     for row in rows:
         total = row.get("total_checks") or 0
@@ -165,7 +147,7 @@ def extract_user_data(user_id: int) -> dict:
         return {
             "user_profile": _parse_profile(profile_rows),
             "sleep":        q(_QUERY_SLEEP, (user_id,)),
-            "nutrition":    _parse_nutrition(q(_QUERY_NUTRITION, (user_id,))),
+            "nutrition":    q(_QUERY_NUTRITION, (user_id,)),
             "activity":     q(_QUERY_ACTIVITY, (user_id,)),
             "smoking":      q(_QUERY_SMOKING, (user_id,)),
             "alcohol":      q(_QUERY_ALCOHOL, (user_id,)),
