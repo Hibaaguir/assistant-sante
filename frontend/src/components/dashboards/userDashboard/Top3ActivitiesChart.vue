@@ -99,8 +99,9 @@ function compute() {
         const activities = entry.physical_activities ?? entry.physicalActivities ?? [];
 
         for (const act of activities) {
-            const t     = act.activity_type || "Autre";
-            totals[t]   = (totals[t] ?? 0) + (act.duration_minutes ?? 0);
+            const actType = act.activity_type || "Autre";
+            if (!totals[actType]) totals[actType] = 0;
+            totals[actType] += act.duration_minutes ?? 0;
         }
     }
 

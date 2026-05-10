@@ -63,22 +63,22 @@ const loading   = computed(() => !dashStore.initialized);
 const noData    = ref(false);
 const days      = ref(7);
 
-let allEntries    = [];
+let entries = [];
 let chartInstance = null;
 
-// Retourne la date (format YYYY-MM-DD) il y a N jours
-function dateNDaysAgo(n) {
+// Retourne la date (format YYYY-MM-DD) du début de la période de N jours
+function cutoffDate(n) {
     const d = new Date();
     d.setDate(d.getDate() - (n - 1));
     return d.toISOString().slice(0, 10);
 }
 
 // Calcule le total des minutes par type d'activité sur la période
-function aggregate() {
-    const cutoff = dateNDaysAgo(days.value);
+function sumMinutes() {
+    const cutoff = cutoffDate(days.value);
     const totals = {};
 
-    for (const entry of allEntries) {
+    for (const entry of entries) {
         // Ignorer les entrées trop anciennes ou sans date
         if (!entry.entry_date || entry.entry_date < cutoff) continue;
 
@@ -106,7 +106,7 @@ async function buildChart() {
 
     noData.value = false;
 
-    const totals = aggregate();
+    const totals = sumMinutes();
     const labels = Object.keys(totals);
 
     // Si aucune donnée, afficher le message "aucune activité"
@@ -124,7 +124,7 @@ async function buildChart() {
         data: {
             labels,
             datasets: [{
-                data: labels.map((l) => totals[l]),
+                data: labels.map((type) => totals[type]),
                 backgroundColor: COLORS.slice(0, labels.length),
                 borderWidth: 2.5,
                 borderColor: "#fff",
@@ -151,7 +151,7 @@ async function buildChart() {
 
 // Charge les données du store et construit le graphe
 async function load() {
-    allEntries = dashStore.activities;
+    entries = dashStore.activities;
     await buildChart();
 }
 

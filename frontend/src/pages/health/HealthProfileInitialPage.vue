@@ -115,24 +115,12 @@
                 <div
                     class="mb-8 rounded-3xl border border-gray-100 bg-white p-8 shadow-sm md:p-12"
                 >
-                    <!-- Error / success / warning alert messages -->
+                    <!-- Error alert -->
                     <p
                         v-if="saveError"
                         class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
                     >
                         {{ saveError }}
-                    </p>
-                    <p
-                        v-if="saveSuccess"
-                        class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
-                    >
-                        {{ saveSuccess }}
-                    </p>
-                    <p
-                        v-if="stepError && currentStep !== 1"
-                        class="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700"
-                    >
-                        {{ stepError }}
                     </p>
 
                     <!-- Étapes -->
@@ -143,8 +131,18 @@
                         :errors="step1Errors"
                         :show-errors="step1Tried"
                     />
-                    <Etape2 v-else-if="currentStep === 2" :form="form" />
-                    <Etape3 v-else :form="form" />
+                    <Etape2
+                        v-else-if="currentStep === 2"
+                        :form="form"
+                        :errors="step2Errors"
+                        :show-errors="step2Tried"
+                    />
+                    <Etape3
+                        v-else
+                        :form="form"
+                        :errors="step3Errors"
+                        :show-errors="step3Tried"
+                    />
                 </div>
 
                 <!-- Navigation -->
@@ -170,6 +168,14 @@
                         {{ saving ? "Enregistrement..." : "Terminer" }}
                     </BaseButton>
                 </div>
+
+                <!-- Success message below the button -->
+                <p
+                    v-if="saveSuccess"
+                    class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 text-center"
+                >
+                    {{ saveSuccess }}
+                </p>
             </template>
         </main>
     </div>
@@ -203,6 +209,8 @@ const saveError = ref("");
 const saveSuccess = ref("");
 const stepError = ref("");
 const step1Tried = ref(false);
+const step2Tried = ref(false);
+const step3Tried = ref(false);
 const dateNaissance = ref("");
 
 const step1Errors = reactive({
@@ -210,6 +218,14 @@ const step1Errors = reactive({
     taille: "",
     poids: "",
     objectifs: "",
+});
+
+const step2Errors = reactive({
+    groupe_sanguin: "",
+});
+
+const step3Errors = reactive({
+    medecin_email: "",
 });
 
 const form = reactive({
@@ -275,6 +291,14 @@ function clearStep1Errors() {
     step1Errors.objectifs = "";
 }
 
+function clearStep2Errors() {
+    step2Errors.groupe_sanguin = "";
+}
+
+function clearStep3Errors() {
+    step3Errors.medecin_email = "";
+}
+
 function redirectLogin() {
     authStore.removeToken();
     router.replace({ name: "register" });
@@ -313,23 +337,28 @@ function validateStep1() {
 }
 
 function validateStep2() {
+    clearStep2Errors();
+    step2Tried.value = true;
     if (!form.groupe_sanguin) {
-        stepError.value = "Le groupe sanguin est obligatoire.";
+        step2Errors.groupe_sanguin = "Le groupe sanguin est obligatoire.";
         return false;
     }
     return true;
 }
 
 function validateStep3() {
+    clearStep3Errors();
+    step3Tried.value = true;
+
     if (!form.medecin_peut_consulter) return true;
 
     if (!form.medecin_email) {
-        stepError.value = "Veuillez renseigner l'email du médecin.";
+        step3Errors.medecin_email = "Veuillez renseigner l'email du médecin.";
         return false;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.medecin_email)) {
-        stepError.value = "L'email du médecin est invalide.";
+        step3Errors.medecin_email = "L'email du médecin est invalide.";
         return false;
     }
 
@@ -340,6 +369,7 @@ function goNext() {
     saveSuccess.value = "";
     stepError.value = "";
     clearStep1Errors();
+    clearStep2Errors();
 
     if (currentStep.value === 1) {
         step1Tried.value = true;
@@ -348,7 +378,10 @@ function goNext() {
     if (currentStep.value === 2 && !validateStep2()) return;
 
     step1Tried.value = false;
+    step2Tried.value = false;
+    step3Tried.value = false;
     currentStep.value++;
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 // Converts DD/MM/YYYY → YYYY-MM-DD for the API; returns null if invalid

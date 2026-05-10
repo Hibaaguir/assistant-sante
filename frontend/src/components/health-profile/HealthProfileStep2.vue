@@ -34,7 +34,8 @@
                 <div class="relative max-w-md w-full">
                     <select
                         v-model="form.groupe_sanguin"
-                        class="h-11 text-lg rounded-xl border-2 border-gray-300 w-full bg-white px-4 pr-10 outline-none focus:border-blue-400 appearance-none cursor-pointer"
+                        class="h-11 text-lg rounded-xl border-2 w-full bg-white px-4 pr-10 outline-none focus:border-blue-400 appearance-none cursor-pointer"
+                        :class="props.showErrors && props.errors?.groupe_sanguin ? 'border-red-300' : 'border-gray-300'"
                         style="font-size: 1.1rem"
                     >
                         <option value="">Selectionner votre groupe sanguin</option>
@@ -50,6 +51,9 @@
                         <path d="M8 10l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
+                <p v-if="props.showErrors && props.errors?.groupe_sanguin" class="text-sm text-red-600">
+                    {{ props.errors.groupe_sanguin }}
+                </p>
             </section>
 
             <section class="space-y-4">
@@ -775,7 +779,9 @@ import Typography from "@/components/ui/Typography.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 
 const props = defineProps({
-    form: { type: Object, required: true },
+    form:       { type: Object,  required: true },
+    errors:     { type: Object,  default: () => ({}) },
+    showErrors: { type: Boolean, default: false },
 });
 
 const form = props.form;

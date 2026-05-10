@@ -35,7 +35,7 @@ const loading       = computed(() => !dashStore.initialized);
 // Calcule l'écart entre le poids actuel et le poids initial
 const diff = computed(() => {
     if (initialWeight.value === null || currentWeight.value === null) return 0;
-    return +(currentWeight.value - initialWeight.value).toFixed(1);
+    return +(currentWeight.value - initialWeight.value).toFixed(1);// arrondi à 1 décimale
 });
 
 // Badge de statut : stable, perte de poids ou prise de poids
@@ -51,16 +51,16 @@ const subtextLabel = computed(() => {
     return `Initial: ${initialWeight.value} kg`;
 });
 
-function load() {
-    const profile = dashStore.weight;
-    if (profile?.initial_weight == null || profile?.current_weight == null) return;
-    initialWeight.value = +parseFloat(profile.initial_weight).toFixed(1);
-    currentWeight.value = +parseFloat(profile.current_weight).toFixed(1);
+function loadData() {
+    const weightData = dashStore.weight;
+    if (weightData?.initial_weight == null || weightData?.current_weight == null) return;
+    initialWeight.value = Number(parseFloat(weightData.initial_weight).toFixed(1));
+    currentWeight.value = Number(parseFloat(weightData.current_weight).toFixed(1));
 }
 
 onMounted(() => {
     dashStore.initialize();
-    if (dashStore.initialized) load();
+    if (dashStore.initialized) loadData();
 });
-watch(() => dashStore.initialized, (ready) => { if (ready) load(); });
+watch(() => dashStore.initialized, (ready) => { if (ready) loadData(); });
 </script>

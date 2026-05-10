@@ -86,6 +86,13 @@ function shortLabel(iso) {
     return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
 }
 
+// Retourne la date (format YYYY-MM-DD) du début de la période de N jours
+function cutoffDate(n) {
+    const d = new Date();
+    d.setDate(d.getDate() - (n - 1));
+    return d.toISOString().slice(0, 10);
+}
+
 // Construit et affiche le graphe pour la période active
 async function buildChart() {
     // Détruire l'ancien graphe avant d'en créer un nouveau
@@ -93,14 +100,10 @@ async function buildChart() {
     noData.value = false;
 
     // Calculer la date limite (début de la période)
-    const cutoff = (() => {
-        const d = new Date();
-        d.setDate(d.getDate() - (days.value - 1));
-        return d.toISOString().slice(0, 10);
-    })();
+    const cutoff = cutoffDate(days.value);
 
     // Garder uniquement les prises dans la période
-    const filtered = allChecks.filter((c) => c.check_date >= cutoff);
+    const filtered = allChecks.filter((check) => check.check_date >= cutoff);
 
     if (!filtered.length) {
         noData.value = true;
@@ -109,11 +112,11 @@ async function buildChart() {
 
     // Regrouper les prises par date : { "2025-04-20": { taken: ["Aspirine"], missed: ["Doliprane"] } }
     const byDate = {};
-    for (const c of filtered) {
-        const dt = c.check_date;
-        if (!byDate[dt]) byDate[dt] = { taken: [], missed: [] };
-        const name = c.medication_name || "Inconnu";
-        c.taken ? byDate[dt].taken.push(name) : byDate[dt].missed.push(name);
+    for (const check of filtered) {
+        const date = check.check_date;
+        if (!byDate[date]) byDate[date] = { taken: [], missed: [] };
+        const name = check.medication_name || "Inconnu";
+        check.taken ? byDate[date].taken.push(name) : byDate[date].missed.push(name);
     }
 
     // Générer les données pour chaque jour de la période
@@ -209,8 +212,8 @@ async function load() {
 }
 
 // Changer le filtre et reconstruire le graphe
-async function changeFilter(v) {
-    days.value = v;
+async function changeFilter(newDays) {
+    days.value = newDays;
     await buildChart();
 }
 
