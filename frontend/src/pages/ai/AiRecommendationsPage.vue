@@ -13,7 +13,7 @@
                 v-if="report"
                 @click="load"
                 :disabled="loading"
-                class="shrink-0 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+                class="shrink-0 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-base font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
             >
                 <svg class="h-4 w-4" :class="{ 'animate-spin': loading }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -45,13 +45,13 @@
             <svg class="h-10 w-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
             </svg>
-            <p class="font-semibold text-red-700">{{ error }}</p>
-            <button @click="load" class="rounded-xl bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700">
+            <p class="text-lg font-semibold text-red-700">{{ error }}</p>
+            <button @click="load" class="rounded-xl bg-red-600 px-5 py-2 text-base font-semibold text-white hover:bg-red-700">
                 Réessayer
             </button>
         </div>
 
-        <!-- Pipeline error (status=error from Python) -->
+        <!-- Pipeline error -->
         <div
             v-else-if="report?.status === 'error'"
             class="flex flex-col items-center gap-4 rounded-2xl border border-red-200 bg-red-50 p-10 text-center"
@@ -59,11 +59,11 @@
             <svg class="h-10 w-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
             </svg>
-            <p class="font-semibold text-red-700">L'analyse a échoué</p>
-            <p v-if="report.meta?.errors?.length" class="text-sm text-red-600 font-mono bg-red-100 px-4 py-2 rounded-xl max-w-xl break-all">
+            <p class="text-lg font-semibold text-red-700">L'analyse a échoué</p>
+            <p v-if="report.meta?.errors?.length" class="text-base font-medium text-red-600 bg-red-100 px-4 py-2 rounded-xl max-w-xl break-all">
                 {{ report.meta.errors[0] }}
             </p>
-            <button @click="load" class="rounded-xl bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700">
+            <button @click="load" class="rounded-xl bg-red-600 px-5 py-2 text-base font-semibold text-white hover:bg-red-700">
                 Réessayer
             </button>
         </div>
@@ -72,15 +72,15 @@
         <div v-else-if="report" class="space-y-6">
 
             <!-- Risk banner -->
-            <div class="relative overflow-hidden rounded-2xl p-6 shadow-sm" :class="riskStyle.bg">
-                <div class="flex items-center gap-5">
-                    <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl shadow-inner ring-1" :class="riskStyle.iconBg">
-                        <component :is="riskStyle.icon" class="h-8 w-8" :class="riskStyle.iconClass" />
+            <div class="rounded-2xl p-5 shadow-sm" :class="riskStyle.bg">
+                <div class="flex items-center gap-4">
+                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl shadow-inner ring-1" :class="riskStyle.iconBg">
+                        <component :is="riskStyle.icon" class="h-7 w-7" :class="riskStyle.iconClass" />
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-xs font-semibold uppercase tracking-widest" :class="riskStyle.label">Niveau de risque global</p>
-                        <p class="text-2xl font-bold" :class="riskStyle.text">{{ riskLabel }}</p>
-                        <p class="mt-1 text-sm leading-relaxed" :class="riskStyle.sub">{{ report.risk_summary }}</p>
+                        <p class="text-base font-medium" :class="riskStyle.label">Niveau de risque global</p>
+                        <p class="text-lg font-semibold" :class="riskStyle.text">{{ riskLabel }}</p>
+                        <p class="mt-1 text-base font-medium text-slate-800">{{ report.risk_summary }}</p>
                     </div>
                 </div>
             </div>
@@ -89,22 +89,22 @@
             <div class="grid grid-cols-3 gap-4">
                 <div class="rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm">
                     <p class="text-3xl font-bold text-red-500">{{ report.alerts?.length ?? 0 }}</p>
-                    <p class="mt-1 text-xs font-semibold text-slate-500 uppercase tracking-wide">Alertes</p>
+                    <p class="mt-1 text-sm font-semibold text-slate-500 uppercase tracking-wide">Alertes</p>
                 </div>
                 <div class="rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm">
                     <p class="text-3xl font-bold text-orange-500">{{ report.anomalies?.length ?? 0 }}</p>
-                    <p class="mt-1 text-xs font-semibold text-slate-500 uppercase tracking-wide">Anomalies</p>
+                    <p class="mt-1 text-sm font-semibold text-slate-500 uppercase tracking-wide">Anomalies</p>
                 </div>
                 <div class="rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm">
                     <p class="text-3xl font-bold text-blue-500">{{ report.global_recommendations?.length ?? 0 }}</p>
-                    <p class="mt-1 text-xs font-semibold text-slate-500 uppercase tracking-wide">Recommandations</p>
+                    <p class="mt-1 text-sm font-semibold text-slate-500 uppercase tracking-wide">Recommandations</p>
                 </div>
             </div>
 
             <!-- No data message -->
-            <p v-if="hasNoData" class="text-center text-lg font-bold text-slate-700">
+            <Typography v-if="hasNoData" tag="p" variant="h5-style" class="text-center text-slate-500">
                 Données insuffisantes pour l'analyse
-            </p>
+            </Typography>
 
             <!-- Alerts -->
             <section v-if="report.alerts?.length">
@@ -124,9 +124,31 @@
                             <IconAlert class="h-5 w-5 text-red-600" />
                         </span>
                         <div>
-                            <p class="font-semibold text-red-800">{{ alert.message }}</p>
-                            <p class="mt-1 text-sm text-red-600">→ {{ alert.suggested_action }}</p>
+                            <p class="text-lg font-semibold text-red-800">{{ alert.message }}</p>
+                            <p class="mt-1 text-base font-medium text-slate-800">{{ alert.suggested_action }}</p>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Points positifs -->
+            <section v-if="report.positive_observations?.length">
+                <SectionTitle
+                    :icon="IconCheckCircle"
+                    title="Points positifs observés"
+                    icon-wrap-class="border-emerald-200 bg-emerald-50"
+                    icon-class="text-emerald-600"
+                />
+                <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 space-y-2">
+                    <div
+                        v-for="(obs, i) in report.positive_observations"
+                        :key="i"
+                        class="flex gap-3 items-start"
+                    >
+                        <svg class="h-4 w-4 mt-1 shrink-0 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                        <p class="text-lg font-medium text-slate-800">{{ obs }}</p>
                     </div>
                 </div>
             </section>
@@ -146,32 +168,10 @@
                         class="flex items-start gap-3 rounded-2xl border bg-white p-4 shadow-sm"
                         :class="severityBorder(a.severity)"
                     >
-                        <span class="shrink-0 rounded-full px-3 py-1 text-sm font-bold uppercase mt-0.5" :class="severityBadge(a.severity)">
+                        <span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide mt-0.5" :class="severityBadge(a.severity)">
                             {{ severityFr(a.severity) }}
                         </span>
-                        <p class="text-base font-medium leading-relaxed text-slate-700">{{ a.message }}</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Points positifs -->
-            <section v-if="report.positive_observations?.length">
-                <SectionTitle
-                    :icon="IconCheckCircle"
-                    title="Points positifs observés"
-                    icon-wrap-class="border-emerald-200 bg-emerald-50"
-                    icon-class="text-emerald-600"
-                />
-                <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 space-y-2">
-                    <div
-                        v-for="(obs, i) in report.positive_observations"
-                        :key="i"
-                        class="flex gap-3 items-start"
-                    >
-                        <svg class="h-4 w-4 mt-0.5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                        </svg>
-                        <p class="text-sm text-emerald-800">{{ obs }}</p>
+                        <p class="text-lg font-medium text-slate-700">{{ a.message }}</p>
                     </div>
                 </div>
             </section>
@@ -181,8 +181,8 @@
                 <SectionTitle
                     :icon="IconCheckCircle"
                     title="Recommandations prioritaires"
-                    icon-wrap-class="border-emerald-200 bg-emerald-50"
-                    icon-class="text-emerald-600"
+                    icon-wrap-class="border-blue-200 bg-blue-50"
+                    icon-class="text-blue-600"
                 />
                 <div class="space-y-3">
                     <div
@@ -190,13 +190,13 @@
                         :key="rec.priority"
                         class="flex gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
                     >
-                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-base font-bold text-white shadow">
                             {{ rec.priority }}
                         </span>
                         <div class="flex-1 min-w-0">
-                            <p class="font-semibold text-slate-800">{{ rec.action }}</p>
-                            <p class="mt-1 text-sm text-slate-500">
-                                <span class="inline-block rounded-full bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 mr-1">
+                            <p class="text-lg font-semibold text-slate-800">{{ rec.action }}</p>
+                            <p class="mt-1 text-base font-medium text-slate-500">
+                                <span class="inline-block rounded-full bg-blue-50 px-2 py-0.5 text-sm font-semibold text-blue-700 mr-1">
                                     {{ domainLabel(rec.domain) }}
                                 </span>
                                 {{ rec.impact }}
@@ -214,13 +214,13 @@
                             <IconChartBars class="h-5 w-5 text-slate-600" />
                         </span>
                         <div>
-                            <p class="font-semibold text-slate-800"> Voir les détails des analyses</p>
-                            <p class="text-sm text-slate-500">{{ activeDomains.length }} domaine{{ activeDomains.length > 1 ? 's' : '' }} analysé{{ activeDomains.length > 1 ? 's' : '' }}</p>
+                            <p class="text-lg font-semibold text-slate-800">Détails des analyses</p>
+                            <p class="text-base font-medium text-slate-500">{{ activeDomains.length }} domaine{{ activeDomains.length > 1 ? 's' : '' }} analysé{{ activeDomains.length > 1 ? 's' : '' }}</p>
                         </div>
                     </div>
                     <button
                         @click="showDomains = !showDomains"
-                        class="shrink-0 flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition hover:bg-slate-100"
+                        class="shrink-0 flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-base font-semibold text-slate-700 shadow-sm border border-slate-200 transition hover:bg-slate-100"
                     >
                         <span>{{ showDomains ? 'Masquer' : 'Voir' }}</span>
                         <svg class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': showDomains }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -236,7 +236,6 @@
                         :key="domain"
                         class="px-5 py-5"
                     >
-                        <!-- Domain header -->
                         <div class="flex items-center justify-between gap-2 mb-3">
                             <div class="flex items-center gap-2.5">
                                 <span
@@ -245,25 +244,21 @@
                                 >
                                     <component :is="domainIcon(domain)" class="h-4 w-4" :class="domainIconStyle(domain).icon" />
                                 </span>
-                                <p class="font-semibold text-slate-800">{{ domainLabel(domain) }}</p>
+                                <p class="text-lg font-semibold text-slate-800">{{ domainLabel(domain) }}</p>
                             </div>
-                            <span class="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold" :class="severityBadge(data.severity)">
+                            <span class="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide" :class="severityBadge(data.severity)">
                                 {{ severityFr(data.severity) }}
                             </span>
                         </div>
-
-                        <!-- Analysis text -->
-                        <p class="text-sm leading-relaxed text-slate-600">{{ data.analysis }}</p>
-
-                        <!-- Issues -->
+                        <p class="text-lg font-medium text-slate-600">{{ data.analysis }}</p>
                         <ul v-if="data.issues?.length" class="mt-3 space-y-1.5 border-t border-slate-100 pt-3">
                             <li
                                 v-for="(issue, i) in data.issues"
                                 :key="i"
-                                class="flex gap-2 text-sm text-slate-600"
+                                class="flex gap-2 items-start"
                             >
-                                <span class="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-slate-400"></span>
-                                <span>{{ issue }}</span>
+                                <span class="shrink-0 mt-2 h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                                <span class="text-base font-medium text-slate-600">{{ issue }}</span>
                             </li>
                         </ul>
                     </div>
@@ -297,12 +292,12 @@ import {
 // Inline section title helper
 const SectionTitle = {
     props: ["icon", "title", "iconWrapClass", "iconClass"],
-    template: `<div class="mb-3 flex items-center gap-2">
+    template: `<div class="mb-3 flex items-center gap-3">
         <span class="grid h-10 w-10 place-items-center rounded-xl border shadow-sm"
               :class="iconWrapClass || 'border-slate-200 bg-white'">
             <component :is="icon" class="h-5 w-5" :class="iconClass || 'text-slate-600'" />
         </span>
-        <h2 class="text-xl font-bold text-slate-800">{{ title }}</h2>
+        <p class="text-lg font-semibold text-slate-800">{{ title }}</p>
     </div>`,
 };
 

@@ -26,13 +26,13 @@ class NotificationController extends Controller
         $this->triggerMedicationNotifications($user);
 
         // Récupérer les IDs des traitements de l'utilisateur
-        $treatmentIds = $user->treatments()->pluck('treatments.id');
+        $treatmentIds = $user->treatments()->pluck('treatments.id');//pluck recupere une seule colonne
 
-        // Récupérer les 100 dernières notifications et les formater
+        // Récupérer les 300 dernières notifications et les formater
         $result = [];
         $notifications = Notification::whereIn('treatment_id', $treatmentIds)
             ->latest()
-            ->limit(100)
+            ->limit(300)
             ->get();
 
         foreach ($notifications as $n) {
@@ -69,7 +69,7 @@ class NotificationController extends Controller
     {
         $now         = Carbon::now(config('app.timezone'));
         $today       = Carbon::today(config('app.timezone'));
-        $currentHour = (int) $now->format('H');
+        $currentHour = (int) $now->format('H');//donne l heure actuelle au format 24h (0-23)
 
         $medicines = collect($this->healthDataService->resolveTreatmentMedicines($user->id));
 

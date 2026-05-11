@@ -15,6 +15,7 @@ class AnalysisResult extends Model
         'result_name',
         'value',
         'unit',
+        'description',
         'analysis_date',
     ];
 

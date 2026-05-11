@@ -189,10 +189,9 @@
                                     <label
                                         class="mb-3 block text-base font-semibold text-slate-800"
                                         >Valeur
-                                        <span class="text-rose-600"
-                                            >*</span
-                                        ></label
-                                    >
+                                        <span v-if="form.category !== 'Radiologie'" class="text-rose-600">*</span>
+                                        <span v-else class="text-sm font-normal text-slate-400 ml-1">(optionnel)</span>
+                                    </label>
                                     <input
                                         v-model="row.value"
                                         type="text"
@@ -204,10 +203,9 @@
                                     <label
                                         class="mb-3 block text-base font-semibold text-slate-800"
                                         >Unité
-                                        <span class="text-rose-600"
-                                            >*</span
-                                        ></label
-                                    >
+                                        <span v-if="form.category !== 'Radiologie'" class="text-rose-600">*</span>
+                                        <span v-else class="text-sm font-normal text-slate-400 ml-1">(optionnel)</span>
+                                    </label>
                                     <input
                                         v-model="row.unit"
                                         type="text"
@@ -215,6 +213,19 @@
                                         class="h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-base font-medium outline-none focus:border-blue-500 transition"
                                     />
                                 </div>
+                            </div>
+                            <div>
+                                <label class="mb-3 block text-base font-semibold text-slate-800">
+                                    Description
+                                    <span v-if="form.category === 'Radiologie'" class="text-rose-600">*</span>
+                                    <span v-else class="text-sm font-normal text-slate-400 ml-1">(optionnel)</span>
+                                </label>
+                                <textarea
+                                    v-model="row.description"
+                                    rows="3"
+                                    placeholder="Compte-rendu, observations..."
+                                    class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-base font-medium outline-none focus:border-blue-500 transition resize-none"
+                                />
                             </div>
                         </div>
                     </div>
@@ -421,11 +432,15 @@ function toNumber(v) {
 }
 // Retourne une ligne vide pour initialiser le formulaire ou ajouter une nouvelle ligne de résultat
 function emptyRow() {
-    return { result: "", value: "", unit: "" };
+    return { result: "", value: "", unit: "", description: "" };
 }
 // Résume une ligne de résultat pour l'affichage dans la liste "Glycémie - 5.2 mmol/L"
 function summarizeRow(row) {
     const name = row.result || "Résultat non renseigné";
+    if (form.category === "Radiologie") {
+        const desc = row.description?.trim();
+        return desc ? `${name} — ${desc}` : name;
+    }
     const val = String(row.value ?? "").trim();
     const right = val
         ? `${val}${row.unit ? ` ${row.unit}` : ""}`
@@ -475,26 +490,32 @@ async function saveAnalysis() {
         return;
     }
 
+    const isRadiologie = form.category === "Radiologie";
+
     for (let i = 0; i < form.results.length; i++) {
         const row = form.results[i];
 
-        // Vérifie que le nom du résultat est sélectionné
         if (!row.result) {
             formError.value = "Chaque résultat doit être sélectionné.";
             expandedIndex.value = i;
             return;
         }
 
-        // Vérifie que la valeur est un nombre non vide
-        if (String(row.value ?? "").trim() === "" || toNumber(row.value) === null) {
-            formError.value = "Veuillez saisir une valeur numérique pour chaque résultat.";
-            expandedIndex.value = i;
-            return;
+        if (!isRadiologie) {
+            if (String(row.value ?? "").trim() === "" || toNumber(row.value) === null) {
+                formError.value = "Veuillez saisir une valeur numérique pour chaque résultat.";
+                expandedIndex.value = i;
+                return;
+            }
+            if (!row.unit?.trim()) {
+                formError.value = "Veuillez saisir une unité pour chaque résultat.";
+                expandedIndex.value = i;
+                return;
+            }
         }
 
-        // Vérifie que l'unité n'est pas vide
-        if (!row.unit?.trim()) {
-            formError.value = "Veuillez saisir une unité pour chaque résultat.";
+        if (isRadiologie && !row.description?.trim()) {
+            formError.value = "La description est obligatoire pour les analyses radiologiques.";
             expandedIndex.value = i;
             return;
         }
@@ -503,8 +524,9 @@ async function saveAnalysis() {
     const rows = form.results.map((row) => ({
         analysis_type: form.category,
         result_name: row.result,
-        value: toNumber(row.value),
-        unit: row.unit.trim(),
+        value: isRadiologie ? null : toNumber(row.value),
+        unit: isRadiologie ? null : row.unit.trim(),
+        description: row.description?.trim() || null,
         analysis_date: isoDate(analysisDate),
     }));
 // Envoie les requêtes à l'API une requête PUT si édition, sinon une requête POST par résultat
@@ -544,6 +566,7 @@ function ouvrirEditionAnalyse(item) {
             result: item.result ?? "",
             value: String(item.value ?? ""),
             unit: item.unit ?? "",
+            description: item.description ?? "",
         },
     ];
     form.date = item.analysisDate ?? today();

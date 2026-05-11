@@ -10,7 +10,7 @@
                     v-for="f in filters"
                     :key="f.days"
                     @click="changeFilter(f.days)"
-                    class="rounded-lg border px-3 py-1.5 text-sm font-medium transition"
+                    class="rounded-lg border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition"
                     :class="days === f.days
                         ? 'border-purple-500 bg-purple-50 text-purple-700'
                         : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'"
@@ -21,12 +21,12 @@
         </div>
 
         <!-- Message pendant le chargement -->
-        <div v-if="loading" class="flex h-44 items-center justify-center text-sm text-slate-700">
+        <div v-if="loading" class="flex h-44 items-center justify-center text-sm font-medium text-slate-500">
             Chargement...
         </div>
 
         <!-- Message si aucune activité sur la période -->
-        <div v-else-if="!top5.length" class="flex h-44 items-center justify-center text-sm text-slate-700">
+        <div v-else-if="!top5.length" class="flex h-44 items-center justify-center text-sm font-medium text-slate-500">
             Aucune activité sur cette période.
         </div>
 
@@ -66,8 +66,8 @@ function formatActivityLabel(label) {
 
 // Options de filtre disponibles
 const filters = [
-    { label: "Par semaine", days: 7  },
-    { label: "Par mois",    days: 30 },
+    { label: "Dernière semaine", days: 7  },
+    { label: "Dernier mois",    days: 30 },
 ];
 
 const dashStore = useDashboardStore();

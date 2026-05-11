@@ -4,9 +4,19 @@ Reads credentials from ai-module/.env — no hardcoded secrets.
 """
 
 import os
+from functools import lru_cache
 from pathlib import Path
+from groq import Groq
+
+MODEL                  = "llama-3.3-70b-versatile"
+TEMPERATURE            = 0.4
+MAX_TOKENS_DOMAINS     = 3500
+MAX_TOKENS_AGGREGATION = 2500
+
+_client = None
 
 
+@lru_cache(maxsize=1)
 def _load_env_file() -> dict:
     """Parse ai-module/.env and return key-value pairs."""
     env_path = Path(__file__).parent.parent / ".env"
@@ -27,11 +37,20 @@ def _load_env_file() -> dict:
 
 
 def load_groq_api_key() -> None:
-    """Read GROQ_API_KEY from ai-module/.env and inject it into os.environ."""
     env = _load_env_file()
     api_key = env.get("GROQ_API_KEY", "").strip()
     if api_key:
         os.environ.setdefault("GROQ_API_KEY", api_key)
+
+
+def get_groq_client() -> Groq:
+    global _client
+    if _client is None:
+        api_key = os.environ.get("GROQ_API_KEY")
+        if not api_key:
+            raise EnvironmentError("GROQ_API_KEY not set in ai-module/.env")
+        _client = Groq(api_key=api_key)
+    return _client
 
 
 def get_db_config() -> dict:

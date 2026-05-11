@@ -10,12 +10,12 @@
 
         <div class="bg-white p-4">
             <!-- Message pendant le chargement -->
-            <div v-if="loading" class="flex h-48 items-center justify-center text-slate-400">
+            <div v-if="loading" class="flex h-48 items-center justify-center text-sm font-medium text-slate-500">
                 Chargement...
             </div>
 
             <!-- Message si aucune donnée cette semaine -->
-            <div v-else-if="noData" class="flex h-48 items-center justify-center text-slate-400">
+            <div v-else-if="noData" class="flex h-48 items-center justify-center text-sm font-medium text-slate-500">
                 Aucune donnée d'hydratation cette semaine.
             </div>
 

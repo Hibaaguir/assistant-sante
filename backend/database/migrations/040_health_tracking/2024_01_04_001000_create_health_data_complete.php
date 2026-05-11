@@ -38,8 +38,9 @@ return new class extends Migration
             $table->foreignId('health_data_id')->nullable()->constrained('health_data')->nullOnDelete();
             $table->string('analysis_type', 120);
             $table->string('result_name', 120)->nullable();
-            $table->decimal('value', 10, 2);
+            $table->decimal('value', 10, 2)->nullable();
             $table->string('unit', 30)->nullable();
+            $table->text('description')->nullable();
             $table->date('analysis_date');
             $table->timestamps();
 

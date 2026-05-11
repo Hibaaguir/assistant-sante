@@ -214,6 +214,7 @@ function processHealthData() {
                   ),
                   value: item.value,
                   unit: item.unit ?? "",
+                  description: item.description ?? "",
                   date: formatLongDate(item.analysis_date),
                   analysisDate: item.analysis_date,
 

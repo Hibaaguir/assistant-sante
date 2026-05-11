@@ -11,12 +11,12 @@
         </div>
 
         <!-- Message pendant le chargement -->
-        <div v-if="loading" class="flex h-48 items-center justify-center text-sm text-slate-400">
+        <div v-if="loading" class="flex h-48 items-center justify-center text-sm font-medium text-slate-500">
             Chargement…
         </div>
 
         <!-- Message si aucune analyse enregistrée -->
-        <div v-else-if="noData" class="flex h-48 items-center justify-center text-sm text-slate-400">
+        <div v-else-if="noData" class="flex h-48 items-center justify-center text-sm font-medium text-slate-500">
             Aucune analyse enregistrée.
         </div>
 

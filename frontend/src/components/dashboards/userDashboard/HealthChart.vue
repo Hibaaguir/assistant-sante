@@ -10,7 +10,7 @@
                     v-for="f in filters"
                     :key="f.days"
                     @click="changeFilter(f.days)"
-                    class="rounded-lg border px-3 py-1.5 text-sm font-medium transition"
+                    class="rounded-lg border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition"
                     :class="days === f.days
                         ? 'border-purple-500 bg-purple-50 text-purple-700'
                         : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'"
@@ -44,8 +44,8 @@ Chart.register(...registerables);
 // Options de filtre disponibles
 const filters = [
    // exemple d'ajout d'un filtre { label: "3 mois", days: 90 },
-    { label: "Par semaine", days: 7 },
-    { label: "Par mois",    days: 30 },
+    { label: "Dernière semaine", days: 7 },
+    { label: "Dernier mois",    days: 30 },
 ];
 
 const dashStore = useDashboardStore();
