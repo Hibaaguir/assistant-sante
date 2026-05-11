@@ -95,9 +95,13 @@
                         type="email"
                         placeholder="medecin@exemple.com"
                         v-model.trim="form.medecin_email"
-                        class="h-14 pl-14 text-lg rounded-xl border-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400 w-full outline-none"
+                        class="h-14 pl-14 text-lg rounded-xl border-2 focus:ring-blue-400 w-full outline-none"
+                        :class="props.showErrors && props.errors?.medecin_email ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-blue-400'"
                     />
                 </div>
+                <p v-if="props.showErrors && props.errors?.medecin_email" class="text-sm text-red-600">
+                    {{ props.errors.medecin_email }}
+                </p>
 
                 <div
                     class="bg-blue-50 border border-blue-200 rounded-xl p-5 flex gap-4"
@@ -148,7 +152,9 @@ import { computed } from "vue";
 import Typography from "@/components/ui/Typography.vue";
 
 const props = defineProps({
-    form: { type: Object, required: true },
+    form:       { type: Object,  required: true },
+    errors:     { type: Object,  default: () => ({}) },
+    showErrors: { type: Boolean, default: false },
 });
 
 const form = props.form;

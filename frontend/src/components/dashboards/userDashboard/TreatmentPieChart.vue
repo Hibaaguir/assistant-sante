@@ -39,17 +39,19 @@ const noData      = ref(false);
 let chartInstance = null;
 
 // Dessine le graphe camembert depuis les données du store
-async function loadChart() {
+async function buildChart() {
     const treatments = dashStore.treatments;
 
-    const counts = {};
+    // Compter le nombre de traitements pour chaque type
+    const countByType = {};
     for (const treatment of treatments) {
         const type = treatment.type || "Autre";
-        counts[type] = (counts[type] || 0) + 1;
+        if (!countByType[type]) countByType[type] = 0;
+        countByType[type]++;
     }
 
-    const labels = Object.keys(counts);
-    const values = Object.values(counts);
+    const labels = Object.keys(countByType);
+    const values = Object.values(countByType);
 
     // Si aucune donnée, afficher le message "aucun traitement"
     if (labels.length === 0) {
@@ -90,9 +92,9 @@ async function loadChart() {
 
 onMounted(() => {
     dashStore.initialize();
-    if (dashStore.initialized) loadChart();
+    if (dashStore.initialized) buildChart();
 });
-watch(() => dashStore.initialized, async (ready) => { if (ready) await loadChart(); });
+watch(() => dashStore.initialized, async (ready) => { if (ready) await buildChart(); });
 
 // Détruire le graphe quand le composant est retiré (libération mémoire)
 onUnmounted(() => chartInstance?.destroy());

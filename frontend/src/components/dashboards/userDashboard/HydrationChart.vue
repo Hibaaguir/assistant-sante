@@ -1,4 +1,4 @@
-<!-- Graphe en barres : hydratation quotidienne sur les 7 derniers jours -->
+6<!-- Graphe en barres : hydratation quotidienne sur les 7 derniers jours -->
 <template>
     <section class="mt-5 overflow-hidden rounded-2xl border-2 border-blue-300 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-400">
 
@@ -57,13 +57,13 @@ let chartInstance = null;
 
 // Retourne la liste des 7 derniers jours au format YYYY-MM-DD
 function getLast7Days() {
-    const liste = [];
+    const list = [];
     for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        liste.push(d.toISOString().slice(0, 10));
+        list.push(d.toISOString().slice(0, 10));
     }
-    return liste;
+    return list;
 }
 
 // Traite les données d'hydratation depuis le store et dessine le graphe
@@ -89,22 +89,22 @@ async function load() {
     weekDays.value = [];
     for (let i = 0; i < dates.length; i++) {
         // Utiliser T12:00:00 pour éviter les problèmes de fuseau horaire UTC
-        const nomJourAnglais = new Date(dates[i] + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" });
-        const indexJour = DAYS_OF_WEEK.indexOf(nomJourAnglais);
+        const englishDayName = new Date(dates[i] + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" });
+        const dayIndex = DAYS_OF_WEEK.indexOf(englishDayName);
 
         weekDays.value.push({
             date:  dates[i],
-            label: indexJour >= 0 ? DAY_LABELS[indexJour] : dates[i].slice(5),
+            label: dayIndex >= 0 ? DAY_LABELS[dayIndex] : dates[i].slice(5),
             value: values[i],
         });
     }
 
     // Vérifier si toutes les valeurs sont à zéro (pas de données)
-    let toutZero = true;
+    let allZero = true;
     for (const v of values) {
-        if (v !== 0) { toutZero = false; break; }
+        if (v !== 0) { allZero = false; break; }
     }
-    if (toutZero) {
+    if (allZero) {
         noData.value = true;
         return;
     }
@@ -113,27 +113,27 @@ async function load() {
     await nextTick();
 
     // Préparer les labels et les couleurs des barres
-    const labelsGraphe = [];
-    const couleursFond = [];
-    const couleursBord = [];
+    const chartLabels      = [];
+    const backgroundColors = [];
+    const borderColors     = [];
 
     for (let i = 0; i < weekDays.value.length; i++) {
-        labelsGraphe.push(weekDays.value[i].label);
+        chartLabels.push(weekDays.value[i].label);
         // Barre pleine si l'objectif est atteint, transparente sinon
-        couleursFond.push(values[i] >= GOAL ? "rgba(6,182,212,0.75)" : "rgba(6,182,212,0.3)");
-        couleursBord.push(values[i] >= GOAL ? "#0891b2" : "#67e8f9");
+        backgroundColors.push(values[i] >= GOAL ? "rgba(6,182,212,0.75)" : "rgba(6,182,212,0.3)");
+        borderColors.push(values[i] >= GOAL ? "#0891b2" : "#67e8f9");
     }
 
     // Créer le graphe en barres
     chartInstance = new Chart(canvasRef.value, {
         type: "bar",
         data: {
-            labels: labelsGraphe,
+            labels: chartLabels,
             datasets: [{
                 label: "Hydratation (L)",
                 data: values,
-                backgroundColor: couleursFond,
-                borderColor: couleursBord,
+                backgroundColor: backgroundColors,
+                borderColor: borderColors,
                 borderWidth: 1.5,
                 borderRadius: 6,
             }],

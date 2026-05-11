@@ -24,7 +24,7 @@ export const homeFeatures = [
         icone: "dossier",
     },
     {
-        titre: "Gestion des traitéments",
+        titre: "Gestion des traitements",
         description:
             "Calendrier de traitement généré par l'IA avec rappels et confirmations simples de doses.",
         accent: "#8b5cf6",
@@ -65,8 +65,8 @@ export const homeNarrativeSections = [
         titreApres: "",
         variantePoints: "icone",
         texte: "Remplissez votre journal quotidien structuré couvrant tous les aspects de votre bien-être : qualité du sommeil, niveaux de stress, énergie, nutrition (repas, calories, sucre, caféine, hydratation), habitudes (alcool, tabac) et activité physique.",
-        image: "https://images.pexels.com/photos/7659564/pexels-photo-7659564.jpeg?auto=compress&cs=tinysrgb&w=1200",
-        alt: "Personne prenant des notes pour le suivi quotidien de sa santé",
+        image: "https://images.pexels.com/photos/3768916/pexels-photo-3768916.jpeg?auto=compress&cs=tinysrgb&w=1200",
+        alt: "Personne utilisant une application de suivi de santé sur smartphone",
         points: [
             {
                 titre: "Enregistrement rapide quotidien",
@@ -93,8 +93,8 @@ export const homeNarrativeSections = [
         titreApres: "",
         variantePoints: "badge",
         texte: "Notre système IA analyse continuellement votre profil de santé, vos entrées quotidiennes et vos dossiers de santé pour détecter les anomalies, identifier les tendances et générer des recommandations personnalisées.",
-        image: "https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=1200",
-        alt: "Tableau de bord médical avec graphiques",
+        image: "https://images.pexels.com/photos/8386434/pexels-photo-8386434.jpeg?auto=compress&cs=tinysrgb&w=1200",
+        alt: "Intelligence artificielle analysant des données de santé",
         points: [
             {
                 titre: "Alertes calmes et non-alarmantes",
@@ -117,7 +117,7 @@ export const homeNarrativeSections = [
         ],
     },
     {
-        identifiant: "about",
+        identifiant: "partage-medecin",
         type: "image-gauche",
         titreAvant: "Partagez avec votre",
         titreAccent: "équipe médicale",
@@ -128,6 +128,7 @@ export const homeNarrativeSections = [
         texte: "Invitez votre médecin par email à accéder à vos données de santé en mode lecture seule. Les professionnels de santé peuvent voir les tendances et les alertes clés sans modifier aucune information.",
         image: "https://images.pexels.com/photos/4173251/pexels-photo-4173251.jpeg?auto=compress&cs=tinysrgb&w=1200",
         alt: "Médecin au cabinet",
+        contact: "assistantsante2026@gmail.com",
         points: [
             {
                 titre: "Sécurisé et confidentiel",
@@ -135,6 +136,13 @@ export const homeNarrativeSections = [
                     "Vos données restent sous votre contrôle. Les médecins ne peuvent voir que les informations que vous choisissez de partager, et ils ne peuvent pas modifier ou supprimer vos dossiers.",
                 couleur: "#8b5cf6",
                 icone: "bouclier",
+            },
+            {
+                titre: "Contactez-nous",
+                description:
+                    "Pour toute question ou assistance, écrivez-nous à assistantsante2026@gmail.com",
+                couleur: "#149bd7",
+                icone: "email",
             },
         ],
     },

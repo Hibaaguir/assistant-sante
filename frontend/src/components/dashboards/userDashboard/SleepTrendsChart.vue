@@ -17,7 +17,7 @@
             <div class="relative shrink-0">
                 <select
                     v-model="selectedMonth"
-                    @change="rebuild"
+                    @change="buildChart"
                     class="appearance-none rounded-xl border border-indigo-100 bg-indigo-50 py-1.5 pl-3 pr-8 text-sm font-semibold text-indigo-600 outline-none transition hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-300"
                 >
                     <option v-for="m in months" :key="m.key" :value="m.key">{{ m.label }}</option>
@@ -60,21 +60,21 @@ const GOAL = 8;
 
 // Générer la liste des 12 derniers mois pour le sélecteur déroulant
 function buildMonths() {
-    const liste = [];
+    const list = [];
     for (let i = 0; i < 12; i++) {
         // Partir du mois actuel et remonter dans le temps
         const d = new Date();
         d.setDate(1);
         d.setMonth(d.getMonth() - (11 - i)); // 11-i : le plus ancien d'abord
 
-        const annee  = d.getFullYear();
-        const mois   = d.getMonth(); // 0 = Janvier
-        const moisStr = String(mois + 1).padStart(2, "0"); // "01" à "12"
-        const key    = annee + "-" + moisStr; // ex: "2025-04"
+        const year     = d.getFullYear();
+        const month    = d.getMonth(); // 0 = Janvier
+        const monthStr = String(month + 1).padStart(2, "0"); // "01" à "12"
+        const key      = year + "-" + monthStr; // ex: "2025-04"
 
-        liste.push({ key: key, label: MONTHS_FR[mois] });
+        list.push({ key, label: MONTHS_FR[month] });
     }
-    return liste;
+    return list;
 }
 
 const months        = buildMonths();
@@ -99,7 +99,7 @@ let chartInstance = null;
 let allEntries    = [];
 
 // Retourne le numéro de semaine (0 à 4) selon le jour du mois
-function weekIdx(dateStr) {
+function getWeekIndex(dateStr) {
     const day = parseInt((dateStr ?? "").slice(8, 10), 10);
     if (day <= 7)  return 0;
     if (day <= 14) return 1;
@@ -109,60 +109,60 @@ function weekIdx(dateStr) {
 }
 
 // Calcule la moyenne d'une liste de nombres (ignore les null et NaN)
-function calculerMoyenne(liste) {
-    const valeursValides = [];
-    for (const x of liste) {
+function calculateAverage(list) {
+    const validValues = [];
+    for (const x of list) {
         if (x != null && !isNaN(x)) {
-            valeursValides.push(x);
+            validValues.push(x);
         }
     }
-    if (valeursValides.length === 0) return null;
+    if (validValues.length === 0) return null;
 
-    let somme = 0;
-    for (const v of valeursValides) {
-        somme += v;
+    let sum = 0;
+    for (const value of validValues) {
+        sum += value;
     }
-    return +(somme / valeursValides.length).toFixed(1);
+    return +(sum / validValues.length).toFixed(1);
 }
 
 // Reconstruit le graphe pour le mois sélectionné
-async function rebuild() {
+async function buildChart() {
     // Détruire l'ancien graphe avant d'en créer un nouveau
     if (chartInstance) chartInstance.destroy();
     chartInstance = null;
 
-    const moisChoisi = selectedMonth.value;
+    const selectedMonthKey = selectedMonth.value;
 
-    // Initialiser 5 buckets (une liste par semaine)
-    const buckets = [[], [], [], [], []];
+    // Initialiser 5 semaines (une liste par semaine)
+    const weeks = [[], [], [], [], []];
 
-    // Remplir chaque bucket avec les heures de sommeil de la semaine correspondante
+    // Remplir chaque semaine avec les heures de sommeil correspondantes
     for (const entry of allEntries) {
         if (!entry.entry_date || entry.sleep == null) continue;
 
         // Ignorer les entrées d'un autre mois
-        if (entry.entry_date.slice(0, 7) !== moisChoisi) continue;
+        if (entry.entry_date.slice(0, 7) !== selectedMonthKey) continue;
 
-        const semaine = weekIdx(entry.entry_date);
-        buckets[semaine].push(parseFloat(entry.sleep));
+        const weekNumber = getWeekIndex(entry.entry_date);
+        weeks[weekNumber].push(parseFloat(entry.sleep));
     }
 
     // Calculer la moyenne de chaque semaine
-    const moyennes = [];
-    for (const bucket of buckets) {
-        moyennes.push(calculerMoyenne(bucket));
+    const weekAverages = [];
+    for (const week of weeks) {
+        weekAverages.push(calculateAverage(week));
     }
 
     // Pour le graphe : remplacer null par 0 (Chart.js ne gère pas les null en fill)
-    const donnéesGraphe = [];
-    for (const m of moyennes) {
-        donnéesGraphe.push(m == null ? 0 : m);
+    const chartData = [];
+    for (const avg of weekAverages) {
+        chartData.push(avg == null ? 0 : avg);
     }
 
     // Stocker les moyennes pour le récapitulatif affiché sous le graphe
     weekData.value = [];
-    for (const m of moyennes) {
-        weekData.value.push({ avg: m });
+    for (const avg of weekAverages) {
+        weekData.value.push({ avg });
     }
 
     // Attendre que le DOM affiche le canvas avant de dessiner
@@ -177,7 +177,7 @@ async function rebuild() {
             datasets: [
                 {
                     label: "Sommeil moyen",
-                    data: donnéesGraphe,
+                    data: chartData,
                     borderColor: "#4338ca",
                     backgroundColor: "rgba(67,56,202,0.15)",
                     borderWidth: 3,
@@ -222,8 +222,8 @@ async function rebuild() {
                             if (ctx.dataset.label === "Objectif 8 h") {
                                 return " Objectif : 8 h / nuit";
                             }
-                            const valeur = weekData.value[ctx.dataIndex]?.avg ?? 0;
-                            return " Sommeil : " + valeur + " h";
+                            const sleepHours = weekData.value[ctx.dataIndex]?.avg ?? 0;
+                            return " Sommeil : " + sleepHours + " h";
                         },
                     },
                 },
@@ -254,16 +254,16 @@ async function rebuild() {
 }
 
 // Charge les données du store puis construit le graphe
-async function load() {
+async function loadData() {
     allEntries = dashStore.sleep;
-    await rebuild();
+    await buildChart();
 }
 
 onMounted(() => {
     dashStore.initialize();
-    if (dashStore.initialized) load();
+    if (dashStore.initialized) loadData();
 });
-watch(() => dashStore.initialized, async (ready) => { if (ready) await load(); });
+watch(() => dashStore.initialized, async (ready) => { if (ready) await loadData(); });
 
 // Détruire le graphe quand le composant est retiré (libération mémoire)
 onUnmounted(function () { if (chartInstance) chartInstance.destroy(); });

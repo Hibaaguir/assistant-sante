@@ -60,8 +60,8 @@ class UserDashboardController extends Controller
                 $mesuresDuJour = $vitalsByDate[$date] ?? [];
                 $valeur        = null;
 
-                // Parcourir les mesures du jour du plus récent au plus ancien
-                // et prendre la première valeur non nulle trouvée
+             // Parcourir les mesures du jour du plus récent au plus ancien
+             // Chercher la dernière valeur non-null du jour
                 for ($j = count($mesuresDuJour) - 1; $j >= 0; $j--) {
                     if ($mesuresDuJour[$j]->{$field} !== null) {
                         $valeur = round((float) $mesuresDuJour[$j]->{$field}, 1);
@@ -85,7 +85,6 @@ class UserDashboardController extends Controller
         $today  = Carbon::today()->toDateString();
 
         // Récupérer les traitements dont la période est en cours
-        // (date début vide ou passée) ET (date fin vide ou future)
         $traitements = Treatment::with('treatmentCatalog')
             ->whereHas('healthData', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
@@ -105,7 +104,7 @@ class UserDashboardController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    // Retourne tous les signes vitaux des N derniers jours (pour les graphes de comparaison)
+    // Retourne tous les signes vitaux des N derniers jours pour les graphes de comparaison
     public function vitals(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
@@ -122,7 +121,7 @@ class UserDashboardController extends Controller
         return response()->json(['data' => $vitals]);
     }
 
-    // Retourne les analyses biologiques des 12 derniers mois
+    // Retourne les analyses biologiques barres  des 12 derniers mois
     public function labs(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
@@ -138,7 +137,7 @@ class UserDashboardController extends Controller
         return response()->json(['data' => $labs]);
     }
 
-    // Retourne l'historique des prises de médicaments sur les 90 derniers jours
+    //  l'historique des prises et non prise  de médicaments sur les 90 derniers jours
     public function treatmentChecks(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
@@ -165,7 +164,7 @@ class UserDashboardController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    // Hydratation quotidienne — 7 derniers jours uniquement
+    // Hydratation quotidienne barres et lignes objectif 7 derniers jours uniquement
     public function hydration(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;
@@ -195,7 +194,7 @@ class UserDashboardController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    // Activités physiques — 30 derniers jours uniquement
+    // Activités physiques donut et tableau de classement  30 derniers jours uniquement
     public function activities(Request $request): JsonResponse
     {
         $userId    = $request->user()->id;

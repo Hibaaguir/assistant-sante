@@ -5,9 +5,9 @@ import api from "@/services/api";
 const CACHE_TTL_MS = 5 * 60 * 1000; // revalide automatiquement après 5 minutes
 
 export const useDashboardStore = defineStore("dashboard", () => {
-    const initialized = ref(false);
-    const loading     = ref(false);
-    let fetchedAt     = 0;
+    const initialized = ref(false);//données chargées ou nn 
+    const loading     = ref(false);//en cours de chargement ou nn
+    let fetchedAt     = 0;// timestamp du dernier fetch réussi
 
     const hydration         = ref([]);
     const sleep             = ref([]);

@@ -33,7 +33,7 @@ import { useDashboardStore } from "@/stores/dashboard";
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
 // Les 4 indicateurs à comparer
-const METRICS = [
+const VITAL_SIGNS = [
     { key: "heart_rate",          label: "Fréq. card.\n(bpm)"      },
     { key: "systolic_pressure",   label: "Pression\nsys. (mmHg)"   },
     { key: "diastolic_pressure",  label: "Pression\ndia. (mmHg)"   },
@@ -54,9 +54,11 @@ const prevLabel    = ref("");
 let chartInstance  = null;
 
 // Calcule la moyenne d'un tableau de valeurs (ignore les nulls)
-function avg(arr) {
-    const v = arr.filter((x) => x != null);
-    return v.length ? +(v.reduce((s, x) => s + parseFloat(x), 0) / v.length).toFixed(1) : null;
+function avg(values) {
+    const filtered = values.filter((x) => x != null);
+    if (filtered.length === 0) return null;
+    const sum = filtered.reduce((total, x) => total + parseFloat(x), 0);
+    return +( sum / filtered.length).toFixed(1);
 }
 
 // Extrait la clé "YYYY-MM" depuis une date ISO ou une chaîne de date
@@ -65,45 +67,45 @@ function monthKey(dateStr) {
 }
 
 // Dessine l'histogramme comparatif depuis les données du store
-async function load() {
-    const vitals = dashStore.vitals60;
+async function buildChart() {
+    const allVitals = dashStore.vitals60;
 
-    // Calculer les clés du mois actuel et du mois précédent
-    const now      = new Date();
-    const cur      = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const prev     = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}`;
+    // Calculer les clés du mois actuel et du mois précédent (format "YYYY-MM")
+    const now              = new Date();
+    const currentMonth     = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const previousDate     = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const previousMonth    = `${previousDate.getFullYear()}-${String(previousDate.getMonth() + 1).padStart(2, "0")}`;
 
-    // Initialiser les buckets (tableau de valeurs par indicateur, par mois)
-    const buckets = {
-        [cur]:  Object.fromEntries(METRICS.map((m) => [m.key, []])),
-        [prev]: Object.fromEntries(METRICS.map((m) => [m.key, []])),
+    // Initialiser les tableaux de valeurs par indicateur, pour chaque mois
+    const monthlyData = {
+        [currentMonth]:  Object.fromEntries(VITAL_SIGNS.map((sign) => [sign.key, []])),
+        [previousMonth]: Object.fromEntries(VITAL_SIGNS.map((sign) => [sign.key, []])),
     };
 
-    // Remplir les buckets avec les valeurs de chaque mesure
-    for (const v of vitals) {
-        const mk = monthKey(v.measured_at);
-        if (!buckets[mk]) continue;
-        for (const m of METRICS) {
-            if (v[m.key] != null) buckets[mk][m.key].push(v[m.key]);
+    // Remplir les tableaux avec les valeurs de chaque mesure
+    for (const vital of allVitals) {
+        const monthStr = monthKey(vital.measured_at);
+        if (!monthlyData[monthStr]) continue;
+        for (const sign of VITAL_SIGNS) {
+            if (vital[sign.key] != null) monthlyData[monthStr][sign.key].push(vital[sign.key]);
         }
     }
 
     // Calculer la moyenne de chaque indicateur pour chaque mois
-    const curAvgs  = METRICS.map((m) => avg(buckets[cur][m.key]));
-    const prevAvgs = METRICS.map((m) => avg(buckets[prev][m.key]));
+    const currentAverages  = VITAL_SIGNS.map((sign) => avg(monthlyData[currentMonth][sign.key]));
+    const previousAverages = VITAL_SIGNS.map((sign) => avg(monthlyData[previousMonth][sign.key]));
 
     // Si aucune donnée du tout, afficher le message vide
-    if (curAvgs.every((v) => v === null) && prevAvgs.every((v) => v === null)) {
+    if (currentAverages.every((v) => v === null) && previousAverages.every((v) => v === null)) {
         noData.value = true;
         return;
     }
 
     // Préparer les étiquettes des mois pour la légende
-    const [cy, cm] = cur.split("-");
-    const [py, pm] = prev.split("-");
-    currentLabel.value = `${MONTHS_FR[+cm - 1]} ${cy}`;
-    prevLabel.value    = `${MONTHS_FR[+pm - 1]} ${py}`;
+    const [currentYear, currentMonthNum]   = currentMonth.split("-");
+    const [previousYear, previousMonthNum] = previousMonth.split("-");
+    currentLabel.value = `${MONTHS_FR[+currentMonthNum - 1]} ${currentYear}`;
+    prevLabel.value    = `${MONTHS_FR[+previousMonthNum - 1]} ${previousYear}`;
 
     // Attendre que le DOM affiche le canvas avant de dessiner
     await nextTick();
@@ -112,11 +114,11 @@ async function load() {
     chartInstance = new Chart(canvasRef.value, {
         type: "bar",
         data: {
-            labels: METRICS.map((m) => m.label),
+            labels: VITAL_SIGNS.map((m) => m.label),
             datasets: [
                 {
                     label: currentLabel.value,
-                    data: curAvgs,
+                    data: currentAverages,
                     backgroundColor: "rgba(99,102,241,1)",
                     borderColor: "#4f46e5",
                     borderWidth: 2.5,
@@ -124,7 +126,7 @@ async function load() {
                 },
                 {
                     label: prevLabel.value,
-                    data: prevAvgs,
+                    data: previousAverages,
                     backgroundColor: "rgba(100,116,139,0.9)",
                     borderColor: "#64748b",
                     borderWidth: 2.5,
@@ -173,9 +175,9 @@ async function load() {
 
 onMounted(() => {
     dashStore.initialize();
-    if (dashStore.initialized) load();
+    if (dashStore.initialized) buildChart();
 });
-watch(() => dashStore.initialized, async (ready) => { if (ready) await load(); });
+watch(() => dashStore.initialized, async (ready) => { if (ready) await buildChart(); });
 
 // Détruire le graphe quand le composant est retiré (libération mémoire)
 onUnmounted(() => chartInstance?.destroy());

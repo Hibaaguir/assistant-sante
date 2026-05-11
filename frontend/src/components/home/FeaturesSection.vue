@@ -69,27 +69,38 @@
     </ul>
 
     <!-- Variant: security highlight (used in "about" section) -->
-    <ul v-else-if="variant === 'securite'" class="m-0 list-none p-0">
+    <ul v-else-if="variant === 'securite'" class="m-0 list-none p-0 grid gap-2.5">
         <li
+            v-for="point in points"
+            :key="point.titre"
             class="flex items-start gap-3 rounded-xl border border-[#c7cbff] bg-[#f2f4ff] px-4 py-4"
         >
             <span
-                class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#8b5cf6]"
+                class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                :style="{ backgroundColor: point.couleur || '#8b5cf6' }"
             >
                 <svg
                     viewBox="0 0 24 24"
                     fill="none"
                     class="h-4 w-4 stroke-white [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]"
                 >
-                    <path d="M12 3 6 6v5c0 4 2 7 6 10 4-3 6-6 6-10V6l-6-3Z" />
+                    <path v-if="point.icone === 'email'" d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zM22 6l-10 7L2 6" />
+                    <path v-else d="M12 3 6 6v5c0 4 2 7 6 10 4-3 6-6 6-10V6l-6-3Z" />
                 </svg>
             </span>
             <div>
                 <p class="m-0 text-[0.94rem] font-bold text-slate-900">
-                    {{ points[0].titre }}
+                    {{ point.titre }}
                 </p>
                 <p class="mt-1.5 text-[0.84rem] leading-6 text-slate-600">
-                    {{ points[0].description }}
+                    <template v-if="point.icone === 'email'">
+                        Pour toute question, écrivez-nous à
+                        <a href="mailto:assistantsante2026@gmail.com"
+                            class="font-semibold text-sky-600 hover:underline">
+                            assistantsante2026@gmail.com
+                        </a>
+                    </template>
+                    <template v-else>{{ point.description }}</template>
                 </p>
             </div>
         </li>

@@ -12,7 +12,7 @@
                             <path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Zm-1 6h2v2h2v2h-2v2h-2v-2H9v-2h2V9Z" />
                         </svg>
                     </span>
-                    <span class="text-[1.6rem]">HealthFlow</span>
+                    <span class="text-[1.25rem]">Assistant Santé</span>
                 </RouterLink>
 
                 <nav class="hidden items-center gap-9 lg:flex">
@@ -132,53 +132,85 @@
                             <span v-if="section.titreAccent" :class="section.titreAccentClass">{{ section.titreAccent }}</span>
                             {{ section.titreApres }}
                         </h2>
-                        <p class="my-4 leading-7 text-slate-500">{{ section.texte }}</p>
+                        <p class="my-4 text-[0.95rem] leading-7 text-slate-500">{{ section.texte }}</p>
                         <FeaturesSection :points="section.points" :variant="section.variantePoints" />
                     </article>
                 </div>
             </section>
 
-            <!-- ── CTA ────────────────────────────────────────────────────────── -->
-            <section class="mt-10 bg-gradient-to-br from-blue-700 via-blue-600 to-blue-500 py-20 px-8 lg:px-14 text-white">
-                <div data-anime class="translate-y-6 text-center opacity-0 transition-all duration-700">
-                    <h2 class="text-[2rem] font-extrabold tracking-tight text-white">
-                        Commencez votre parcours santé aujourd'hui
-                    </h2>
-                    <p class="mx-auto mt-4 max-w-[52ch] leading-7 text-blue-100 text-[0.95rem]">
-                        Rejoignez des milliers d'utilisateurs qui prennent le contrôle de leur santé avec clarté et simplicité.
-                    </p>
-                    <div class="mt-8 flex flex-wrap justify-center gap-3">
-                        <RouterLink :to="{ name: 'register' }"
-                            class="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-white px-7 text-[0.92rem] font-bold text-blue-700 no-underline shadow-lg transition hover:-translate-y-0.5">
-                            Créer un compte gratuit
-                        </RouterLink>
-                        <RouterLink :to="{ name: 'login' }"
-                            class="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-white/30 px-7 text-[0.92rem] font-bold text-white no-underline transition hover:bg-white/10 hover:-translate-y-0.5">
-                            Connexion
-                        </RouterLink>
-                    </div>
+        </main>
 
-                    <div class="mt-8 flex flex-wrap justify-center gap-6 text-[0.8rem] font-medium text-blue-100/80">
-                        <span v-for="badge in CTA_BADGES" :key="badge.label" class="inline-flex items-center gap-1.5">
-                            <svg viewBox="0 0 24 24" fill="none" class="h-3.5 w-3.5 stroke-blue-200 [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2]">
-                                <path :d="badge.icon" />
+        <!-- ── À propos ───────────────────────────────────────────────────────── -->
+        <section id="about" class="py-20 px-8 lg:px-14 bg-slate-50 border-t border-slate-100">
+            <div class="max-w-4xl mx-auto">
+
+                <!-- Titre -->
+                <div class="text-center mb-12">
+                    <span class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3.5 py-1.5 text-[0.78rem] font-semibold text-blue-600 mb-4">
+                        <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                        À propos
+                    </span>
+                    <h2 class="text-[2rem] font-extrabold tracking-tight text-slate-900">
+                        Qui sommes-nous ?
+                    </h2>
+                    <p class="mt-3 text-[0.95rem] text-slate-500 max-w-[58ch] mx-auto leading-7">
+                        Assistant Santé est une plateforme numérique conçue pour vous aider à surveiller,
+                        comprendre et améliorer votre bien-être au quotidien.
+                    </p>
+                </div>
+
+                <!-- Valeurs -->
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-3 mb-14">
+                    <div v-for="val in ABOUT_VALUES" :key="val.titre"
+                        class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl mb-4"
+                            :style="{ backgroundColor: val.couleur + '1a' }">
+                            <svg viewBox="0 0 24 24" fill="none" class="h-5 w-5 [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]"
+                                :style="{ stroke: val.couleur }">
+                                <path :d="val.icone" />
                             </svg>
-                            {{ badge.label }}
                         </span>
+                        <p class="font-bold text-slate-900 text-[1rem] mb-1">{{ val.titre }}</p>
+                        <p class="text-[0.85rem] text-slate-500 leading-6">{{ val.description }}</p>
                     </div>
                 </div>
-            </section>
-        </main>
+
+                <!-- Mission -->
+                <div class="rounded-2xl border border-blue-100 bg-blue-50 p-8 mb-10 text-center">
+                    <p class="text-[1rem] font-semibold text-blue-800 leading-7 max-w-[60ch] mx-auto">
+                        "Notre mission est de rendre le suivi de santé accessible, simple et bienveillant
+                        pour chaque personne, quel que soit son niveau de connaissance médicale."
+                    </p>
+                </div>
+
+                <!-- Contact -->
+                <div class="text-center">
+                    <p class="text-[0.9rem] text-slate-500 mb-2">Une question ? Contactez-nous</p>
+                    <a href="mailto:assistantsante2026@gmail.com"
+                        class="inline-flex items-center gap-2 text-[0.95rem] font-semibold text-blue-600 hover:text-blue-700 no-underline transition-colors">
+                        <svg viewBox="0 0 24 24" fill="none" class="h-4 w-4 stroke-blue-600 [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8]">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zM22 6l-10 7L2 6" />
+                        </svg>
+                        assistantsante2026@gmail.com
+                    </a>
+                </div>
+
+            </div>
+        </section>
 
         <!-- ── Footer ─────────────────────────────────────────────────────────── -->
         <footer class="bg-[#0f1f4a] px-8 py-10 lg:px-14">
             <div class="flex flex-col items-center gap-3 text-center">
-                <p class="text-[1rem] font-extrabold text-blue-300">HealthFlow</p>
+                <p class="text-[1rem] font-extrabold text-blue-300">Assistant Santé</p>
                 <p class="text-[0.85rem] text-blue-200/60">
-                    Suivi de santé moderne, calme et premium pour tous.
+                    Votre assistant personnel de santé numérique.
                 </p>
+                <a href="mailto:assistantsante2026@gmail.com"
+                    class="text-[0.82rem] text-blue-300/70 hover:text-blue-300 transition-colors no-underline">
+                    assistantsante2026@gmail.com
+                </a>
                 <small class="text-[0.75rem] text-blue-300/40">
-                    Copyright {{ currentYear }} HealthFlow. Tous droits réservés.
+                    Copyright {{ currentYear }} Assistant Santé. Tous droits réservés.
                 </small>
             </div>
         </footer>
@@ -202,10 +234,25 @@ const STATS = [
     { value: "100%", label: "Sécurisé" },
 ];
 
-const CTA_BADGES = [
-    { label: "Données sécurisées", icon: "M12 3 6 6v5c0 4 2 7 6 10 4-3 6-6 6-10V6l-6-3Z" },
-    { label: "Conforme au RGPD",   icon: "M20 6 9 17l-5-5" },
-    { label: "100% Gratuit",       icon: "M12 2v20M4 12h16" },
+const ABOUT_VALUES = [
+    {
+        titre: "Confidentialité avant tout",
+        description: "Vos données de santé restent sous votre contrôle. Nous ne partageons jamais vos informations sans votre consentement explicite.",
+        couleur: "#4f46e5",
+        icone: "M12 3 6 6v5c0 4 2 7 6 10 4-3 6-6 6-10V6l-6-3Z",
+    },
+    {
+        titre: "Suivi intelligent",
+        description: "Notre intelligence artificielle analyse vos données pour vous fournir des recommandations personnalisées et détecter les tendances importantes.",
+        couleur: "#10b981",
+        icone: "M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2Zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2Z",
+    },
+    {
+        titre: "Collaboration médicale",
+        description: "Partagez vos données avec votre médecin en toute sécurité pour un suivi médical amélioré et des consultations plus efficaces.",
+        couleur: "#f59e0b",
+        icone: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 1-3-3.87M16 3.13a4 4 0 0 1 0 7.75M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z",
+    },
 ];
 
 let observer;
