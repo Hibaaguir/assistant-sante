@@ -68,48 +68,40 @@ import { nextTick, onMounted, ref } from "vue";
 import { useDashboardStore } from "@/stores/dashboard";
 import { toPng } from "html-to-image";
 import jsPDF from "jspdf";
-import HealthChart from "./HealthChart.vue";
-import TreatmentPieChart from "./TreatmentPieChart.vue";
-import ActivityDistributionChart from "./ActivityDistributionChart.vue";
-import Top3ActivitiesChart from "./Top3ActivitiesChart.vue";
-import HydrationChart from "./HydrationChart.vue";
-import TreatmentMonthlyChart from "./TreatmentMonthlyChart.vue";
-import VitalSignsComparisonChart from "./VitalSignsComparisonChart.vue";
-import SleepTrendsChart from "./SleepTrendsChart.vue";
-import NotificationsWidget from "./NotificationsWidget.vue";
-import WelcomeCard from "./WelcomeCard.vue";
-import VitalSignsProgressiveLine from "./VitalSignsProgressiveLine.vue";
-import LabsDistributionChart from "./LabsDistributionChart.vue";
-import LastVitalsRow from "./LastVitalsRow.vue";
-import Typography from "../../ui/Typography.vue";
+import HealthChart from "@/components/dashboards/userDashboard/HealthChart.vue";
+import TreatmentPieChart from "@/components/dashboards/userDashboard/TreatmentPieChart.vue";
+import ActivityDistributionChart from "@/components/dashboards/userDashboard/ActivityDistributionChart.vue";
+import Top3ActivitiesChart from "@/components/dashboards/userDashboard/Top3ActivitiesChart.vue";
+import HydrationChart from "@/components/dashboards/userDashboard/HydrationChart.vue";
+import TreatmentMonthlyChart from "@/components/dashboards/userDashboard/TreatmentMonthlyChart.vue";
+import VitalSignsComparisonChart from "@/components/dashboards/userDashboard/VitalSignsComparisonChart.vue";
+import SleepTrendsChart from "@/components/dashboards/userDashboard/SleepTrendsChart.vue";
+import NotificationsWidget from "@/components/dashboards/userDashboard/NotificationsWidget.vue";
+import WelcomeCard from "@/components/dashboards/userDashboard/WelcomeCard.vue";
+import VitalSignsProgressiveLine from "@/components/dashboards/userDashboard/VitalSignsProgressiveLine.vue";
+import LabsDistributionChart from "@/components/dashboards/userDashboard/LabsDistributionChart.vue";
+import LastVitalsRow from "@/components/dashboards/userDashboard/LastVitalsRow.vue";
+import Typography from "@/components/ui/Typography.vue";
 
-// Déclenche le chargement groupé de toutes les données du dashboard dès l'ouverture
 const dashStore = useDashboardStore();
 onMounted(() => dashStore.initialize());
 
-// Référence vers le bloc HTML à capturer pour le PDF
 const pdfTargetRef = ref(null);
-
-// Indicateur vrai pendant la génération (bloque le bouton pour éviter les doubles clics)
 const exportingPdf = ref(false);
 
-// Capture le dashboard en image puis génère un fichier PDF téléchargeable
 async function downloadDashboardPdf() {
     if (!pdfTargetRef.value || exportingPdf.value) return;
 
     exportingPdf.value = true;
     try {
-        // Attendre que le DOM soit totalement rendu avant la capture
         await nextTick();
 
-        // Convertir le bloc HTML en image PNG (résolution x2 pour la qualité)
         const dataUrl = await toPng(pdfTargetRef.value, {
             cacheBust: true,
             pixelRatio: 2,
             backgroundColor: "#ffffff",
         });
 
-        // Charger l'image pour lire sa hauteur réelle
         const image = new Image();
         await new Promise((resolve, reject) => {
             image.onload = resolve;
@@ -117,14 +109,12 @@ async function downloadDashboardPdf() {
             image.src = dataUrl;
         });
 
-        // Créer le document PDF au format A4 portrait
         const pdf         = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
         const margin      = 10;
         const usableWidth  = pdf.internal.pageSize.getWidth() - margin * 2;
         const usableHeight = pdf.internal.pageSize.getHeight() - margin * 2;
         const imageHeight  = (image.height * usableWidth) / image.width;
 
-        // Découper l'image sur plusieurs pages A4 si nécessaire
         let offset = 0;
         while (offset < imageHeight) {
             if (offset > 0) pdf.addPage();
@@ -132,7 +122,6 @@ async function downloadDashboardPdf() {
             offset += usableHeight;
         }
 
-        // Télécharger le PDF avec la date du jour dans le nom
         const today = new Date().toISOString().slice(0, 10);
         pdf.save(`dashboard-${today}.pdf`);
 

@@ -53,7 +53,8 @@ class HealthDataService
             ->first();
     }
 
-    // Serialiser les verifications de traitement en tableau standard
+    //Convertit les vérifications de doses en JSON propre pour le frontend
+    //rows est une collection d'objets TreatmentCheck
     public function serializeTreatmentChecks(Collection $rows): array
     {
         $result = [];
@@ -78,7 +79,7 @@ class HealthDataService
         return $result;
     }
 
-    // Normaliser un traitement pour l'affichage
+    // 	Transforme un objet Treatment complexe en tableau simple internes
     private function normalizeTreatment(Treatment $treatment): ?array
     {
         $catalog = $treatment->treatmentCatalog;

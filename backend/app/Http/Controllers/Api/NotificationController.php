@@ -26,12 +26,13 @@ class NotificationController extends Controller
         $this->triggerMedicationNotifications($user);
 
         // Récupérer les IDs des traitements de l'utilisateur
+        //treatments() est la relation définie dans le modèle User qui relie les utilisateurs à leurs traitements
         $treatmentIds = $user->treatments()->pluck('treatments.id');//pluck recupere une seule colonne
 
         // Récupérer les 300 dernières notifications et les formater
         $result = [];
         $notifications = Notification::whereIn('treatment_id', $treatmentIds)
-            ->latest()
+            ->latest()//le plus récent en premier
             ->limit(300)
             ->get();
 
@@ -65,6 +66,7 @@ class NotificationController extends Controller
     }
 
     // Déclencher les notifications du jour si elles n'existent pas encore
+    //void car on ne retourne rien, juste créer des notifications en base de données
     private function triggerMedicationNotifications(User $user): void
     {
         $now         = Carbon::now(config('app.timezone'));
@@ -80,7 +82,7 @@ class NotificationController extends Controller
         $isMorningWindow = $currentHour >= 5 && $currentHour < 20;
         $isNightWindow   = $currentHour >= 20;
 
-        // Chargement de tous les checks de l'utilisateur aujourd'hui en une seule requête
+        // récuperer les doses non prises pour aujourd'hui 
         $checks = TreatmentCheck::where('user_id', $user->id)
             ->whereDate('check_date', $today->toDateString())
             ->where('taken', false)

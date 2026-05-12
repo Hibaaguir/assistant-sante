@@ -1,14 +1,14 @@
 <template>
     <div class="w-full px-4 py-8 sm:px-6 lg:px-8">
-        <!-- Header -->
+        <!-- Header: titre principal + sous-titre de la page -->
         <Typography tag="h1" variant="h1-style"> Notifications </Typography>
         <Typography tag="h4" variant="h5-style">
             Historique de vos rappels et prises manquées
         </Typography>
 
-        <!-- Filtres -->
+        <!-- Zone des filtres (type + période) -->
         <div class="mb-6 flex flex-wrap items-center gap-3">
-            <!-- Filtre type -->
+            <!-- Filtre type: change filterType pour recalculer filtered -->
             <div class="flex gap-2">
                 <BaseButton
                     v-for="f in TYPE_FILTERS"
@@ -22,7 +22,7 @@
                 </BaseButton>
             </div>
 
-            <!-- Filtre date -->
+            <!-- Filtre date: change filterDays (7, 14, 30 jours) -->
             <select
                 v-model="filterDays"
                 class="h-11 rounded-lg border border-slate-200 bg-white px-5 text-base font-bold text-slate-600 outline-none"
@@ -37,7 +37,7 @@
             </select>
         </div>
 
-        <!-- Contenu -->
+        <!-- Contenu: état de chargement -->
         <Typography
             tag="h3"
             variant="secondary"
@@ -47,6 +47,7 @@
             Chargement...
         </Typography>
 
+        <!-- Contenu: état d'erreur API -->
         <div
             v-else-if="error"
             class="rounded-2xl border border-red-200 bg-red-50 py-16 text-center text-sm text-red-700"
@@ -54,6 +55,7 @@
             {{ error }}
         </div>
 
+        <!-- Contenu: aucun résultat après application des filtres -->
         <div
             v-else-if="!filtered.length"
             class="rounded-2xl border border-slate-200 bg-white py-16 text-center text-sm text-slate-400"
@@ -61,6 +63,7 @@
             Aucune notification pour ces filtres.
         </div>
 
+        <!-- Contenu: liste des notifications filtrées -->
         <div v-else class="space-y-3">
             <div
                 v-for="notif in filtered"
@@ -72,7 +75,7 @@
                         : 'border-blue-100'
                 "
             >
-                <!-- Icône -->
+                <!-- Icône dynamique selon le type (missed/reminder) -->
                 <span
                     class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
                     :class="
@@ -81,6 +84,7 @@
                             : 'bg-blue-100 text-blue-500'
                     "
                 >
+                
                     <svg
                         v-if="notif.kind === 'missed'"
                         viewBox="0 0 24 24"
@@ -89,9 +93,11 @@
                         stroke="currentColor"
                         stroke-width="2"
                     >
+                        <!-- Cercle + point d'exclamation alerte -->
                         <circle cx="12" cy="12" r="10" />
                         <path d="M12 8v4m0 4h.01" />
                     </svg>
+                    <!-- Sinon, afficher l'icône cloche pour un rappel -->
                     <svg
                         v-else
                         viewBox="0 0 24 24"
@@ -100,12 +106,14 @@
                         stroke="currentColor"
                         stroke-width="2"
                     >
+                        <!-- Forme de la cloche -->
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <!-- Base de la cloche -->
                         <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                     </svg>
                 </span>
 
-                <!-- Texte -->
+                <!-- Texte de la notification: message + date formatée -->
                 <div class="flex-1 min-w-0">
                     <Typography tag="h3" variant="h5-style">
                         {{ notif.message }}
@@ -115,7 +123,7 @@
                     </p>
                 </div>
 
-                <!-- Badge type -->
+                <!-- Badge type: libellé et style visuel selon notif.kind -->
                 <span
                     class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold"
                     :class="
@@ -160,27 +168,22 @@ const all = ref([]);
 const error = ref("");
 const filterType = ref("all");
 const filterDays = ref(7);
-
+// Filtrer les notifications selon le type et la date
 const filtered = computed(() => {
     const days = Number(filterDays.value);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const cutoff = new Date(today);
-    cutoff.setDate(today.getDate() - days);
+    cutoff.setDate(today.getDate() - days); //aujourdui - nombre de jours sélectionné
 
     return all.value
         .filter((n) => {
             const matchType =
                 filterType.value === "all" || n.kind === filterType.value;
-            if (!n.target_date) return matchType;
             const notifDate = new Date(n.target_date + "T00:00:00");
-            return matchType && !isNaN(notifDate) && notifDate >= cutoff;
-        })
-        .sort((a, b) => {
-            if (!a.target_date) return 1;
-            if (!b.target_date) return -1;
-            return new Date(b.target_date) - new Date(a.target_date);
-        });
+            return matchType && notifDate >= cutoff;
+        }) //pour trier les notifications du plus récent au plus ancien
+        .sort((a, b) => new Date(b.target_date) - new Date(a.target_date));
 });
 
 async function load() {

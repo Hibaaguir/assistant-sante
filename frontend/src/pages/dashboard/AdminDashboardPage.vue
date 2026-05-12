@@ -305,7 +305,6 @@
             @cancel="closeDeleteModal"
             @confirm="confirmDeletion"
         />
-        <!-- Utilisation du composant ConfirmationDialog pour activation/désactivation -->
         <ConfirmationDialog
             :open="confirmStatusModalOpen"
             :isDanger="false"

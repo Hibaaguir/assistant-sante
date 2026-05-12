@@ -1,5 +1,5 @@
 <!--
-  TableauDeBordMedecin.vue
+  DoctorDashboardPage.vue
   Dashboard principal du médecin : liste des patients, détail interactif,
   gestion des invitations (accepter / refuser).
 -->
@@ -163,7 +163,6 @@ async function openPatient(patient) {
 
 // ─── Invitations ──────────────────────────────────────────────────────────────
 
-// Accepte une invitation : POST /accept → recharge les données → notification succès
 async function acceptInvitation(id) {
     actionInvitationId.value = id;
     errorMessage.value = "";
@@ -178,7 +177,6 @@ async function acceptInvitation(id) {
     }
 }
 
-// Refuse une invitation : POST /reject → recharge les données → notification annulation
 async function rejectInvitation(id) {
     actionInvitationId.value = id;
     errorMessage.value = "";

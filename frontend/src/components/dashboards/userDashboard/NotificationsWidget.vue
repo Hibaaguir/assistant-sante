@@ -78,14 +78,14 @@ const authStore = useAuthStore();
 
 // Données et état du composant
 const notifications = ref([]);  // toutes les notifications reçues
-const loading       = ref(false); // true pendant le chargement
-const error         = ref("");  // message d'erreur si l'appel échoue
+const loading       = ref(false); 
+const error         = ref("");  
 let timer           = null;     // timer pour le rafraîchissement automatique
 
 // Filtrer uniquement les notifications non lues
 const unread = computed(() => notifications.value.filter((n) => !n.read_at));
 
-// Charge les notifications depuis l'API (silent = true pour ne pas afficher le spinner)
+// Charge les notifications depuis api silent = true pour n'afficher le message de chargement que lors du premier chargement pas lors du rafraîchissement automatique
 async function load(silent = false) {
     if (!silent) loading.value = true;
     error.value = "";
@@ -93,7 +93,7 @@ async function load(silent = false) {
         const { data } = await api.get("/notifications");
         notifications.value = Array.isArray(data?.data) ? data.data : [];
     } catch (e) {
-        // Si l'utilisateur n'est plus connecté, le rediriger vers la page de connexion
+        // Si l'utilisateur n'est plus connecté  le rediriger vers la page de connexion
         if (e?.response?.status === 401) {
             await authStore.logout({ callApi: false });
             await router.replace({ name: "login" });
@@ -127,7 +127,7 @@ function formatDate(targetDate, kind) {
     const hour = kind === "missed" ? 21 : 8;
     const d = new Date(`${targetDate}T${String(hour).padStart(2, "0")}:00:00`);
     return isNaN(d) ? "" : d.toLocaleString("fr-FR", {
-        day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+        day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit",
     });
 }
 
@@ -137,7 +137,7 @@ onMounted(() => {
     timer = setInterval(() => load(true), 60_000);
 });
 
-// Annuler le timer quand le composant est retiré (évite les fuites mémoire)
+// Annuler le timer quand le composant est retiré évite les fuites mémoire
 onUnmounted(() => {
     clearInterval(timer);
     timer = null;

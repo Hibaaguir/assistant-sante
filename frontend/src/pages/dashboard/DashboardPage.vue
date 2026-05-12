@@ -11,9 +11,9 @@
 import { computed, defineAsyncComponent } from "vue";
 import { useAuthStore } from "@/stores/auth";
 
-const DoctorDashboard = defineAsyncComponent(() => import("@/components/dashboards/doctorDashboard/DoctorDashboard.vue"));
-const AdminDashboard = defineAsyncComponent(() => import("@/components/dashboards/adminDashboard/AdminDashboard.vue"));
-const UserDashboard = defineAsyncComponent(() => import("@/components/dashboards/userDashboard/UserDashboard.vue"));
+const DoctorDashboard = defineAsyncComponent(() => import("@/pages/dashboard/DoctorDashboardPage.vue"));
+const AdminDashboard = defineAsyncComponent(() => import("@/pages/dashboard/AdminDashboardPage.vue"));
+const UserDashboard = defineAsyncComponent(() => import("@/pages/dashboard/UserDashboardPage.vue"));
 
 const authStore = useAuthStore();
 
