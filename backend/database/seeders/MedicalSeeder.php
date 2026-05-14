@@ -25,7 +25,7 @@ abstract class MedicalSeeder extends Seeder
     {
         return [
             ['name' => 'Dr Nadia Mansouri',   'email' => 'dr.nadia@example.test',  'specialty' => 'Cardiologie',    'date_of_birth' => '1979-02-11'],
-            ['name' => 'Dr Samir Khadraoui',  'email' => 'dr.samir@example.test',  'specialty' => 'Endocrinologie', 'date_of_birth' => '1982-09-20'],
+            ['name' => 'Dr Bechir ELheni',  'email' => 'dr.bechir@example.test',  'specialty' => 'Endocrinologie', 'date_of_birth' => '1982-09-20'],
             ['name' => 'Dr Leila Ferjani',    'email' => 'dr.leila@example.test',  'specialty' => 'Pneumologie',    'date_of_birth' => '1985-06-08'],
         ];
     }
@@ -81,7 +81,7 @@ abstract class MedicalSeeder extends Seeder
                 'date_of_birth' => '1994-01-27', 'gender' => 'female',
                 'height' => 162.0, 'initial_weight' => 62.0, 'blood_type' => 'B+',
                 'smoker' => false, 'alcoholic' => true,
-                'doctor_email' => 'dr.samir@example.test', 'invitation_status' => 'accepted',
+                'doctor_email' => 'dr.bechir@example.test', 'invitation_status' => 'accepted',
                 'adherence' => 0.95, 'weight_trend' => -0.4,
                 'baseline' => ['sleep' => 7, 'stress' => 4, 'energy' => 7, 'hydration' => 2.4,
                                'heart_rate' => 70, 'systolic_pressure' => 118, 'diastolic_pressure' => 76, 'oxygen_saturation' => 98],
@@ -95,7 +95,7 @@ abstract class MedicalSeeder extends Seeder
                 'date_of_birth' => '1968-06-03', 'gender' => 'male',
                 'height' => 173.0, 'initial_weight' => 91.0, 'blood_type' => 'AB+',
                 'smoker' => false, 'alcoholic' => false,
-                'doctor_email' => 'dr.nadia@example.test', 'invitation_status' => 'rejected',
+                'doctor_email' => 'dr.bechir@example.test', 'invitation_status' => 'rejected',
                 'adherence' => 0.90, 'weight_trend' => -0.6,
                 'baseline' => ['sleep' => 6, 'stress' => 5, 'energy' => 5, 'hydration' => 2.0,
                                'heart_rate' => 76, 'systolic_pressure' => 138, 'diastolic_pressure' => 88, 'oxygen_saturation' => 96],
@@ -137,7 +137,7 @@ abstract class MedicalSeeder extends Seeder
                 'date_of_birth' => '1997-08-24', 'gender' => 'female',
                 'height' => 160.0, 'initial_weight' => 59.0, 'blood_type' => 'B-',
                 'smoker' => false, 'alcoholic' => false,
-                'doctor_email' => 'dr.samir@example.test', 'invitation_status' => 'pending',
+                'doctor_email' => 'dr.bechir@example.test', 'invitation_status' => 'pending',
                 'adherence' => 0.96, 'weight_trend' => 0.2,
                 'baseline' => ['sleep' => 8, 'stress' => 4, 'energy' => 7, 'hydration' => 2.5,
                                'heart_rate' => 68, 'systolic_pressure' => 112, 'diastolic_pressure' => 72, 'oxygen_saturation' => 99],

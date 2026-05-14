@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class JournalEntryController extends Controller
 {
-    // Récupérer toutes les entrées du journal de l'utilisateur (plus récentes en premier)
+    // Récupérer toutes les entrées du journal de l'utilisateur plus récentes en premier
     public function index(Request $request): JsonResponse
     {
         $entries = JournalEntry::where('user_id', $request->user()->id)
@@ -28,7 +28,7 @@ class JournalEntryController extends Controller
     // Vérifier l'entrée existante si elle doit être mise à jour
     public function store(StoreJournalEntryRequest $request): JsonResponse
     {
-        $data = $request->validated();//data de utulisateur d'apres le frontend
+        $data = $request->validated();//Récupère uniquement les données validées par StoreJournalEntryRequest.
         $user = $request->user();
 
         // Vérifier si une entrée existe déjà pour cette date user a une journal entry dans cette date u nnouveau journal entry doit être créé ou l'existant doit être mis à jour
@@ -37,10 +37,12 @@ class JournalEntryController extends Controller
             ->first();
 
         $entry = JournalEntry::updateOrCreate(
+            //conditions de recherche pour trouver l'entrée à mettre à jour, si elle n'existe pas, une nouvelle entrée sera créée avec ces valeurs
             [
                 'user_id'    => $user->id,
                 'entry_date' => $data['entry_date'],
             ],
+            //Ce sont les valeurs à écrire dans la ligne trouvée ou créée.
             [
                 'sleep'          => $data['sleep']           ?? null,
                 'stress'         => $data['stress']          ?? null,

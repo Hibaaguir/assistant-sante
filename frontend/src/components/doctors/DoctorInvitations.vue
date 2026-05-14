@@ -9,7 +9,7 @@
             </div>
             <div>
                 <h2 class="text-[25px] font-bold leading-none text-[#041c49]">
-                    Invitations de patients
+                    Invitations des patients
                 </h2>
                 <p class="mt-2 text-[15px] font-medium text-[#3f4d66]">
                     {{ invitations.length }} invitation{{

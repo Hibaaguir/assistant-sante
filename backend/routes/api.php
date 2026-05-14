@@ -91,6 +91,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/sleep',              [UserDashboardController::class, 'sleep']);
         Route::get('/activities',         [UserDashboardController::class, 'activities']);
         Route::get('/weight',             [UserDashboardController::class, 'weight']);
+        Route::get('/meals',              [UserDashboardController::class, 'meals']);
+        Route::get('/caffeine',           [UserDashboardController::class, 'caffeine']);
     });
 
     // --- Donnees de sante ---

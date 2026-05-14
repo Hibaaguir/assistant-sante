@@ -39,18 +39,14 @@
             </div>
 
             <!-- Sélecteur de date / mois -->
-            <DatePicker
-                v-if="model.type === 'month'"
-                v-model="model.month"
-                type="month"
-                label="Sélectionnez un mois"
-            />
-            <DatePicker
-                v-if="model.type === 'date'"
-                v-model="model.date"
-                type="date"
-                label="Sélectionnez une date"
-            />
+            <div v-if="model.type === 'month'" class="mt-3 rounded-xl border border-violet-200 bg-violet-50 p-3">
+                <p class="mb-2 text-sm font-semibold text-slate-700">Sélectionnez un mois</p>
+                <input type="month" v-model="model.month" class="w-full rounded-lg border border-violet-300 bg-white px-3 py-2 text-sm" />
+            </div>
+            <div v-if="model.type === 'date'" class="mt-3 rounded-xl border border-violet-200 bg-violet-50 p-3">
+                <p class="mb-2 text-sm font-semibold text-slate-700">Sélectionnez une date</p>
+                <input type="date" v-model="model.date" class="w-full rounded-lg border border-violet-300 bg-white px-3 py-2 text-sm" />
+            </div>
 
             <!-- Actions -->
             <div class="mt-4 flex gap-2">
@@ -80,7 +76,6 @@
 import { reactive, watch } from "vue";
 import Typography from "@/components/ui/Typography.vue";
 import RadioDot from "@/components/ui/RadioDot.vue";
-import DatePicker from "@/components/journal-entries/DatePicker.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 //open et filter sont des props passées par le composant parent pour contrôler l'affichage du modal et les critères de filtrage sélectionnés.
 const props = defineProps({
@@ -107,15 +102,14 @@ const OPTIONS = [
     { id: "energy", label: "Énergie", icon: "⚡" },
 ];
 
-
 const model = reactive({ 
     type: "all",
     month: "", 
     date: "" });
 // Synchronise le modèle local avec les changements du filtre parent
 watch(
-    // Lorsque la prop 'filter' change, le modèle local est mis à jour pour refléter les nouvelles valeurs de filtrage sélectionnées dans le composant parent.
     () => props.filter,
+    //next function recoit les nouvelles valeurs de filtre et les copie dans le modèle local 
     (next) => Object.assign(model, next),
     { immediate: true, deep: true },
 );

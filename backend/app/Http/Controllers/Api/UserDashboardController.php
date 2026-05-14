@@ -166,9 +166,9 @@ class UserDashboardController extends Controller
 
     // Hydratation quotidienne barres et lignes objectif 7 derniers jours uniquement
     public function hydration(Request $request): JsonResponse
-    {
+    {//eni badalet kanet 6 
         $userId    = $request->user()->id;
-        $startDate = Carbon::today()->subDays(6)->toDateString();
+        $startDate = Carbon::today()->subDays(29)->toDateString();
 
         $data = JournalEntry::where('user_id', $userId)
             ->where('entry_date', '>=', $startDate)
@@ -226,5 +226,32 @@ class UserDashboardController extends Controller
                 'current_weight' => $poidActuel,
             ],
         ]);
+    }
+
+    public function caffeine (Request $request): JsonResponse
+    {
+        $userId = $request->user()->id;
+
+        $data = JournalEntry::where('user_id', $userId)
+            ->whereNotNull('caffeine')
+            ->orderByDesc('entry_date')
+            ->get(['entry_date', 'caffeine']);
+
+        return response()->json(['data' => $data]);
+    }
+    // Retourne les repas des 30 derniers jours pour le graphe de répartition des repas
+    public function meals (Request $request): JsonResponse
+    {
+        $userId    = $request->user()->id;
+        $startDate = Carbon::today()->subDays(29)->toDateString();
+
+        $data = JournalEntry::where('user_id', $userId)
+            ->where('entry_date', '>=', $startDate)
+            ->with(['meals:id,journal_entry_id,meal_type,description,calories'])
+            ->has('meals')
+            ->orderBy('entry_date')
+            ->get(['id', 'entry_date']);
+
+        return response()->json(['data' => $data]);
     }
 }

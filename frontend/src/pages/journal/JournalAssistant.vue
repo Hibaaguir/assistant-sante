@@ -648,8 +648,8 @@ const activityOptions = [
     "Musculation",
     "Sport collectif",
 ];
-const intensityLabels = { light: "Légère", medium: "Modérée", high: "Intense" };
-const intensityOptions = ["light", "medium", "high"];
+const intensityLabels = { low: "Légère", medium: "Modérée", high: "Intense" };
+const intensityOptions = ["low", "medium", "high"];
 const sugarOptions = ["low", "medium", "high"];
 const sugarLabels = { low: "Faible", medium: "Modéré", high: "Élevé" };
 

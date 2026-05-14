@@ -159,6 +159,7 @@ const store = useJournalStore();
 const notifications = useNotificationsStore();
 const showFilter = ref(false);
 const showDeleteConfirm = ref(false);
+// ID de l'entrée en attente de suppression utilisé pour afficher le dialog de confirmation et effectuer la suppression si confirmé
 const pendingDeleteId = ref(null);
 
 onMounted(async () => {
@@ -185,48 +186,43 @@ const hasFilteredEntries = computed(() => store.filteredEntries.length > 0);
 const showNoResults = computed(
     () => hasEntries.value && !hasFilteredEntries.value,
 );
-
-// Decide which color to use for the notice banner (from the URL query)
 const noticeTone = computed(() => {
     if (route.query.notice === "saved") return "success";
     if (route.query.notice === "canceled") return "warning";
     return "";
 });
 
-// Get the notice banner text based on the URL query
 const noticeMessage = computed(() => {
     if (route.query.notice === "saved")
         return "Modifications enregistrées avec succès.";
     if (route.query.notice === "canceled") return "Modifications annulées.";
     return "";
 });
-
-// Apply the selected filter and close the filter modal
+// applique le filtre sélectionné dans le modal en mettant à jour le store et en fermant le modal
 const applyFilter = (nextFilter) => {
     store.setFilter(nextFilter);
     showFilter.value = false;
 };
 
-// Reset the filter and close the filter modal
+// Réinitialise le filtre pour afficher toutes les entrées et ferme le modal
 const resetFilter = () => {
     store.resetFilter();
     showFilter.value = false;
 };
-
-// Start a deletion request — store the ID and open the confirmation dialog
+// Demande de confirmation de suppression d'une entrée du journal en affichant un dialog modal
 const requestDeletion = (id) => {
     pendingDeleteId.value = id;
     showDeleteConfirm.value = true;
 };
 
-// Cancel the deletion and close the dialog
+//annuller supprision
 const cancelDeletion = () => {
     pendingDeleteId.value = null;
     showDeleteConfirm.value = false;
     notifications.actionCancelled();
 };
 
-//confir
+// Confirme la suppression d'une entrée du journal en appelant la méthode de suppression du store 
 const confirmDeletion = async () => {
     if (!pendingDeleteId.value) return;
 

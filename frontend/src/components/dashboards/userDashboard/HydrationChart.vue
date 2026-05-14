@@ -33,6 +33,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import Typography from "@/components/ui/Typography.vue";
+//categoryscale  axe X avec des catégories linearscale axe Y avec des valeurs linéaires tooltip pour les infobulles
 import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from "chart.js";
 import { useDashboardStore } from "@/stores/dashboard";
 
@@ -42,7 +43,7 @@ Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 // Objectif d'hydratation journalier en litres
 const GOAL = 2;
 
-// Noms des jours en français et en anglais (pour la correspondance)
+// Noms des jours en français et en anglais pour la correspondance
 const DAY_LABELS   = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -53,9 +54,9 @@ const canvasRef = ref(null);
 const loading   = computed(() => !dashStore.initialized);
 const noData    = ref(false);
 const weekDays  = ref([]);
-let chartInstance = null;
+let chartInstance = null;// Instance du graphe Chart.js pour pouvoir le détruire proprement
 
-// Retourne la liste des 7 derniers jours au format YYYY-MM-DD
+// Retourne la liste des 7 derniers jours au format YYYY-MM-DD 
 function getLast7Days() {
     const list = [];
     for (let i = 6; i >= 0; i--) {

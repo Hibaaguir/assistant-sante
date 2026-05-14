@@ -91,10 +91,10 @@ const props = defineProps({
     entree: { type: Object, required: true },
     filterType: { type: String, default: "all" },
 });
-
+// evenement envoyer au parent 
 defineEmits(["edit", "request-delete"]);
 
-// Formate la durée de sommeil en heures et minutes
+// Formate la durée de sommeil en heures et minutes 7.5 → "7h 30min"
 const fmtSommeil = (h) => {
     const hh = Math.floor(h),
         mm = Math.round((h - hh) * 60);
@@ -109,7 +109,7 @@ const fmtEnergie = (v) => {
     if (v >= 3) return "Insuffisante";
     return "Altérée";
 };
-// Formate une date ISO en mois + année (ex: avril 2026)
+// Convertit "2025-01-13" en "janvier 2025" et  T00:00:00 évite le décalage de fuseau horaire
 const fmtMois = (iso) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString("fr-FR", {
         month: "long",
@@ -129,7 +129,7 @@ const fmtTabac = ({ tobacco, tobaccoTypes, cigarettesPerDay, vapeLiquidMl }) => 
     return parts.length > 0 ? parts.join(", ") : "Oui";
 };
 
-// Table de correspondance filtre → champ
+// objet CHAMPS : contient des fonctions de formatage pour chaque type de donnée 
 const CHAMPS = {
     sleep: (e) => ({ label: "Sommeil", valeur: fmtSommeil(e.sleep) }),
     stress: (e) => ({ label: "Stress", valeur: fmtStress(e.stress) }),
@@ -147,11 +147,15 @@ const CHAMPS = {
 // si date ou all ou month on affiche tous les champs, sinon on affiche uniquement le champ correspondant au filtre sélectionné (sommeil, stress, énergie, etc.) et on formate les valeurs pour les rendre plus lisibles (ex: 7.5h de sommeil devient "7h 30min", un niveau de stress de 9 devient "Élevé", etc.)
 const champsVisibles = computed(() => {
     const e = props.entree;
-    const showAll = ["date", "month", "all"].includes(props.filterType);
-    if (showAll) {
-        return Object.values(CHAMPS)
-            .map((fn) => fn(e))
-            .filter((c) => c?.valeur);
+
+    // Filtres "tout afficher"
+    if (props.filterType === "all" || props.filterType === "date" || props.filterType === "month") {
+        const resultat = [];
+        for (const fn of Object.values(CHAMPS)) {
+            const champ = fn(e);
+            if (champ.valeur) resultat.push(champ);
+        }
+        return resultat;
     }
     // Si un filtre spécifique est sélectionné, on affiche uniquement le champ correspondant
     const fn = CHAMPS[props.filterType];
