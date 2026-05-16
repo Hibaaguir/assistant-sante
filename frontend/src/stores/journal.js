@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 import api from "@/services/api";
 import { formatLongDate } from "@/components/doctors/doctorUtilities.js";
 import { useDashboardStore } from "@/stores/dashboard";
-// Convertit une valeur en entier arrondi ou retourne null si la valeur n'est pas un nombre valide
+// Convertit une valeur en entier arrondi ou retourne null isfinite si la valeur n'est pas un nombre valide
 function convertToIntOrNull(value) {
     if (value == null || value === "") return null;
     const parsed = Number(value);
@@ -87,7 +87,7 @@ function toPayload(entry) {
         activities: (entry.activities ?? []).map((a) => ({
             activity_type: a.type,
             activity_duration: convertToIntOrNull(a.duration),
-            intensity: a.intensity ?? "medium",
+            intensity: a.intensity,
         })),
         tobacco: Boolean(entry.tobacco),
         alcohol: Boolean(entry.alcohol),
@@ -105,14 +105,14 @@ export const useJournalStore = defineStore("journal", () => {
     const loading = ref(false);
     const initialized = ref(false);
     const filter = ref({ ...DEFAULT_FILTER });
-
+// trouve l'entrée la plus récente parmi toutes les entrées utuliser dans journalhome
     const lastEntry = computed(() =>
         entries.value.reduce((latest, current) => {
             if (!latest) return current;
             return current.dateIso > latest.dateIso ? current : latest;
         }, null),
     );
-
+// Applique le filtre sélectionné aux entrées du journal utuliser dans journalhistory
     const filteredEntries = computed(() => {
         const f = filter.value;
         const all = entries.value;
@@ -138,7 +138,7 @@ export const useJournalStore = defineStore("journal", () => {
         if (idx >= 0) entries.value[idx] = next;
         else entries.value.unshift(next);
     };
-
+// Charge les entrées depuis le backend et les stocke localement
     const loadEntries = async () => {
         loading.value = true;
         try {
@@ -154,14 +154,14 @@ export const useJournalStore = defineStore("journal", () => {
         if (initialized.value || loading.value) return;
         await loadEntries();
     };
-
+// Ajoute une nouvelle entrée au journal en l'envoyant au backend puis met à jour le state local
     const addEntry = async (entry) => {
         const payload = toPayload({ ...entry, dateIso: new Date().toISOString().slice(0, 10) });
         const res = await api.post("/journal", payload);
         if (res?.data?.data) upsertEntry(toVue(res.data.data));
         useDashboardStore().invalidate();
     };
-
+// Récupère une entrée spécifique depuis le backend la stocke localement et la retourne
     const fetchEntry = async (id) => {
         const res = await api.get(`/journal/${id}`);
         if (!res?.data?.data) return null;
@@ -169,7 +169,7 @@ export const useJournalStore = defineStore("journal", () => {
         upsertEntry(next);
         return next;
     };
-
+// Met à jour une entrée existante en envoyant les modifications au backend puis met à jour le state local
     const updateEntry = async (id, patch) => {
         const payload = toPayload({ ...(findById(id) ?? {}), ...patch });
         const res = await api.put(`/journal/${id}`, payload);
@@ -180,7 +180,7 @@ export const useJournalStore = defineStore("journal", () => {
         }
         useDashboardStore().invalidate();
     };
-
+// Supprime une entrée en l'envoyant au backend puis met à jour le state local pour la retirer
     const deleteEntry = async (id) => {
         await api.delete(`/journal/${id}`);
         entries.value = entries.value.filter((e) => e.id !== String(id));

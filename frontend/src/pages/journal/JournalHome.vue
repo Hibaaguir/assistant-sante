@@ -61,34 +61,56 @@
 
         <!-- Cards -->
         <div class="grid flex-1 gap-4 md:grid-cols-2">
-
             <!-- Carte gauche : Dernière entrée -->
             <div
                 class="flex flex-col rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:border-blue-500 hover:shadow-md"
             >
                 <div class="flex items-center gap-2 mb-3">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100">
+                    <div
+                        class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100"
+                    >
                         <span class="text-base">🗓️</span>
                     </div>
-                    <h3 class="text-base font-bold text-slate-900">Dernière entrée</h3>
+                    <h3 class="text-base font-bold text-slate-900">
+                        Dernière entrée
+                    </h3>
                 </div>
 
-                <div v-if="latestEntry" class="flex-1 space-y-2.5 text-sm text-slate-700">
-                    <div class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
+                <div
+                    v-if="latestEntry"
+                    class="flex-1 space-y-2.5 text-sm text-slate-700"
+                >
+                    <div
+                        class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2"
+                    >
                         <span class="text-slate-500">Date</span>
-                        <span class="font-semibold text-slate-900">{{ latestEntry.dateLabel }}</span>
+                        <span class="font-semibold text-slate-900">{{
+                            latestEntry.dateLabel
+                        }}</span>
                     </div>
-                    <div class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
+                    <div
+                        class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2"
+                    >
                         <span class="text-slate-500">Sommeil</span>
-                        <span class="font-semibold text-indigo-600">{{ sleepLabel(latestEntry.sleep) }}</span>
+                        <span class="font-semibold text-indigo-600">{{
+                            sleepLabel(latestEntry.sleep)
+                        }}</span>
                     </div>
-                    <div class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
+                    <div
+                        class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2"
+                    >
                         <span class="text-slate-500">Stress</span>
-                        <span class="font-semibold text-rose-500">{{ stressLabel(latestEntry.stress) }}</span>
+                        <span class="font-semibold text-rose-500">{{
+                            stressLabel(latestEntry.stress)
+                        }}</span>
                     </div>
-                    <div class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
+                    <div
+                        class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2"
+                    >
                         <span class="text-slate-500">Énergie</span>
-                        <span class="font-semibold text-emerald-600">{{ energyLabel(latestEntry.energy) }}</span>
+                        <span class="font-semibold text-emerald-600">{{
+                            energyLabel(latestEntry.energy)
+                        }}</span>
                     </div>
                 </div>
                 <div
@@ -100,10 +122,15 @@
             </div>
 
             <!-- Carte droite : Autres informations -->
-            <div class="rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:border-blue-500 hover:shadow-md">
-                <Typography tag="h3" variant="h3-style" class="mb-1">📋 Autres informations</Typography>
+            <div
+                class="rounded-2xl border-2 border-blue-300 bg-white p-4 shadow-sm transition-all duration-300 hover:border-blue-500 hover:shadow-md"
+            >
+                <Typography tag="h3" variant="h3-style" class="mb-1"
+                    >📋 Autres informations</Typography
+                >
                 <Typography tag="p" variant="paragraph" class="mb-3">
-                    Indicateurs complémentaires associés à votre dernière entrée.
+                    Indicateurs complémentaires associés à votre dernière
+                    entrée.
                 </Typography>
 
                 <div
@@ -118,40 +145,57 @@
                     <div class="flex items-center justify-between py-0.5">
                         <div class="flex items-center gap-2.5">
                             <span class="text-base">💧</span>
-                            <span class="text-base font-medium text-slate-700">Hydratation</span>
+                            <span class="text-base font-medium text-slate-700"
+                                >Hydratation</span
+                            >
                         </div>
-                        <span class="text-base font-semibold text-slate-900">{{ latestEntry.hydration }} L</span>
+                        <span class="text-base font-semibold text-slate-900"
+                            >{{ latestEntry.hydration }} L</span
+                        >
                     </div>
 
                     <!-- Repas -->
                     <div class="flex items-center justify-between py-0.5">
                         <div class="flex items-center gap-2.5">
                             <span class="text-base">🍽️</span>
-                            <span class="text-base font-medium text-slate-700">Repas</span>
+                            <span class="text-base font-medium text-slate-700"
+                                >Repas</span
+                            >
                         </div>
-                        <span class="text-base font-semibold text-slate-900">{{ formatMeals(latestEntry) }}</span>
+                        <span class="text-base font-semibold text-slate-900">{{
+                            formatMeals(latestEntry)
+                        }}</span>
                     </div>
 
                     <!-- Activité -->
                     <div class="flex items-center justify-between py-0.5">
                         <div class="flex items-center gap-2.5">
                             <span class="text-base">🏃</span>
-                            <span class="text-base font-medium text-slate-700">Activité</span>
+                            <span class="text-base font-medium text-slate-700"
+                                >Activité</span
+                            >
                         </div>
-                        <span class="text-base font-semibold text-slate-900">{{ formatActivity(latestEntry) }}</span>
+                        <span class="text-base font-semibold text-slate-900">{{
+                            formatActivity(latestEntry)
+                        }}</span>
                     </div>
 
                     <!-- Intensité -->
-                    <div class="flex items-center justify-between py-0.5">
+                    <div
+                        v-if="latestEntry.activities?.length"
+                        class="flex items-center justify-between py-0.5"
+                    >
                         <div class="flex items-center gap-2.5">
                             <span class="text-base">💪</span>
-                            <span class="text-base font-medium text-slate-700">Intensité</span>
+                            <span class="text-base font-medium text-slate-700"
+                                >Intensité</span
+                            >
                         </div>
                         <span
                             class="text-base font-semibold px-2 py-0.5 rounded-full border"
-                            :class="intensityBadgeClass(latestEntry.intensity)"
+                            :class="intensityBadgeClass(dominantIntensity(latestEntry))"
                         >
-                            {{ formatIntensity(latestEntry.intensity) }}
+                            {{ formatIntensity(dominantIntensity(latestEntry)) }}
                         </span>
                     </div>
 
@@ -159,25 +203,38 @@
                     <div class="flex items-center justify-between py-0.5">
                         <div class="flex items-center gap-2.5">
                             <span class="text-base">🚬</span>
-                            <span class="text-base font-medium text-slate-700">Tabac</span>
+                            <span class="text-base font-medium text-slate-700"
+                                >Tabac</span
+                            >
                         </div>
-                        <span class="text-base font-semibold text-slate-900">{{ formatTobacco(latestEntry) }}</span>
+                        <span class="text-base font-semibold text-slate-900">{{
+                            formatTobacco(latestEntry)
+                        }}</span>
                     </div>
 
                     <!-- Alcool -->
                     <div class="flex items-center justify-between py-0.5">
                         <div class="flex items-center gap-2.5">
                             <span class="text-base">🍷</span>
-                            <span class="text-base font-medium text-slate-700">Alcool</span>
+                            <span class="text-base font-medium text-slate-700"
+                                >Alcool</span
+                            >
                         </div>
-                        <span class="text-base font-semibold text-slate-900">{{ formatAlcohol(latestEntry) }}</span>
+                        <span class="text-base font-semibold text-slate-900">{{
+                            formatAlcohol(latestEntry)
+                        }}</span>
                     </div>
 
                     <!-- Apport en sucre -->
-                    <div v-if="latestEntry.sugar" class="flex items-center justify-between py-0.5">
+                    <div
+                        v-if="latestEntry.sugar"
+                        class="flex items-center justify-between py-0.5"
+                    >
                         <div class="flex items-center gap-2.5">
                             <span class="text-base">🍬</span>
-                            <span class="text-base font-medium text-slate-700">Apport en sucre</span>
+                            <span class="text-base font-medium text-slate-700"
+                                >Apport en sucre</span
+                            >
                         </div>
                         <span
                             class="text-base font-semibold px-2 py-0.5 rounded-full border"
@@ -188,10 +245,15 @@
                     </div>
 
                     <!-- Énergie -->
-                    <div v-if="latestEntry.energy" class="flex items-center justify-between py-0.5">
+                    <div
+                        v-if="latestEntry.energy"
+                        class="flex items-center justify-between py-0.5"
+                    >
                         <div class="flex items-center gap-2.5">
                             <span class="text-base">⚡</span>
-                            <span class="text-base font-medium text-slate-700">Énergie</span>
+                            <span class="text-base font-medium text-slate-700"
+                                >Énergie</span
+                            >
                         </div>
                         <span
                             class="text-base font-semibold px-2 py-0.5 rounded-full border"
@@ -202,7 +264,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </template>
@@ -219,22 +280,26 @@ const router = useRouter();
 const store = useJournalStore();
 const { lastEntry: latestEntry } = storeToRefs(store);
 
+// Initialise le store à la montée du composant
 onMounted(async () => {
     await store.initialize();
 });
 
+// Formate la durée de sommeil en heures et minutes
 const sleepLabel = (hours) => {
     const h = Math.floor(hours);
     const m = Math.round((hours - h) * 60);
     return m ? `${h}h ${m}min` : `${h}h`;
 };
 
+// Retourne un libellé lisible pour le niveau de stress
 const stressLabel = (value) => {
     if (value >= 8) return "Élevé";
     if (value <= 3) return "Faible";
     return "Modéré";
 };
 
+// Retourne un libellé lisible pour le niveau d'énergie
 const energyLabel = (v) => {
     if (!v && v !== 0) return "—";
     if (v >= 9) return "Optimale";
@@ -244,21 +309,33 @@ const energyLabel = (v) => {
     return "Altérée";
 };
 
+// Formate l'affichage des repas pour la carte récapitulative
 const formatMeals = (e) => {
     if (!e.meals || e.meals.length === 0) return "Aucun repas";
     return `${e.meals.length} repas`;
 };
 
+// Concatène les types d'activités en une seule chaîne
 const formatActivity = (e) => {
     if (!e.activities?.length) return "Non renseignée";
     return e.activities.map((a) => a.type).join(", ");
 };
 
+// Retourne l'intensité la plus élevée parmi toutes les activités
+const dominantIntensity = (e) => {
+    const order = { high: 3, medium: 2, low: 1 };
+    return e.activities.reduce((max, a) =>
+        (order[a.intensity] ?? 0) > (order[max] ?? 0) ? a.intensity : max
+    , e.activities[0].intensity);
+};
+
+// Traduit l'intensité technique en libellé lisible
 const formatIntensity = (intensity) => {
     const map = { high: "Intense", medium: "Modérée", low: "Légère" };
     return map[intensity] || "Modérée";
 };
 
+// Retourne les classes CSS pour afficher le badge d'intensité
 const intensityBadgeClass = (intensity) => {
     const map = {
         high: "bg-rose-100 text-rose-700 border-rose-300",
@@ -268,6 +345,7 @@ const intensityBadgeClass = (intensity) => {
     return map[intensity] || map.medium;
 };
 
+// Formate l'affichage des informations tabac (cigarette/vape)
 const formatTobacco = (e) => {
     if (!e.tobacco) return "Non";
     const parts = [];
@@ -278,17 +356,20 @@ const formatTobacco = (e) => {
     return parts.length ? parts.join(" + ") : "Oui";
 };
 
+// Formate l'affichage de l'alcool consommé
 const formatAlcohol = (e) => {
     if (!e.alcohol) return "Non";
     const n = Number(e.alcoholDrinks ?? 0);
     return n > 0 ? `${n} verres/jour` : "Oui";
 };
 
+// Traduit le niveau de sucre en libellé lisible
 const formatSugar = (sugar) => {
     const map = { high: "Élevé", medium: "Modéré", low: "Faible" };
     return map[sugar] || "Modéré";
 };
 
+// Retourne les classes CSS pour le badge du niveau de sucre
 const sugarBadgeClass = (sugar) => {
     const map = {
         high: "bg-rose-100 text-rose-700 border-rose-300",
@@ -298,8 +379,10 @@ const sugarBadgeClass = (sugar) => {
     return map[sugar] || map.medium;
 };
 
+// Retourne les classes CSS pour le badge d'énergie
 const energyBadgeClass = (energy) => {
-    if (energy >= 7) return "bg-emerald-100 text-emerald-700 border-emerald-300";
+    if (energy >= 7)
+        return "bg-emerald-100 text-emerald-700 border-emerald-300";
     if (energy >= 4) return "bg-amber-100 text-amber-700 border-amber-300";
     return "bg-rose-100 text-rose-700 border-rose-300";
 };

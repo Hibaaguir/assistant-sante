@@ -31,13 +31,8 @@ class JournalEntryController extends Controller
         $data = $request->validated();//Récupère uniquement les données validées par StoreJournalEntryRequest.
         $user = $request->user();
 
-        // Vérifier si une entrée existe déjà pour cette date user a une journal entry dans cette date u nnouveau journal entry doit être créé ou l'existant doit être mis à jour
-        $existingEntry = JournalEntry::where('user_id', $user->id)
-            ->where('entry_date', $data['entry_date'])
-            ->first();
-
         $entry = JournalEntry::updateOrCreate(
-            //conditions de recherche pour trouver l'entrée à mettre à jour, si elle n'existe pas, une nouvelle entrée sera créée avec ces valeurs
+//conditions de recherche pour trouver l'entrée à mettre à jour si elle n'existe pas une nouvelle entrée sera créée avec ces valeurs
             [
                 'user_id'    => $user->id,
                 'entry_date' => $data['entry_date'],
@@ -49,7 +44,7 @@ class JournalEntryController extends Controller
                 'energy'         => $data['energy']          ?? null,
                 'caffeine'       => $data['caffeine']        ?? null,
                 'hydration'      => $data['hydration']       ?? null,
-                'sugar_intake'   => $this->getSugarIntake($data, $existingEntry?->sugar_intake),
+                'sugar_intake'   => $data['sugar_intake'],
                 'alcohol'        => $data['alcohol']         ?? false,
                 'alcohol_glasses'=> $data['alcohol_glasses'] ?? null,
             ]
@@ -92,6 +87,7 @@ class JournalEntryController extends Controller
             'energy',
             'caffeine',
             'hydration',
+            'sugar_intake',
             'alcohol',
             'alcohol_glasses',
         ];
@@ -100,20 +96,14 @@ class JournalEntryController extends Controller
         //si le champ est présent dans les données envoyées par le frontend, l'ajouter au payload de mise à jour, sinon le laisser tel quel dans la base de données
         foreach ($updatableFields as $field) {
             if (array_key_exists($field, $data)) {
-                //$data[$field] c'est la nouvelle valeur envoyée par le frontend, $journalEntry->$field c'est l'ancienne valeur dans la base de données, si le champ n'est pas envoyé depuis le frontend, garder l'ancienne valeur
-                // $payload[$field] c'est la valeur finale à enregistrer dans la base de données, elle peut être la nouvelle valeur envoyée par le frontend ou l'ancienne valeur si le champ n'est pas envoyé depuis le frontend
                 $payload[$field] = $data[$field];
             }
-        }
-
-        if (array_key_exists('sugar_intake', $data)) {
-            $payload['sugar_intake'] = $this->getSugarIntake($data, $journalEntry->sugar_intake);
         }
 
         if (!empty($payload)) {
             $journalEntry->update($payload);
         }
-
+//On synchronise les repas, activités et tabac avec les nouvelles donnees 
         $this->syncEntryData($journalEntry, $data);
 
         return response()->json([
@@ -134,20 +124,6 @@ class JournalEntryController extends Controller
         return response()->json(['message' => 'Entrée du journal supprimée avec succès.']);
     }
 
-    // Déterminer la valeur de sugar_intake à enregistrer
-    // Utiliser array_key_exists pour permettre l'envoi de null
-    private function getSugarIntake(array $data, ?string $oldValue): ?string
-    {
-        // Le champ n'a pas été envoyé, garder l'ancienne valeur
-        if (!array_key_exists('sugar_intake', $data)) {
-            return $oldValue;
-        }
-
-        // Le champ a été envoyé, utiliser la nouvelle valeur
-        $value = trim((string) $data['sugar_intake']);
-        return $value !== '' ? $value : null;
-    }
-
     // supprimer les anciennes données et créer les nouvelles pour éviter les problèmes de mise à jour complexe
     private function syncEntryData(JournalEntry $entry, array $data): void
     {
@@ -155,15 +131,11 @@ class JournalEntryController extends Controller
         if (isset($data['meals']) && is_array($data['meals'])) {
             $entry->meals()->delete();
             foreach ($data['meals'] as $meal) {
-                $mealType = trim((string) ($meal['meal_type'] ?? ''));
-                if ($mealType === '') {
-                    // Ne pas créer de repas si meal_type est vide ou absent
-                    continue;
-                }
+                if (empty($meal['meal_type'])) continue;
                 $entry->meals()->create([
-                    'meal_type'   => $mealType,
+                    'meal_type'   => $meal['meal_type'],
                     'description' => $meal['description'],
-                    'calories'    => $meal['calories']    ?? null,
+                    'calories'    => $meal['calories'] ?? null,
                 ]);
             }
         }
@@ -172,14 +144,10 @@ class JournalEntryController extends Controller
         $entry->physicalActivities()->delete();
         foreach ($data['activities'] ?? [] as $act) {
             if (empty($act['activity_type'])) continue;
-            $intensity = strtolower(trim((string) ($act['intensity'] ?? 'medium')));
-            if (!in_array($intensity, ['low', 'medium', 'high'], true)) {
-                $intensity = 'medium';
-            }
             $entry->physicalActivities()->create([
                 'activity_type'    => $act['activity_type'],
-                'duration_minutes' => $act['activity_duration'] ?? null,
-                'intensity'        => $intensity,
+                'duration_minutes' => $act['activity_duration'],
+                'intensity'        => $act['intensity'],
             ]);
         }
 
@@ -191,14 +159,14 @@ class JournalEntryController extends Controller
             if (!empty($types['cigarette'])) {
                 $entry->tobacco()->create([
                     'tobacco_type'       => 'cigarette',
-                    'cigarettes_per_day' => $data['cigarettes_per_day'] ?? null,
+                    'cigarettes_per_day' => $data['cigarettes_per_day'],
                 ]);
             }
 
             if (!empty($types['vape'])) {
                 $entry->tobacco()->create([
                     'tobacco_type'  => 'vape',
-                    'puffs_per_day' => $data['vape_liquid_ml'] ?? null,
+                    'puffs_per_day' => $data['vape_liquid_ml'],
                 ]);
             }
         }
